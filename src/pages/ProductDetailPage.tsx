@@ -107,6 +107,64 @@ const CartButton = styled(Button)`
   flex: 1;
 `;
 
+const ReviewFormContainer = styled.div`
+  grid-column: 1 / span 2;
+  margin-top: 40px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  padding: 32px 24px;
+`;
+
+const ReviewTitle = styled.h2`
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 18px;
+  color: #333;
+`;
+
+const StarGroup = styled.div`
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+`;
+
+const Star = styled.span<{ selected: boolean }>`
+  font-size: 2rem;
+  color: ${(props) => (props.selected ? "#FFD600" : "#ddd")};
+  cursor: pointer;
+`;
+
+const ReviewTextArea = styled.textarea`
+  width: 100%;
+  min-height: 80px;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 1rem;
+  margin-bottom: 18px;
+  resize: vertical;
+`;
+
+const ImageInput = styled.input`
+  margin-bottom: 18px;
+`;
+
+const ReviewSubmitButton = styled.button`
+  background: #87ceeb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 32px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover {
+    background: #5fb4d9;
+  }
+`;
+
 interface Product {
   id: string;
   name: string;
@@ -119,6 +177,9 @@ interface Product {
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [quantity, setQuantity] = useState(1);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewContent, setReviewContent] = useState("");
+  const [reviewImages, setReviewImages] = useState<File[]>([]);
 
   // 임시 상품 데이터
   const product: Product = {
@@ -145,33 +206,97 @@ const ProductDetailPage: React.FC = () => {
     console.log("장바구니 담기:", { product, quantity });
   };
 
+  const handleReviewImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setReviewImages(Array.from(e.target.files));
+    }
+  };
+
+  const handleReviewSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // 임시: 입력값 콘솔 출력
+    console.log({
+      rating: reviewRating,
+      content: reviewContent,
+      images: reviewImages,
+    });
+    alert("리뷰가 등록되었습니다! (콘솔 확인)");
+    setReviewRating(0);
+    setReviewContent("");
+    setReviewImages([]);
+  };
+
   return (
-    <ProductDetailContainer>
-      <ProductImage src={product.image} alt={product.name} />
-      <ProductInfo>
-        <ProductName>{product.name}</ProductName>
-        <ProductPrice>{product.price.toLocaleString()}원</ProductPrice>
-        <ProductDescription>{product.description}</ProductDescription>
-        <QuantityContainer>
-          <QuantityButton onClick={() => handleQuantityChange(quantity - 1)}>
-            -
-          </QuantityButton>
-          <QuantityInput
-            type="number"
-            value={quantity}
-            onChange={(e) => handleQuantityChange(parseInt(e.target.value))}
-            min="1"
+    <>
+      <ProductDetailContainer>
+        <ProductImage src={product.image} alt={product.name} />
+        <ProductInfo>
+          <ProductName>{product.name}</ProductName>
+          <ProductPrice>{product.price.toLocaleString()}원</ProductPrice>
+          <ProductDescription>{product.description}</ProductDescription>
+          <QuantityContainer>
+            <QuantityButton onClick={() => handleQuantityChange(quantity - 1)}>
+              -
+            </QuantityButton>
+            <QuantityInput
+              type="number"
+              value={quantity}
+              onChange={(e) => handleQuantityChange(parseInt(e.target.value))}
+              min="1"
+            />
+            <QuantityButton onClick={() => handleQuantityChange(quantity + 1)}>
+              +
+            </QuantityButton>
+          </QuantityContainer>
+          <ButtonGroup>
+            <BuyButton onClick={handleBuy}>구매하기</BuyButton>
+            <CartButton onClick={handleAddToCart}>장바구니</CartButton>
+          </ButtonGroup>
+        </ProductInfo>
+      </ProductDetailContainer>
+      <ReviewFormContainer>
+        <form onSubmit={handleReviewSubmit}>
+          <ReviewTitle>리뷰 작성</ReviewTitle>
+          <StarGroup>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={star}
+                selected={reviewRating >= star}
+                onClick={() => setReviewRating(star)}
+                role="button"
+                aria-label={`${star}점`}
+              >
+                ★
+              </Star>
+            ))}
+          </StarGroup>
+          <ReviewTextArea
+            placeholder="리뷰 내용을 입력해주세요"
+            value={reviewContent}
+            onChange={(e) => setReviewContent(e.target.value)}
+            required
           />
-          <QuantityButton onClick={() => handleQuantityChange(quantity + 1)}>
-            +
-          </QuantityButton>
-        </QuantityContainer>
-        <ButtonGroup>
-          <BuyButton onClick={handleBuy}>구매하기</BuyButton>
-          <CartButton onClick={handleAddToCart}>장바구니</CartButton>
-        </ButtonGroup>
-      </ProductInfo>
-    </ProductDetailContainer>
+          <div style={{ marginBottom: 18 }}>
+            <ImageInput
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleReviewImageChange}
+            />
+            {reviewImages.length > 0 && (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {reviewImages.map((file, idx) => (
+                  <span key={idx} style={{ fontSize: 13, color: "#666" }}>
+                    {file.name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          <ReviewSubmitButton type="submit">리뷰 등록</ReviewSubmitButton>
+        </form>
+      </ReviewFormContainer>
+    </>
   );
 };
 
