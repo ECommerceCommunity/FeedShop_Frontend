@@ -329,8 +329,8 @@ const CartPage: React.FC = () => {
               <span>총 결제 금액</span>
               <span style={{ fontSize: 22 }}>{total.toLocaleString()}원</span>
             </TotalRow>
-            <CheckoutButton onClick={handleCheckout}>결제하기</CheckoutButton>
-            <ContinueButton>계속 쇼핑하기</ContinueButton>
+            <CheckoutButton onClick={handleCheckout}>구매하기</CheckoutButton>
+            <ContinueButton onClick={() => nav('/')}>계속 쇼핑하기</ContinueButton>
             <Notice>
               <b>안내사항</b>
               <br />

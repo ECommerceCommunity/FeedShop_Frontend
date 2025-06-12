@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Container = styled.div`
   max-width: 1100px;
@@ -176,6 +176,7 @@ const fallbackCart: Product[] = [
 ];
 
 const PaymentPage: React.FC = () => {
+  const nav = useNavigate();
   const location = useLocation();
   const products: Product[] = location.state?.products || fallbackCart;
   const totalQty = products.reduce((sum, item) => sum + item.quantity, 0);
@@ -183,6 +184,10 @@ const PaymentPage: React.FC = () => {
     (sum, item) => sum + (item.original_price || item.price) * item.quantity,
     0
   );
+
+  const onClickPayment = () => {
+    nav('/checkout?result=success')
+  }
   
   const totalDiscount = products.reduce(
     (sum, item) =>
@@ -265,8 +270,8 @@ const PaymentPage: React.FC = () => {
           </SummaryRow>
           <hr style={{ margin: "16px 0" }} />
           <TotalPrice>{totalPrice.toLocaleString()}원</TotalPrice>
-          <PrimaryButton>결제하기</PrimaryButton>
-          <SecondaryButton>계속 쇼핑하기</SecondaryButton>
+          <PrimaryButton onClick={onClickPayment}>결제하기</PrimaryButton>
+          <SecondaryButton onClick={() => nav('/')}>계속 쇼핑하기</SecondaryButton>
           <Notice>
             <b>안내사항</b><br />
             50,000원 이상 구매 시 배송비 무료<br />
