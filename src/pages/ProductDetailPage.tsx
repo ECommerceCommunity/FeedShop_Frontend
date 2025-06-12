@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 const ProductDetailContainer = styled.div`
   max-width: 1200px;
@@ -169,6 +169,7 @@ interface Product {
   id: string;
   name: string;
   price: number;
+  original_price: number;
   description: string;
   image: string;
   category: string;
@@ -180,12 +181,14 @@ const ProductDetailPage: React.FC = () => {
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewContent, setReviewContent] = useState("");
   const [reviewImages, setReviewImages] = useState<File[]>([]);
+  const nav = useNavigate();
 
   // 임시 상품 데이터
   const product: Product = {
     id: id || "1",
     name: "프리미엄 티셔츠",
     price: 29000,
+    original_price: 32000,
     description:
       "부드러운 코튼 소재의 프리미엄 티셔츠입니다. 일상적인 착용에 최적화된 편안한 착용감을 제공하며, 다양한 스타일링이 가능한 기본 아이템입니다.",
     image: "https://via.placeholder.com/600x600",
@@ -199,11 +202,46 @@ const ProductDetailPage: React.FC = () => {
   };
 
   const handleBuy = () => {
-    console.log("구매하기:", { product, quantity });
+    nav('/payment', {
+        state: {
+          products: [
+            {
+              id: product.id,
+              name: product.name,
+              option: "",
+              price: product.price,
+              original_price: product.original_price,
+              quantity: quantity,
+            },
+          ],
+        },
+      })
   };
 
   const handleAddToCart = () => {
-    console.log("장바구니 담기:", { product, quantity });
+    const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
+  
+    const existingIndex = existingCart.findIndex((item: any) => item.id === product.id && item.option === "");
+  
+    if (existingIndex > -1) {
+      existingCart[existingIndex].quantity += quantity;
+    } else {
+      existingCart.push({
+        id: product.id,
+        name: product.name,
+        option: "",
+        price: product.price,
+        originalPrice: product.original_price,
+        discount: Math.round(((product.original_price - product.price) / product.original_price) * 100),
+        quantity: quantity,
+        image: product.image,
+      });
+    }
+  
+    localStorage.setItem("cart", JSON.stringify(existingCart));
+    console.log("장바구니에 담겼습니다!");
+
+    nav("/cart");
   };
 
   const handleReviewImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {

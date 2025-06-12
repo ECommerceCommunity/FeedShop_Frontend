@@ -162,8 +162,68 @@ const CheckoutPage: React.FC = () => {
   if (result === "fail") {
     return <Fail errorMsg={errorMsg || undefined} />;
   }
+
   return (
-    <div style={{ textAlign: "center", marginTop: 80 }}>잘못된 접근입니다.</div>
+    <div style={{ maxWidth: 800, margin: "40px auto", padding: "0 20px" }}>
+      <h2 style={{ marginBottom: 24 }}>결제 정보 입력</h2>
+      
+      <div style={{ background: "#fff", borderRadius: 12, boxShadow: "0 2px 12px rgba(0,0,0,0.07)", padding: 24 }}>
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          // Here you would typically handle the payment process
+          // For now, we'll just redirect to the success page
+          window.location.href = "/checkout?result=success&orderId=12345678";
+        }}>
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: "block", marginBottom: 8 }}>배송지 정보</label>
+            <input
+              type="text"
+              placeholder="주소를 입력하세요"
+              style={{
+                width: "100%",
+                padding: "10px",
+                borderRadius: 6,
+                border: "1px solid #e5e7eb",
+                marginBottom: 12,
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: "block", marginBottom: 8 }}>결제 수단</label>
+            <select
+              style={{
+                width: "100%",
+                padding: "10px",
+                borderRadius: 6,
+                border: "1px solid #e5e7eb",
+              }}
+            >
+              <option value="card">신용/체크카드</option>
+              <option value="bank">계좌이체</option>
+              <option value="phone">휴대폰 결제</option>
+            </select>
+          </div>
+
+          <div style={{ marginTop: 32, textAlign: "center" }}>
+            <button
+              type="submit"
+              style={{
+                padding: "12px 32px",
+                border: "none",
+                borderRadius: 6,
+                background: "#3b82f6",
+                color: "#fff",
+                fontSize: 16,
+                cursor: "pointer",
+              }}
+            >
+              결제하기
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 
