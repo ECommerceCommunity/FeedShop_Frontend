@@ -24,6 +24,10 @@ const ChatRoomDetailPage = React.lazy(
 );
 const OrdersPage = React.lazy(() => import("./pages/OrdersPage"));
 const ReportManagePage = React.lazy(() => import("./pages/ReportManagePage"));
+const AdminDashboardPage = React.lazy(
+  () => import("./pages/AdminDashboardPage")
+);
+const StoreHomePage = React.lazy(() => import("./pages/StoreHomePage"));
 
 const App: React.FC = () => {
   return (
@@ -48,6 +52,8 @@ const App: React.FC = () => {
             <Route path="/chatrooms/:id" element={<ChatRoomDetailPage />} />
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/report-manage" element={<ReportManagePage />} />
+            <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
+            <Route path="/store-home" element={<StoreHomePage />} />
           </Routes>
         </React.Suspense>
       </Layout>
