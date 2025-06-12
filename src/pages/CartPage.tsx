@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const CartContainer = styled.div`
   max-width: 1200px;
@@ -190,6 +190,7 @@ const initialCart = [
 ];
 
 const CartPage: React.FC = () => {
+  const nav = useNavigate();
   const [cart, setCart] = useState(initialCart);
   const [selected, setSelected] = useState<number[]>(
     cart.map((item) => Number(item.id))
@@ -711,7 +712,7 @@ const CartPage: React.FC = () => {
               <span>총 결제 금액</span>
               <span style={{ fontSize: 22 }}>{total.toLocaleString()}원</span>
             </div>
-            <button
+            <button onClick={ () => nav("/checkout?result=success") }
               style={{
                 width: "100%",
                 background: "#3b82f6",
