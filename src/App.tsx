@@ -9,6 +9,7 @@ const HomePage = React.lazy(() => import("./pages/HomePage"));
 const ProductsPage = React.lazy(() => import("./pages/ProductsPage"));
 const ProductDetailPage = React.lazy(() => import("./pages/ProductDetailPage"));
 const CartPage = React.lazy(() => import("./pages/CartPage"));
+const PaymentPage = React.lazy(() => import("./pages/PaymentPage"));
 const MyPage = React.lazy(() => import("./pages/MyPage"));
 const LoginPage = React.lazy(() => import("./pages/LoginPage"));
 const ProductUploadPage = React.lazy(() => import("./pages/ProductUploadPage"));
@@ -23,6 +24,10 @@ const ChatRoomDetailPage = React.lazy(
 );
 const OrdersPage = React.lazy(() => import("./pages/OrdersPage"));
 const ReportManagePage = React.lazy(() => import("./pages/ReportManagePage"));
+const AdminDashboardPage = React.lazy(
+  () => import("./pages/AdminDashboardPage")
+);
+const StoreHomePage = React.lazy(() => import("./pages/StoreHomePage"));
 
 const App: React.FC = () => {
   return (
@@ -34,6 +39,7 @@ const App: React.FC = () => {
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/products/:id" element={<ProductDetailPage />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/payment" element={<PaymentPage />} />
             <Route path="/mypage/*" element={<MyPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/product/upload" element={<ProductUploadPage />} />
@@ -46,6 +52,8 @@ const App: React.FC = () => {
             <Route path="/chatrooms/:id" element={<ChatRoomDetailPage />} />
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/report-manage" element={<ReportManagePage />} />
+            <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
+            <Route path="/store-home" element={<StoreHomePage />} />
           </Routes>
         </React.Suspense>
       </Layout>
