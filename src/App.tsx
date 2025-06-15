@@ -9,8 +9,11 @@ const HomePage = React.lazy(() => import("./pages/HomePage"));
 const ProductsPage = React.lazy(() => import("./pages/ProductsPage"));
 const ProductDetailPage = React.lazy(() => import("./pages/ProductDetailPage"));
 const CartPage = React.lazy(() => import("./pages/CartPage"));
+const PaymentPage = React.lazy(() => import("./pages/PaymentPage"));
 const MyPage = React.lazy(() => import("./pages/MyPage"));
 const LoginPage = React.lazy(() => import("./pages/LoginPage"));
+const SignUp = React.lazy(() => import("./pages/SignUp"));
+const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
 const ProductUploadPage = React.lazy(() => import("./pages/ProductUploadPage"));
 const ProductEditPage = React.lazy(() => import("./pages/ProductEditPage"));
 const SearchPage = React.lazy(() => import("./pages/SearchPage"));
@@ -38,8 +41,11 @@ const App: React.FC = () => {
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/products/:id" element={<ProductDetailPage />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/payment" element={<PaymentPage />} />
             <Route path="/mypage/*" element={<MyPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/product/upload" element={<ProductUploadPage />} />
             <Route path="/product/edit/:id" element={<ProductEditPage />} />
             <Route path="/search" element={<SearchPage />} />
