@@ -1,0 +1,37 @@
+[
+  {
+    "store_id": 1001,
+    "brand_info": "1964년 설립된 나이키(NIKE)는 다양한 컬래버레이션과 두터운 마니아층들로 그 위치를 증명하는 브랜드입니다. 자신의 한계를 뛰어넘는 스포츠 정신이 바로 나이키 브랜드를 상징하며, '실패를 두려워하지 말라'는 메시지는 많은 사람들에게 긍정적인 희망을 주어 나이키의 핵심 가치이자 철학으로 자리매김했습니다. 나이키는 운동 선수들의 목소리에 귀를 기울이고, 그들이 최고의 기량을 발휘할 수 있도록 돕는 제품을 생산합니다. 세계적인 발자취, 혁신 문화와 팀 우선 정신을 바탕으로 전 세계를 위한 끊임없는 스포츠의 미래를 창조하고 있습니다.",
+    "brand_logo_url": "https://image.msscdn.net/images/brand/white_logo_img/nike.svg",
+    "brand_likes": 3617,
+    "store_name": "나이키"
+  },
+  {
+    "store_id": 1002,
+    "brand_info": "스포츠 라이프스타일은 라커룸 밖에서도 계속됩니다. 1920년부터 독일의 헤르초게나우라흐에서 스포츠 슈즈를 만들던 아디다스(ADIDAS)는 이러한 철학을 토대로 경기장에서부터 거리에 이르기까지 모두가 즐길 수 있는 '스포츠 라이프스타일'의 개념을 처음으로 도입한 브랜드입니다. 스포츠 영역의 다양한 요소를 일상의 영역으로 가져오는 아디다스는 이를 통해 전 세계의 트렌드를 주도하고 있으며, 지금도 여전히 자신의 다양한 모습을 보여주고 싶어하는 소비자와 직접 소통하며 함께 혁신적인 트렌드를 만들고 있습니다.",
+    "brand_logo_url": "https://image.musinsa.com/images/brand/white_logo_img/adidas.svg?20240220141222",
+    "brand_likes": 44754,
+    "store_name": "아디다스"
+  },
+  {
+    "store_id": 1003,
+    "brand_info": "뉴발란스(NEW BALANCE)는 발에 장애가 있거나 경찰, 소방관, 우체부 등 하루 종일 서서 일하는 사람들을 위한 아치 서포트(Arch Support : 지지대가 있는 신발 깔창)를 만들며 1906년에 미국 메사추세츠주 보스턴에서 론칭했습니다. 닭의 세 개의 발톱이 만드는 균형(balance)에서 영감을 얻은 아치 서포트와 신발은 지금도 변치 않고 100년이 지난 지금도 여전히 불균형한 발에 새로운 균형을 창조하는 다양한 디자인의 스니커즈와 스포츠&패션 아이템을 만들고 있습니다.",
+    "brand_logo_url": "https://image.msscdn.net/images/brand/white_logo_img/newbalance.svg",
+    "brand_likes": 22618,
+    "store_name": "뉴발란스"
+  },
+  {
+    "store_id": 1004,
+    "brand_info": "푸마(PUMA)는 다즐러에 의해 독일에서 만들어진 세계적인 스포츠 브랜드입니다. 현재는 토털 라이프 스타일 브랜드로, 높은 퀄리티와 다양한 디자이너와의 컬래버레이션으로 세계적으로 많은 사랑을 받고 있습니다.",
+    "brand_logo_url": "https://image.msscdn.net/images/brand/white_logo_img/puma.svg?1742532352062",
+    "brand_likes": 19709,
+    "store_name": "푸마"
+  },
+  {
+    "store_id": 1005,
+    "brand_info": "ASICS(아식스)는 1949년 \"스포츠를 통해서 아이들의 건전한 육성에 보탬이 되겠다.\"라는 이념으로 설립되었습니다. ASICS (아식스) 브랜드명은 라틴어 “건강한 정신은 건강한 육체에서(Anima Sana In Corpore Sano)”의 알파벳 앞 글자에서 가져왔으며, 전 세계적으로 사랑받고 있는 글로벌 스포츠 브랜드입니다.",
+    "brand_logo_url": "https://image.msscdn.net/images/brand/white_logo_img/asics.svg",
+    "brand_likes": 22586,
+    "store_name": "아식스"
+  }
+]

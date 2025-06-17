@@ -1,11 +1,11 @@
-import React from "react";
+import { FC, ReactNode } from "react";
 import styled from "styled-components";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 const LayoutContainer = styled.div`
@@ -16,13 +16,12 @@ const LayoutContainer = styled.div`
 
 const MainContent = styled.main`
   flex: 1;
-  padding: 20px;
   margin-left: 250px;
   margin-top: 60px;
   background-color: var(--background-color);
 `;
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout: FC<LayoutProps> = ({ children }) => {
   return (
     <LayoutContainer>
       <Header />

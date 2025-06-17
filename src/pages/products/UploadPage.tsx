@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, FC, ChangeEvent, FormEvent } from "react";
 import styled from "styled-components";
 
 const Container = styled.div`
@@ -61,7 +61,7 @@ const Button = styled.button`
   }
 `;
 
-const ProductUploadPage: React.FC = () => {
+const ProductUploadPage: FC = () => {
   const [formData, setFormData] = useState({
     title: "",
     price: "",
@@ -71,7 +71,7 @@ const ProductUploadPage: React.FC = () => {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -80,7 +80,7 @@ const ProductUploadPage: React.FC = () => {
     }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setFormData((prev) => ({
         ...prev,
@@ -89,9 +89,8 @@ const ProductUploadPage: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    // TODO: Implement product upload logic
     console.log("Form submitted:", formData);
   };
 

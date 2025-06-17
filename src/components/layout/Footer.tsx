@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 
@@ -46,7 +46,7 @@ const FooterText = styled.p`
   line-height: 1.5;
 `;
 
-const Footer: React.FC = () => {
+const Footer: FC = () => {
   return (
     <FooterContainer>
       <FooterContent>

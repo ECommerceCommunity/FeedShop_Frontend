@@ -1,4 +1,4 @@
-import React from "react";
+import { lazy, FC, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 import Layout from "./components/layout/Layout";
@@ -24,24 +24,23 @@ const ChatRoomListPage = React.lazy(() => import("./pages/ChatRoomListPage"));
 const ChatRoomDetailPage = React.lazy(
   () => import("./pages/ChatRoomDetailPage")
 );
-const OrdersPage = React.lazy(() => import("./pages/OrdersPage"));
-const ReportManagePage = React.lazy(() => import("./pages/ReportManagePage"));
-const AdminDashboardPage = React.lazy(
+const OrdersPage = lazy(() => import("./pages/OrdersPage"));
+const ReportManagePage = lazy(() => import("./pages/ReportManagePage"));
+const AdminDashboardPage = lazy(
   () => import("./pages/AdminDashboardPage")
 );
-const StoreHomePage = React.lazy(() => import("./pages/StoreHomePage"));
+const StoreHomePage = lazy(() => import("./pages/StoreHomePage"));
 
-const App: React.FC = () => {
+const App: FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <Layout>
-        <React.Suspense fallback={<div>로딩중...</div>}>
+        <Suspense fallback={<div>로딩중...</div>}>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/products/:id" element={<ProductDetailPage />} />
             <Route path="/cart" element={<CartPage />} />
-            <Route path="/payment" element={<PaymentPage />} />
             <Route path="/mypage/*" element={<MyPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUp />} />
@@ -59,7 +58,7 @@ const App: React.FC = () => {
             <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
             <Route path="/store-home" element={<StoreHomePage />} />
           </Routes>
-        </React.Suspense>
+        </Suspense>
       </Layout>
     </ThemeProvider>
   );
