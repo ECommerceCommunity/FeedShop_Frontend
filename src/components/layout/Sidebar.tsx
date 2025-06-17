@@ -81,10 +81,10 @@ const Sidebar: React.FC = () => {
         <MenuList>
           <MenuItem>
             <MenuLink
-              to="/mypage/orders"
-              active={location.pathname === "/mypage/orders"}
+              to="/mypage/recentview"
+              active={location.pathname === "/mypage/recentview"}
             >
-              주문내역
+              최근본상품
             </MenuLink>
           </MenuItem>
           <MenuItem>
@@ -101,6 +101,14 @@ const Sidebar: React.FC = () => {
               active={location.pathname === "/mypage/reviews"}
             >
               리뷰관리
+            </MenuLink>
+          </MenuItem>
+          <MenuItem>
+            <MenuLink
+              to="/mypage/profile"
+              active={location.pathname === "/mypage/profile"}
+            >
+              프로필설정
             </MenuLink>
           </MenuItem>
         </MenuList>

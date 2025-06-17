@@ -165,10 +165,10 @@ const MyPage: React.FC = () => {
         <UserEmail>{user.email}</UserEmail>
       </UserInfo>
       <MenuGrid>
-        <MenuCard to="/orders">
-          <MenuTitle>주문 내역</MenuTitle>
+        <MenuCard to="/recentview">
+          <MenuTitle>최근 본 상품</MenuTitle>
           <MenuDescription>
-            주문한 상품의 배송 현황을 확인하세요.
+            최근 본 상품을 확인하세요.
           </MenuDescription>
         </MenuCard>
         <MenuCard to="/wishlist">
