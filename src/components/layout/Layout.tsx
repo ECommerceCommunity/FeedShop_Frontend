@@ -27,8 +27,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <LayoutContainer>
       <Header />
       <Sidebar />
-      <MainContent>{children}</MainContent>
-      <Footer />
+      <MainContent>
+        {children}
+        <Footer />
+      </MainContent>
     </LayoutContainer>
   );
 };
