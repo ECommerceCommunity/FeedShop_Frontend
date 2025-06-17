@@ -1,3 +1,4 @@
+import { ComponentType, ChangeEvent, ReactNode, IntrinsicElements } from "react";
 import "styled-components";
 import { LinkProps } from "react-router-dom";
 
@@ -19,7 +20,7 @@ declare module "styled-components" {
 
 declare module "styled-components" {
   export interface StyledComponentPropsWithAs<
-    C extends keyof JSX.IntrinsicElements | React.ComponentType<any>,
+    C extends keyof IntrinsicElements | ComponentType<any>,
     T extends object,
     O extends object = {},
     A extends keyof any = never
@@ -27,14 +28,14 @@ declare module "styled-components" {
     isMine?: boolean;
     active?: boolean;
     status?: string;
-    children?: React.ReactNode;
+    children?: ReactNode;
     htmlFor?: string;
     type?: string;
     to?: string;
     id?: string;
     name?: string;
     value?: string;
-    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
     required?: boolean;
   }
 }
@@ -44,21 +45,21 @@ declare module "styled-components" {
     isMine?: boolean;
     active?: boolean;
     status?: string;
-    children?: React.ReactNode;
+    children?: ReactNode;
     htmlFor?: string;
     type?: string;
     to?: string;
     id?: string;
     name?: string;
     value?: string;
-    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
     required?: boolean;
   }
 }
 
 declare module "styled-components" {
   export interface StyledComponentPropsWithAs<
-    C extends keyof JSX.IntrinsicElements,
+    C extends keyof IntrinsicElements,
     T extends object,
     O extends object = {},
     A extends keyof any = never
@@ -69,7 +70,7 @@ declare module "styled-components" {
 
 declare module "styled-components" {
   export interface StyledComponentPropsWithAs<
-    C extends keyof JSX.IntrinsicElements,
+    C extends keyof IntrinsicElements,
     T extends object,
     O extends object = {},
     A extends keyof any = never
@@ -80,7 +81,7 @@ declare module "styled-components" {
 
 declare module "styled-components" {
   export interface StyledComponentPropsWithAs<
-    C extends keyof JSX.IntrinsicElements,
+    C extends keyof IntrinsicElements,
     T extends object,
     O extends object = {},
     A extends keyof any = never

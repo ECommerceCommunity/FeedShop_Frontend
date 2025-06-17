@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 
@@ -46,7 +46,7 @@ const UserSection = styled.div`
   gap: 20px;
 `;
 
-const Header: React.FC = () => {
+const Header: FC = () => {
   return (
     <HeaderContainer>
       <Logo to="/">쇼핑몰</Logo>
