@@ -1,7 +1,7 @@
 [
   {
-    "id": "category",
-    "name": "카테고리",
+    "id": "shoes_type",
+    "name": "신발 종류",
     "options": [
       "샌들/슬리퍼",
       "스니커즈",
