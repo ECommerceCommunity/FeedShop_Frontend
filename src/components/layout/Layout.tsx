@@ -28,8 +28,8 @@ const Layout: FC<LayoutProps> = ({ children }) => {
       <Sidebar />
       <MainContent>
         {children}
-        <Footer />
       </MainContent>
+      <Footer />
     </LayoutContainer>
   );
 };

@@ -11,7 +11,7 @@ import { HeartIcon as SolidHeartIcon } from '@heroicons/react/24/solid'
 import { Fragment, useEffect, useState } from 'react'
 import products from './data/products.json'
 import discounts from './data/discounts.json'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
@@ -21,6 +21,7 @@ export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
   const thumbnailsPerPage = 6
   const [startIndex, setStartIndex] = useState(0)
+  const nav = useNavigate();
 
   const productData = products.find((p) => String(p.id) === id)
   const discountData = discounts.find((d) => String(d.product_id) === id)
@@ -63,8 +64,8 @@ export default function ProductDetailPage() {
   }
 
   const product = {
-    id: productData.id,
-    name: productData.name,
+    id: productData.id, // number
+    name: productData.name, // string
     price: originalPrice,
     rating: 4,
     likes: productData.product_likes ?? 0,
@@ -95,6 +96,17 @@ export default function ProductDetailPage() {
     if (startIndex + thumbnailsPerPage < product.images.length) {
       setStartIndex(startIndex + 1)
     }
+  }
+
+  const handleCart = () => {
+    localStorage.setItem('product', JSON.stringify(productData))
+    localStorage.setItem('discounts', JSON.stringify(discounts))
+    nav('/cart');
+  }
+
+  const handleOrder = () => {
+    const dataToSend = { ...productData, quantity: 1 };
+    nav('/payment', { state: { products: [dataToSend] } });
   }
 
   return (
@@ -236,10 +248,19 @@ export default function ProductDetailPage() {
             <form className="mt-6">
               <div className="mt-10 flex items-center">
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleOrder}
                   className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
                 >
-                  장바구니에 담기
+                  주문하기
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCart}
+                  className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
+                >
+                  장바구니
                 </button>
 
                 <button

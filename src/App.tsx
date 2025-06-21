@@ -8,8 +8,6 @@ import theme from "./theme";
 const HomePage = lazy(() => import("./pages/HomePage"));
 const ProductsPage = lazy(() => import("./pages/products/Lists"));
 const ProductDetailPage = lazy(() => import("./pages/products/DetailPage"));
-const CartPage = lazy(() => import("./pages/CartPage"));
-const PaymentPage = lazy(() => import("./pages/PaymentPage"));
 const MyPage = lazy(() => import("./pages/MyPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const SignUp = lazy(() => import("./pages/SignUp"));
@@ -19,17 +17,21 @@ const ProductEditPage = lazy(() => import("./pages/products/EditPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const ReviewsPage = lazy(() => import("./pages/ReviewsPage"));
-const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const ChatRoomListPage = lazy(() => import("./pages/ChatRoomListPage"));
 const ChatRoomDetailPage = lazy(
   () => import("./pages/ChatRoomDetailPage")
 );
-const OrdersPage = lazy(() => import("./pages/OrdersPage"));
 const ReportManagePage = lazy(() => import("./pages/ReportManagePage"));
 const AdminDashboardPage = lazy(
   () => import("./pages/AdminDashboardPage")
 );
 const StoreHomePage = lazy(() => import("./pages/StoreHomePage"));
+
+// cart & order
+const CartPage = lazy(() => import("./pages/cart/CartPage"));
+const PaymentPage = lazy(() => import("./pages/order/PaymentPage"));
+const OrdersPage = lazy(() => import("./pages/order/OrdersPage"));
+const CheckoutPage = lazy(() => import("./pages/order/CheckoutPage"));
 
 const App: FC = () => {
   return (
@@ -40,7 +42,6 @@ const App: FC = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/products/:id" element={<ProductDetailPage />} />
-            <Route path="/cart" element={<CartPage />} />
             <Route path="/mypage/*" element={<MyPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUp />} />
@@ -53,10 +54,14 @@ const App: FC = () => {
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/chatrooms" element={<ChatRoomListPage />} />
             <Route path="/chatrooms/:id" element={<ChatRoomDetailPage />} />
-            <Route path="/orders" element={<OrdersPage />} />
             <Route path="/report-manage" element={<ReportManagePage />} />
             <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
             <Route path="/store-home" element={<StoreHomePage />} />
+
+            {/* cart & order */}
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/payment" element={<PaymentPage/>} />
           </Routes>
         </Suspense>
       </Layout>
