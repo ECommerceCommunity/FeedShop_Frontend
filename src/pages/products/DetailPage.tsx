@@ -25,6 +25,9 @@ export default function ProductDetailPage() {
   const [startIndex, setStartIndex] = useState(0)
   const nav = useNavigate();
 
+  // 민찬
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
+
   const productData = products.find((p) => String(p.id) === id)
   const discountData = discounts.find((d) => String(d.product_id) === id)
   const brandData = brands.find((b) => String(b.store_id) === String(productData?.store_id))
@@ -102,14 +105,32 @@ export default function ProductDetailPage() {
   }
 
   const handleCart = () => {
+    // const cartList = Object.entries(quantities as Record<string, number>)
+    // .filter(([_, quantity]) => quantity > 0) // 수량이 0보다 큰 것만
+    // .map(([size, quantity]) => ({
+    //   ...productData,
+    //   size,
+    //   quantity,
+    // }));
+
+    // localStorage.setItem('product', JSON.stringify(cartList)) // 옵션 별 수량을 더해서 가지고 간다.
     localStorage.setItem('product', JSON.stringify(productData))
-    localStorage.setItem('discounts', JSON.stringify(discounts))
+    localStorage.setItem('discounts', JSON.stringify(discounts)) // 카트는 여러 아이템이기 때문에 개별적으로 할인이 적용되게 하려면 discount 배열을 모두 가지고 가야 한다.
     nav('/cart');
   }
 
   const handleOrder = () => {
-    const dataToSend = { ...productData, quantity: 1 };
-    nav('/payment', { state: { products: [dataToSend] } });
+    // const orderList = Object.entries(quantities as Record<string, number>)
+    //   .filter(([_, quantity]) => quantity > 0) // 수량이 0보다 큰 것만
+    //   .map(([size, quantity]) => ({
+    //     ...productData,
+    //     size,
+    //     quantity,
+    //   }));
+  
+    // nav('/payment', { state: { products: orderList } });  // 옵션 별 수량을 더해서 가지고 간다.
+    const orderList = { ...productData, quantity: 1 };
+    nav('/payment', { state: { products: [orderList] } });
   }
 
   return (
