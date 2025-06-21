@@ -313,6 +313,13 @@ export default function ProductDetailPage() {
           <div className="hidden lg:block h-full w-px bg-gray-300" />
 
           <div className="mt-10 sm:mt-16 sm:px-0 lg:mt-0 lg:col-span-1 p-5">
+            <button
+              onClick={() => navigate(-1)}
+              className="mb-4 flex items-center text-gray-600 hover:text-indigo-600"
+            >
+              <ChevronLeftIcon className="w-5 h-5 mr-1" />
+              <span className="text-sm font-medium">뒤로가기</span>
+            </button>
             {brandData && (
               <div className="mb-2 flex items-center space-x-2">
                 <img
