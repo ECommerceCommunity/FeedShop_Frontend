@@ -6,12 +6,17 @@ import { HeartIcon as SolidHeartIcon } from '@heroicons/react/24/solid'
 import { Link } from 'react-router-dom'
 import productsData from './data/products.json'
 import brands from './data/brands.json'
-import filters from './data/filters.json'
+import filtersRaw from './data/filters.json'
 import discounts from './data/discounts.json'
+import colors from './data/musinsa_colors.json'
 
 type Product = typeof productsData[number]
-type Filter = typeof filters[number]
 type Brand = typeof brands[number]
+type Filter = {
+  id: string
+  name: string
+  options: any[]
+}
 
 export default function ProductPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
@@ -75,10 +80,48 @@ export default function ProductPage() {
   const getStoreName = (storeId: number): string =>
     brands.find((b) => b.store_id === storeId)?.store_name || 'Unknown'
 
-  const filteredProducts: Product[] = productsData.filter(product => {
+  // 영어 컬러명을 한글로 매핑하는 객체 생성
+  const colorNameMap: Record<string, string> = colors.reduce((acc, cur) => {
+    const key = cur.color_name.toUpperCase() // 예: "아이보리"
+    if (cur.color_image_url && cur.color_name_en) {
+      acc[cur.color_name_en.toUpperCase()] = key
+    }
+    return acc
+  }, {} as Record<string, string>)
+
+  // 중복 제거된 productsData 생성 (id 기준)
+  const uniqueProducts = Object.values(
+    productsData.reduce((acc, item) => {
+      acc[item.id] = item
+      return acc
+    }, {} as Record<number, Product>)
+  )
+
+  const filteredProducts: Product[] = uniqueProducts.filter(product => {
     if (selectedBrandId !== null && product.store_id !== selectedBrandId) return false
+
     return Object.entries(selectedFilters).every(([filterId, values]) => {
       if (values.size === 0) return true
+
+      if (filterId === 'color') {
+        return product.color_info?.current_colors?.some((color: any) => {
+          const normalize = (val: string) => {
+            const isEnglish = /^[A-Za-z\s]+$/.test(val)
+            return isEnglish ? val.toUpperCase() : val
+          }
+
+          if (typeof color === 'string') {
+            // 영어 컬러명을 한글 컬러명으로 변환
+            const mapped = colorNameMap[color.toUpperCase()]
+            return mapped && values.has(mapped)
+          } else if (color && typeof color === 'object' && 'color_name' in color) {
+            return values.has(normalize(color.color_name))
+          }
+          return false
+        })
+      }
+
+      // 기본 필터 비교
       return values.has(String(product[filterId as keyof Product]))
     })
   })
@@ -88,7 +131,37 @@ export default function ProductPage() {
   const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem)
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
 
-  const filtersWithoutBrand = filters.filter(f => f.id !== 'brand')
+  const filterBaseProducts = productsData.filter(product =>
+    selectedBrandId === null || product.store_id === selectedBrandId
+  )
+
+  const availableColorOptions = colors.filter(color => {
+    const targetName = color.color_name.toUpperCase()
+
+    return filterBaseProducts.some(product =>
+      product.color_info?.current_colors?.some((colorItem: any) => {
+        if (typeof colorItem === 'string') {
+          const mapped = colorNameMap[colorItem.toUpperCase()]
+          return mapped === targetName
+        } else if (colorItem && typeof colorItem === 'object' && 'color_name' in colorItem) {
+          return colorItem.color_name.toUpperCase() === targetName
+        }
+        return false
+      })
+    )
+  })
+
+  const colorFilter = {
+    id: 'color',
+    name: '색상',
+    options: availableColorOptions.map(color => ({
+      name: color.color_name,
+      color_image_url: color.color_image_url
+    }))
+  }
+
+  const filters = [...filtersRaw, colorFilter]
+  const filtersWithoutBrand = filters.filter(f => f.id !== 'brand' && f.options.length > 0)
 
   useEffect(() => {
     setCurrentPage(1)
@@ -140,9 +213,12 @@ export default function ProductPage() {
                   {openFilters[filter.id] && (
                     <ul className="mt-2 space-y-1">
                       {filter.options.map((option: any) => {
-                        const value = typeof option === 'string' ? option : String(option.id)
+                        const value = typeof option === 'string' ? option : String(option.id || option.name)
                         const label = typeof option === 'string' ? option : option.name
+                        const imageUrl = option.color_image_url // 색상 이미지가 있을 경우
+
                         const isChecked = selectedFilters[filter.id]?.has(value) || false
+
                         return (
                           <li key={value}>
                             <label className="inline-flex items-center gap-2 text-sm text-gray-700">
@@ -151,6 +227,12 @@ export default function ProductPage() {
                                 className="rounded border-gray-300"
                                 checked={isChecked}
                                 onChange={() => handleFilterChange(filter.id, value)}
+                              />
+                              {/* 색상 이미지가 있다면 렌더링 */}
+                              <img
+                                src={imageUrl}
+                                alt={label}
+                                className="w-4 h-4 rounded border border-gray-300"
                               />
                               {label}
                             </label>
@@ -223,9 +305,12 @@ export default function ProductPage() {
                 {openFilters[filter.id] && (
                   <ul className="mt-2 space-y-1">
                     {filter.options.map((option: any) => {
-                      const value = typeof option === 'string' ? option : String(option.id)
+                      const value = typeof option === 'string' ? option : String(option.id || option.name)
                       const label = typeof option === 'string' ? option : option.name
+                      const imageUrl = option.color_image_url // 색상 이미지가 있을 경우
+
                       const isChecked = selectedFilters[filter.id]?.has(value) || false
+
                       return (
                         <li key={value}>
                           <label className="inline-flex items-center gap-2 text-sm text-gray-700">
@@ -235,7 +320,19 @@ export default function ProductPage() {
                               checked={isChecked}
                               onChange={() => handleFilterChange(filter.id, value)}
                             />
-                            {label}
+                            {/* 이미지가 있으면 이미지와 함께 텍스트 표시, 없으면 텍스트만 */}
+                            {imageUrl ? (
+                              <>
+                                <img
+                                  src={imageUrl}
+                                  alt={label}
+                                  className="w-4 h-4 rounded border border-gray-300"
+                                />
+                                <span>{label}</span>
+                              </>
+                            ) : (
+                              <span>{label}</span>
+                            )}
                           </label>
                         </li>
                       )

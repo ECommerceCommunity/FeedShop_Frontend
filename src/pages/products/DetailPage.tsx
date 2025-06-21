@@ -12,6 +12,8 @@ import { Fragment, useEffect, useState } from 'react'
 import products from './data/products.json'
 import discounts from './data/discounts.json'
 import { useParams, useNavigate } from 'react-router-dom'
+import brands from './data/brands.json'
+import colors from './data/musinsa_colors.json'
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
@@ -25,6 +27,7 @@ export default function ProductDetailPage() {
 
   const productData = products.find((p) => String(p.id) === id)
   const discountData = discounts.find((d) => String(d.product_id) === id)
+  const brandData = brands.find((b) => String(b.store_id) === String(productData?.store_id))
 
   console.log('Product Data:', productData)
   console.log('Discount Data:', discountData)
@@ -207,6 +210,16 @@ export default function ProductDetailPage() {
           <div className="hidden lg:block h-full w-px bg-gray-300" />
 
           <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0 lg:col-span-1 p-5">
+            {brandData && (
+              <div className="mb-2 flex items-center space-x-2">
+                <img
+                  src={brandData.brand_logo_url?.startsWith('//') ? `https:${brandData.brand_logo_url}` : brandData.brand_logo_url}
+                  alt={`${brandData.store_name} 로고`}
+                  className="w-6 h-6 object-contain bg-black rounded-full"
+                />
+                <span className="text-sm font-medium text-gray-700">{brandData.store_name}</span>
+              </div>
+            )}
             <h1 className="text-xl font-semibold tracking-tight text-gray-900">
               {product.name}
             </h1>
@@ -244,6 +257,28 @@ export default function ProductDetailPage() {
               </div>
               <p className="sr-only">{product.rating} out of 5 stars</p>
             </div>
+
+            {productData.color_info?.other_color_products?.length > 0 && (
+              <div className="mt-6">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">다른 색상 상품</h4>
+                <div className="flex flex-wrap gap-2">
+                  {productData.color_info.other_color_products.map((item: any, idx: number) => (
+                    <a
+                      key={idx}
+                      href={`/products/${item.product_id}`}
+                      className="block w-16 h-16 border rounded overflow-hidden hover:ring-2 hover:ring-indigo-500 transition"
+                      title={`상품 ID: ${item.product_id}`}
+                    >
+                      <img
+                        src={item.thumbnail_url.startsWith('//') ? `https:${item.thumbnail_url}` : item.thumbnail_url}
+                        alt={`다른 색상 ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <form className="mt-6">
               <div className="mt-10 flex items-center">
