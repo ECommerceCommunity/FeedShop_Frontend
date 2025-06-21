@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { ChevronDownIcon, PlusIcon, HeartIcon as OutlineHeartIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as SolidHeartIcon } from '@heroicons/react/24/solid'
 import { Link } from 'react-router-dom'
@@ -9,6 +10,10 @@ import brands from './data/brands.json'
 import filtersRaw from './data/filters.json'
 import discounts from './data/discounts.json'
 import colors from './data/musinsa_colors.json'
+import BackToTop from 'components/rollback/BackToTop'
+import { isDiscountValid } from 'utils/discount';
+import { getDiscountPrice } from 'utils/price';
+import { useLocalLike } from 'hooks/useLocalLike'
 
 type Product = typeof productsData[number]
 type Brand = typeof brands[number]
@@ -23,7 +28,7 @@ export default function ProductPage() {
   const [openFilters, setOpenFilters] = useState<Record<string, boolean>>({})
   const [selectedFilters, setSelectedFilters] = useState<Record<string, Set<string>>>({})
   const [selectedBrandId, setSelectedBrandId] = useState<number>(1001)
-  const [likedBrands, setLikedBrands] = useState<Set<number>>(new Set())
+  const { toggleLike, hasLiked } = useLocalLike('likedBrands')
 
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 12
@@ -41,40 +46,9 @@ export default function ProductPage() {
     })
   }
 
-  const getDiscountPrice = (product: Product): number => {
-    const discount = discounts.find(d => d.product_id === product.id)
 
-    const originalPrice = Number(
-      typeof product.price === 'string'
-        ? product.price.replace(/[^\d]/g, '')
-        : product.price
-    )
-
-    const isDiscountValid =
-      discount &&
-      (discount.discount_type === '정률' || discount.discount_type === '정액') &&
-      typeof discount.discount_value === 'number' &&
-      !!discount.discount_start &&
-      !!discount.discount_end
-
-    if (!isDiscountValid) return originalPrice
-
-    return discount.discount_type === '정률'
-      ? Math.floor(originalPrice * (1 - discount.discount_value / 100))
-      : originalPrice - discount.discount_value
-  }
-
-  const toggleLike = (storeId: number) => {
-    setLikedBrands(prev => {
-      const updated = new Set(prev)
-      if (updated.has(storeId)) updated.delete(storeId)
-      else updated.add(storeId)
-      return updated
-    })
-  }
-
-  const getBrandLikes = (brand: Brand) => {
-    return brand.brand_likes + (likedBrands.has(brand.store_id) ? 1 : 0)
+  const toggleBrandLike = (storeId: number) => {
+    toggleLike(storeId)
   }
 
   const getStoreName = (storeId: number): string =>
@@ -262,19 +236,19 @@ export default function ProductPage() {
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <button
                           type="button"
-                          onClick={() => toggleLike(brand.store_id)}
-                          className={`flex items-center justify-center rounded-md px-2 py-1 transition-transform duration-200 ease-in-out ${likedBrands.has(brand.store_id)
-                            ? 'scale-110 text-red-500'
-                            : 'text-gray-400 hover:text-red-400 hover:scale-105'
-                            }`}
+                          onClick={() => toggleBrandLike(brand.store_id)}
+                          className={`flex items-center justify-center rounded-md px-2 py-1 transition-transform duration-200 ease-in-out 
+    ${hasLiked(brand.store_id)
+                              ? 'scale-110 text-red-500'
+                              : 'text-gray-400 hover:text-red-400 hover:scale-105'}`}
                         >
-                          {likedBrands.has(brand.store_id) ? (
+                          {hasLiked(brand.store_id) ? (
                             <SolidHeartIcon className="w-5 h-5 shrink-0" aria-hidden="true" />
                           ) : (
                             <OutlineHeartIcon className="w-5 h-5 shrink-0" aria-hidden="true" />
                           )}
                           <span className="ml-1 text-sm text-gray-700">
-                            {getBrandLikes(brand).toLocaleString()}
+                            {(brand.brand_likes + (hasLiked(brand.store_id) ? 1 : 0)).toLocaleString()}
                           </span>
                         </button>
                       </div>
@@ -368,15 +342,19 @@ export default function ProductPage() {
 
                         {/* 가격 표시 */}
                         {(() => {
-                          const discount = discounts.find(d => d.product_id === product.id)
-                          const discountPrice = getDiscountPrice(product)
-                          const originalPrice = Number(
-                            typeof product.price === 'string'
-                              ? product.price.replace(/[^\d]/g, '')
-                              : product.price
-                          )
+                          const discountRaw = discounts.find(d => d.product_id === product.id)
+                          // Convert discount_type to the correct type if needed
+                          const discount = discountRaw
+                            ? {
+                              ...discountRaw,
+                              discount_type: discountRaw.discount_type as '정률' | '정액'
+                            }
+                            : undefined
+                          const discountPrice = getDiscountPrice(product.price, discount)
+                          const originalPrice = Number(product.price || 0)
+                          const isValid = discount ? isDiscountValid(discount) : false
 
-                          const isDiscounted = discount && discountPrice < originalPrice
+                          const isDiscounted = isValid && discountPrice < originalPrice
 
                           if (isDiscounted) {
                             let discountLabel = ''
@@ -429,22 +407,74 @@ export default function ProductPage() {
 
             {/* 페이지네이션 */}
             {totalPages > 1 && (
-              <div className="flex justify-center mt-6 gap-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-6">
+                {/* 모바일 이전/다음 */}
+                <div className="flex flex-1 justify-between sm:hidden">
                   <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-1 rounded border ${currentPage === page ? 'bg-black text-white' : 'bg-white text-gray-700'
-                      }`}
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:text-gray-300 disabled:cursor-not-allowed"
                   >
-                    {page}
+                    Previous
                   </button>
-                ))}
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:text-gray-300 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+
+                {/* 데스크탑 페이지네이션 */}
+                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-center">
+                  <div>
+                    <nav
+                      className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                      aria-label="Pagination"
+                    >
+                      {/* 이전 버튼 */}
+                      <button
+                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="sr-only">Previous</span>
+                        <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+                      </button>
+
+                      {/* 페이지 번호들 */}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0
+            ${currentPage === page
+                              ? 'z-10 bg-indigo-600 text-white'
+                              : 'text-gray-900 hover:bg-gray-50'}`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+
+                      {/* 다음 버튼 */}
+                      <button
+                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="sr-only">Next</span>
+                        <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+                      </button>
+                    </nav>
+                  </div>
+                </div>
               </div>
             )}
           </section>
         </div>
       </main>
+      <BackToTop />
     </div>
   )
 }
