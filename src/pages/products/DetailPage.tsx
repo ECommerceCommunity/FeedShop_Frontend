@@ -11,7 +11,7 @@ import { HeartIcon as SolidHeartIcon } from '@heroicons/react/24/solid'
 import { Fragment, useEffect, useState } from 'react'
 import products from './data/products.json'
 import discounts from './data/discounts.json'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import brands from './data/brands.json'
 import colors from './data/musinsa_colors.json'
 
@@ -23,6 +23,10 @@ export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
   const thumbnailsPerPage = 6
   const [startIndex, setStartIndex] = useState(0)
+  const nav = useNavigate();
+
+  // 민찬
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
 
   const productData = products.find((p) => String(p.id) === id)
   const discountData = discounts.find((d) => String(d.product_id) === id)
@@ -66,8 +70,8 @@ export default function ProductDetailPage() {
   }
 
   const product = {
-    id: productData.id,
-    name: productData.name,
+    id: productData.id, // number
+    name: productData.name, // string
     price: originalPrice,
     rating: 4,
     likes: productData.product_likes ?? 0,
@@ -98,6 +102,35 @@ export default function ProductDetailPage() {
     if (startIndex + thumbnailsPerPage < product.images.length) {
       setStartIndex(startIndex + 1)
     }
+  }
+
+  const handleCart = () => {
+    // const cartList = Object.entries(quantities as Record<string, number>)
+    // .filter(([_, quantity]) => quantity > 0) // 수량이 0보다 큰 것만
+    // .map(([size, quantity]) => ({
+    //   ...productData,
+    //   size,
+    //   quantity,
+    // }));
+
+    // localStorage.setItem('product', JSON.stringify(cartList)) // 옵션 별 수량을 더해서 가지고 간다.
+    localStorage.setItem('product', JSON.stringify(productData))
+    localStorage.setItem('discounts', JSON.stringify(discounts)) // 카트는 여러 아이템이기 때문에 개별적으로 할인이 적용되게 하려면 discount 배열을 모두 가지고 가야 한다.
+    nav('/cart');
+  }
+
+  const handleOrder = () => {
+    // const orderList = Object.entries(quantities as Record<string, number>)
+    //   .filter(([_, quantity]) => quantity > 0) // 수량이 0보다 큰 것만
+    //   .map(([size, quantity]) => ({
+    //     ...productData,
+    //     size,
+    //     quantity,
+    //   }));
+  
+    // nav('/payment', { state: { products: orderList } });  // 옵션 별 수량을 더해서 가지고 간다.
+    const orderList = { ...productData, quantity: 1 };
+    nav('/payment', { state: { products: [orderList] } });
   }
 
   return (
@@ -271,10 +304,19 @@ export default function ProductDetailPage() {
             <form className="mt-6">
               <div className="mt-10 flex items-center">
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleOrder}
                   className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
                 >
-                  장바구니에 담기
+                  주문하기
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCart}
+                  className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
+                >
+                  장바구니
                 </button>
 
                 <button
