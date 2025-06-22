@@ -1,5 +1,7 @@
 'use client'
 
+import { Fragment, useState, useMemo, useRef } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Tab } from '@headlessui/react'
 import { StarIcon } from '@heroicons/react/20/solid'
 import {
@@ -13,11 +15,10 @@ import {
   WalletIcon
 } from '@heroicons/react/24/outline'
 import { HeartIcon as SolidHeartIcon } from '@heroicons/react/24/solid'
-import { Fragment, useState, MouseEvent } from 'react'
-import products from './data/products.json'
-import discounts from './data/discounts.json'
-import { useParams, useNavigate } from 'react-router-dom'
-import brands from './data/brands.json'
+import reviews from '../data/reviews/reviews.json'
+import products from '../data/products/products.json'
+import discounts from '../data/products/discounts.json'
+import brands from '../data/products/brands.json'
 import SelectSize from 'pages/products/SelectSize'
 import Fail from '../../components/modal/Fail'
 import BackToTop from 'components/rollback/BackToTop'
@@ -42,13 +43,14 @@ export default function ProductDetailPage() {
   const [startIndex, setStartIndex] = useState(0)
   const [showFailModal, setShowFailModal] = useState(false);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [showEmptySelectionModal, setShowEmptySelectionModal] = useState(false);
 
   const productData = products.find((p) => String(p.id) === id)
-  const discountData = discounts.find((d) => d.product_id === Number(id));
   const brandData = brands.find((b) => String(b.store_id) === String(productData?.store_id))
 
-  console.log('Product Data:', productData)
-  console.log('Discount Data:', discountData)
+  const productReviews = useMemo(() => {
+    return reviews.filter((r) => r.product_id === productData?.id);
+  }, [productData?.id]);
 
   const originalPrice = Number(typeof productData?.price === 'number'
     ? productData.price
@@ -84,24 +86,24 @@ export default function ProductDetailPage() {
 
   const maxQuantity = 5;
 
-const handleQuantityChange = (size: string, delta: number) => {
-  setSelectedItems((prev) =>
-    prev.map((item) => {
-      if (item.size === size) {
-        const newQuantity = item.quantity + delta;
-        if (newQuantity > maxQuantity) {
-          setShowFailModal(true);
-          return item;
+  const handleQuantityChange = (size: string, delta: number) => {
+    setSelectedItems((prev) =>
+      prev.map((item) => {
+        if (item.size === size) {
+          const newQuantity = item.quantity + delta;
+          if (newQuantity > maxQuantity) {
+            setShowFailModal(true);
+            return item;
+          }
+          return {
+            ...item,
+            quantity: Math.max(1, Math.min(newQuantity, item.stock)),
+          };
         }
-        return {
-          ...item,
-          quantity: Math.max(1, Math.min(newQuantity, item.stock)),
-        };
-      }
-      return item;
-    })
-  );
-};
+        return item;
+      })
+    );
+  };
 
   const localStorageKey = productData ? `liked_product_${productData.id}` : '';
   const { likes, toggleLike, hasLiked } = useLocalLike(
@@ -110,9 +112,29 @@ const handleQuantityChange = (size: string, delta: number) => {
   const liked = productData ? hasLiked(productData.id) : false;
   const likesCount = likes.size;
 
+  // 후기 영역에 대한 ref 생성 (must be unconditional)
+  const reviewRef = useRef<HTMLDivElement>(null);
+  const descriptionRef = useRef<HTMLDivElement>(null);
+  const detailImageRef = useRef<HTMLDivElement>(null);
+
   if (!productData) {
     return <div className="p-10 text-red-600">해당 상품을 찾을 수 없습니다.</div>
   }
+
+  // 스크롤을 후기 영역으로 이동하는 함수
+  const handleScrollToReview = () => {
+    if (reviewRef.current) {
+      reviewRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const scrollToDescription = () => {
+    descriptionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const scrollToDetailImage = () => {
+    detailImageRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const product = {
     id: productData.id, // number
@@ -156,6 +178,11 @@ const handleQuantityChange = (size: string, delta: number) => {
   }
 
   const handleCart = () => {
+    if (selectedItems.length === 0) {
+      setShowEmptySelectionModal(true);
+      return;
+    }
+
     const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
 
     const newItems = selectedItems.map(item => ({
@@ -168,16 +195,21 @@ const handleQuantityChange = (size: string, delta: number) => {
         ? Math.round(((product.price - discountPrice) / product.price) * 100)
         : 0,
       quantity: item.quantity,
-      image: product.images[0]?.src || '',
+      image: product.images?.[0]?.src || ''
     }));
 
     const updatedCart = [...currentCart, ...newItems];
     localStorage.setItem('cart', JSON.stringify(updatedCart));
 
-    navigate('/cart'); // 페이지 이동
-  }
+    navigate('/cart');
+  };
 
   const handleOrder = () => {
+    if (selectedItems.length === 0) {
+      setShowEmptySelectionModal(true);
+      return;
+    }
+
     const newItems = selectedItems.map(item => ({
       id: `${product.id}-${item.size}`,
       name: product.name,
@@ -191,17 +223,14 @@ const handleQuantityChange = (size: string, delta: number) => {
       image: product.images[0]?.src || '',
     }));
 
-    // 페이지 이동 시 state로 상품 정보 전달
     navigate('/orders', {
       state: {
         products: newItems,
       },
     });
-  }
+  };
 
-  function handleBuyNow(event: MouseEvent<HTMLButtonElement>): void {
-    throw new Error('Function not implemented.')
-  }
+
 
   return (
     <>
@@ -217,6 +246,13 @@ const handleQuantityChange = (size: string, delta: number) => {
           title="중복 선택"
           message="이미 선택한 사이즈입니다."
           onClose={() => setShowDuplicateModal(false)}
+        />
+      )}
+      {showEmptySelectionModal && (
+        <Fail
+          title="옵션 선택 필요"
+          message="사이즈를 선택해주세요."
+          onClose={() => setShowEmptySelectionModal(false)}
         />
       )}
       <div className="bg-white mx-auto">
@@ -279,34 +315,112 @@ const handleQuantityChange = (size: string, delta: number) => {
                   </Tab.Panels>
                 </div>
 
-                <div className="mt-6 px-4 bg-gray-50 border border-gray-200 rounded-md pb-6">
-                  {(product.description && product.description.trim() !== '' && product.description.trim() !== 'N/A') && (
-                    <div className="mt-6 px-4 mx-auto bg-white border border-gray-300 rounded-md p-5 shadow-sm">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">상세 설명</h3>
-                      <div
-                        className="text-base text-gray-700 space-y-4"
-                        dangerouslySetInnerHTML={{ __html: product.description }}
-                      />
-                    </div>
-                  )}
+                <div className="mt-6 border border-gray-200 rounded-md overflow-hidden">
+                  <div className="flex bg-gray-100 text-gray-500 text-sm font-medium border-b border-gray-200">
+                    <button className="flex-1 py-3 text-black font-semibold border-r border-gray-300" onClick={scrollToDescription}>
+                      상세 정보
+                    </button>
+                    <button className="flex-1 py-3 text-black font-semibold border-r border-gray-300" onClick={scrollToDetailImage}>
+                      자세한 이미지
+                    </button>
+                    <button className="flex-1 py-3 text-black font-semibold" onClick={handleScrollToReview}>
+                      스냅·후기 <span className="ml-1 text-indigo-600">{productReviews.length}</span>
+                    </button>
+                  </div>
+                  <div className="p-4 bg-gray-500">
+                    {(product.description && product.description.trim() !== '' && product.description.trim() !== 'N/A') && (
+                      <div ref={descriptionRef} className="px-4 mx-auto bg-white border border-gray-300 rounded-md p-5 shadow-sm">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">상세 설명</h3>
 
-                  <div className="mt-6 px-4 mx-auto bg-white border border-gray-300 rounded-md p-5 shadow-sm">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">자세한 이미지</h3>
-                    <div className="grid gap-0 sm:grid-cols-2">
-                      {(Array.isArray(product.detail_image_urls) ? product.detail_image_urls : []).map((url: string, idx: number) => {
-                        const isLeft = idx % 2 === 0
-                        const roundedClass = isLeft
-                          ? 'rounded-tl-md rounded-bl-md'
-                          : 'rounded-tr-md rounded-br-md'
-                        return (
-                          <img
-                            key={idx}
-                            src={url}
-                            alt={`자세한 이미지 ${idx + 1}`}
-                            className={`w-full object-cover block ${roundedClass}`}
-                          />
-                        )
-                      })}
+                        {/* ✅ 가로 구분선 – 양쪽 여백 제거 (padding 상쇄) */}
+                        <div className="-mx-4 border-t border-gray-300 my-4" />
+
+                        <div
+                          className="text-base text-gray-700 space-y-4"
+                          dangerouslySetInnerHTML={{ __html: product.description }}
+                        />
+                      </div>
+                    )}
+
+                    {Array.isArray(product.detail_image_urls) && product.detail_image_urls.length > 0 && (
+                      <div ref={detailImageRef} className="mt-6 px-4 mx-auto bg-white border border-gray-300 rounded-md p-5 shadow-sm">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">자세한 이미지</h3>
+
+                        {/* ✅ 가로선: 좌우 여백 제거 (-mx-5), 박스와 붙게 */}
+                        <div className="-mx-4 border-t border-gray-300 my-4" />
+
+                        <div className="grid gap-0 sm:grid-cols-2">
+                          {product.detail_image_urls.map((url: string, idx: number) => {
+                            const isLeft = idx % 2 === 0;
+                            const roundedClass = isLeft
+                              ? 'rounded-tl-md rounded-bl-md'
+                              : 'rounded-tr-md rounded-br-md';
+                            return (
+                              <img
+                                key={idx}
+                                src={url}
+                                alt={`자세한 이미지 ${idx + 1}`}
+                                className={`w-full object-cover block ${roundedClass}`}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    <div ref={reviewRef}>
+                      {productReviews.length > 0 && (
+                        <div className="mt-6 px-4 mx-auto bg-white border border-gray-300 rounded-md p-5 shadow-sm">
+                          <h2 className="text-lg font-semibold text-gray-900 mb-4">리뷰</h2>
+
+                          {/* ✅ 제목 아래 가로선, 좌우 여백 제거 */}
+                          <div className="-mx-4 border-t border-gray-300 my-4" />
+
+                          <ul className="space-y-6 -mx-4">
+                            {productReviews.map((review) => (
+                              <li
+                                key={review.id}
+                                className="border-b last:border-b-0 pb-4 px-5"
+                              >
+                                <div className="flex items-center space-x-3">
+                                  <img
+                                    src={review.userImage}
+                                    alt={`${review.userName} 프로필`}
+                                    className="w-10 h-10 rounded-full object-cover"
+                                  />
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-900">{review.userName}</p>
+                                    <p className="text-xs text-gray-500">{review.date}</p>
+                                  </div>
+                                </div>
+                                <div className="mt-2">
+                                  <div className="flex items-center">
+                                    {[...Array(5)].map((_, idx) => (
+                                      <StarIcon
+                                        key={idx}
+                                        className={`w-4 h-4 ${idx < review.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                                      />
+                                    ))}
+                                  </div>
+                                  <p className="mt-2 text-gray-700 text-sm">{review.content}</p>
+                                  {review.images && review.images.length > 0 && (
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                      {review.images.map((img, idx) => (
+                                        <img
+                                          key={idx}
+                                          src={img}
+                                          alt={`리뷰 이미지 ${idx + 1}`}
+                                          className="w-24 h-24 object-cover rounded"
+                                        />
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -355,21 +469,29 @@ const handleQuantityChange = (size: string, delta: number) => {
             </div>
 
             <div className="mt-3">
-              <div className="flex items-center">
-                {[0, 1, 2, 3, 4].map((rating) => (
-                  <StarIcon
-                    key={rating}
-                    aria-hidden="true"
-                    className={classNames(
-                      product.rating > rating
-                        ? 'text-indigo-500'
-                        : 'text-gray-300',
-                      'size-5 shrink-0'
-                    )}
-                  />
-                ))}
+              <div className="flex items-center gap-2">
+                {/* 별점 아이콘 */}
+                <div className="flex items-center">
+                  {[0, 1, 2, 3, 4].map((rating) => (
+                    <StarIcon
+                      key={rating}
+                      aria-hidden="true"
+                      className={classNames(
+                        product.rating > rating ? 'text-indigo-500' : 'text-gray-300',
+                        'size-5 shrink-0'
+                      )}
+                    />
+                  ))}
+                </div>
+
+                {/* 후기 개수 클릭 시 스크롤 이동 */}
+                <span
+                  className="text-sm text-gray-600 cursor-pointer hover:underline"
+                  onClick={handleScrollToReview}
+                >
+                  후기 {productReviews.length}개
+                </span>
               </div>
-              <p className="sr-only">{product.rating} out of 5 stars</p>
             </div>
 
             {productData.color_info?.other_color_products?.length > 0 && (
@@ -495,7 +617,7 @@ const handleQuantityChange = (size: string, delta: number) => {
                     </div>
 
                     <span className="ml-4 text-sm text-gray-400 whitespace-nowrap">
-                      최대 {item.stock}개
+                      최대 {maxQuantity}개
                     </span>
                   </div>
                 </div>
@@ -532,15 +654,6 @@ const handleQuantityChange = (size: string, delta: number) => {
 
             <form className="mt-6">
               <div className="mt-10 flex items-center gap-4">
-                {/* 장바구니 담기 */}
-                <button
-                  type="button"
-                  onClick={handleOrder}
-                  className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
-                >
-                  주문하기
-                </button>
-
                 <button
                   type="button"
                   onClick={handleCart}
@@ -553,7 +666,7 @@ const handleQuantityChange = (size: string, delta: number) => {
                 {/* 구매하기 버튼 */}
                 <button
                   type="button"
-                  onClick={handleBuyNow} // 여기에 실제 구매 로직 연결
+                  onClick={handleOrder}
                   className="flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 >
                   <WalletIcon className="w-5 h-5 mr-2" aria-hidden="true" />

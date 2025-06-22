@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import reviews from "../pages/data/reviews/reviews.json";
 
 // 스타일 컴포넌트
 const PageContainer = styled.div`
@@ -143,28 +144,11 @@ const DeleteButton = styled(ActionButton)`
   }
 `;
 
+  
+
 const ReviewsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-
-  // 임시 리뷰 데이터
-  const reviews = [
-    {
-      id: 1,
-      userName: "김지연",
-      userImage:
-        "https://readdy.ai/api/search-image?query=professional%20profile%20picture%20of%20a%20Korean%20woman%20with%20friendly%20expression%2C%20high%20quality%20portrait%20photo%2C%20professional%20lighting%2C%20soft%20background%2C%20casual%20attire&width=100&height=100&seq=2&orientation=squarish",
-      date: "2025-06-07",
-      content:
-        "친구들과 함께 방문했는데 분위기도 좋고 음식도 정말 맛있었어요. 특히 파스타가 일품이었습니다. 다음에 또 방문할 예정입니다.",
-      rating: 5,
-      images: [
-        "https://readdy.ai/api/search-image?query=delicious%20pasta%20dish%20on%20a%20restaurant%20table%2C%20high%20quality%20food%20photography%2C%20professional%20lighting%2C%20appetizing%20presentation%2C%20Italian%20cuisine&width=150&height=100&seq=3&orientation=landscape",
-        "https://readdy.ai/api/search-image?query=cozy%20restaurant%20interior%20with%20ambient%20lighting%2C%20modern%20design%2C%20comfortable%20seating%2C%20elegant%20table%20setting%2C%20warm%20atmosphere&width=150&height=100&seq=4&orientation=landscape",
-      ],
-    },
-    // ... 더 많은 리뷰 데이터
-  ];
 
   const handleDelete = (reviewId: number) => {
     // TODO: 리뷰 삭제 로직 구현
