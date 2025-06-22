@@ -13,7 +13,7 @@ import {
   WalletIcon
 } from '@heroicons/react/24/outline'
 import { HeartIcon as SolidHeartIcon } from '@heroicons/react/24/solid'
-import { Fragment, useState } from 'react'
+import { Fragment, useState, MouseEvent } from 'react'
 import products from './data/products.json'
 import discounts from './data/discounts.json'
 import { useParams, useNavigate } from 'react-router-dom'
@@ -82,6 +82,27 @@ export default function ProductDetailPage() {
     setSelectedItems((prev) => prev.filter((item) => item.size !== size));
   };
 
+  const maxQuantity = 5;
+
+const handleQuantityChange = (size: string, delta: number) => {
+  setSelectedItems((prev) =>
+    prev.map((item) => {
+      if (item.size === size) {
+        const newQuantity = item.quantity + delta;
+        if (newQuantity > maxQuantity) {
+          setShowFailModal(true);
+          return item;
+        }
+        return {
+          ...item,
+          quantity: Math.max(1, Math.min(newQuantity, item.stock)),
+        };
+      }
+      return item;
+    })
+  );
+};
+
   const localStorageKey = productData ? `liked_product_${productData.id}` : '';
   const { likes, toggleLike, hasLiked } = useLocalLike(
     localStorageKey
@@ -94,8 +115,8 @@ export default function ProductDetailPage() {
   }
 
   const product = {
-    id: productData.id,
-    name: productData.name,
+    id: productData.id, // number
+    name: productData.name, // string
     price: originalPrice,
     rating: 4,
     likes: productData.product_likes ?? 0,
@@ -111,16 +132,6 @@ export default function ProductDetailPage() {
     detail_image_urls: productData.detail_image_urls || [],
   }
 
-  const handleUp = () => {
-    if (startIndex > 0) setStartIndex(startIndex - 1)
-  }
-
-  const handleDown = () => {
-    if (startIndex + thumbnailsPerPage < product.images.length) {
-      setStartIndex(startIndex + 1)
-    }
-  }
-
   const handlePrev = () => {
     if (colorStartIndex > 0) setColorStartIndex(colorStartIndex - itemsPerSlide)
   }
@@ -134,28 +145,17 @@ export default function ProductDetailPage() {
     }
   }
 
-  const maxQuantity = 5;
+  const handleUp = () => {
+    if (startIndex > 0) setStartIndex(startIndex - 1)
+  }
 
-  const handleQuantityChange = (size: string, delta: number) => {
-    setSelectedItems((prev) =>
-      prev.map((item) => {
-        if (item.size === size) {
-          const newQuantity = item.quantity + delta;
-          if (newQuantity > maxQuantity) {
-            setShowFailModal(true);
-            return item;
-          }
-          return {
-            ...item,
-            quantity: Math.max(1, Math.min(newQuantity, item.stock)),
-          };
-        }
-        return item;
-      })
-    );
-  };
+  const handleDown = () => {
+    if (startIndex + thumbnailsPerPage < product.images.length) {
+      setStartIndex(startIndex + 1)
+    }
+  }
 
-  const handleAddToCart = () => {
+  const handleCart = () => {
     const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
 
     const newItems = selectedItems.map(item => ({
@@ -175,9 +175,9 @@ export default function ProductDetailPage() {
     localStorage.setItem('cart', JSON.stringify(updatedCart));
 
     navigate('/cart'); // 페이지 이동
-  };
+  }
 
-  const handleBuyNow = () => {
+  const handleOrder = () => {
     const newItems = selectedItems.map(item => ({
       id: `${product.id}-${item.size}`,
       name: product.name,
@@ -197,7 +197,11 @@ export default function ProductDetailPage() {
         products: newItems,
       },
     });
-  };
+  }
+
+  function handleBuyNow(event: MouseEvent<HTMLButtonElement>): void {
+    throw new Error('Function not implemented.')
+  }
 
   return (
     <>
@@ -491,7 +495,7 @@ export default function ProductDetailPage() {
                     </div>
 
                     <span className="ml-4 text-sm text-gray-400 whitespace-nowrap">
-                      최대 {maxQuantity}개
+                      최대 {item.stock}개
                     </span>
                   </div>
                 </div>
@@ -530,9 +534,17 @@ export default function ProductDetailPage() {
               <div className="mt-10 flex items-center gap-4">
                 {/* 장바구니 담기 */}
                 <button
-                  type="submit"
-                  onClick={handleAddToCart}
-                  className="flex flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  type="button"
+                  onClick={handleOrder}
+                  className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
+                >
+                  주문하기
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCart}
+                  className="flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 >
                   <ShoppingBagIcon className="w-5 h-5 mr-2" aria-hidden="true" />
                   장바구니
