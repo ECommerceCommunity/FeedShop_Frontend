@@ -42,8 +42,6 @@ export default function SelectBox({ options, onChange }: SelectBoxProps) {
             setSelected(placeholder)
         }, 3000)
     }
-    console.log('Selected size:', selected)
-    console.log('Available options:', fullOptions)
 
     return (
         <Listbox value={selected} onChange={handleChange}>

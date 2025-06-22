@@ -2,6 +2,7 @@
 
 import { Fragment, useState, useMemo, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import ReactMarkdown from 'react-markdown'
 import { Tab } from '@headlessui/react'
 import { StarIcon } from '@heroicons/react/20/solid'
 import {
@@ -21,6 +22,7 @@ import discounts from '../data/products/discounts.json'
 import brands from '../data/products/brands.json'
 import SelectSize from 'pages/products/SelectSize'
 import Fail from '../../components/modal/Fail'
+import Warning from '../../components/modal/Warning'
 import BackToTop from 'components/rollback/BackToTop'
 import { isDiscountValid } from 'utils/discount';
 import { getDiscountPrice } from 'utils/price'
@@ -42,8 +44,10 @@ export default function ProductDetailPage() {
   const thumbnailsPerPage = 6
   const [startIndex, setStartIndex] = useState(0)
   const [showFailModal, setShowFailModal] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [showEmptySelectionModal, setShowEmptySelectionModal] = useState(false);
+  const [proceedToCart, setProceedToCart] = useState(false);
 
   const productData = products.find((p) => String(p.id) === id)
   const brandData = brands.find((b) => String(b.store_id) === String(productData?.store_id))
@@ -51,6 +55,12 @@ export default function ProductDetailPage() {
   const productReviews = useMemo(() => {
     return reviews.filter((r) => r.product_id === productData?.id);
   }, [productData?.id]);
+
+  const averageRating = useMemo(() => {
+    if (productReviews.length === 0) return 0;
+    const total = productReviews.reduce((sum, review) => sum + review.rating, 0);
+    return total / productReviews.length;
+  }, [productReviews]);
 
   const originalPrice = Number(typeof productData?.price === 'number'
     ? productData.price
@@ -60,7 +70,7 @@ export default function ProductDetailPage() {
   const discountDataTyped = discountDataRaw
     ? {
       ...discountDataRaw,
-      discount_type: discountDataRaw.discount_type as '정률' | '정액', // or as DiscountType if imported
+      discount_type: discountDataRaw.discount_type as '정률' | '정액',
     }
     : undefined;
   const safeDiscount = isDiscountValid(discountDataTyped)
@@ -183,8 +193,13 @@ export default function ProductDetailPage() {
       return;
     }
 
-    const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
+    if (!proceedToCart) {
+      setShowWarningModal(true);
+      return;
+    }
 
+    // 실제 장바구니 추가 로직
+    const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
     const newItems = selectedItems.map(item => ({
       id: `${product.id}-${item.size}`,
       name: product.name,
@@ -230,8 +245,6 @@ export default function ProductDetailPage() {
     });
   };
 
-
-
   return (
     <>
       {showFailModal && (
@@ -253,6 +266,23 @@ export default function ProductDetailPage() {
           title="옵션 선택 필요"
           message="사이즈를 선택해주세요."
           onClose={() => setShowEmptySelectionModal(false)}
+        />
+      )}
+      {showWarningModal && (
+        <Warning
+          title="재고 부족"
+          message="선택한 상품 중 재고가 부족한 항목이 있습니다. 그래도 장바구니에 추가하시겠습니까?"
+          onClose={() => {
+            setShowWarningModal(false);
+            setProceedToCart(false);
+          }}
+          onConfirm={() => {
+            setShowWarningModal(false);
+            setProceedToCart(true);
+            handleCart(); // 다시 호출해서 실제로 장바구니에 추가
+          }}
+          confirmText="네, 추가할게요"
+          cancelText="아니요"
         />
       )}
       <div className="bg-white mx-auto">
@@ -317,28 +347,40 @@ export default function ProductDetailPage() {
 
                 <div className="mt-6 border border-gray-200 rounded-md overflow-hidden">
                   <div className="flex bg-gray-100 text-gray-500 text-sm font-medium border-b border-gray-200">
-                    <button className="flex-1 py-3 text-black font-semibold border-r border-gray-300" onClick={scrollToDescription}>
-                      상세 정보
-                    </button>
-                    <button className="flex-1 py-3 text-black font-semibold border-r border-gray-300" onClick={scrollToDetailImage}>
-                      자세한 이미지
-                    </button>
-                    <button className="flex-1 py-3 text-black font-semibold" onClick={handleScrollToReview}>
-                      스냅·후기 <span className="ml-1 text-indigo-600">{productReviews.length}</span>
-                    </button>
+                    {product.description && product.description.trim() !== '' && product.description.trim() !== 'N/A' && (
+                      <button
+                        className="flex-1 py-3 text-black font-semibold border-r border-gray-300"
+                        onClick={scrollToDescription}
+                      >
+                        상세 정보
+                      </button>
+                    )}
+                    {Array.isArray(product.detail_image_urls) && product.detail_image_urls.length > 0 && (
+                      <button
+                        className="flex-1 py-3 text-black font-semibold border-r border-gray-300"
+                        onClick={scrollToDetailImage}
+                      >
+                        자세한 이미지
+                      </button>
+                    )}
+                    {productReviews.length > 0 && (
+                      <button
+                        className="flex-1 py-3 text-black font-semibold"
+                        onClick={handleScrollToReview}
+                      >
+                        스냅·후기 <span className="ml-1 text-indigo-600">{productReviews.length}</span>
+                      </button>
+                    )}
                   </div>
                   <div className="p-4 bg-gray-500">
                     {(product.description && product.description.trim() !== '' && product.description.trim() !== 'N/A') && (
                       <div ref={descriptionRef} className="px-4 mx-auto bg-white border border-gray-300 rounded-md p-5 shadow-sm">
                         <h3 className="text-lg font-semibold text-gray-900 mb-3">상세 설명</h3>
-
-                        {/* ✅ 가로 구분선 – 양쪽 여백 제거 (padding 상쇄) */}
                         <div className="-mx-4 border-t border-gray-300 my-4" />
 
-                        <div
-                          className="text-base text-gray-700 space-y-4"
-                          dangerouslySetInnerHTML={{ __html: product.description }}
-                        />
+                        <div className="text-base text-gray-700 space-y-4 prose prose-sm">
+                          <ReactMarkdown>{product.description}</ReactMarkdown>
+                        </div>
                       </div>
                     )}
 
@@ -431,21 +473,56 @@ export default function ProductDetailPage() {
           <div className="hidden lg:block h-full w-px bg-gray-300" />
 
           <div className="mt-10 sm:mt-16 sm:px-0 lg:mt-0 lg:col-span-1 p-5">
-            <button
-              onClick={() => navigate(-1)}
-              className="mb-4 flex items-center text-gray-600 hover:text-indigo-600"
-            >
-              <ChevronLeftIcon className="w-5 h-5 mr-1" />
-              <span className="text-sm font-medium">뒤로가기</span>
-            </button>
+            <div className="mb-4 flex items-center justify-between">
+              {/* 뒤로가기 버튼 */}
+              <button
+                onClick={() => {
+                  navigate('/products', {
+                    state: {
+                      selectedStoreId: brandData?.store_id,
+                    },
+                  });
+                }}
+                className="flex items-center text-gray-600 hover:text-indigo-600"
+              >
+                <ChevronLeftIcon className="w-5 h-5 mr-1" />
+                <span className="text-sm font-medium">뒤로가기</span>
+              </button>
+
+              {/* 상품 수정 버튼 */}
+              {productData && (
+                <button
+                  onClick={() => navigate(`/products/edit/${productData.id}`)}
+                  className="inline-block text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-gray-700"
+                >
+                  상품 수정
+                </button>
+              )}
+            </div>
             {brandData && (
-              <div className="mb-2 flex items-center space-x-2">
+              <div
+                className="mb-2 flex items-center space-x-2 cursor-pointer"
+                onClick={() =>
+                  navigate('/products', {
+                    state: {
+                      selectedStoreId: brandData.store_id,
+                    },
+                  })
+                }
+                title={`${brandData.store_name} 상품 목록으로 이동`}
+              >
                 <img
-                  src={brandData.brand_logo_url?.startsWith('//') ? `https:${brandData.brand_logo_url}` : brandData.brand_logo_url}
+                  src={
+                    brandData.brand_logo_url?.startsWith('//')
+                      ? `https:${brandData.brand_logo_url}`
+                      : brandData.brand_logo_url
+                  }
                   alt={`${brandData.store_name} 로고`}
                   className="w-6 h-6 object-contain bg-black rounded-full"
                 />
-                <span className="text-sm font-medium text-gray-700">{brandData.store_name}</span>
+                <span className="text-sm font-medium text-gray-700 underline hover:text-indigo-600">
+                  {brandData.store_name}
+                </span>
               </div>
             )}
             <h1 className="text-xl font-semibold tracking-tight text-gray-900">
@@ -472,16 +549,23 @@ export default function ProductDetailPage() {
               <div className="flex items-center gap-2">
                 {/* 별점 아이콘 */}
                 <div className="flex items-center">
-                  {[0, 1, 2, 3, 4].map((rating) => (
-                    <StarIcon
-                      key={rating}
-                      aria-hidden="true"
-                      className={classNames(
-                        product.rating > rating ? 'text-indigo-500' : 'text-gray-300',
-                        'size-5 shrink-0'
-                      )}
-                    />
-                  ))}
+                  {[0, 1, 2, 3, 4].map((i) => {
+                    const diff = averageRating - i;
+                    const isFull = diff >= 1;
+                    const isHalf = diff > 0 && diff < 1;
+
+                    return (
+                      <span key={i}>
+                        {isFull ? (
+                          <StarIcon className="w-5 h-5 text-indigo-500" />
+                        ) : isHalf ? (
+                          <StarIcon className="w-5 h-5 text-indigo-500" style={{ clipPath: 'inset(0 50% 0 0)' }} />
+                        ) : (
+                          <StarIcon className="w-5 h-5 text-gray-300" />
+                        )}
+                      </span>
+                    );
+                  })}
                 </div>
 
                 {/* 후기 개수 클릭 시 스크롤 이동 */}
@@ -653,7 +737,7 @@ export default function ProductDetailPage() {
             </div>
 
             <form className="mt-6">
-              <div className="mt-10 flex items-center gap-4">
+              <div className="mt-10 flex items-center gap-4 overflow-hidden">
                 <button
                   type="button"
                   onClick={handleCart}

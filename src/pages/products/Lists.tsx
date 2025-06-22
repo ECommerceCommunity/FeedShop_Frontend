@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { ChevronDownIcon, PlusIcon, HeartIcon as OutlineHeartIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as SolidHeartIcon } from '@heroicons/react/24/solid'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import productsData from '../data/products/products.json'
 import brands from '../data/products/brands.json'
 import filtersRaw from '../data/products/filters.json'
@@ -24,6 +24,8 @@ type Filter = {
 }
 
 export default function ProductPage() {
+  const location = useLocation()
+  const selectedStoreId = location.state?.selectedStoreId
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const [openFilters, setOpenFilters] = useState<Record<string, boolean>>({})
   const [selectedFilters, setSelectedFilters] = useState<Record<string, Set<string>>>({})
@@ -32,6 +34,11 @@ export default function ProductPage() {
 
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 12
+  useEffect(() => {
+    if (selectedStoreId) {
+      setSelectedBrandId(Number(selectedStoreId))
+    }
+  }, [selectedStoreId])
 
   const toggleFilter = (id: string) => {
     setOpenFilters(prev => ({ ...prev, [id]: !prev[id] }))
@@ -45,7 +52,6 @@ export default function ProductPage() {
       return { ...prev, [filterId]: current }
     })
   }
-
 
   const toggleBrandLike = (storeId: number) => {
     toggleLike(storeId)
@@ -146,18 +152,36 @@ export default function ProductPage() {
       <main className="mx-auto pb-4 pl-4 pr-4">
         <div className="flex flex-col gap-4 my-6">
           {/* 브랜드 선택 버튼 */}
-          <div className="flex flex-wrap gap-2">
-            {brands.map((brand: Brand) => (
-              <button
-                key={brand.store_id}
-                onClick={() => setSelectedBrandId(brand.store_id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium ${selectedBrandId === brand.store_id ? 'bg-black text-white' : 'text-gray-700 border-gray-300'
-                  }`}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap gap-2">
+              {brands.map((brand: Brand) => (
+                <button
+                  key={brand.store_id}
+                  onClick={() => setSelectedBrandId(brand.store_id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium ${selectedBrandId === brand.store_id
+                    ? 'bg-black text-white'
+                    : 'text-gray-700 border-gray-300'
+                    }`}
+                >
+                  <img
+                    src={brand.brand_logo_url}
+                    alt={brand.store_name}
+                    className="w-5 h-5 bg-black p-1 rounded"
+                  />
+                  {brand.store_name}
+                </button>
+              ))}
+            </div>
+
+            {/* 🔧 수정 버튼: 관리자만 보이게 할 수도 있음 */}
+            <div className="flex gap-2 ml-auto">
+              <Link
+                to={`/product/upload`}
+                className="flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium text-gray-700 border-gray-300"
               >
-                <img src={brand.brand_logo_url} alt={brand.store_name} className="w-5 h-5 bg-black p-1 rounded" />
-                {brand.store_name}
-              </button>
-            ))}
+                상품 등록
+              </Link>
+            </div>
           </div>
 
           {/* 모바일 필터 토글 버튼 (브랜드 아래 위치) */}

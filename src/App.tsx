@@ -49,7 +49,7 @@ const App: FC = () => {
             <Route path="/signup" element={<SignUp />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/product/upload" element={<ProductUploadPage />} />
-            <Route path="/product/edit/:id" element={<ProductEditPage />} />
+            <Route path="/products/edit/:id" element={<ProductEditPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/reviews" element={<ReviewsPage />} />
