@@ -104,7 +104,7 @@ export default function ProductDetailPage() {
     }
   }
 
-  const handleCart = () => {
+  const handleCart = async () => {
     // const cartList = Object.entries(quantities as Record<string, number>)
     // .filter(([_, quantity]) => quantity > 0) // 수량이 0보다 큰 것만
     // .map(([size, quantity]) => ({
@@ -114,12 +114,12 @@ export default function ProductDetailPage() {
     // }));
 
     // localStorage.setItem('product', JSON.stringify(cartList)) // 옵션 별 수량을 더해서 가지고 간다.
-    localStorage.setItem('product', JSON.stringify(productData))
-    localStorage.setItem('discounts', JSON.stringify(discounts)) // 카트는 여러 아이템이기 때문에 개별적으로 할인이 적용되게 하려면 discount 배열을 모두 가지고 가야 한다.
+    await localStorage.setItem('product', JSON.stringify(productData))
+    await localStorage.setItem('discounts', JSON.stringify(discounts)) // 카트는 여러 아이템이기 때문에 개별적으로 할인이 적용되게 하려면 discount 배열을 모두 가지고 가야 한다.
     nav('/cart');
   }
 
-  const handleOrder = () => {
+  const handleOrder = async () => {
     // const orderList = Object.entries(quantities as Record<string, number>)
     //   .filter(([_, quantity]) => quantity > 0) // 수량이 0보다 큰 것만
     //   .map(([size, quantity]) => ({
@@ -130,6 +130,7 @@ export default function ProductDetailPage() {
   
     // nav('/payment', { state: { products: orderList } });  // 옵션 별 수량을 더해서 가지고 간다.
     const orderList = { ...productData, quantity: 1 };
+    await localStorage.setItem('discounts', JSON.stringify(discounts))
     nav('/payment', { state: { products: [orderList] } });
   }
 

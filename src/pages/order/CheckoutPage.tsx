@@ -104,12 +104,16 @@ const CheckoutPage: React.FC = () => {
     products,
     totalPrice,
     shipping,
+    usedPoints,
+    earnedPoints,
     selectedMethod,
     shippingInfo
   }: {
     products?: IProduct[];
     totalPrice?: number;
     shipping?: number;
+    usedPoints?: number;
+    earnedPoints: number,
     selectedMethod?: string;
     shippingInfo?: IShippingInfo;
   } = location.state || {};
@@ -162,10 +166,20 @@ const CheckoutPage: React.FC = () => {
             <span>{shipping === 0 ? "무료" : `${shipping?.toLocaleString()}원`}</span>
           </TotalRow>
           <TotalRow>
+            <span>사용한 포인트</span>
+            <span>-{(usedPoints ?? 0).toLocaleString()}원</span>
+          </TotalRow>
+          <TotalRow>
             <span>총 결제 금액</span>
             <span>{totalPrice?.toLocaleString()}원</span>
           </TotalRow>
           <TotalAmount>{totalPrice?.toLocaleString()}원 결제 완료</TotalAmount>
+          <TotalRow style={{marginTop: 12}}>
+            <span style={{ fontSize: 14, color: "#6b7280" }}>적립 예정 포인트</span>
+            <span style={{ fontSize: 14, fontWeight: 600 }}>
+              {earnedPoints?.toLocaleString() ?? 0}P
+            </span>
+          </TotalRow>
         </TotalSummary>
       </Card>
 
