@@ -11,7 +11,6 @@ const SidebarContainer = styled.aside`
   background-color: var(--background-color);
   box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
   padding: 20px 0;
-  z-index: 900;
 `;
 
 const MenuSection = styled.div`

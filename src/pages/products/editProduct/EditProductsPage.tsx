@@ -1,9 +1,15 @@
 import { useState, useEffect, FC, ChangeEvent, FormEvent } from "react";
+import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useParams, useNavigate } from "react-router-dom";
 import BackToTop from 'components/rollback/BackToTop'
-import products from '../data/products/products.json';
+import products from '../../data/products/products.json';
 
-const ProductEditPage: FC = () => {
+interface EditProductModalProps {
+  onClose?: () => void;
+  product?: any;
+}
+
+const ProductEditPage: FC<EditProductModalProps> = ({ onClose, product }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -20,22 +26,21 @@ const ProductEditPage: FC = () => {
   });
 
   useEffect(() => {
-    const product = products.find((p) => String(p.id) === id);
-
-    if (product) {
+    const selected = product ?? products.find((p) => String(p.id) === id);
+    if (selected) {
       setFormData({
-        title: product.name || '',
-        price: String(product.price || ''),
-        description: product.description || '',
-        shoes_type: product.shoes_type || '',
-        existingImages: Array.isArray(product.main_image_urls) ? product.main_image_urls : [],
-        sizes: product.size_stock_list || [],
-        detailImages: Array.isArray(product.detail_image_urls) ? product.detail_image_urls : [],
+        title: selected.name || '',
+        price: String(selected.price || ''),
+        description: selected.description || '',
+        shoes_type: selected.shoes_type || '',
+        existingImages: Array.isArray(selected.main_image_urls) ? selected.main_image_urls : [],
+        sizes: selected.size_stock_list || [],
+        detailImages: Array.isArray(selected.detail_image_urls) ? selected.detail_image_urls : [],
         mainImageFiles: [],
         detailImageFiles: [],
       });
     }
-  }, [id]);
+  }, [id, product]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -46,15 +51,27 @@ const ProductEditPage: FC = () => {
       [name]: value,
     }));
   };
-
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    onClose?.();
     navigate(`/products/${id}`);
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-8 text-gray-800">상품 수정</h1>
+    <div className="max-w-3xl mx-auto p-8 relative">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-2xl font-bold text-gray-800">상품 수정</h1>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-red-500 text-2xl"
+            aria-label="닫기"
+            title="닫기"
+          >
+            <XMarkIcon className="w-6 h-6" />
+          </button>
+        )}
+      </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         {/* 상품명 */}
         <div className="flex flex-col gap-2">

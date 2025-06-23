@@ -24,6 +24,7 @@ import SelectSize from 'pages/products/SelectSize'
 import Fail from '../../components/modal/Fail'
 import Warning from '../../components/modal/Warning'
 import BackToTop from 'components/rollback/BackToTop'
+import EditProductsModal from './editProduct/EditProductsModal'
 import { isDiscountValid } from 'utils/discount';
 import { getDiscountPrice } from 'utils/price'
 import { useLocalLike } from 'hooks/useLocalLike'
@@ -47,6 +48,7 @@ export default function ProductDetailPage() {
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [showEmptySelectionModal, setShowEmptySelectionModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [proceedToCart, setProceedToCart] = useState(false);
 
   const productData = products.find((p) => String(p.id) === id)
@@ -285,6 +287,12 @@ export default function ProductDetailPage() {
           cancelText="아니요"
         />
       )}
+      {showEditModal && (
+        <EditProductsModal
+          product={productData}
+          onClose={() => setShowEditModal(false)}
+        />
+      )}
       <div className="bg-white mx-auto">
         <div className="lg:grid lg:grid-cols-[1.7fr_1px_1fr] lg:items-start gap-4">
           <div className="col-span-1 p-5">
@@ -492,7 +500,7 @@ export default function ProductDetailPage() {
               {/* 상품 수정 버튼 */}
               {productData && (
                 <button
-                  onClick={() => navigate(`/products/edit/${productData.id}`)}
+                  onClick={() => setShowEditModal(true)}
                   className="inline-block text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-gray-700"
                 >
                   상품 수정

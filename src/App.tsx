@@ -13,8 +13,8 @@ const MyPage = lazy(() => import("./pages/MyPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const SignUp = lazy(() => import("./pages/SignUp"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
-const ProductUploadPage = lazy(() => import("./pages/products/UploadPage"));
-const ProductEditPage = lazy(() => import("./pages/products/EditPage"));
+const ProductUploadPage = lazy(() => import("./pages/products/registerProduct/RegisterProductPage"));
+const ProductEditPage = lazy(() => import("./pages/products/editProduct/EditProductsPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const ReviewsPage = lazy(() => import("./pages/ReviewsPage"));
@@ -26,7 +26,7 @@ const ReportManagePage = lazy(() => import("./pages/ReportManagePage"));
 const AdminDashboardPage = lazy(
   () => import("./pages/AdminDashboardPage")
 );
-const StoreHomePage = lazy(() => import("./pages/StoreHomePage"));
+const StoreHomePage = lazy(() => import("./pages/stores/StoreHomePage"));
 
 // cart & order
 const CartPage = lazy(() => import("./pages/cart/CartPage"));
@@ -48,7 +48,7 @@ const App: FC = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/product/upload" element={<ProductUploadPage />} />
+            <Route path="/product/upload" element={<ProductUploadPage onClose={() => {}} />} />
             <Route path="/products/edit/:id" element={<ProductEditPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/profile" element={<ProfilePage />} />
