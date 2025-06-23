@@ -19,13 +19,9 @@ const SearchPage = lazy(() => import("./pages/SearchPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const ReviewsPage = lazy(() => import("./pages/ReviewsPage"));
 const ChatRoomListPage = lazy(() => import("./pages/ChatRoomListPage"));
-const ChatRoomDetailPage = lazy(
-  () => import("./pages/ChatRoomDetailPage")
-);
+const ChatRoomDetailPage = lazy(() => import("./pages/ChatRoomDetailPage"));
 const ReportManagePage = lazy(() => import("./pages/ReportManagePage"));
-const AdminDashboardPage = lazy(
-  () => import("./pages/AdminDashboardPage")
-);
+const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage"));
 const StoreHomePage = lazy(() => import("./pages/stores/StoreHomePage"));
 
 // cart & order
@@ -37,36 +33,37 @@ const CheckoutPage = lazy(() => import("./pages/order/CheckoutPage"));
 const App: FC = () => {
   return (
     <ThemeProvider theme={theme}>
-      <Layout>
-        <ScrollToTop />
-        <Suspense fallback={<div>로딩중...</div>}>
-          <Routes>
+      <ScrollToTop />
+      <Suspense fallback={<div>로딩중...</div>}>
+        <Routes>
+          {/* Layout이 필요한 페이지들 */}
+          <Route element={<Layout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/products/:id" element={<ProductDetailPage />} />
             <Route path="/mypage/*" element={<MyPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignUp />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/product/upload" element={<ProductUploadPage onClose={() => {}} />} />
+            <Route path="/product/upload" element={<ProductUploadPage />} />
             <Route path="/products/edit/:id" element={<ProductEditPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/reviews" element={<ReviewsPage />} />
-            <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/chatrooms" element={<ChatRoomListPage />} />
             <Route path="/chatrooms/:id" element={<ChatRoomDetailPage />} />
             <Route path="/report-manage" element={<ReportManagePage />} />
             <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
             <Route path="/store-home" element={<StoreHomePage />} />
-
-            {/* cart & order */}
             <Route path="/cart" element={<CartPage />} />
             <Route path="/orders" element={<OrdersPage />} />
-            <Route path="/payment" element={<PaymentPage/>} />
-          </Routes>
-        </Suspense>
-      </Layout>
+            <Route path="/payment" element={<PaymentPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+          </Route>
+
+          {/* Layout 없이 보여야 하는 페이지들 */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUp />} />
+        </Routes>
+      </Suspense>
     </ThemeProvider>
   );
 };

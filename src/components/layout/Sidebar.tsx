@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import styled from "styled-components";
 import { Link, useLocation } from "react-router-dom";
 
@@ -60,11 +60,9 @@ const Overlay = styled.div`
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.2);
-  z-index: 899;
 `;
 
-const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
+const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
   const location = useLocation();
   if (!open) return null;
   return (

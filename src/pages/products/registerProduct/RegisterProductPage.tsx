@@ -2,8 +2,8 @@ import { useState, FC, ChangeEvent, FormEvent } from "react";
 import { XMarkIcon } from '@heroicons/react/24/outline'
 
 type ProductUploadPageProps = {
-  onClose: () => void
-}
+  onClose?: () => void;
+};
 
 const ProductUploadPage: FC<ProductUploadPageProps> = ({ onClose }) => {
   const [formData, setFormData] = useState({
@@ -101,7 +101,7 @@ const ProductUploadPage: FC<ProductUploadPageProps> = ({ onClose }) => {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onClose();
+    onClose?.();
   };
 
   return (
