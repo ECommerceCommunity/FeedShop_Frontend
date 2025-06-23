@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
+import { CartItem } from "types/types";
 
 const Container = styled.div`
   max-width: 1100px;
@@ -173,26 +174,15 @@ const ProductPreview = styled.div`
   color: #374151;
 `;
 
-interface IProduct {
-  id: number;
-  name: string;
-  category: string;
-  description: string;
-  detail_image_urls: string[];
-  main_image_urls: string[];
-  gender: string;
-  price: string;
-  quantity: number;
-  product_likes: number;
-  store_id: number;
-}
-
 const PaymentPage: React.FC = () => {
   const nav = useNavigate();
   const location = useLocation();
-  const products: IProduct[] = location.state?.products ?? [];
+  const products: CartItem[] = location.state?.products ?? [];
   const [isAgree, setIsAgree] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState("카드");
+  const [usePoint, setUsePoint] = useState(false);
+  const [usedPoints, setUsedPoints] = useState(0);
+  const maxPoints = 5000;
   const [shippingInfo, setShippingInfo] = useState({
     name: "",
     phone: "",
@@ -210,16 +200,22 @@ const PaymentPage: React.FC = () => {
     setShippingInfo(prev => ({ ...prev, [name]: value }));
   }
 
-  const parsePrice = (price: string) => Number(price.replace(/[원,]/g, ""));
-
   const totalOriginalPrice = products.reduce(
-    (sum, item) => sum + parsePrice(item.price) * item.quantity,
+    (sum, item) => sum + item.originalPrice * item.quantity,
     0
   );
 
-  const totalDiscount = 0; // 할인 정보는 넘어오지 않았으므로 생략 또는 향후 적용
+  const totalDiscount = products.reduce(
+    (sum, item) =>
+      sum +
+      (item.originalPrice - item.price) * item.quantity,
+    0
+  );
+
   const shipping = totalOriginalPrice - totalDiscount > 50000 ? 0 : 3000;
-  const totalPrice = totalOriginalPrice - totalDiscount + shipping;
+  const tempTotal = totalOriginalPrice - totalDiscount + shipping;
+  const finalPaidAmount = Math.max(tempTotal - usedPoints, 0);
+  const earnedPoints = Math.floor(finalPaidAmount * 0.1);
 
   const onClickPayment = () => {
     if (!isAgree) {
@@ -240,8 +236,10 @@ const PaymentPage: React.FC = () => {
     nav("/checkout?result=success", {
       state: {
         products,
-        totalPrice,
+        totalPrice: finalPaidAmount,
         shipping,
+        usedPoints: usePoint ? usedPoints : 0,
+        earnedPoints,
         selectedMethod,
         shippingInfo
       }
@@ -255,11 +253,36 @@ const PaymentPage: React.FC = () => {
         <ProductPreview>
           {products.map((product) => (
             <div key={product.id}>
-              {product.name} × {product.quantity}개
+              {product.name} / {product.price.toLocaleString()}원 / {product.option} × {product.quantity}개
             </div>
           ))}
         </ProductPreview>
 
+        <SectionTitle>포인트 사용</SectionTitle>
+        <CheckLabel>
+          <input
+            type="checkbox"
+            checked={usePoint}
+            onChange={(e) => setUsePoint(e.target.checked)}
+            style={{marginRight: 8, marginBottom: 16}}
+          />
+          포인트 사용하기
+        </CheckLabel>
+        {usePoint && (
+          <InputRow>
+            <Input
+              type="number"
+              min={0}
+              max={maxPoints}
+              value={usedPoints}
+              onChange={(e) => 
+                setUsedPoints(Math.min(Number(e.target.value), maxPoints))
+              } placeholder="사용할 포인트를 입력하세요" />
+            <span style={{ fontSize: 14, color: "#6b7280"}}>
+              보유 포인트: {maxPoints.toLocaleString()}P
+            </span>
+          </InputRow>
+        )}
         <SectionTitle>배송 정보</SectionTitle>
         <InputRow>
           <Input name="name" value={shippingInfo.name} onChange={handleDeliveryChange} placeholder="이름을 입력하세요" />
@@ -294,7 +317,7 @@ const PaymentPage: React.FC = () => {
 
         {selectedMethod === "카드" && (
           <>
-            <Input name="cardNumber" placeholder="카드 번호" onChange={handleDeliveryChange}/>
+            <Input style={{ marginBottom: 14 }} name="cardNumber" placeholder="카드 번호" onChange={handleDeliveryChange} />
             <InputRow>
               <Input name="cardExpiry" placeholder="MM/YY" onChange={handleDeliveryChange}/>
               <Input name="cardCvv" placeholder="CVV" maxLength={3} onChange={handleDeliveryChange} />
@@ -315,12 +338,24 @@ const PaymentPage: React.FC = () => {
             <span style={{ color: "#ef4444" }}>-{totalDiscount.toLocaleString()}원</span>
           </SummaryRow>
           <SummaryRow>
+            <span>포인트 사용</span>
+            <span>-{usePoint ? usedPoints.toLocaleString(): 0}원</span>
+          </SummaryRow>
+          <SummaryRow>
             <span>배송비</span>
             <span>{shipping === 0 ? "무료" : `${shipping.toLocaleString()}원`}</span>
           </SummaryRow>
           <hr style={{ margin: "16px 0" }} />
-          <TotalPrice>{totalPrice.toLocaleString()}원</TotalPrice>
+          <TotalPrice>{finalPaidAmount.toLocaleString()}원</TotalPrice>
 
+          <SummaryRow>
+            <span style={{fontSize: 14, color: "#6b7280"}}>
+              적립 예정 포인트
+            </span>
+            <span style={{fontSize: 14, fontWeight: 600}}>
+              {earnedPoints.toLocaleString()}P
+            </span>
+          </SummaryRow>
           <PrimaryButton onClick={onClickPayment} disabled={!isAgree}>
             결제하기
           </PrimaryButton>

@@ -1,6 +1,8 @@
-import { FC, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
+import { CartItem } from "types/types";
 import styled from "styled-components";
+import discounts from '../data/products/discounts.json'
 
 const Container = styled.div`
   max-width: 1200px;
@@ -89,7 +91,7 @@ const PriceBox = styled.div`
     text-align: left;
   }
 `;
-const Discount = styled.div` color: #ef4444; font-size: 13px; `;
+const DiscountSection = styled.div` color: #ef4444; font-size: 13px; `;
 const RemoveButton = styled.button`
   background: none;
   border: none;
@@ -161,140 +163,64 @@ const StyledCheckbox = styled.input`
   margin-right: 12px;
 `;
 
-interface IProduct {
-  id: number;
-  name: string;
-  category: string;
-  description: string;
-  detail_image_urls: string[];
-  main_image_urls: string[];
-  gender: string;
-  price: string;
-  quantity: number;
-  product_likes: number;
-  store_id: number;
-  image: string;
-}
-
-interface IDiscounts {
-  product_id: number;
-  discount_type: string;
-  discount_value: number;
-  discount_start: string;
-  discount_end: string;
-}
-
-const CartPage: FC = () => {
-  const [cart, setCart] = useState<IProduct[]>([]);
+const CartPage: React.FC = () => {
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
-  const [discounts, setDiscounts] = useState<IDiscounts[]>([]);
   const [isAgree, setIsAgree] = useState(false);
 
   const nav = useNavigate();
 
   useEffect(() => {
-
-    // cart 데이터 가져오기
     const jsonCart = localStorage.getItem("cart");
+
     if (jsonCart) {
-      const parsedCart = JSON.parse(jsonCart);
-      setCart(parsedCart);
-      setCheckedItems(parsedCart.map((item: IProduct) => item.id));
-    }
+      const rawCart: CartItem[] = JSON.parse(jsonCart);
+      const mergedMap = new Map<string, CartItem>();
 
-    // discounts 데이터 가져오기
-    const jsonDiscounts = localStorage.getItem("discounts");
-    if (jsonDiscounts) {
-      setDiscounts(JSON.parse(jsonDiscounts));
-    }
-
-  }, []);
-
-  useEffect(() => {
-
-    // product 데이터 가져오기
-    const jsonProduct = localStorage.getItem("product");
-    if (!jsonProduct) {
-      return;
-    }
-
-    const product: IProduct = JSON.parse(jsonProduct);
-    product.quantity = 1; // quantity 데이터가 없어서 일단 1로 하드 코딩.
-
-    setCart((cart) => {
-      const existing = cart.find((item) => item.id === product.id);
-      const updated = existing
-        ? cart.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        )
-        : [...cart, product];
-
-      localStorage.setItem("cart", JSON.stringify(updated));
-
-      setCheckedItems((prev) => {
-        if (existing) return prev;
-        return [...prev, product.id];
+      rawCart.forEach((item) => {
+        const key = `${item.id}`;
+        if (mergedMap.has(key)) {
+          const existing = mergedMap.get(key)!;
+          mergedMap.set(key, {
+            ...existing,
+            quantity: existing.quantity + item.quantity,
+          });
+        } else {
+          mergedMap.set(key, { ...item });
+        }
       });
+        
+      const mergedCart = Array.from(mergedMap.values());
 
-      return updated;
-    });
-    // discounts 데이터 가져오기
-    const jsonDiscounts = localStorage.getItem("discounts");
-    if (jsonDiscounts) {
-      setDiscounts(JSON.parse(jsonDiscounts));
+      setCart(mergedCart);
+      setCheckedItems(mergedCart.map((_, check) => check));
+
+      localStorage.setItem("cart", JSON.stringify(mergedCart));
     }
-
-    localStorage.removeItem("product");
   }, []);
 
-  // price parsing => 꼭 필요한지 ?
-  const parsePrice = (price: string | number | null | undefined): number => {
-    if (typeof price === 'string') {
-      return Number(price.replace(/[원,]/g, ''));
-    }
-    if (typeof price === 'number') {
-      return price;
-    }
-    return 0; // fallback
+  const findDiscount = (product: CartItem) => {
+    const id = product.id.split('-')[0];
+    return discounts.find((discount) => discount.product_id === Number(id)) || null;
   };
 
-  const findDiscount = (product: IProduct): IDiscounts | null => {
-    return discounts.find((discount) => discount.product_id === product.id) || null;
-  };
-
-  const getDiscountedPrice = (product: IProduct): number => {
-    const original = parsePrice(product.price);
-
-    const discount = findDiscount(product);
-    if (!discount) {
-      return original;
-    }
-
-    return discount.discount_type === "정률"
-      ? original * ((100 - discount.discount_value) / 100)
-      : original - discount.discount_value;
-  };
-
-  const subtotal = cart.reduce((sum, item) => {
-    if (!checkedItems.includes(item.id)) return sum;
-    return sum + parsePrice(item.price) * item.quantity;
-  }, 0);
-
-  const totalDiscount = cart.reduce((sum, item) => {
-    if (!checkedItems.includes(item.id)) {
+  const subtotal = cart.reduce((sum, item, check) => {
+    if (!checkedItems.includes(check))
+    {
       return sum;
     }
-    const discount = findDiscount(item);
-    if (!discount) {
+    return sum + item.originalPrice * item.quantity;
+  }, 0);
+
+  const totalDiscount = cart.reduce((sum, item, check) => {
+    if (!checkedItems.includes(check))
+    {
       return sum;
     }
 
-    const original = parsePrice(item.price);
-    const discounted = getDiscountedPrice(item);
-    return sum + (original - discounted) * item.quantity;
+    return sum + (item.originalPrice - item.price) * item.quantity;
   }, 0);
 
-  const subdiscount = `${totalDiscount.toLocaleString()}원`;
   const shipping = subtotal - totalDiscount > 50000 ? 0 : 3000;
   const total = subtotal - totalDiscount + shipping;
 
@@ -304,36 +230,37 @@ const CartPage: FC = () => {
       return;
     }
 
-    const selectedProducts = cart.filter((item) => checkedItems.includes(item.id));
+    if (checkedItems.length === 0) {
+      alert("주문할 상품을 1개 이상 선택해주세요.");
+      return;
+    }
+
+    const selectedProducts = cart.filter((_, check) => checkedItems.includes(check));
     nav("/payment", { state: { products: selectedProducts } });
   };
 
-  const changeQuantity = (id: number, diff: number) => {
-    const updateCart = cart.map((item) =>
-      item.id === id ? { ...item, quantity: Math.max(1, item.quantity + diff) } : item
+  const changeQuantity = (index: number, diff: number) => {
+    const updateCart = cart.map((item, i) =>
+      i === index ? { ...item, quantity: Math.max(1, item.quantity + diff) } : item
     );
     setCart(updateCart);
     localStorage.setItem("cart", JSON.stringify(updateCart));
   };
 
-  const removeItem = (id: number) => {
-    const updateCart = cart.filter((item) => item.id !== id);
+  const removeItem = (index: number) => {
+    const updateCart = cart.filter((_, i) => i !== index);
     setCart(updateCart);
-    setCheckedItems((cart) => cart.filter((itemId) => itemId !== id));
+    setCheckedItems((items) => items.filter((i) => i !== index));
     localStorage.setItem("cart", JSON.stringify(updateCart));
   };
 
   const toggleAll = (checked: boolean) => {
-    if (checked) {
-      setCheckedItems(cart.map((item) => item.id));
-    } else {
-      setCheckedItems([]);
-    }
+    setCheckedItems(checked ? cart.map((_, i) => i) : []);
   };
 
-  const toggleItem = (id: number) => {
-    setCheckedItems((cart) =>
-      cart.includes(id) ? cart.filter((i) => i !== id) : [...cart, id]
+  const toggleItem = (index: number) => {
+    setCheckedItems((items) =>
+      items.includes(index) ? items.filter((i) => i !== index) : [...items, index]
     );
   };
 
@@ -353,35 +280,33 @@ const CartPage: FC = () => {
             />
             전체 선택 ({checkedItems.length}/{cart.length})
           </label>
-          {cart.map((item) => {
-            const discountedPrice = getDiscountedPrice(item);
+          {cart.map((item, index) => {
+            const discountedPrice = item.price;
             const discount = findDiscount(item);
-            const originalTotal = parsePrice(item.price) * item.quantity;
+            const originalTotal = item.originalPrice * item.quantity;
             const discountedTotal = discountedPrice * item.quantity;
-            let discountLabel = "";
-            if (discount) {
-              if (discount.discount_type === "정률") {
-                discountLabel = `${discount.discount_value}% 할인`;
-              } else {
-                discountLabel = `${discount.discount_value.toLocaleString()}원 할인`;
-              }
-            }
+            const discountLabel = discount
+              ? discount.discount_type === '정률'
+                ? `${discount.discount_value}% 할인`
+                : `${discount.discount_value.toLocaleString()}원 할인`
+              : null;
+
             return (
-              <ItemRow key={item.id}>
-                <StyledCheckbox
+              <ItemRow key={`${item.id}-${item.option}`}>
+                <input
                   type="checkbox"
-                  checked={checkedItems.includes(item.id)}
-                  onChange={() => toggleItem(item.id)}
-                  title={`${item.name} 선택`}
+                  checked={checkedItems.includes(index)}
+                  onChange={() => toggleItem(index)}
+                  style={{ marginRight: 12 }}
                 />
                 <ItemImage src={item.image} alt={item.name} />
                 <ItemInfo>
                   <ItemName>{item.name}</ItemName>
-                  <ItemOption>{item.category}</ItemOption>
+                  <ItemOption>{item.option}</ItemOption>
                   <QtyControl>
-                    <QtyButton onClick={() => changeQuantity(item.id, -1)}>-</QtyButton>
+                    <QtyButton onClick={() => changeQuantity(index, -1)}>-</QtyButton>
                     <span style={{ fontWeight: 600, fontSize: 15 }}>{item.quantity}</span>
-                    <QtyButton onClick={() => changeQuantity(item.id, 1)}>+</QtyButton>
+                    <QtyButton onClick={() => changeQuantity(index, 1)}>+</QtyButton>
                   </QtyControl>
                 </ItemInfo>
                 <PriceBox>
@@ -391,9 +316,9 @@ const CartPage: FC = () => {
                   <div style={{ fontWeight: 700, fontSize: 18, color: "#222" }}>
                     {discountedTotal.toLocaleString()}원
                   </div>
-                  {discountLabel && <Discount>{discountLabel}</Discount>}
+                  {discountLabel && <DiscountSection>{discountLabel}</DiscountSection>}
                 </PriceBox>
-                <RemoveButton onClick={() => removeItem(item.id)}>×</RemoveButton>
+                <RemoveButton onClick={() => removeItem(index)}>×</RemoveButton>
               </ItemRow>
             );
           })}
@@ -408,7 +333,7 @@ const CartPage: FC = () => {
           </SummaryRow>
           <SummaryRow>
             <span style={{ color: "#64748b" }}>할인 금액</span>
-            <span style={{ color: "#ef4444", fontWeight: 600 }}>-{subdiscount}</span>
+            <span style={{ color: "#ef4444", fontWeight: 600 }}>-{totalDiscount.toLocaleString()}원</span>
           </SummaryRow>
           <SummaryRow>
             <span style={{ color: "#64748b" }}>배송비</span>

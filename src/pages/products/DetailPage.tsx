@@ -238,7 +238,7 @@ export default function ProductDetailPage() {
       image: product.images[0]?.src || '',
     }));
 
-    navigate('/orders', {
+    navigate('/payment', {
       state: {
         products: newItems,
       },

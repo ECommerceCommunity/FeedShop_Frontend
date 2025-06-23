@@ -1,25 +1,7 @@
+import styled from "styled-components";
 import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import styled from "styled-components";
-
-interface IProduct {
-  id: number;
-  name: string;
-  price: string;
-  quantity: number;
-}
-
-interface IShippingInfo {
-  name: string;
-  phone: string;
-  zipcode: string;
-  address: string;
-  detailAddress: string;
-  request: string;
-  cardNumber?: string;
-  cardExpiry?: string;
-  cardCvv?: string;
-}
+import { CartItem, ShippingInfo } from "types/types";
 
 const Container = styled.div`
   max-width: 960px;
@@ -104,14 +86,18 @@ const CheckoutPage: React.FC = () => {
     products,
     totalPrice,
     shipping,
+    usedPoints,
+    earnedPoints,
     selectedMethod,
     shippingInfo
   }: {
-    products?: IProduct[];
+    products?: CartItem[];
     totalPrice?: number;
     shipping?: number;
+    usedPoints?: number;
+    earnedPoints: number,
     selectedMethod?: string;
-    shippingInfo?: IShippingInfo;
+    shippingInfo?: ShippingInfo;
   } = location.state || {};
 
   useEffect(() => {
@@ -138,9 +124,9 @@ const CheckoutPage: React.FC = () => {
       <Card>
         <SectionTitle>주문 상품</SectionTitle>
         <ProductList>
-          {products.map((p) => (
-            <ProductItem key={p.id}>
-              {p.name} × {p.quantity}개
+          {products.map((product) => (
+            <ProductItem key={product.id}>
+              {product.name} / {product.price} / {product.price.toLocaleString()}원 / {product.option} × {product.quantity}개
             </ProductItem>
           ))}
         </ProductList>
@@ -162,10 +148,20 @@ const CheckoutPage: React.FC = () => {
             <span>{shipping === 0 ? "무료" : `${shipping?.toLocaleString()}원`}</span>
           </TotalRow>
           <TotalRow>
+            <span>사용한 포인트</span>
+            <span>-{(usedPoints ?? 0).toLocaleString()}원</span>
+          </TotalRow>
+          <TotalRow>
             <span>총 결제 금액</span>
             <span>{totalPrice?.toLocaleString()}원</span>
           </TotalRow>
           <TotalAmount>{totalPrice?.toLocaleString()}원 결제 완료</TotalAmount>
+          <TotalRow style={{marginTop: 12}}>
+            <span style={{ fontSize: 14, color: "#6b7280" }}>적립 예정 포인트</span>
+            <span style={{ fontSize: 14, fontWeight: 600 }}>
+              {earnedPoints?.toLocaleString() ?? 0}P
+            </span>
+          </TotalRow>
         </TotalSummary>
       </Card>
 
