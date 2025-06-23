@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useState } from "react";
 import styled from "styled-components";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
@@ -14,19 +14,20 @@ const LayoutContainer = styled.div`
   min-height: 100vh;
 `;
 
-const MainContent = styled.main`
+const MainContent = styled.main<{ sidebarOpen: boolean }>`
   flex: 1;
-  margin-left: 250px;
+  margin-left: ${({ sidebarOpen }) => (sidebarOpen ? "250px" : "0")};
   margin-top: 60px;
   background-color: var(--background-color);
 `;
 
 const Layout: FC<LayoutProps> = ({ children }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
     <LayoutContainer>
-      <Header />
-      <Sidebar />
-      <MainContent>
+      <Header onMenuClick={() => setSidebarOpen((prev) => !prev)} />
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <MainContent sidebarOpen={sidebarOpen}>
         {children}
       </MainContent>
       <Footer />
