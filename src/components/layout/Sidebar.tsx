@@ -91,6 +91,25 @@ const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
               </MenuLink>
             </MenuItem>
           </MenuList>
+          <MenuTitle>마이페이지</MenuTitle>
+          <MenuList>
+            <MenuItem>
+              <MenuLink
+                to="/wishlist"
+                active={location.pathname === "/wishlist"}
+              >
+                찜한 상품
+              </MenuLink>
+            </MenuItem>
+            <MenuItem>
+              <MenuLink
+                to="/recentview"
+                active={location.pathname === "/recentview"}
+              >
+                최근 본 상품
+              </MenuLink>
+            </MenuItem>
+          </MenuList>
         </MenuSection>
       </SidebarContainer>
     </>

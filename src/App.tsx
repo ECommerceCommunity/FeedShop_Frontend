@@ -13,8 +13,12 @@ const MyPage = lazy(() => import("./pages/MyPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const SignUp = lazy(() => import("./pages/SignUp"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
-const ProductUploadPage = lazy(() => import("./pages/products/registerProduct/RegisterProductPage"));
-const ProductEditPage = lazy(() => import("./pages/products/editProduct/EditProductsPage"));
+const ProductUploadPage = lazy(
+  () => import("./pages/products/registerProduct/RegisterProductPage")
+);
+const ProductEditPage = lazy(
+  () => import("./pages/products/editProduct/EditProductsPage")
+);
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const ReviewsPage = lazy(() => import("./pages/ReviewsPage"));
@@ -23,12 +27,12 @@ const ChatRoomDetailPage = lazy(() => import("./pages/ChatRoomDetailPage"));
 const ReportManagePage = lazy(() => import("./pages/ReportManagePage"));
 const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage"));
 const StoreHomePage = lazy(() => import("./pages/stores/StoreHomePage"));
-
-// cart & order
 const CartPage = lazy(() => import("./pages/cart/CartPage"));
 const PaymentPage = lazy(() => import("./pages/order/PaymentPage"));
 const OrdersPage = lazy(() => import("./pages/order/OrdersPage"));
 const CheckoutPage = lazy(() => import("./pages/order/CheckoutPage"));
+const WishListPage = lazy(() => import("./pages/cart/WishListPage"));
+const RecentViewPage = lazy(() => import("./pages/cart/RecentViewPage"));
 
 const App: FC = () => {
   return (
@@ -57,6 +61,8 @@ const App: FC = () => {
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/payment" element={<PaymentPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/wishlist" element={<WishListPage />} />
+            <Route path="/recentview" element={<RecentViewPage />} />
           </Route>
 
           {/* Layout 없이 보여야 하는 페이지들 */}

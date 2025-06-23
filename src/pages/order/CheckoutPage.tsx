@@ -1,7 +1,8 @@
 import styled from "styled-components";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CartItem, ShippingInfo } from "types/types";
+import Fail from "components/modal/Fail";
 
 const Container = styled.div`
   max-width: 960px;
@@ -79,6 +80,7 @@ const ThankYou = styled.div`
 `;
 
 const CheckoutPage: React.FC = () => {
+  const [showAccessModal, setShowAccessModal] = useState(false);
   const location = useLocation();
   const nav = useNavigate();
 
@@ -102,14 +104,25 @@ const CheckoutPage: React.FC = () => {
 
   useEffect(() => {
     if (!products || !shippingInfo) {
+      setShowAccessModal(true);
       alert("잘못된 접근입니다.");
       nav("/products");
     }
   }, [products, shippingInfo, nav]);
 
-  if (!products || !shippingInfo) return null;
+  if (!products || !shippingInfo) {
+    return null;
+  }
 
   return (
+    <>
+      {showAccessModal && (
+        <Fail
+          title="접근 실패"
+          message="잘못된 접근입니다."
+          onClose={() => setShowAccessModal(false)}          
+        /> 
+      )}
     <Container>
       <Card>
         <SectionTitle>배송 정보</SectionTitle>
@@ -170,6 +183,7 @@ const CheckoutPage: React.FC = () => {
         마이페이지에서 배송 현황을 확인하실 수 있습니다.
       </ThankYou>
     </Container>
+    </>
   );
 };
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CartItem } from "types/types";
 import styled from "styled-components";
 import discounts from '../data/products/discounts.json'
+import Fail from "components/modal/Fail";
 
 const Container = styled.div`
   max-width: 1200px;
@@ -167,6 +168,8 @@ const CartPage: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
   const [isAgree, setIsAgree] = useState(false);
+  const [showAgreeModal, setShowAgreeModal] = useState(false);
+  const [showEmptyModal, setShowEmptyModal] = useState(false);
 
   const nav = useNavigate();
 
@@ -226,12 +229,12 @@ const CartPage: React.FC = () => {
 
   const handleCheckout = () => {
     if (!isAgree) {
-      alert("주문 동의에 체크해 주세요.");
+      setShowAgreeModal(true);
       return;
     }
 
     if (checkedItems.length === 0) {
-      alert("주문할 상품을 1개 이상 선택해주세요.");
+      setShowEmptyModal(true);
       return;
     }
 
@@ -265,6 +268,22 @@ const CartPage: React.FC = () => {
   };
 
   return (
+    <>
+      {showAgreeModal && (
+        <Fail
+          title="주문 동의 필요"
+          message="주문 동의에 체크해 주세요."
+          onClose={() => setShowAgreeModal(false)}
+        />
+      )}
+
+      {showEmptyModal && (
+        <Fail
+          title="상품 선택 필요"
+          message="주문할 상품을 1개 이상 선택해주세요."
+          onClose={() => setShowEmptyModal(false)}
+        />
+      )}
     <Container>
       <CartSection>
         <Card>
@@ -366,6 +385,7 @@ const CartPage: React.FC = () => {
         </SummaryCard>
       </SummarySection>
     </Container>
+    </>
   );
 };
 
