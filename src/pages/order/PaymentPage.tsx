@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CartItem } from "types/types";
+import Fail from "components/modal/Fail";
 
 const Container = styled.div`
   max-width: 1100px;
@@ -194,6 +195,9 @@ const PaymentPage: React.FC = () => {
     cardExpiry: "",
     cardCvv: "",
   });
+  const [showAgreeModal, setShowAgreeModal] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [showCardInfoModal, setShowCardInfoModal] = useState(false);
 
   const handleDeliveryChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -219,17 +223,17 @@ const PaymentPage: React.FC = () => {
 
   const onClickPayment = () => {
     if (!isAgree) {
-      alert("결제 동의에 체크해 주세요.");
+      setShowAgreeModal(true);
       return;
     }
 
     if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.address || !shippingInfo.detailAddress) {
-      alert("배송 정보를 입력해 주세요.");
+      setShowAddressModal(true);
       return;
     }
     if (selectedMethod === "카드" &&
       (!shippingInfo.cardNumber || !shippingInfo.cardExpiry || !shippingInfo.cardCvv)) {
-        alert("카드 정보를 모두 입력해 주세요.");
+      setShowCardInfoModal(true);
       return; 
   }
 
@@ -247,6 +251,30 @@ const PaymentPage: React.FC = () => {
   };
 
   return (
+    <>
+      {showAgreeModal && (
+        <Fail
+          title="결제 동의 필요"
+          message="결제 동의에 체크해 주세요."
+          onClose={() => setShowAgreeModal(false)}
+        />
+      )}
+    
+      {showAddressModal && (
+        <Fail
+          title="배송 정보 필요"
+          message="배송 정보를 입력해 주세요."
+          onClose={() => setShowAddressModal(false)}
+        />
+      )}
+      
+      {showCardInfoModal && (
+        <Fail
+          title="카드 정보 필요"
+          message="카드 정보를 모두 입력해 주세요."
+          onClose={() => setShowCardInfoModal(false)}
+        />
+      )}
     <Container>
       <FormSection>
         <ProductHeader>구매 상품 정보</ProductHeader>
@@ -383,6 +411,7 @@ const PaymentPage: React.FC = () => {
         </SummaryCard>
       </SummarySection>
     </Container>
+    </>
   );
 };
 

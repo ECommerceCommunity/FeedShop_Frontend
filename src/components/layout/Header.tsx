@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, FormEvent } from "react";
@@ -15,6 +15,7 @@ const HeaderContainer = styled.header`
   display: flex;
   align-items: center;
   padding: 0 20px;
+  z-index: 1000;
 `;
 
 const Logo = styled(Link)`
