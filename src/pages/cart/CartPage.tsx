@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
+import { CartItem } from "types/types";
 import styled from "styled-components";
+import discounts from '../data/products/discounts.json'
 
 const Container = styled.div`
   max-width: 1200px;
@@ -89,7 +91,7 @@ const PriceBox = styled.div`
     text-align: left;
   }
 `;
-const Discount = styled.div` color: #ef4444; font-size: 13px; `;
+const DiscountSection = styled.div` color: #ef4444; font-size: 13px; `;
 const RemoveButton = styled.button`
   background: none;
   border: none;
@@ -161,101 +163,62 @@ const StyledCheckbox = styled.input`
   margin-right: 12px;
 `;
 
-interface ICartItem {
-  id: number;
-  name: string;
-  category: string;
-  description: string;
-  detail_image_urls: string[];
-  main_image_urls: string[];
-  gender: string;
-  price: string;
-  quantity: number;
-  size: string;
-  product_likes: number;
-  store_id: number;
-  image: string;
-}
-
-interface IDiscounts {
-  product_id: number;
-  discount_type: string;
-  discount_value: number;
-  discount_start: string;
-  discount_end: string;
-}
-
 const CartPage: React.FC = () => {
-  const [cart, setCart] = useState<ICartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
-  const [discounts, setDiscounts] = useState<IDiscounts[]>([]);
   const [isAgree, setIsAgree] = useState(false);
 
   const nav = useNavigate();
 
   useEffect(() => {
     const jsonCart = localStorage.getItem("cart");
-    const jsonProduct = localStorage.getItem("product");
-    const jsonDiscounts = localStorage.getItem("discounts");
 
-    let baseCart: ICartItem[] = [];
     if (jsonCart) {
-      baseCart = JSON.parse(jsonCart);
+      const rawCart: CartItem[] = JSON.parse(jsonCart);
+      const mergedMap = new Map<string, CartItem>();
+
+      rawCart.forEach((item) => {
+        const key = `${item.id}`;
+        if (mergedMap.has(key)) {
+          const existing = mergedMap.get(key)!;
+          mergedMap.set(key, {
+            ...existing,
+            quantity: existing.quantity + item.quantity,
+          });
+        } else {
+          mergedMap.set(key, { ...item });
+        }
+      });
+        
+      const mergedCart = Array.from(mergedMap.values());
+
+      setCart(mergedCart);
+      setCheckedItems(mergedCart.map((_, check) => check));
+
+      localStorage.setItem("cart", JSON.stringify(mergedCart));
     }
-
-    if (jsonProduct) {
-      const product: ICartItem = JSON.parse(jsonProduct);
-      product.quantity = 1;
-
-      const existing = baseCart.find((item) => item.id === product.id && item.size === product.size);
-      baseCart = existing
-        ? baseCart.map((item) =>
-            item.id === product.id && item.size === product.size
-              ? { ...item, quantity: item.quantity + 1 }
-              : item
-          )
-        : [...baseCart, product];
-
-      localStorage.removeItem("product");
-    }
-
-    setCart(baseCart);
-    setCheckedItems(baseCart.map((_, i) => i));
-
-    if (jsonDiscounts) {
-      setDiscounts(JSON.parse(jsonDiscounts));
-    }
-
-    localStorage.setItem("cart", JSON.stringify(baseCart));
   }, []);
 
-  const parsePrice = (price: string) => Number(price.replace(/[원,]/g, ""));
-
-  const findDiscount = (product: ICartItem): IDiscounts | null => {
-    return discounts.find((discount) => discount.product_id === product.id) || null;
+  const findDiscount = (product: CartItem) => {
+    const id = product.id.split('-')[0];
+    return discounts.find((discount) => discount.product_id === Number(id)) || null;
   };
 
-  const getDiscountedPrice = (product: ICartItem): number => {
-    const original = parsePrice(product.price);
-    const discount = findDiscount(product);
-    if (!discount) return original;
-    return discount.discount_type === "정률"
-      ? original * ((100 - discount.discount_value) / 100)
-      : original - discount.discount_value;
-  };
-
-  const subtotal = cart.reduce((sum, item, index) => {
-    if (!checkedItems.includes(index)) return sum;
-    return sum + parsePrice(item.price) * item.quantity;
+  const subtotal = cart.reduce((sum, item, check) => {
+    if (!checkedItems.includes(check))
+    {
+      return sum;
+    }
+    return sum + item.originalPrice * item.quantity;
   }, 0);
 
-  const totalDiscount = cart.reduce((sum, item, index) => {
-    if (!checkedItems.includes(index)) return sum;
-    const discount = findDiscount(item);
-    if (!discount) return sum;
-    const original = parsePrice(item.price);
-    const discounted = getDiscountedPrice(item);
-    return sum + (original - discounted) * item.quantity;
+  const totalDiscount = cart.reduce((sum, item, check) => {
+    if (!checkedItems.includes(check))
+    {
+      return sum;
+    }
+
+    return sum + (item.originalPrice - item.price) * item.quantity;
   }, 0);
 
   const shipping = subtotal - totalDiscount > 50000 ? 0 : 3000;
@@ -272,7 +235,7 @@ const CartPage: React.FC = () => {
       return;
     }
 
-    const selectedProducts = cart.filter((_, i) => checkedItems.includes(i));
+    const selectedProducts = cart.filter((_, check) => checkedItems.includes(check));
     nav("/payment", { state: { products: selectedProducts } });
   };
 
@@ -318,9 +281,9 @@ const CartPage: React.FC = () => {
             전체 선택 ({checkedItems.length}/{cart.length})
           </label>
           {cart.map((item, index) => {
-            const discountedPrice = getDiscountedPrice(item);
+            const discountedPrice = item.price;
             const discount = findDiscount(item);
-            const originalTotal = parsePrice(item.price) * item.quantity;
+            const originalTotal = item.originalPrice * item.quantity;
             const discountedTotal = discountedPrice * item.quantity;
             const discountLabel = discount
               ? discount.discount_type === '정률'
@@ -329,7 +292,7 @@ const CartPage: React.FC = () => {
               : null;
 
             return (
-              <ItemRow key={`${item.id}-${item.size}`}>
+              <ItemRow key={`${item.id}-${item.option}`}>
                 <input
                   type="checkbox"
                   checked={checkedItems.includes(index)}
@@ -339,7 +302,7 @@ const CartPage: React.FC = () => {
                 <ItemImage src={item.image} alt={item.name} />
                 <ItemInfo>
                   <ItemName>{item.name}</ItemName>
-                  <ItemOption>{item.category} / {item.size}</ItemOption>
+                  <ItemOption>{item.option}</ItemOption>
                   <QtyControl>
                     <QtyButton onClick={() => changeQuantity(index, -1)}>-</QtyButton>
                     <span style={{ fontWeight: 600, fontSize: 15 }}>{item.quantity}</span>
@@ -353,7 +316,7 @@ const CartPage: React.FC = () => {
                   <div style={{ fontWeight: 700, fontSize: 18, color: "#222" }}>
                     {discountedTotal.toLocaleString()}원
                   </div>
-                  {discountLabel && <Discount>{discountLabel}</Discount>}
+                  {discountLabel && <DiscountSection>{discountLabel}</DiscountSection>}
                 </PriceBox>
                 <RemoveButton onClick={() => removeItem(index)}>×</RemoveButton>
               </ItemRow>

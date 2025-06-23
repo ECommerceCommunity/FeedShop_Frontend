@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
+import { CartItem } from "types/types";
 
 const Container = styled.div`
   max-width: 1100px;
@@ -173,32 +174,10 @@ const ProductPreview = styled.div`
   color: #374151;
 `;
 
-interface IProduct {
-  id: number;
-  name: string;
-  category: string;
-  description: string;
-  detail_image_urls: string[];
-  main_image_urls: string[];
-  gender: string;
-  price: string;
-  quantity: number;
-  product_likes: number;
-  store_id: number;
-}
-
-interface IDiscount {
-  product_id: number;
-  discount_type: '정률' | '정액';
-  discount_value: number;
-  discount_start: string;
-  discount_end: string;
-}
-
 const PaymentPage: React.FC = () => {
   const nav = useNavigate();
   const location = useLocation();
-  const products: IProduct[] = location.state?.products ?? [];
+  const products: CartItem[] = location.state?.products ?? [];
   const [isAgree, setIsAgree] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState("카드");
   const [usePoint, setUsePoint] = useState(false);
@@ -221,34 +200,15 @@ const PaymentPage: React.FC = () => {
     setShippingInfo(prev => ({ ...prev, [name]: value }));
   }
 
-  const parsePrice = (price: string) => Number(price.replace(/[원,]/g, ""));
-
-  const discounts: IDiscount[] = JSON.parse(localStorage.getItem("discounts") || "[]");
-
-  const getDiscountForProduct = (productId: number): IDiscount | null => {
-    return discounts.find(d => d.product_id === productId) ?? null;
-  };
-
-  const getDiscountedPrice = (product: IProduct): number => {
-    const rawPrice = parsePrice(product.price);
-    const discount = getDiscountForProduct(product.id);
-  
-    if (!discount) return rawPrice;
-  
-    return discount.discount_type === "정률"
-      ? Math.floor(rawPrice * (1 - discount.discount_value / 100))
-      : Math.max(rawPrice - discount.discount_value, 0);
-  };
-
   const totalOriginalPrice = products.reduce(
-    (sum, item) => sum + parsePrice(item.price) * item.quantity,
+    (sum, item) => sum + item.originalPrice * item.quantity,
     0
   );
 
   const totalDiscount = products.reduce(
     (sum, item) =>
       sum +
-      (parsePrice(item.price) - getDiscountedPrice(item)) * item.quantity,
+      (item.originalPrice - item.price) * item.quantity,
     0
   );
 
@@ -293,7 +253,7 @@ const PaymentPage: React.FC = () => {
         <ProductPreview>
           {products.map((product) => (
             <div key={product.id}>
-              {product.name} × {product.quantity}개
+              {product.name} / {product.price.toLocaleString()}원 / {product.option} × {product.quantity}개
             </div>
           ))}
         </ProductPreview>
@@ -357,7 +317,7 @@ const PaymentPage: React.FC = () => {
 
         {selectedMethod === "카드" && (
           <>
-            <Input name="cardNumber" placeholder="카드 번호" onChange={handleDeliveryChange}/>
+            <Input style={{ marginBottom: 14 }} name="cardNumber" placeholder="카드 번호" onChange={handleDeliveryChange} />
             <InputRow>
               <Input name="cardExpiry" placeholder="MM/YY" onChange={handleDeliveryChange}/>
               <Input name="cardCvv" placeholder="CVV" maxLength={3} onChange={handleDeliveryChange} />

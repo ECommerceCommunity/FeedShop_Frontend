@@ -79,4 +79,16 @@ export type Filter = {
     color_name: string
     color_name_en: string
     color_image_url: string
-  }  
+}  
+
+export type ShippingInfo = {
+  name: string;
+  phone: string;
+  zipcode: string;
+  address: string;
+  detailAddress: string;
+  request: string;
+  cardNumber?: string;
+  cardExpiry?: string;
+  cardCvv?: string;
+}
