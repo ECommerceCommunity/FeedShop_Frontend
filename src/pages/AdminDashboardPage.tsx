@@ -1,6 +1,7 @@
 // The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work.
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 const Container = styled.div`
@@ -158,14 +159,12 @@ const MobileMenuListItem = styled.li`
 
 const MobileMenuLoginSection = styled.div`
   margin-top: 24px;
-  padding-top: 24px;
   border-top: 1px solid #eee;
 `;
 
 const FlexContainer = styled.div`
   display: flex;
   flex: 1;
-  padding-top: 60px;
 `;
 
 const Sidebar = styled.aside<{ $isOpen: boolean }>`
@@ -252,7 +251,6 @@ const SidebarText = styled.span<{ $isOpen: boolean }>`
 const MainContent = styled.main<{ $sidebarOpen: boolean }>`
   flex: 1;
   transition: all 0.3s;
-  margin-left: ${(props) => (props.$sidebarOpen ? "240px" : "60px")};
   @media (max-width: 768px) {
     margin-left: 0;
   }
@@ -435,12 +433,13 @@ const TableCard = styled.div`
 
 const StyledTable = styled.table`
   width: 100%;
+  text-align: center;
   border-collapse: collapse;
 `;
 
 const TableHeader = styled.th`
   padding: 12px 0;
-  text-align: left;
+  text-align: center;
   font-size: 0.75rem;
   font-weight: 500;
   color: #666;
@@ -644,6 +643,7 @@ const ToastCloseButton = styled.button`
 `;
 
 const AdminDashboardPage: React.FC = () => {
+  const nav = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showToast, setShowToast] = useState(false); // New state for toast
@@ -875,7 +875,7 @@ const AdminDashboardPage: React.FC = () => {
               <TableCard>
                 <CardHeader>
                   <CardTitle>최근 주문</CardTitle>
-                  <ViewAllButton>모두 보기</ViewAllButton>
+                  <ViewAllButton onClick={() => nav('/orders') }>주문 관리</ViewAllButton>
                 </CardHeader>
                 <div style={{ overflowX: "auto" }}>
                   <StyledTable>
@@ -996,17 +996,6 @@ const AdminDashboardPage: React.FC = () => {
           </ContentPadding>
         </MainContent>
       </FlexContainer>
-
-      <StyledFooter>
-        <FooterContent>
-          <CopyrightText>&copy; 2025 회사명. 모든 권리 보유.</CopyrightText>
-          <FooterLinks>
-            <FooterLink href="#">서비스 약관</FooterLink>
-            <FooterLink href="#">개인정보처리방침</FooterLink>
-            <FooterLink href="#">문의하기</FooterLink>
-          </FooterLinks>
-        </FooterContent>
-      </StyledFooter>
 
       <ToastNotification $show={showToast}>
         <ToastIconWrapper>

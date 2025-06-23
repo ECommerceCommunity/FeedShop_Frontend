@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 
@@ -6,6 +6,7 @@ const FooterContainer = styled.footer`
   background-color: var(--background-color);
   padding: 40px 20px;
   border-top: 1px solid var(--border-color);
+  text-align: center;
 `;
 
 const FooterContent = styled.div`
@@ -45,7 +46,7 @@ const FooterText = styled.p`
   line-height: 1.5;
 `;
 
-const Footer: React.FC = () => {
+const Footer: FC = () => {
   return (
     <FooterContainer>
       <FooterContent>
