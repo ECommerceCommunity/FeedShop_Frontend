@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import styled from "styled-components";
 import { Link, useLocation } from "react-router-dom";
 
@@ -11,7 +11,6 @@ const SidebarContainer = styled.aside`
   background-color: var(--background-color);
   box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
   padding: 20px 0;
-  z-index: 900;
 `;
 
 const MenuSection = styled.div`
@@ -50,84 +49,51 @@ const MenuLink = styled(Link)<{ active?: boolean }>`
   }
 `;
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+const Overlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+`;
+
+const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
   const location = useLocation();
-
+  if (!open) return null;
   return (
-    <SidebarContainer>
-      <MenuSection>
-        <MenuTitle>쇼핑</MenuTitle>
-        <MenuList>
-          <MenuItem>
-            <MenuLink to="/products" active={location.pathname === "/products"}>
-              전체 상품
-            </MenuLink>
-          </MenuItem>
-          <MenuItem>
-            <MenuLink to="/new" active={location.pathname === "/new"}>
-              신상품
-            </MenuLink>
-          </MenuItem>
-          <MenuItem>
-            <MenuLink to="/best" active={location.pathname === "/best"}>
-              베스트
-            </MenuLink>
-          </MenuItem>
-        </MenuList>
-      </MenuSection>
-
-      <MenuSection>
-        <MenuTitle>마이페이지</MenuTitle>
-        <MenuList>
-          <MenuItem>
-            <MenuLink
-              to="/mypage/recentview"
-              active={location.pathname === "/mypage/recentview"}
-            >
-              최근본상품
-            </MenuLink>
-          </MenuItem>
-          <MenuItem>
-            <MenuLink
-              to="/mypage/wishlist"
-              active={location.pathname === "/mypage/wishlist"}
-            >
-              찜한상품
-            </MenuLink>
-          </MenuItem>
-          <MenuItem>
-            <MenuLink
-              to="/mypage/reviews"
-              active={location.pathname === "/mypage/reviews"}
-            >
-              리뷰관리
-            </MenuLink>
-          </MenuItem>
-          <MenuItem>
-            <MenuLink
-              to="/mypage/profile"
-              active={location.pathname === "/mypage/profile"}
-            >
-              프로필설정
-            </MenuLink>
-          </MenuItem>
-        </MenuList>
-      </MenuSection>
-
-      <MenuSection>
-        <MenuTitle>채팅</MenuTitle>
-        <MenuList>
-          <MenuItem>
-            <MenuLink
-              to="/chatrooms"
-              active={location.pathname === "/chatrooms"}
-            >
-              채팅방 목록
-            </MenuLink>
-          </MenuItem>
-        </MenuList>
-      </MenuSection>
-    </SidebarContainer>
+    <>
+      <Overlay onClick={onClose} />
+      <SidebarContainer>
+        <MenuSection>
+          <MenuTitle>쇼핑</MenuTitle>
+          <MenuList>
+            <MenuItem>
+              <MenuLink
+                to="/products"
+                active={location.pathname === "/products"}
+              >
+                전체 상품
+              </MenuLink>
+            </MenuItem>
+            <MenuItem>
+              <MenuLink to="/new" active={location.pathname === "/new"}>
+                신상품
+              </MenuLink>
+            </MenuItem>
+            <MenuItem>
+              <MenuLink to="/best" active={location.pathname === "/best"}>
+                베스트
+              </MenuLink>
+            </MenuItem>
+          </MenuList>
+        </MenuSection>
+      </SidebarContainer>
+    </>
   );
 };
 

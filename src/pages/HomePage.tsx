@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 
@@ -262,7 +262,7 @@ const ViewMoreButton = styled(Link)`
   }
 `;
 
-const HomePage: React.FC = () => {
+const HomePage: FC = () => {
   // 임시 상품 데이터
   const products = [
     {
