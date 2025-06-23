@@ -1,65 +1,4 @@
 import { useState, FC, ChangeEvent, FormEvent } from "react";
-import styled from "styled-components";
-
-const Container = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
-`;
-
-const Title = styled.h1`
-  font-size: 2rem;
-  margin-bottom: 2rem;
-  color: ${(props) => props.theme.colors.text};
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-`;
-
-const Label = styled.label`
-  font-size: 1rem;
-  color: ${(props) => props.theme.colors.text};
-`;
-
-const Input = styled.input`
-  padding: 0.75rem;
-  border: 1px solid ${(props) => props.theme.colors.border};
-  border-radius: 4px;
-  font-size: 1rem;
-`;
-
-const TextArea = styled.textarea`
-  padding: 0.75rem;
-  border: 1px solid ${(props) => props.theme.colors.border};
-  border-radius: 4px;
-  font-size: 1rem;
-  min-height: 150px;
-  resize: vertical;
-`;
-
-const Button = styled.button`
-  padding: 1rem;
-  background-color: ${(props) => props.theme.colors.primary};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: ${(props) => props.theme.colors.secondary};
-  }
-`;
 
 const ProductUploadPage: FC = () => {
   const [formData, setFormData] = useState({
@@ -68,6 +7,12 @@ const ProductUploadPage: FC = () => {
     description: "",
     category: "",
     images: [] as File[],
+    detailImages: [] as File[],
+    colors: [] as { name: string; image?: File }[], // 변경됨
+    colorInput: "",
+    sizes: [] as { size: string; stock: number }[],
+    sizeInput: "",
+    stockInput: "",
   });
 
   const handleChange = (
@@ -80,87 +25,276 @@ const ProductUploadPage: FC = () => {
     }));
   };
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (
+    e: ChangeEvent<HTMLInputElement>,
+    type: "images" | "detailImages"
+  ) => {
     if (e.target.files) {
       setFormData((prev) => ({
         ...prev,
-        images: Array.from(e.target.files || []),
+        [type]: Array.from(e.target.files as FileList),
       }));
     }
+  };
+
+  const renderImagePreview = (files: File[]) => {
+    return files.map((file, idx) => (
+      <img
+        key={idx}
+        src={URL.createObjectURL(file)}
+        alt={`preview-${idx}`}
+        className="w-24 h-24 object-cover rounded border"
+      />
+    ));
+  };
+
+  const handleColorAdd = () => {
+    const newColor = formData.colorInput.trim();
+    if (
+      newColor &&
+      !formData.colors.some((c) => c.name === newColor)
+    ) {
+      setFormData((prev) => ({
+        ...prev,
+        colorInput: "",
+        colorImageInput: null,
+      }));
+    }
+  };
+
+  const handleColorRemove = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      colors: prev.colors.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleSizeAdd = () => {
+    const size = formData.sizeInput.trim();
+    const stock = parseInt(formData.stockInput.trim(), 10);
+
+    if (
+      size &&
+      !isNaN(stock) &&
+      !formData.sizes.some((s) => s.size === size)
+    ) {
+      setFormData((prev) => ({
+        ...prev,
+        sizes: [...prev.sizes, { size, stock }],
+        sizeInput: "",
+        stockInput: "",
+      }));
+    }
+  };
+
+  const handleSizeRemove = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      sizes: prev.sizes.filter((_, i) => i !== index),
+    }));
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     console.log("Form submitted:", formData);
+    // TODO: 서버 전송 로직
   };
 
   return (
-    <Container>
-      <Title>상품 등록</Title>
-      <Form onSubmit={handleSubmit}>
-        <FormGroup>
-          <Label htmlFor="title">상품명</Label>
-          <Input
-            type="text"
+    <div className="max-w-3xl mx-auto p-8">
+      <h1 className="text-2xl font-bold mb-8 text-gray-800">상품 등록</h1>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        {/* 상품명 */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="title" className="text-sm font-medium text-gray-700">
+            상품명
+          </label>
+          <input
             id="title"
             name="title"
             value={formData.title}
             onChange={handleChange}
             required
+            className="border border-gray-300 rounded px-4 py-2 text-sm"
           />
-        </FormGroup>
+        </div>
 
-        <FormGroup>
-          <Label htmlFor="price">가격</Label>
-          <Input
+        {/* 가격 */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="price" className="text-sm font-medium text-gray-700">
+            가격
+          </label>
+          <input
             type="number"
             id="price"
             name="price"
             value={formData.price}
             onChange={handleChange}
             required
+            className="border border-gray-300 rounded px-4 py-2 text-sm"
           />
-        </FormGroup>
+        </div>
 
-        <FormGroup>
-          <Label htmlFor="category">카테고리</Label>
-          <Input
-            type="text"
+        {/* 신발 종류 */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="category" className="text-sm font-medium text-gray-700">
+            신발 종류
+          </label>
+          <input
             id="category"
             name="category"
             value={formData.category}
             onChange={handleChange}
             required
+            className="border border-gray-300 rounded px-4 py-2 text-sm"
           />
-        </FormGroup>
+        </div>
 
-        <FormGroup>
-          <Label htmlFor="description">상품 설명</Label>
-          <TextArea
+        {/* 설명 */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="description" className="text-sm font-medium text-gray-700">
+            상품 설명
+          </label>
+          <textarea
             id="description"
             name="description"
             value={formData.description}
             onChange={handleChange}
             required
+            className="border border-gray-300 rounded px-4 py-2 text-sm min-h-[150px]"
           />
-        </FormGroup>
+        </div>
 
-        <FormGroup>
-          <Label htmlFor="images">상품 이미지</Label>
-          <Input
+        {/* 색상 입력 */}
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium text-gray-700">색상</label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              name="colorInput"
+              value={formData.colorInput}
+              onChange={handleChange}
+              placeholder="예: 블랙"
+              className="flex-1 border border-gray-300 rounded px-4 py-2 text-sm"
+            />
+            <button
+              type="button"
+              onClick={handleColorAdd}
+              className="bg-gray-200 px-4 py-2 text-sm rounded hover:bg-gray-300"
+            >
+              추가
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {formData.colors.map((color, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-1 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+              >
+                {color.name}
+                {color.image && (
+                  <img
+                    src={URL.createObjectURL(color.image)}
+                    alt={color.name}
+                    className="w-5 h-5 object-cover rounded"
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleColorRemove(index)}
+                  className="ml-1 text-red-500 hover:underline"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 사이즈/재고 */}
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium text-gray-700">사이즈 & 재고</label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              name="sizeInput"
+              value={formData.sizeInput}
+              onChange={handleChange}
+              placeholder="예: 270"
+              className="w-1/2 border border-gray-300 rounded px-4 py-2 text-sm"
+            />
+            <input
+              type="number"
+              name="stockInput"
+              value={formData.stockInput}
+              onChange={handleChange}
+              placeholder="재고 수량"
+              className="w-1/2 border border-gray-300 rounded px-4 py-2 text-sm"
+            />
+            <button
+              type="button"
+              onClick={handleSizeAdd}
+              className="bg-gray-200 px-4 py-2 rounded text-sm hover:bg-gray-300"
+            >
+              추가
+            </button>
+          </div>
+          <ul className="text-sm text-gray-800 space-y-1">
+            {formData.sizes.map((s, index) => (
+              <li key={index} className="flex justify-between items-center bg-gray-100 px-3 py-1 rounded">
+                <span>{s.size} 사이즈 - {s.stock}개</span>
+                <button onClick={() => handleSizeRemove(index)} className="text-red-500 text-xs hover:underline">삭제</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* 대표 이미지 */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="images" className="text-sm font-medium text-gray-700">
+            대표 이미지
+          </label>
+          <input
             type="file"
             id="images"
-            name="images"
-            onChange={handleImageChange}
             multiple
             accept="image/*"
+            onChange={(e) => handleImageChange(e, "images")}
             required
+            className="border border-gray-300 rounded px-4 py-2 text-sm"
           />
-        </FormGroup>
+          <div className="flex gap-2 mt-2">
+            {renderImagePreview(formData.images)}
+          </div>
+        </div>
 
-        <Button type="submit">상품 등록하기</Button>
-      </Form>
-    </Container>
+        {/* 상세 이미지 */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="detailImages" className="text-sm font-medium text-gray-700">
+            상세 이미지
+          </label>
+          <input
+            type="file"
+            id="detailImages"
+            multiple
+            accept="image/*"
+            onChange={(e) => handleImageChange(e, "detailImages")}
+            className="border border-gray-300 rounded px-4 py-2 text-sm"
+          />
+          <div className="flex gap-2 mt-2">
+            {renderImagePreview(formData.detailImages)}
+          </div>
+        </div>
+
+        {/* 제출 버튼 */}
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition-colors text-sm font-medium"
+        >
+          상품 등록하기
+        </button>
+      </form>
+    </div>
   );
 };
 

@@ -2,6 +2,7 @@ import { lazy, FC, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 import Layout from "./components/layout/Layout";
+import ScrollToTop from "./components/rollback/ScrollToTop";
 import theme from "./theme";
 
 // 페이지 컴포넌트들
@@ -37,6 +38,7 @@ const App: FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <Layout>
+        <ScrollToTop />
         <Suspense fallback={<div>로딩중...</div>}>
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -47,7 +49,7 @@ const App: FC = () => {
             <Route path="/signup" element={<SignUp />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/product/upload" element={<ProductUploadPage />} />
-            <Route path="/product/edit/:id" element={<ProductEditPage />} />
+            <Route path="/products/edit/:id" element={<ProductEditPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/reviews" element={<ReviewsPage />} />

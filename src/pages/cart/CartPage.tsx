@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import styled from "styled-components";
 
@@ -157,6 +157,10 @@ const CheckLabel = styled.label`
   cursor: pointer;
 `;
 
+const StyledCheckbox = styled.input`
+  margin-right: 12px;
+`;
+
 interface ICartItem {
   id: number;
   name: string;
@@ -170,6 +174,7 @@ interface ICartItem {
   size: string;
   product_likes: number;
   store_id: number;
+  image: string;
 }
 
 interface IDiscounts {
@@ -331,7 +336,7 @@ const CartPage: React.FC = () => {
                   onChange={() => toggleItem(index)}
                   style={{ marginRight: 12 }}
                 />
-                <ItemImage src={item.main_image_urls[0]} alt={item.name} />
+                <ItemImage src={item.image} alt={item.name} />
                 <ItemInfo>
                   <ItemName>{item.name}</ItemName>
                   <ItemOption>{item.category} / {item.size}</ItemOption>
@@ -385,8 +390,14 @@ const CartPage: React.FC = () => {
             결제 완료 후 배송이 시작됩니다.<br />
             문의: 고객센터 1234-5678
           </Notice>
-          <CheckLabel>
-            <input type="checkbox" style={{ marginRight: 8 }} checked={isAgree} onChange={ (e) => setIsAgree(e.target.checked)} />
+          <CheckLabel htmlFor="agree-checkbox">
+            <StyledCheckbox
+              id="agree-checkbox"
+              type="checkbox"
+              checked={isAgree}
+              onChange={(e) => setIsAgree(e.target.checked)}
+              title="구매 동의 체크박스"
+            />
             주문 내용을 확인하였으며, 구매에 동의합니다.
           </CheckLabel>
         </SummaryCard>
