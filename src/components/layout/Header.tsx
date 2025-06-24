@@ -15,6 +15,7 @@ const HeaderContainer = styled.header`
   display: flex;
   align-items: center;
   padding: 0 20px;
+  z-index: 40;
 `;
 
 const Logo = styled(Link)`
