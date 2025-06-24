@@ -45,11 +45,10 @@ export default function ProductDetailPage() {
   const thumbnailsPerPage = 6
   const [startIndex, setStartIndex] = useState(0)
   const [showFailModal, setShowFailModal] = useState(false);
-  const [showWarningModal, setShowWarningModal] = useState(false);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [showEmptySelectionModal, setShowEmptySelectionModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [proceedToCart, setProceedToCart] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
 
   const productData = products.find((p) => String(p.id) === id)
   const brandData = brands.find((b) => String(b.store_id) === String(productData?.store_id))
@@ -87,7 +86,8 @@ export default function ProductDetailPage() {
 
   const sizeOptions = productData?.size_stock_list?.map((item: any) => ({
     size: item.size,
-    stock: item.stock_quantity
+    stock: item.stock_quantity,
+    disabled: item.stock_quantity === 0, // 품절 여부
   })) ?? []
 
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([])
@@ -195,12 +195,7 @@ export default function ProductDetailPage() {
       return;
     }
 
-    if (!proceedToCart) {
-      setShowWarningModal(true);
-      return;
-    }
-
-    // 실제 장바구니 추가 로직
+    // 장바구니 추가 로직
     const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
     const newItems = selectedItems.map(item => ({
       id: `${product.id}-${item.size}`,
@@ -218,7 +213,8 @@ export default function ProductDetailPage() {
     const updatedCart = [...currentCart, ...newItems];
     localStorage.setItem('cart', JSON.stringify(updatedCart));
 
-    navigate('/cart');
+    // 여기서 navigate('/cart') 대신 Warning 모달 열기
+    setShowWarning(true);
   };
 
   const handleOrder = () => {
@@ -270,21 +266,18 @@ export default function ProductDetailPage() {
           onClose={() => setShowEmptySelectionModal(false)}
         />
       )}
-      {showWarningModal && (
+      {showWarning && (
         <Warning
-          title="재고 부족"
-          message="선택한 상품 중 재고가 부족한 항목이 있습니다. 그래도 장바구니에 추가하시겠습니까?"
-          onClose={() => {
-            setShowWarningModal(false);
-            setProceedToCart(false);
-          }}
+          open={showWarning}
+          title="장바구니 담기 완료"
+          message="장바구니로 이동하시겠습니까?"
           onConfirm={() => {
-            setShowWarningModal(false);
-            setProceedToCart(true);
-            handleCart(); // 다시 호출해서 실제로 장바구니에 추가
+            setShowWarning(false);
+            navigate('/cart');
           }}
-          confirmText="네, 추가할게요"
-          cancelText="아니요"
+          onCancel={() => {
+            setShowWarning(false);
+          }}
         />
       )}
       {showEditModal && (
@@ -749,7 +742,7 @@ export default function ProductDetailPage() {
                 <button
                   type="button"
                   onClick={handleCart}
-                  className="flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  className="flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-900 hover:bg-gray-100"
                 >
                   <ShoppingBagIcon className="w-5 h-5 mr-2" aria-hidden="true" />
                   장바구니
@@ -759,7 +752,7 @@ export default function ProductDetailPage() {
                 <button
                   type="button"
                   onClick={handleOrder}
-                  className="flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  className="flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-900 hover:bg-gray-100"
                 >
                   <WalletIcon className="w-5 h-5 mr-2" aria-hidden="true" />
                   구매하기

@@ -11,9 +11,10 @@ import {
 import { ChevronUpDownIcon } from '@heroicons/react/16/solid'
 
 type Option = {
-    size: string
-    stock: number
-}
+    size: string;
+    stock: number;
+    disabled: boolean;
+};
 
 interface SelectBoxProps {
     options: Option[]
@@ -21,7 +22,7 @@ interface SelectBoxProps {
 }
 
 export default function SelectBox({ options, onChange }: SelectBoxProps) {
-    const placeholder = { size: '옵션 선택', stock: -1 }
+    const placeholder = { size: '옵션 선택', stock: -1, disabled: false }
     const fullOptions = [placeholder, ...options]
 
     const [selected, setSelected] = useState<Option>(placeholder)
