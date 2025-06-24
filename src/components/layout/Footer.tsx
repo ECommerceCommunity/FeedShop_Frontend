@@ -3,9 +3,9 @@ import styled from "styled-components";
 import { Link } from "react-router-dom";
 
 const FooterContainer = styled.footer`
-  background-color: var(--background-color);
   padding: 40px 20px;
   border-top: 1px solid var(--border-color);
+  background-color: var(--background-color);
   text-align: center;
 `;
 
@@ -15,6 +15,7 @@ const FooterContent = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 40px;
+  justify-content: flex-end;
 `;
 
 const FooterSection = styled.div`

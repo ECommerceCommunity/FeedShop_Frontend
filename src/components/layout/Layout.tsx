@@ -1,12 +1,9 @@
-import { FC, ReactNode, useState } from "react";
+import { FC, useState } from "react";
+import { Outlet } from "react-router-dom"; // ✅ 추가
 import styled from "styled-components";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
-
-interface LayoutProps {
-  children: ReactNode;
-}
 
 const LayoutContainer = styled.div`
   display: flex;
@@ -21,16 +18,16 @@ const MainContent = styled.main<{ sidebarOpen: boolean }>`
   background-color: var(--background-color);
 `;
 
-const Layout: FC<LayoutProps> = ({ children }) => {
+const Layout: FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
     <LayoutContainer>
       <Header onMenuClick={() => setSidebarOpen((prev) => !prev)} />
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <MainContent sidebarOpen={sidebarOpen}>
-        {children}
-        <Footer />
+        <Outlet />
       </MainContent>
+      <Footer />
     </LayoutContainer>
   );
 };

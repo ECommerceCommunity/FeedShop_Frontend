@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import styled from "styled-components";
 import { Link, useLocation } from "react-router-dom";
 
@@ -11,7 +11,6 @@ const SidebarContainer = styled.aside`
   background-color: var(--background-color);
   box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
   padding: 20px 0;
-  z-index: 900;
 `;
 
 const MenuSection = styled.div`
@@ -61,11 +60,9 @@ const Overlay = styled.div`
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.2);
-  z-index: 899;
 `;
 
-const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
+const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
   const location = useLocation();
   if (!open) return null;
   return (
@@ -91,6 +88,25 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             <MenuItem>
               <MenuLink to="/best" active={location.pathname === "/best"}>
                 베스트
+              </MenuLink>
+            </MenuItem>
+          </MenuList>
+          <MenuTitle>마이페이지</MenuTitle>
+          <MenuList>
+            <MenuItem>
+              <MenuLink
+                to="/wishlist"
+                active={location.pathname === "/wishlist"}
+              >
+                찜한 상품
+              </MenuLink>
+            </MenuItem>
+            <MenuItem>
+              <MenuLink
+                to="/recentview"
+                active={location.pathname === "/recentview"}
+              >
+                최근 본 상품
               </MenuLink>
             </MenuItem>
           </MenuList>

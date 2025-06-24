@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, FormEvent } from "react";
@@ -11,10 +12,10 @@ const HeaderContainer = styled.header`
   height: 60px;
   background-color: var(--background-color);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
   display: flex;
   align-items: center;
   padding: 0 20px;
+  z-index: 40;
 `;
 
 const Logo = styled(Link)`
@@ -64,12 +65,27 @@ const SearchForm = styled.form`
   margin-right: 8px;
 `;
 
+const SearchWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+`;
+
 const SearchInput = styled.input`
-  padding: 6px 12px;
+  padding: 6px 32px 6px 12px; /* 오른쪽 공간 확보 */
   border-radius: 4px;
   border: 1px solid #ccc;
   font-size: 14px;
   width: 220px;
+`;
+
+const SearchIcon = styled(MagnifyingGlassIcon)`
+  position: absolute;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  color: var(--primary-color);
+  cursor: pointer; /* 손가락 커서 표시 */
 `;
 
 interface HeaderProps {
@@ -98,12 +114,15 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
       </Nav>
       <UserSection>
         <SearchForm onSubmit={handleSearch}>
-          <SearchInput
-            type="text"
-            placeholder="검색어를 입력하세요"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <SearchWrapper>
+            <SearchInput
+              type="text"
+              placeholder="검색어를 입력하세요"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <SearchIcon />
+          </SearchWrapper>
         </SearchForm>
         <NavLink to="/cart">장바구니</NavLink>
         <NavLink to="/mypage">마이페이지</NavLink>
