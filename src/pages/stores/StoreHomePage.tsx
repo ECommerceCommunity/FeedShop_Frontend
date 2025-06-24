@@ -28,10 +28,12 @@ const StoreHomePage: FC = () => {
       )}
       <div className="min-h-screen flex flex-col bg-slate-50">
         {mobileMenuOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          <button
+            type="button"
+            aria-label="모바일 메뉴 닫기"
             onClick={toggleMobileMenu}
-          ></div>
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          />
         )}
 
         <main className="pt-[60px] min-h-[calc(100vh-60px)] transition-all ml-0 md:ml-[60px]">

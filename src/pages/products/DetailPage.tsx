@@ -71,7 +71,7 @@ export default function ProductDetailPage() {
   const discountDataTyped = discountDataRaw
     ? {
       ...discountDataRaw,
-      discount_type: discountDataRaw.discount_type as '정률' | '정액',
+      discount_type: (discountDataRaw.discount_type ?? '정률') as '정률' | '정액',
     }
     : undefined;
   const safeDiscount = isDiscountValid(discountDataTyped)
@@ -196,7 +196,7 @@ export default function ProductDetailPage() {
     }
 
     // 장바구니 추가 로직
-    const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const currentCart = JSON.parse(localStorage.getItem('cart') ?? '[]')
     const newItems = selectedItems.map(item => ({
       id: `${product.id}-${item.size}`,
       name: product.name,
@@ -439,7 +439,7 @@ export default function ProductDetailPage() {
                                   <div className="flex items-center">
                                     {[...Array(5)].map((_, idx) => (
                                       <StarIcon
-                                        key={idx}
+                                        key={`review-${review.id}-star-${idx}`}
                                         className={`w-4 h-4 ${idx < review.rating ? 'text-yellow-400' : 'text-gray-300'}`}
                                       />
                                     ))}
@@ -449,7 +449,7 @@ export default function ProductDetailPage() {
                                     <div className="mt-3 flex flex-wrap gap-2">
                                       {review.images.map((img, idx) => (
                                         <img
-                                          key={idx}
+                                          key={`review-${review.id}-image-${idx}`}
                                           src={img}
                                           alt={`리뷰 이미지 ${idx + 1}`}
                                           className="w-24 h-24 object-cover rounded"
