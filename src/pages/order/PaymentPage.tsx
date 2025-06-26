@@ -82,9 +82,9 @@ const PaymentButton = styled.button<{ selected: boolean }>`
   flex: 1;
   padding: 10px;
   border-radius: 6px;
-  border: 2px solid ${(props) => (props.selected ? '#3b82f6' : '#e5e7eb')};
-  background: ${(props) => (props.selected ? '#eff6ff' : '#f9fafb')};
-  color: ${(props) => (props.selected ? '#2563eb' : '#374151')};
+  border: 2px solid ${(props) => (props.selected ? "#3b82f6" : "#e5e7eb")};
+  background: ${(props) => (props.selected ? "#eff6ff" : "#f9fafb")};
+  color: ${(props) => (props.selected ? "#2563eb" : "#374151")};
   font-weight: 600;
   cursor: pointer;
 
@@ -131,11 +131,12 @@ const Button = styled.button`
 `;
 
 const PrimaryButton = styled(Button)<{ disabled?: boolean }>`
-  background: ${({ disabled }) => disabled ? '#a5b4fc' : 'linear-gradient(90deg, #60a5fa, #3b82f6)'};
+  background: ${({ disabled }) =>
+    disabled ? "#a5b4fc" : "linear-gradient(90deg, #60a5fa, #3b82f6)"};
   color: #fff;
   margin-bottom: 12px;
-  cursor: ${({ disabled }) => disabled ? 'not-allowed' : 'pointer'};
-  opacity: ${({ disabled }) => disabled ? 0.6 : 1};
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
+  opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
 `;
 
 const SecondaryButton = styled(Button)`
@@ -199,10 +200,12 @@ const PaymentPage: React.FC = () => {
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [showCardInfoModal, setShowCardInfoModal] = useState(false);
 
-  const handleDeliveryChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleDeliveryChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setShippingInfo(prev => ({ ...prev, [name]: value }));
-  }
+    setShippingInfo((prev) => ({ ...prev, [name]: value }));
+  };
 
   const totalOriginalPrice = products.reduce(
     (sum, item) => sum + item.originalPrice * item.quantity,
@@ -210,9 +213,7 @@ const PaymentPage: React.FC = () => {
   );
 
   const totalDiscount = products.reduce(
-    (sum, item) =>
-      sum +
-      (item.originalPrice - item.price) * item.quantity,
+    (sum, item) => sum + (item.originalPrice - item.price) * item.quantity,
     0
   );
 
@@ -227,27 +228,63 @@ const PaymentPage: React.FC = () => {
       return;
     }
 
-    if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.address || !shippingInfo.detailAddress) {
+    if (
+      !shippingInfo.name ||
+      !shippingInfo.phone ||
+      !shippingInfo.address ||
+      !shippingInfo.detailAddress
+    ) {
       setShowAddressModal(true);
       return;
     }
-    if (selectedMethod === "카드" &&
-      (!shippingInfo.cardNumber || !shippingInfo.cardExpiry || !shippingInfo.cardCvv)) {
+    if (
+      selectedMethod === "카드" &&
+      (!shippingInfo.cardNumber ||
+        !shippingInfo.cardExpiry ||
+        !shippingInfo.cardCvv)
+    ) {
       setShowCardInfoModal(true);
-      return; 
-  }
+      return;
+    }
+
+    const order_id = generateRandomOrderId();
+
+    const orderData = {
+      order_id,
+      user_id: 1,
+      status: "ORDERED",
+      delivery_fee: shipping,
+      total_price: finalPaidAmount,
+      total_discount_price: totalDiscount,
+      currency: "KRW",
+      used_points: usePoint ? usedPoints : 0,
+      earned_points: earnedPoints,
+      delivery_address: shippingInfo.address,
+      detail_delivery_address: shippingInfo.detailAddress,
+      postal_code: shippingInfo.zipcode,
+      recipient_name: shippingInfo.name,
+      recipient_phone: shippingInfo.phone,
+      delivery_message: shippingInfo.request,
+      payment_method: selectedMethod,
+      card_number: selectedMethod === "카드" ? shippingInfo.cardNumber : null,
+      card_expiry: selectedMethod === "카드" ? shippingInfo.cardExpiry : null,
+      card_cvc: selectedMethod === "카드" ? shippingInfo.cardCvv : null,
+      ordered_at: new Date().toISOString(),
+      deleted_at: null,
+      products,
+    };
+
+    const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]");
+    existingOrders.push(orderData);
+    localStorage.setItem("orders", JSON.stringify(existingOrders));
 
     nav("/checkout?result=success", {
-      state: {
-        products,
-        totalPrice: finalPaidAmount,
-        shipping,
-        usedPoints: usePoint ? usedPoints : 0,
-        earnedPoints,
-        selectedMethod,
-        shippingInfo
-      }
+      state: { order_id },
     });
+  };
+
+  const generateRandomOrderId = () => {
+    return Math.floor(1000000 + Math.random() * 9000000); // 1000000 ~ 9999999
   };
 
   return (
@@ -259,7 +296,7 @@ const PaymentPage: React.FC = () => {
           onClose={() => setShowAgreeModal(false)}
         />
       )}
-    
+
       {showAddressModal && (
         <Fail
           title="배송 정보 필요"
@@ -267,7 +304,7 @@ const PaymentPage: React.FC = () => {
           onClose={() => setShowAddressModal(false)}
         />
       )}
-      
+
       {showCardInfoModal && (
         <Fail
           title="카드 정보 필요"
@@ -275,142 +312,196 @@ const PaymentPage: React.FC = () => {
           onClose={() => setShowCardInfoModal(false)}
         />
       )}
-    <Container>
-      <FormSection>
-        <ProductHeader>구매 상품 정보</ProductHeader>
-        <ProductPreview>
-          {products.map((product) => (
-            <div key={product.id}>
-              {product.name} / {product.price.toLocaleString()}원 / {product.option} × {product.quantity}개
-            </div>
-          ))}
-        </ProductPreview>
+      <Container>
+        <FormSection>
+          <ProductHeader>구매 상품 정보</ProductHeader>
+          <ProductPreview>
+            {products.map((product) => (
+              <div key={product.id}>
+                {product.name} / {product.price.toLocaleString()}원 /{" "}
+                {product.option} × {product.quantity}개
+              </div>
+            ))}
+          </ProductPreview>
 
-        <SectionTitle>포인트 사용</SectionTitle>
-        <CheckLabel>
-          <input
-            type="checkbox"
-            checked={usePoint}
-            onChange={(e) => setUsePoint(e.target.checked)}
-            style={{marginRight: 8, marginBottom: 16}}
-          />
-          포인트 사용하기
-        </CheckLabel>
-        {usePoint && (
-          <InputRow>
-            <Input
-              type="number"
-              min={0}
-              max={maxPoints}
-              value={usedPoints}
-              onChange={(e) => 
-                setUsedPoints(Math.min(Number(e.target.value), maxPoints))
-              } placeholder="사용할 포인트를 입력하세요" />
-            <span style={{ fontSize: 14, color: "#6b7280"}}>
-              보유 포인트: {maxPoints.toLocaleString()}P
-            </span>
-          </InputRow>
-        )}
-        <SectionTitle>배송 정보</SectionTitle>
-        <InputRow>
-          <Input name="name" value={shippingInfo.name} onChange={handleDeliveryChange} placeholder="이름을 입력하세요" />
-          <Input name="phone" value={shippingInfo.phone} onChange={handleDeliveryChange} placeholder="연락처를 입력하세요" />
-        </InputRow>
-        <InputRow>
-          <Input name="zipcode" value={shippingInfo.zipcode} onChange={handleDeliveryChange} placeholder="우편번호" />
-          <Button style={{ maxWidth: 120 }}>우편번호 검색</Button>
-        </InputRow>
-        <InputRow>
-          <Input name="address" value={shippingInfo.address} onChange={handleDeliveryChange} placeholder="기본 주소" />
-          <Input name="detailAddress" value={shippingInfo.detailAddress} onChange={handleDeliveryChange} placeholder="상세 주소를 입력하세요" />
-        </InputRow>
-        <Select name="request" value={shippingInfo.request} onChange={handleDeliveryChange}>
-          <option value="">배송 요청사항을 선택하세요</option>
-          <option value="문 앞에 두고 벨 눌러주세요">문 앞에 두고 벨 눌러주세요</option>
-          <option value="경비실에 맡겨주세요">경비실에 맡겨주세요</option>
-        </Select>
-
-        <SectionTitle>결제 방법</SectionTitle>
-        <PaymentMethods>
-          {["카드", "무통장입금", "간편결제", "휴대폰결제"].map((method) => (
-            <PaymentButton
-              key={method}
-              onClick={() => setSelectedMethod(method)}
-              selected={selectedMethod === method}
-            >
-              {method}
-            </PaymentButton>
-          ))}
-        </PaymentMethods>
-
-        {selectedMethod === "카드" && (
-          <>
-            <Input style={{ marginBottom: 14 }} name="cardNumber" placeholder="카드 번호" onChange={handleDeliveryChange} />
-            <InputRow>
-              <Input name="cardExpiry" placeholder="MM/YY" onChange={handleDeliveryChange}/>
-              <Input name="cardCvv" placeholder="CVV" maxLength={3} onChange={handleDeliveryChange} />
-            </InputRow>
-          </>
-        )}
-      </FormSection>
-
-      <SummarySection>
-        <SummaryCard>
-          <h4 style={{ marginBottom: 18 }}>주문 요약</h4>
-          <SummaryRow>
-            <span>상품 금액</span>
-            <span>{totalOriginalPrice.toLocaleString()}원</span>
-          </SummaryRow>
-          <SummaryRow>
-            <span>할인 금액</span>
-            <span style={{ color: "#ef4444" }}>-{totalDiscount.toLocaleString()}원</span>
-          </SummaryRow>
-          <SummaryRow>
-            <span>포인트 사용</span>
-            <span>-{usePoint ? usedPoints.toLocaleString(): 0}원</span>
-          </SummaryRow>
-          <SummaryRow>
-            <span>배송비</span>
-            <span>{shipping === 0 ? "무료" : `${shipping.toLocaleString()}원`}</span>
-          </SummaryRow>
-          <hr style={{ margin: "16px 0" }} />
-          <TotalPrice>{finalPaidAmount.toLocaleString()}원</TotalPrice>
-
-          <SummaryRow>
-            <span style={{fontSize: 14, color: "#6b7280"}}>
-              적립 예정 포인트
-            </span>
-            <span style={{fontSize: 14, fontWeight: 600}}>
-              {earnedPoints.toLocaleString()}P
-            </span>
-          </SummaryRow>
-          <PrimaryButton onClick={onClickPayment} disabled={!isAgree}>
-            결제하기
-          </PrimaryButton>
-          <SecondaryButton onClick={() => nav("/products")}>계속 쇼핑하기</SecondaryButton>
-
-          <Notice>
-            <b>안내사항</b>
-            <br />
-            50,000원 이상 구매 시 배송비 무료
-            <br />
-            주문 완료 후 배송 조회는 마이페이지에서 가능합니다.
-            <br />
-            무통장입금은 입금 확인 후 배송이 시작됩니다.
-          </Notice>
-
+          <SectionTitle>포인트 사용</SectionTitle>
           <CheckLabel>
             <input
               type="checkbox"
-              checked={isAgree}
-              onChange={(e) => setIsAgree(e.target.checked)}
-              style={{ marginRight: 8 }}
+              checked={usePoint}
+              onChange={(e) => setUsePoint(e.target.checked)}
+              style={{ marginRight: 8, marginBottom: 16 }}
             />
-            주문 내용을 확인하였으며, 결제에 동의합니다.
+            포인트 사용하기
           </CheckLabel>
-        </SummaryCard>
-      </SummarySection>
-    </Container>
+          {usePoint && (
+            <InputRow>
+              <Input
+                type="number"
+                min={0}
+                max={maxPoints}
+                value={usedPoints}
+                onChange={(e) =>
+                  setUsedPoints(Math.min(Number(e.target.value), maxPoints))
+                }
+                placeholder="사용할 포인트를 입력하세요"
+              />
+              <span style={{ fontSize: 14, color: "#6b7280" }}>
+                보유 포인트: {maxPoints.toLocaleString()}P
+              </span>
+            </InputRow>
+          )}
+          <SectionTitle>배송 정보</SectionTitle>
+          <InputRow>
+            <Input
+              name="name"
+              value={shippingInfo.name}
+              onChange={handleDeliveryChange}
+              placeholder="이름을 입력하세요"
+            />
+            <Input
+              name="phone"
+              value={shippingInfo.phone}
+              onChange={handleDeliveryChange}
+              placeholder="연락처를 입력하세요"
+            />
+          </InputRow>
+          <InputRow>
+            <Input
+              name="zipcode"
+              value={shippingInfo.zipcode}
+              onChange={handleDeliveryChange}
+              placeholder="우편번호"
+            />
+            <Button style={{ maxWidth: 120 }}>우편번호 검색</Button>
+          </InputRow>
+          <InputRow>
+            <Input
+              name="address"
+              value={shippingInfo.address}
+              onChange={handleDeliveryChange}
+              placeholder="기본 주소"
+            />
+            <Input
+              name="detailAddress"
+              value={shippingInfo.detailAddress}
+              onChange={handleDeliveryChange}
+              placeholder="상세 주소를 입력하세요"
+            />
+          </InputRow>
+          <Select
+            name="request"
+            value={shippingInfo.request}
+            onChange={handleDeliveryChange}
+          >
+            <option value="">배송 요청사항을 선택하세요</option>
+            <option value="문 앞에 두고 벨 눌러주세요">
+              문 앞에 두고 벨 눌러주세요
+            </option>
+            <option value="경비실에 맡겨주세요">경비실에 맡겨주세요</option>
+          </Select>
+
+          <SectionTitle>결제 방법</SectionTitle>
+          <PaymentMethods>
+            {["카드", "무통장입금", "간편결제", "휴대폰결제"].map((method) => (
+              <PaymentButton
+                key={method}
+                onClick={() => setSelectedMethod(method)}
+                selected={selectedMethod === method}
+              >
+                {method}
+              </PaymentButton>
+            ))}
+          </PaymentMethods>
+
+          {selectedMethod === "카드" && (
+            <>
+              <Input
+                style={{ marginBottom: 14 }}
+                name="cardNumber"
+                placeholder="카드 번호"
+                onChange={handleDeliveryChange}
+              />
+              <InputRow>
+                <Input
+                  name="cardExpiry"
+                  placeholder="MM/YY"
+                  onChange={handleDeliveryChange}
+                />
+                <Input
+                  name="cardCvv"
+                  placeholder="CVV"
+                  maxLength={3}
+                  onChange={handleDeliveryChange}
+                />
+              </InputRow>
+            </>
+          )}
+        </FormSection>
+
+        <SummarySection>
+          <SummaryCard>
+            <h4 style={{ marginBottom: 18 }}>주문 요약</h4>
+            <SummaryRow>
+              <span>상품 금액</span>
+              <span>{totalOriginalPrice.toLocaleString()}원</span>
+            </SummaryRow>
+            <SummaryRow>
+              <span>할인 금액</span>
+              <span style={{ color: "#ef4444" }}>
+                -{totalDiscount.toLocaleString()}원
+              </span>
+            </SummaryRow>
+            <SummaryRow>
+              <span>포인트 사용</span>
+              <span>-{usePoint ? usedPoints.toLocaleString() : 0}원</span>
+            </SummaryRow>
+            <SummaryRow>
+              <span>배송비</span>
+              <span>
+                {shipping === 0 ? "무료" : `${shipping.toLocaleString()}원`}
+              </span>
+            </SummaryRow>
+            <hr style={{ margin: "16px 0" }} />
+            <TotalPrice>{finalPaidAmount.toLocaleString()}원</TotalPrice>
+
+            <SummaryRow>
+              <span style={{ fontSize: 14, color: "#6b7280" }}>
+                적립 예정 포인트
+              </span>
+              <span style={{ fontSize: 14, fontWeight: 600 }}>
+                {earnedPoints.toLocaleString()}P
+              </span>
+            </SummaryRow>
+            <PrimaryButton onClick={onClickPayment} disabled={!isAgree}>
+              결제하기
+            </PrimaryButton>
+            <SecondaryButton onClick={() => nav("/products")}>
+              계속 쇼핑하기
+            </SecondaryButton>
+
+            <Notice>
+              <b>안내사항</b>
+              <br />
+              50,000원 이상 구매 시 배송비 무료
+              <br />
+              주문 완료 후 배송 조회는 마이페이지에서 가능합니다.
+              <br />
+              무통장입금은 입금 확인 후 배송이 시작됩니다.
+            </Notice>
+
+            <CheckLabel>
+              <input
+                type="checkbox"
+                checked={isAgree}
+                onChange={(e) => setIsAgree(e.target.checked)}
+                style={{ marginRight: 8 }}
+              />
+              주문 내용을 확인하였으며, 결제에 동의합니다.
+            </CheckLabel>
+          </SummaryCard>
+        </SummarySection>
+      </Container>
     </>
   );
 };

@@ -92,3 +92,28 @@ export type ShippingInfo = {
   cardExpiry?: string;
   cardCvv?: string;
 }
+
+  export type Order = {
+    order_id: number;
+    user_id: number;
+    status: string;
+    delivery_fee: number;
+    total_price: number;
+    total_discount_price: number;
+    currency: string;
+    used_points: number;
+    earned_points: number;
+    delivery_address: string;
+    detail_delivery_address: string;
+    postal_code: string;
+    recipient_name: string;
+    recipient_phone: string;
+    delivery_message: string;
+    payment_method: string;
+    card_number?: string;
+    card_expiry?: string;
+    card_cvc?: string;
+    ordered_at: string;
+    deleted_at: string | null;
+    products: CartItem[];
+  }
