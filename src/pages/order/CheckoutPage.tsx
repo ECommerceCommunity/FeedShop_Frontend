@@ -83,13 +83,13 @@ const CheckoutPage: React.FC = () => {
   const location = useLocation();
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [orderInfo, setOrderInfo] = useState<Order | null>(null);
-  const order_id = location.state?.order_id;
+  const orderId = location.state?.orderId;
 
   useEffect(() => {
     const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-    const found = orders.find((order: Order) => order.order_id === order_id);
-    setOrderInfo(found);
-  }, [order_id]);
+    const order = orders.find((order: any) => orderId === order.orderId);
+    setOrderInfo(order);
+  }, [orderId]);
 
   if (orderInfo === null) {
     return null;
@@ -108,28 +108,29 @@ const CheckoutPage: React.FC = () => {
         <Card>
           <SectionTitle>배송 정보</SectionTitle>
           <InfoRow>
-            <Bold>수령인:</Bold> {orderInfo.recipient_name}
+            <Bold>수령인:</Bold> {orderInfo.shippingInfo.recipientName}
           </InfoRow>
           <InfoRow>
-            <Bold>연락처:</Bold> {orderInfo.recipient_phone}
+            <Bold>연락처:</Bold> {orderInfo.shippingInfo.recipientPhone}
           </InfoRow>
           <InfoRow>
-            <Bold>주소:</Bold> ({orderInfo.postal_code}){" "}
-            {orderInfo.delivery_address} {orderInfo.detail_delivery_address}
+            <Bold>주소:</Bold> ({orderInfo.shippingInfo.postalCode}){" "}
+            {orderInfo.shippingInfo.deliveryAddress}{" "}
+            {orderInfo.shippingInfo.detailDeliveryAddress}
           </InfoRow>
           <InfoRow>
-            <Bold>요청사항:</Bold> {orderInfo.delivery_message || "없음"}
+            <Bold>요청사항:</Bold>{" "}
+            {orderInfo.shippingInfo.deliveryMessage || "없음"}
           </InfoRow>
         </Card>
 
         <Card>
           <SectionTitle>주문 상품</SectionTitle>
           <ProductList>
-            {orderInfo.products.map((product) => (
-              <ProductItem key={product.id}>
-                {product.name} / {product.price} /{" "}
-                {product.price.toLocaleString()}원 / {product.option} ×{" "}
-                {product.quantity}개
+            {orderInfo.items.map((item) => (
+              <ProductItem key={item.id}>
+                {item.name} / {item.price.toLocaleString()}원 / {item.option} ×{" "}
+                {item.quantity}개
               </ProductItem>
             ))}
           </ProductList>
@@ -138,19 +139,15 @@ const CheckoutPage: React.FC = () => {
         <Card>
           <SectionTitle>결제 정보</SectionTitle>
           <InfoRow>
-            <Bold>결제 수단:</Bold> {orderInfo.payment_method}
+            <Bold>결제 수단:</Bold> {orderInfo.paymentInfo.paymentMethod}
           </InfoRow>
-          {orderInfo.payment_method === "카드" && (
+          {orderInfo.paymentInfo.paymentMethod === "카드" && (
             <>
               <InfoRow>
-                <Bold>카드 번호:</Bold>{" "}
-                {orderInfo.card_number?.replace(
-                  /\d{12}(\d{4})/,
-                  "**** **** **** $1"
-                )}
+                <Bold>카드 번호:</Bold> {orderInfo.paymentInfo.cardNumber}
               </InfoRow>
               <InfoRow>
-                <Bold>유효 기간:</Bold> {orderInfo.card_expiry}
+                <Bold>유효 기간:</Bold> {orderInfo.paymentInfo.cardExpiry}
               </InfoRow>
             </>
           )}
@@ -159,28 +156,28 @@ const CheckoutPage: React.FC = () => {
             <TotalRow>
               <span>배송비</span>
               <span>
-                {orderInfo.delivery_fee === 0
+                {orderInfo.deliveryFee === 0
                   ? "무료"
-                  : `${orderInfo.delivery_fee?.toLocaleString()}원`}
+                  : `${orderInfo.deliveryFee?.toLocaleString()}원`}
               </span>
             </TotalRow>
             <TotalRow>
               <span>사용한 포인트</span>
-              <span>-{(orderInfo.used_points ?? 0).toLocaleString()}원</span>
+              <span>-{(orderInfo.usedPoints ?? 0).toLocaleString()}원</span>
             </TotalRow>
             <TotalRow>
               <span>총 결제 금액</span>
-              <span>{orderInfo.total_price?.toLocaleString()}원</span>
+              <span>{orderInfo.totalPrice?.toLocaleString()}원</span>
             </TotalRow>
             <TotalAmount>
-              {orderInfo.total_price?.toLocaleString()}원 결제 완료
+              {orderInfo.totalPrice?.toLocaleString()}원 결제 완료
             </TotalAmount>
             <TotalRow style={{ marginTop: 12 }}>
               <span style={{ fontSize: 14, color: "#6b7280" }}>
                 적립 예정 포인트
               </span>
               <span style={{ fontSize: 14, fontWeight: 600 }}>
-                {orderInfo.earned_points?.toLocaleString() ?? 0}P
+                {orderInfo.earnedPoints?.toLocaleString() ?? 0}P
               </span>
             </TotalRow>
           </TotalSummary>

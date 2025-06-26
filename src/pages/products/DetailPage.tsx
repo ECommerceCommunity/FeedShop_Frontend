@@ -195,9 +195,14 @@ export default function ProductDetailPage() {
       return;
     }
 
+    // 여기서 navigate('/cart') 대신 Warning 모달 열기
+    setShowWarning(true);
+  };
+
+  const addCart = () => {
     // 장바구니 추가 로직
-    const currentCart = JSON.parse(localStorage.getItem('cart') ?? '[]')
-    const newItems = selectedItems.map(item => ({
+    const currentCart = JSON.parse(localStorage.getItem("cart") ?? "[]");
+    const newItems = selectedItems.map((item) => ({
       id: `${product.id}-${item.size}`,
       name: product.name,
       option: item.size,
@@ -207,14 +212,12 @@ export default function ProductDetailPage() {
         ? Math.round(((product.price - discountPrice) / product.price) * 100)
         : 0,
       quantity: item.quantity,
-      image: product.images?.[0]?.src || ''
+      image: product.images?.[0]?.src || "",
+      selected: true,
     }));
 
     const updatedCart = [...currentCart, ...newItems];
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-
-    // 여기서 navigate('/cart') 대신 Warning 모달 열기
-    setShowWarning(true);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
   };
 
   const handleOrder = () => {
@@ -233,10 +236,11 @@ export default function ProductDetailPage() {
         ? Math.round(((product.price - discountPrice) / product.price) * 100)
         : 0,
       quantity: item.quantity,
-      image: product.images[0]?.src || '',
+      image: product.images[0]?.src || "",
+      selected: true,
     }));
 
-    navigate('/payment', {
+    navigate("/payment", {
       state: {
         products: newItems,
       },
@@ -273,7 +277,8 @@ export default function ProductDetailPage() {
           message="장바구니로 이동하시겠습니까?"
           onConfirm={() => {
             setShowWarning(false);
-            navigate('/cart');
+            addCart();
+            navigate("/cart");
           }}
           onCancel={() => {
             setShowWarning(false);

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
+import { Order } from "types/types";
 
 const MyPageContainer = styled.div`
   max-width: 1200px;
@@ -137,17 +138,9 @@ const OrderStatus = styled.span<{ status: string }>`
 `;
 
 const MyPage: React.FC = () => {
-  const [recentOrders, setRecentOrders] = useState<
-    {
-      order_id: number;
-      ordered_at: string;
-      status: string;
-      products: { name: string }[];
-    }[]
-  >([]);
+  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   // 임시 사용자 데이터
   const user = {
-    id: 1,
     name: "홍길동",
     email: "hong@example.com",
   };
@@ -155,15 +148,14 @@ const MyPage: React.FC = () => {
   useEffect(() => {
     const orders = JSON.parse(localStorage.getItem("orders") || "[]");
     const userOrders = orders
-      .filter((order: any) => order.user_id === user.id)
       .sort(
         (a: any, b: any) =>
-          new Date(b.ordered_at).getTime() - new Date(a.ordered_at).getTime()
+          new Date(b.orderedAt).getTime() - new Date(a.orderedAt).getTime()
       )
       .slice(0, 5);
 
     setRecentOrders(userOrders);
-  }, [user.id]);
+  }, []);
 
   return (
     <MyPageContainer>
@@ -199,16 +191,16 @@ const MyPage: React.FC = () => {
             <p>최근 주문 내역이 없습니다.</p>
           ) : (
             recentOrders.map((order) => (
-              <OrderItem key={order.order_id}>
+              <OrderItem key={order.orderId}>
                 <OrderHeader>
-                  <OrderNumber>주문번호: {order.order_id}</OrderNumber>
+                  <OrderNumber>주문번호: {order.orderId}</OrderNumber>
                   <OrderDate>
-                    {new Date(order.ordered_at).toLocaleDateString()}
+                    {new Date(order.orderedAt).toLocaleDateString()}
                   </OrderDate>
                 </OrderHeader>
                 <div>
                   <OrderContent>
-                    {order.products.map((p: any) => (
+                    {order.items.map((p: any) => (
                       <div key={p.name}>{p.name}</div>
                     ))}
                   </OrderContent>

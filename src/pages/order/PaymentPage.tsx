@@ -179,7 +179,7 @@ const ProductPreview = styled.div`
 const PaymentPage: React.FC = () => {
   const nav = useNavigate();
   const location = useLocation();
-  const products: CartItem[] = location.state?.products ?? [];
+  const items: CartItem[] = location.state?.items ?? [];
   const [isAgree, setIsAgree] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState("카드");
   const [usePoint, setUsePoint] = useState(false);
@@ -207,12 +207,12 @@ const PaymentPage: React.FC = () => {
     setShippingInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  const totalOriginalPrice = products.reduce(
+  const totalOriginalPrice = items.reduce(
     (sum, item) => sum + item.originalPrice * item.quantity,
     0
   );
 
-  const totalDiscount = products.reduce(
+  const totalDiscount = items.reduce(
     (sum, item) => sum + (item.originalPrice - item.price) * item.quantity,
     0
   );
@@ -247,31 +247,34 @@ const PaymentPage: React.FC = () => {
       return;
     }
 
-    const order_id = generateRandomOrderId();
+    const orderId = generateRandomOrderId();
 
     const orderData = {
-      order_id,
-      user_id: 1,
+      orderId,
       status: "ORDERED",
-      delivery_fee: shipping,
-      total_price: finalPaidAmount,
-      total_discount_price: totalDiscount,
+      orderedAt: new Date().toISOString(),
+      usedPoints: usePoint ? usedPoints : 0,
+      earnedPoints: earnedPoints,
       currency: "KRW",
-      used_points: usePoint ? usedPoints : 0,
-      earned_points: earnedPoints,
-      delivery_address: shippingInfo.address,
-      detail_delivery_address: shippingInfo.detailAddress,
-      postal_code: shippingInfo.zipcode,
-      recipient_name: shippingInfo.name,
-      recipient_phone: shippingInfo.phone,
-      delivery_message: shippingInfo.request,
-      payment_method: selectedMethod,
-      card_number: selectedMethod === "카드" ? shippingInfo.cardNumber : null,
-      card_expiry: selectedMethod === "카드" ? shippingInfo.cardExpiry : null,
-      card_cvc: selectedMethod === "카드" ? shippingInfo.cardCvv : null,
-      ordered_at: new Date().toISOString(),
-      deleted_at: null,
-      products,
+      deliveryFee: shipping,
+      totalDiscountPrice: totalDiscount,
+      totalPrice: finalPaidAmount,
+      shippingInfo: {
+        recipientName: shippingInfo.name,
+        recipientPhone: shippingInfo.phone,
+        postalCode: shippingInfo.zipcode,
+        deliveryAddress: shippingInfo.address,
+        detailDeliveryAddress: shippingInfo.detailAddress,
+        deliveryMessage: shippingInfo.request,
+      },
+      paymentInfo: {
+        paymentMethod: selectedMethod,
+        card_number: selectedMethod === "카드" ? shippingInfo.cardNumber : null,
+        card_expiry: selectedMethod === "카드" ? shippingInfo.cardExpiry : null,
+        card_cvc: selectedMethod === "카드" ? shippingInfo.cardCvv : null,
+      },
+      items: items,
+      deletedAt: null,
     };
 
     const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]");
@@ -279,7 +282,7 @@ const PaymentPage: React.FC = () => {
     localStorage.setItem("orders", JSON.stringify(existingOrders));
 
     nav("/checkout?result=success", {
-      state: { order_id },
+      state: { orderId },
     });
   };
 
@@ -316,7 +319,7 @@ const PaymentPage: React.FC = () => {
         <FormSection>
           <ProductHeader>구매 상품 정보</ProductHeader>
           <ProductPreview>
-            {products.map((product) => (
+            {items.map((product) => (
               <div key={product.id}>
                 {product.name} / {product.price.toLocaleString()}원 /{" "}
                 {product.option} × {product.quantity}개
