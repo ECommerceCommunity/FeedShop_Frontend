@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { CartItem, ShippingInfo } from "types/types";
+import { useLocation } from "react-router-dom";
+import { Order } from "types/types";
 import Fail from "components/modal/Fail";
 
 const Container = styled.div`
@@ -80,37 +80,18 @@ const ThankYou = styled.div`
 `;
 
 const CheckoutPage: React.FC = () => {
-  const [showAccessModal, setShowAccessModal] = useState(false);
   const location = useLocation();
-  const nav = useNavigate();
-
-  const {
-    products,
-    totalPrice,
-    shipping,
-    usedPoints,
-    earnedPoints,
-    selectedMethod,
-    shippingInfo
-  }: {
-    products?: CartItem[];
-    totalPrice?: number;
-    shipping?: number;
-    usedPoints?: number;
-    earnedPoints: number,
-    selectedMethod?: string;
-    shippingInfo?: ShippingInfo;
-  } = location.state || {};
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [orderInfo, setOrderInfo] = useState<Order | null>(null);
+  const orderId = location.state?.orderId;
 
   useEffect(() => {
-    if (!products || !shippingInfo) {
-      setShowAccessModal(true);
-      alert("잘못된 접근입니다.");
-      nav("/products");
-    }
-  }, [products, shippingInfo, nav]);
+    const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+    const order = orders.find((order: any) => orderId === order.orderId);
+    setOrderInfo(order);
+  }, [orderId]);
 
-  if (!products || !shippingInfo) {
+  if (orderInfo === null) {
     return null;
   }
 
@@ -120,69 +101,94 @@ const CheckoutPage: React.FC = () => {
         <Fail
           title="접근 실패"
           message="잘못된 접근입니다."
-          onClose={() => setShowAccessModal(false)}          
-        /> 
+          onClose={() => setShowAccessModal(false)}
+        />
       )}
-    <Container>
-      <Card>
-        <SectionTitle>배송 정보</SectionTitle>
-        <InfoRow><Bold>수령인:</Bold> {shippingInfo.name}</InfoRow>
-        <InfoRow><Bold>연락처:</Bold> {shippingInfo.phone}</InfoRow>
-        <InfoRow>
-          <Bold>주소:</Bold> ({shippingInfo.zipcode}) {shippingInfo.address} {shippingInfo.detailAddress}
-        </InfoRow>
-        <InfoRow><Bold>요청사항:</Bold> {shippingInfo.request || "없음"}</InfoRow>
-      </Card>
+      <Container>
+        <Card>
+          <SectionTitle>배송 정보</SectionTitle>
+          <InfoRow>
+            <Bold>수령인:</Bold> {orderInfo.shippingInfo.recipientName}
+          </InfoRow>
+          <InfoRow>
+            <Bold>연락처:</Bold> {orderInfo.shippingInfo.recipientPhone}
+          </InfoRow>
+          <InfoRow>
+            <Bold>주소:</Bold> ({orderInfo.shippingInfo.postalCode}){" "}
+            {orderInfo.shippingInfo.deliveryAddress}{" "}
+            {orderInfo.shippingInfo.detailDeliveryAddress}
+          </InfoRow>
+          <InfoRow>
+            <Bold>요청사항:</Bold>{" "}
+            {orderInfo.shippingInfo.deliveryMessage || "없음"}
+          </InfoRow>
+        </Card>
 
-      <Card>
-        <SectionTitle>주문 상품</SectionTitle>
-        <ProductList>
-          {products.map((product) => (
-            <ProductItem key={product.id}>
-              {product.name} / {product.price} / {product.price.toLocaleString()}원 / {product.option} × {product.quantity}개
-            </ProductItem>
-          ))}
-        </ProductList>
-      </Card>
+        <Card>
+          <SectionTitle>주문 상품</SectionTitle>
+          <ProductList>
+            {orderInfo.items.map((item) => (
+              <ProductItem key={item.id}>
+                {item.name} / {item.price.toLocaleString()}원 / {item.option} ×{" "}
+                {item.quantity}개
+              </ProductItem>
+            ))}
+          </ProductList>
+        </Card>
 
-      <Card>
-        <SectionTitle>결제 정보</SectionTitle>
-        <InfoRow><Bold>결제 수단:</Bold> {selectedMethod}</InfoRow>
-        {selectedMethod === "카드" && (
-          <>
-            <InfoRow><Bold>카드 번호:</Bold> {shippingInfo.cardNumber?.replace(/\d{12}(\d{4})/, "**** **** **** $1")}</InfoRow>
-            <InfoRow><Bold>유효 기간:</Bold> {shippingInfo.cardExpiry}</InfoRow>
-          </>
-        )}
+        <Card>
+          <SectionTitle>결제 정보</SectionTitle>
+          <InfoRow>
+            <Bold>결제 수단:</Bold> {orderInfo.paymentInfo.paymentMethod}
+          </InfoRow>
+          {orderInfo.paymentInfo.paymentMethod === "카드" && (
+            <>
+              <InfoRow>
+                <Bold>카드 번호:</Bold> {orderInfo.paymentInfo.cardNumber}
+              </InfoRow>
+              <InfoRow>
+                <Bold>유효 기간:</Bold> {orderInfo.paymentInfo.cardExpiry}
+              </InfoRow>
+            </>
+          )}
 
-        <TotalSummary>
-          <TotalRow>
-            <span>배송비</span>
-            <span>{shipping === 0 ? "무료" : `${shipping?.toLocaleString()}원`}</span>
-          </TotalRow>
-          <TotalRow>
-            <span>사용한 포인트</span>
-            <span>-{(usedPoints ?? 0).toLocaleString()}원</span>
-          </TotalRow>
-          <TotalRow>
-            <span>총 결제 금액</span>
-            <span>{totalPrice?.toLocaleString()}원</span>
-          </TotalRow>
-          <TotalAmount>{totalPrice?.toLocaleString()}원 결제 완료</TotalAmount>
-          <TotalRow style={{marginTop: 12}}>
-            <span style={{ fontSize: 14, color: "#6b7280" }}>적립 예정 포인트</span>
-            <span style={{ fontSize: 14, fontWeight: 600 }}>
-              {earnedPoints?.toLocaleString() ?? 0}P
-            </span>
-          </TotalRow>
-        </TotalSummary>
-      </Card>
+          <TotalSummary>
+            <TotalRow>
+              <span>배송비</span>
+              <span>
+                {orderInfo.deliveryFee === 0
+                  ? "무료"
+                  : `${orderInfo.deliveryFee?.toLocaleString()}원`}
+              </span>
+            </TotalRow>
+            <TotalRow>
+              <span>사용한 포인트</span>
+              <span>-{(orderInfo.usedPoints ?? 0).toLocaleString()}원</span>
+            </TotalRow>
+            <TotalRow>
+              <span>총 결제 금액</span>
+              <span>{orderInfo.totalPrice?.toLocaleString()}원</span>
+            </TotalRow>
+            <TotalAmount>
+              {orderInfo.totalPrice?.toLocaleString()}원 결제 완료
+            </TotalAmount>
+            <TotalRow style={{ marginTop: 12 }}>
+              <span style={{ fontSize: 14, color: "#6b7280" }}>
+                적립 예정 포인트
+              </span>
+              <span style={{ fontSize: 14, fontWeight: 600 }}>
+                {orderInfo.earnedPoints?.toLocaleString() ?? 0}P
+              </span>
+            </TotalRow>
+          </TotalSummary>
+        </Card>
 
-      <ThankYou>
-        주문이 정상적으로 완료되었습니다. 🎉<br />
-        마이페이지에서 배송 현황을 확인하실 수 있습니다.
-      </ThankYou>
-    </Container>
+        <ThankYou>
+          주문이 정상적으로 완료되었습니다. 🎉
+          <br />
+          마이페이지에서 배송 현황을 확인하실 수 있습니다.
+        </ThankYou>
+      </Container>
     </>
   );
 };

@@ -58,6 +58,7 @@ export type CartItem = {
   discount: number
   quantity: number
   image: string
+  selected: boolean
 }
 
 // filter.ts
@@ -81,14 +82,30 @@ export type Filter = {
     color_image_url: string
 }  
 
-export type ShippingInfo = {
-  name: string;
-  phone: string;
-  zipcode: string;
-  address: string;
-  detailAddress: string;
-  request: string;
-  cardNumber?: string;
-  cardExpiry?: string;
-  cardCvv?: string;
-}
+  export type Order = {
+    orderId: number;
+    status: string;
+    deliveryFee: number;
+    totalPrice: number;
+    totalDiscountPrice: number;
+    currency: string;
+    usedPoints: number;
+    earnedPoints: number;
+    paymentInfo: {
+      paymentMethod: string;
+      cardNumber?: string;
+      cardExpiry?: string;
+      cardCvc?: string;
+    }
+    shippingInfo: {
+      deliveryAddress: string;
+      detailDeliveryAddress: string;
+      postalCode: string;
+      recipientName: string;
+      recipientPhone: string;
+      deliveryMessage: string;
+    }
+    orderedAt: string;
+    deletedAt: string | null;
+    items: CartItem[];
+  }
