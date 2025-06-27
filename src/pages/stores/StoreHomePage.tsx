@@ -101,7 +101,9 @@ const StoreHomePage: FC = () => {
                   <button
                     type="button"
                     className="text-sm text-sky-400 hover:underline bg-transparent border-none p-0 m-0 cursor-pointer"
-                    onClick={() => {/* TODO: handle '모두 보기' action */ }}
+                    onClick={() => {
+                      alert('모든 주문을 표시합니다. (여기에 실제 동작을 구현하세요)');
+                    }}
                   >
                     모두 보기
                   </button>
@@ -137,7 +139,9 @@ const StoreHomePage: FC = () => {
                   <button
                     type="button"
                     className="text-sm text-sky-400 hover:underline bg-transparent border-none p-0 m-0 cursor-pointer"
-                    onClick={() => {/* TODO: handle '모두 보기' action */ }}
+                    onClick={() => {
+                      alert('모든 인기 메뉴를 표시합니다. (여기에 실제 동작을 구현하세요)');
+                    }}
                   >
                     모두 보기
                   </button>

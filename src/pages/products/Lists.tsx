@@ -65,7 +65,7 @@ export default function ProductPage() {
   }
 
   const getStoreName = (storeId: number): string =>
-    brands.find((b) => b.store_id === storeId)?.store_name || 'Unknown'
+    brands.find((b) => b.store_id === storeId)?.store_name ?? 'Unknown'
 
   // 영어 컬러명을 한글로 매핑하는 객체 생성
   const colorNameMap: Record<string, string> = colors.reduce((acc, cur) => {
@@ -84,6 +84,11 @@ export default function ProductPage() {
     }, {} as Record<number, Product>)
   )
 
+  const normalize = (val: string) => {
+    const isEnglish = /^[A-Za-z\s]+$/.test(val)
+    return isEnglish ? val.toUpperCase() : val
+  }
+
   const filteredProducts: Product[] = uniqueProducts.filter(product => {
     if (selectedBrandId !== null && product.store_id !== selectedBrandId) return false
 
@@ -92,11 +97,6 @@ export default function ProductPage() {
 
       if (filterId === 'color') {
         return product.color_info?.current_colors?.some((color: any) => {
-          const normalize = (val: string) => {
-            const isEnglish = /^[A-Za-z\s]+$/.test(val)
-            return isEnglish ? val.toUpperCase() : val
-          }
-
           if (typeof color === 'string') {
             // 영어 컬러명을 한글 컬러명으로 변환
             const mapped = colorNameMap[color.toUpperCase()]
@@ -222,7 +222,7 @@ export default function ProductPage() {
                     {openFilters[filter.id] && (
                       <ul className="mt-2 space-y-1">
                         {filter.options.map((option: any) => {
-                          const value = typeof option === 'string' ? option : String(option.id || option.name)
+                          const value = typeof option === 'string' ? option : String(option.id ?? option.name)
                           const label = typeof option === 'string' ? option : option.name
                           const imageUrl = option.color_image_url // 색상 이미지가 있을 경우
 
@@ -314,7 +314,7 @@ export default function ProductPage() {
                   {openFilters[filter.id] && (
                     <ul className="mt-2 space-y-1">
                       {filter.options.map((option: any) => {
-                        const value = typeof option === 'string' ? option : String(option.id || option.name)
+                        const value = typeof option === 'string' ? option : String(option.id ?? option.name)
                         const label = typeof option === 'string' ? option : option.name
                         const imageUrl = option.color_image_url // 색상 이미지가 있을 경우
 
