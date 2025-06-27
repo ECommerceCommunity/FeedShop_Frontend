@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axiosInstance from "../api/axios";
+import { useAuth } from "../contexts/AuthContext";
 
 const LoginContainer = styled.div`
   max-width: 400px;
@@ -74,20 +76,54 @@ const SignUpLink = styled(Link)`
   }
 `;
 
+const ErrorMsg = styled.div`
+  color: #e74c3c;
+  text-align: center;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+`;
+
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 로그인 로직 구현
-    console.log("로그인 시도:", { email, password });
+    setError("");
+    setLoading(true);
+    try {
+      const res = await axiosInstance.post("/api/auth/login", {
+        email,
+        password,
+      });
+      // LoginResponse: { token, user, ... }
+      if (res.data && res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        // AuthContext의 login 함수 사용
+        login(res.data.nickname);
+        navigate("/");
+      } else {
+        setError("로그인에 실패했습니다. 다시 시도해 주세요.");
+      }
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message ||
+          "이메일 또는 비밀번호가 올바르지 않습니다."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <LoginContainer>
       <LoginForm onSubmit={handleSubmit}>
         <Title>로그인</Title>
+        {error && <ErrorMsg>{error}</ErrorMsg>}
         <FormGroup>
           <Label htmlFor="email">이메일</Label>
           <Input
@@ -96,6 +132,7 @@ const LoginPage: React.FC = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            autoComplete="username"
           />
         </FormGroup>
         <FormGroup>
@@ -106,9 +143,12 @@ const LoginPage: React.FC = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            autoComplete="current-password"
           />
         </FormGroup>
-        <LoginButton type="submit">로그인</LoginButton>
+        <LoginButton type="submit" disabled={loading}>
+          {loading ? "로그인 중..." : "로그인"}
+        </LoginButton>
         <SignUpLink to="/signup">계정이 없으신가요? 회원가입</SignUpLink>
       </LoginForm>
     </LoginContainer>
