@@ -2,7 +2,7 @@ import { FC } from "react";
 import styled from "styled-components";
 import { Link, useLocation } from "react-router-dom";
 
-const SidebarContainer = styled.aside`
+const SidebarContainer = styled.aside<{ open: boolean }>`
   position: fixed;
   left: 0;
   top: 60px;
@@ -11,6 +11,9 @@ const SidebarContainer = styled.aside`
   background-color: var(--background-color);
   box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
   padding: 20px 0;
+  z-index: 100;
+  transform: translateX(${({ open }) => (open ? "0" : "-100%")});
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
 const MenuSection = styled.div`
@@ -54,21 +57,25 @@ interface SidebarProps {
   onClose: () => void;
 }
 
-const Overlay = styled.div`
+const Overlay = styled.div<{ open: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
+  background: rgba(0, 0, 0, 0.2);
+  opacity: ${({ open }) => (open ? 1 : 0)};
+  pointer-events: ${({ open }) => (open ? "auto" : "none")};
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 99;
 `;
 
 const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
   const location = useLocation();
-  if (!open) return null;
   return (
     <>
-      <Overlay onClick={onClose} />
-      <SidebarContainer>
+      <Overlay open={open} onClick={onClose} />
+      <SidebarContainer open={open}>
         <MenuSection>
           <MenuTitle>쇼핑</MenuTitle>
           <MenuList>
