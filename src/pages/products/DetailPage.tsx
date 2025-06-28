@@ -195,6 +195,8 @@ export default function ProductDetailPage() {
       return;
     }
 
+    addCart();
+
     // 여기서 navigate('/cart') 대신 Warning 모달 열기
     setShowWarning(true);
   };
@@ -277,7 +279,6 @@ export default function ProductDetailPage() {
           message="장바구니로 이동하시겠습니까?"
           onConfirm={() => {
             setShowWarning(false);
-            addCart();
             navigate("/cart");
           }}
           onCancel={() => {
