@@ -1,9 +1,10 @@
 import { useState, FC } from "react";
-import { StarIcon } from '@heroicons/react/20/solid'
+import { StarIcon } from "@heroicons/react/20/solid";
 import reviews from "../../pages/data/reviews/reviews.json";
 import brands from "../../pages/data/products/brands.json";
 import RegisterStoreModal from "../../pages/stores/registerStores/RegisterStoreModal";
 import EditStoreModal from "pages/stores/editStores/EditStoreModal";
+import { useNavigate } from "react-router-dom";
 
 const StoreHomePage: FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -12,6 +13,8 @@ const StoreHomePage: FC = () => {
   const [selectedStore, setSelectedStore] = useState<any>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
+
+  const navigation = useNavigate();
 
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
   const handleToggleReviews = () => setShowAllReviews((prev) => !prev);
@@ -97,15 +100,17 @@ const StoreHomePage: FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               <div className="bg-white rounded-lg shadow">
                 <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                  <h2 className="text-lg font-semibold text-gray-800">최근 주문</h2>
+                  <h2 className="text-lg font-semibold text-gray-800">
+                    최근 주문
+                  </h2>
                   <button
                     type="button"
                     className="text-sm text-sky-400 hover:underline bg-transparent border-none p-0 m-0 cursor-pointer"
                     onClick={() => {
-                      alert('모든 주문을 표시합니다. (여기에 실제 동작을 구현하세요)');
+                      navigation("/orders");
                     }}
                   >
-                    모두 보기
+                    주문 관리
                   </button>
                 </div>
                 <div className="p-6 overflow-x-auto">
