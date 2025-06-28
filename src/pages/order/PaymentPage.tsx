@@ -340,7 +340,7 @@ const PaymentPage: React.FC = () => {
           {usePoint && (
             <InputRow>
               <Input
-                type="number"
+                type="text"
                 min={0}
                 max={maxPoints}
                 value={usedPoints}
