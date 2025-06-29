@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import * as echarts from "echarts";
+import { useAuth } from "../contexts/AuthContext";
 
 const Container = styled.div`
   min-height: 100vh;
@@ -1209,7 +1210,8 @@ const ChartWrapper = styled.div`
 `;
 
 const AdminDashboardPage: React.FC = () => {
-  const nav = useNavigate();
+  const navigate = useNavigate();
+  const { nickname, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -1342,6 +1344,23 @@ const AdminDashboardPage: React.FC = () => {
     setTimeout(() => {
       setShowToast(false);
     }, 3000); // Hide after 3 seconds
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const handleHomeClick = () => {
+    navigate("/");
+  };
+
+  const handleProductsClick = () => {
+    navigate("/products");
+  };
+
+  const handleChatClick = () => {
+    navigate("/chatrooms");
   };
 
   // 리뷰 관리 관련 함수들
@@ -1561,14 +1580,26 @@ const AdminDashboardPage: React.FC = () => {
     <Container>
       <Header>
         <LogoWrapper>
-          <Logo>브랜드 로고</Logo>
+          <Logo onClick={handleHomeClick} style={{ cursor: "pointer" }}>
+            FeedShop
+          </Logo>
         </LogoWrapper>
         <Nav>
-          <NavLink href="#">홈</NavLink>
-          <NavLink href="#">서비스</NavLink>
-          <NavLink href="#">제품</NavLink>
-          <NavLink href="#">고객지원</NavLink>
-          <NavLink href="#">회사소개</NavLink>
+          <NavLink onClick={handleHomeClick} style={{ cursor: "pointer" }}>
+            홈
+          </NavLink>
+          <NavLink onClick={handleProductsClick} style={{ cursor: "pointer" }}>
+            상품
+          </NavLink>
+          <NavLink onClick={handleChatClick} style={{ cursor: "pointer" }}>
+            채팅
+          </NavLink>
+          <NavLink href="#" style={{ cursor: "pointer" }}>
+            고객지원
+          </NavLink>
+          <NavLink href="#" style={{ cursor: "pointer" }}>
+            회사소개
+          </NavLink>
         </Nav>
         <UserMenu>
           <IconButton onClick={handleShowToast}>
@@ -1577,7 +1608,21 @@ const AdminDashboardPage: React.FC = () => {
           <IconButton>
             <i className="fas fa-cog"></i>
           </IconButton>
-          <LoginButton>로그인</LoginButton>
+          {nickname ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ fontSize: "14px", color: "#666" }}>
+                {nickname}님
+              </span>
+              <LoginButton
+                onClick={handleLogout}
+                style={{ backgroundColor: "#dc3545" }}
+              >
+                로그아웃
+              </LoginButton>
+            </div>
+          ) : (
+            <LoginButton onClick={() => navigate("/login")}>로그인</LoginButton>
+          )}
           <MobileMenuButton onClick={toggleMobileMenu}>
             <i className="fas fa-bars text-xl"></i>
           </MobileMenuButton>
@@ -1595,23 +1640,88 @@ const AdminDashboardPage: React.FC = () => {
           <MobileMenuNav>
             <MobileMenuList>
               <MobileMenuListItem>
-                <NavLink href="#">홈</NavLink>
+                <NavLink
+                  onClick={() => {
+                    handleHomeClick();
+                    toggleMobileMenu();
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  홈
+                </NavLink>
               </MobileMenuListItem>
               <MobileMenuListItem>
-                <NavLink href="#">서비스</NavLink>
+                <NavLink
+                  onClick={() => {
+                    handleProductsClick();
+                    toggleMobileMenu();
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  상품
+                </NavLink>
               </MobileMenuListItem>
               <MobileMenuListItem>
-                <NavLink href="#">제품</NavLink>
+                <NavLink
+                  onClick={() => {
+                    handleChatClick();
+                    toggleMobileMenu();
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  채팅
+                </NavLink>
               </MobileMenuListItem>
               <MobileMenuListItem>
-                <NavLink href="#">고객지원</NavLink>
+                <NavLink href="#" style={{ cursor: "pointer" }}>
+                  고객지원
+                </NavLink>
               </MobileMenuListItem>
               <MobileMenuListItem>
-                <NavLink href="#">회사소개</NavLink>
+                <NavLink href="#" style={{ cursor: "pointer" }}>
+                  회사소개
+                </NavLink>
               </MobileMenuListItem>
             </MobileMenuList>
             <MobileMenuLoginSection>
-              <LoginButton style={{ width: "100%" }}>로그인</LoginButton>
+              {nickname ? (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      color: "#666",
+                      textAlign: "center",
+                    }}
+                  >
+                    {nickname}님
+                  </span>
+                  <LoginButton
+                    onClick={() => {
+                      handleLogout();
+                      toggleMobileMenu();
+                    }}
+                    style={{ width: "100%", backgroundColor: "#dc3545" }}
+                  >
+                    로그아웃
+                  </LoginButton>
+                </div>
+              ) : (
+                <LoginButton
+                  onClick={() => {
+                    navigate("/login");
+                    toggleMobileMenu();
+                  }}
+                  style={{ width: "100%" }}
+                >
+                  로그인
+                </LoginButton>
+              )}
             </MobileMenuLoginSection>
           </MobileMenuNav>
         </MobileMenuDrawer>
@@ -1647,25 +1757,55 @@ const AdminDashboardPage: React.FC = () => {
                 </a>
               </SidebarItem>
               <SidebarItem>
-                <a href="#">
+                <a
+                  onClick={() => navigate("/user-manage")}
+                  style={{ cursor: "pointer" }}
+                >
                   <SidebarIcon className="fas fa-user"></SidebarIcon>
                   <SidebarText $isOpen={sidebarOpen}>사용자 관리</SidebarText>
                 </a>
               </SidebarItem>
               <SidebarItem>
-                <a href="#">
+                <a
+                  onClick={() => navigate("/report-manage")}
+                  style={{ cursor: "pointer" }}
+                >
+                  <SidebarIcon className="fas fa-flag"></SidebarIcon>
+                  <SidebarText $isOpen={sidebarOpen}>신고 관리</SidebarText>
+                </a>
+              </SidebarItem>
+              <SidebarItem>
+                <a
+                  onClick={() => navigate("/store-home")}
+                  style={{ cursor: "pointer" }}
+                >
                   <SidebarIcon className="fas fa-store"></SidebarIcon>
                   <SidebarText $isOpen={sidebarOpen}>가게 관리</SidebarText>
                 </a>
               </SidebarItem>
               <SidebarItem>
-                <a href="#">
+                <a
+                  onClick={() => navigate("/products")}
+                  style={{ cursor: "pointer" }}
+                >
                   <SidebarIcon className="fas fa-chart-bar"></SidebarIcon>
-                  <SidebarText $isOpen={sidebarOpen}>통계</SidebarText>
+                  <SidebarText $isOpen={sidebarOpen}>상품 관리</SidebarText>
                 </a>
               </SidebarItem>
               <SidebarItem>
-                <a href="#">
+                <a
+                  onClick={() => navigate("/stats-dashboard")}
+                  style={{ cursor: "pointer" }}
+                >
+                  <SidebarIcon className="fas fa-store"></SidebarIcon>
+                  <SidebarText $isOpen={sidebarOpen}>통계 분석</SidebarText>
+                </a>
+              </SidebarItem>
+              <SidebarItem>
+                <a
+                  onClick={() => navigate("/profile")}
+                  style={{ cursor: "pointer" }}
+                >
                   <SidebarIcon className="fas fa-cog"></SidebarIcon>
                   <SidebarText $isOpen={sidebarOpen}>설정</SidebarText>
                 </a>
@@ -1677,7 +1817,12 @@ const AdminDashboardPage: React.FC = () => {
         <MainContent $sidebarOpen={sidebarOpen}>
           <ContentPadding>
             <Breadcrumb>
-              <BreadcrumbLink>홈</BreadcrumbLink>{" "}
+              <BreadcrumbLink
+                onClick={handleHomeClick}
+                style={{ cursor: "pointer" }}
+              >
+                홈
+              </BreadcrumbLink>{" "}
               <span className="mx-2">/</span>{" "}
               <BreadcrumbLink>
                 {activeTab === "dashboard" ? "대시보드" : "리뷰 관리"}
