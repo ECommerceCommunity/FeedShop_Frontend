@@ -34,6 +34,8 @@ const OrdersPage = lazy(() => import("./pages/order/OrdersPage"));
 const CheckoutPage = lazy(() => import("./pages/order/CheckoutPage"));
 const WishListPage = lazy(() => import("./pages/cart/WishListPage"));
 const RecentViewPage = lazy(() => import("./pages/cart/RecentViewPage"));
+const ReviewEditPage = lazy(() => import("./pages/reviews/ReviewEditPage"));
+
 
 const App: FC = () => {
   return (
