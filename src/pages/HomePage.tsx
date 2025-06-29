@@ -300,7 +300,7 @@ const HomePage: FC = () => {
       <HeroSection>
         <Container>
           <HeroContent>
-            <Title>ShopChat</Title>
+            <Title>FeedShop</Title>
             <Subtitle>스마트한 쇼핑 경험을 위한 최고의 선택</Subtitle>
             <ButtonGroup>
               <PrimaryButton to="/store-home">스토어 입장하기</PrimaryButton>
@@ -374,7 +374,7 @@ const HomePage: FC = () => {
         <Container>
           <CTATitle>지금 바로 시작하세요</CTATitle>
           <CTADescription>
-            ShopChat과 함께라면 더 스마트하고 효율적인 비즈니스 운영이
+            FeedShop과 함께라면 더 스마트하고 효율적인 비즈니스 운영이
             가능합니다. 지금 바로 무료로 시작해보세요.
           </CTADescription>
           <ButtonGroup>
@@ -391,7 +391,7 @@ const HomePage: FC = () => {
           <FooterContent>
             <FooterBrand>
               <Title style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>
-                ShopChat
+                FeedShop
               </Title>
               <FeatureDescription>
                 스마트한 쇼핑 경험을 위한 최고의 선택
@@ -404,7 +404,7 @@ const HomePage: FC = () => {
             </FooterLinks>
           </FooterContent>
           <FooterCopyright>
-            <p>&copy; 2025 ShopChat. All rights reserved.</p>
+            <p>&copy; 2025 FeedShop. All rights reserved.</p>
           </FooterCopyright>
         </Container>
       </Footer>

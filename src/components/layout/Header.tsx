@@ -294,7 +294,7 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
             {showUserMenu && (
               <DropdownMenu>
                 <DropdownItem to="/mypage">마이페이지</DropdownItem>
-                <DropdownItem to="/profile">프로필 설정</DropdownItem>
+                <DropdownItem to="/profile-settings">프로필 설정</DropdownItem>
                 <DropdownDivider />
                 <DropdownButton onClick={handleLogout}>로그아웃</DropdownButton>
               </DropdownMenu>
