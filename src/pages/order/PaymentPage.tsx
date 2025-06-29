@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CartItem } from "types/types";
 import Fail from "components/modal/Fail";
+import { randomInt } from "crypto";
 
 const Container = styled.div`
   max-width: 1100px;
@@ -287,7 +288,9 @@ const PaymentPage: React.FC = () => {
   };
 
   const generateRandomOrderId = () => {
-    return Math.floor(1000000 + Math.random() * 9000000); // 1000000 ~ 9999999
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return 1000000 + (array[0] % 9000000); // 1000000 ~ 9999999
   };
 
   return (
