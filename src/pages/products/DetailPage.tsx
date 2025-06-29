@@ -249,6 +249,10 @@ export default function ProductDetailPage() {
     });
   };
 
+  const handleReviewEdit = () => {
+    navigate("/reviews/edit")
+  }
+
   return (
     <>
       {showFailModal && (
@@ -420,7 +424,11 @@ export default function ProductDetailPage() {
                       {productReviews.length > 0 && (
                         <div className="mt-6 px-4 mx-auto bg-white border border-gray-300 rounded-md p-5 shadow-sm">
                           <h2 className="text-lg font-semibold text-gray-900 mb-4">리뷰</h2>
-
+                            <button onClick={handleReviewEdit}
+                                type="button"
+                                  className="bg-[#87CEEB] text-white px-4 py-2 rounded-lg hover:bg-blue-400 transition-colors"
+                            >리뷰 작성
+                            </button>
                           {/* ✅ 제목 아래 가로선, 좌우 여백 제거 */}
                           <div className="-mx-4 border-t border-gray-300 my-4" />
 
