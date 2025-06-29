@@ -8,7 +8,7 @@ type RegisterProductModalProps = {
     onClose: () => void
 }
 
-export default function RegisterProductModal({ onClose }: RegisterProductModalProps) {
+export default function RegisterProductModal({ onClose }: Readonly<RegisterProductModalProps>) {
     const [open, setOpen] = useState(true)
 
     return (

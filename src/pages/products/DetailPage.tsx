@@ -3,7 +3,7 @@
 import { Fragment, useState, useMemo, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
-import { Tab } from '@headlessui/react'
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 import { StarIcon } from '@heroicons/react/20/solid'
 import {
   HeartIcon as OutlineHeartIcon,
@@ -195,9 +195,16 @@ export default function ProductDetailPage() {
       return;
     }
 
+    addCart();
+
+    // 여기서 navigate('/cart') 대신 Warning 모달 열기
+    setShowWarning(true);
+  };
+
+  const addCart = () => {
     // 장바구니 추가 로직
-    const currentCart = JSON.parse(localStorage.getItem('cart') ?? '[]')
-    const newItems = selectedItems.map(item => ({
+    const currentCart = JSON.parse(localStorage.getItem("cart") ?? "[]");
+    const newItems = selectedItems.map((item) => ({
       id: `${product.id}-${item.size}`,
       name: product.name,
       option: item.size,
@@ -207,14 +214,12 @@ export default function ProductDetailPage() {
         ? Math.round(((product.price - discountPrice) / product.price) * 100)
         : 0,
       quantity: item.quantity,
-      image: product.images?.[0]?.src || ''
+      image: product.images?.[0]?.src || "",
+      selected: true,
     }));
 
     const updatedCart = [...currentCart, ...newItems];
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-
-    // 여기서 navigate('/cart') 대신 Warning 모달 열기
-    setShowWarning(true);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
   };
 
   const handleOrder = () => {
@@ -233,15 +238,20 @@ export default function ProductDetailPage() {
         ? Math.round(((product.price - discountPrice) / product.price) * 100)
         : 0,
       quantity: item.quantity,
-      image: product.images[0]?.src || '',
+      image: product.images[0]?.src || "",
+      selected: true,
     }));
 
-    navigate('/payment', {
+    navigate("/payment", {
       state: {
         products: newItems,
       },
     });
   };
+
+  const handleReviewEdit = () => {
+    navigate("/reviews/edit")
+  }
 
   return (
     <>
@@ -273,7 +283,7 @@ export default function ProductDetailPage() {
           message="장바구니로 이동하시겠습니까?"
           onConfirm={() => {
             setShowWarning(false);
-            navigate('/cart');
+            navigate("/cart");
           }}
           onCancel={() => {
             setShowWarning(false);
@@ -289,7 +299,7 @@ export default function ProductDetailPage() {
       <div className="bg-white mx-auto">
         <div className="lg:grid lg:grid-cols-[1.7fr_1px_1fr] lg:items-start gap-4">
           <div className="col-span-1 p-5">
-            <Tab.Group as={Fragment}>
+            <TabGroup as={Fragment}>
               <>
                 <div className="lg:flex gap-4">
                   <div className="pl-5 pr-1 flex flex-col items-center">
@@ -302,7 +312,7 @@ export default function ProductDetailPage() {
                       <ChevronUpIcon className="size-6" />
                     </button>
 
-                    <Tab.List className="flex flex-col space-y-4">
+                    <TabList className="flex flex-col space-y-4">
                       {product.images.map((image, idx) => {
                         const isVisible = idx >= startIndex && idx < startIndex + thumbnailsPerPage
                         return (
@@ -321,7 +331,7 @@ export default function ProductDetailPage() {
                           </Tab>
                         )
                       })}
-                    </Tab.List>
+                    </TabList>
 
                     <button
                       onClick={handleDown}
@@ -333,17 +343,17 @@ export default function ProductDetailPage() {
                     </button>
                   </div>
 
-                  <Tab.Panels className="flex-1 flex justify-center items-center">
+                  <TabPanels className="flex-1 flex justify-center items-center">
                     {product.images.map((image) => (
-                      <Tab.Panel key={image.id}>
+                      <TabPanel key={image.id}>
                         <img
                           src={image.src}
                           alt={image.alt}
                           className="w-[720px] h-[720px] object-cover rounded-lg"
                         />
-                      </Tab.Panel>
+                      </TabPanel>
                     ))}
-                  </Tab.Panels>
+                  </TabPanels>
                 </div>
 
                 <div className="mt-6 border border-gray-200 rounded-md overflow-hidden">
@@ -400,7 +410,7 @@ export default function ProductDetailPage() {
                               : 'rounded-tr-md rounded-br-md';
                             return (
                               <img
-                                key={idx}
+                                key={url}
                                 src={url}
                                 alt={`자세한 이미지 ${idx + 1}`}
                                 className={`w-full object-cover block ${roundedClass}`}
@@ -414,7 +424,11 @@ export default function ProductDetailPage() {
                       {productReviews.length > 0 && (
                         <div className="mt-6 px-4 mx-auto bg-white border border-gray-300 rounded-md p-5 shadow-sm">
                           <h2 className="text-lg font-semibold text-gray-900 mb-4">리뷰</h2>
-
+                            <button onClick={handleReviewEdit}
+                                type="button"
+                                  className="bg-[#87CEEB] text-white px-4 py-2 rounded-lg hover:bg-blue-400 transition-colors"
+                            >리뷰 작성
+                            </button>
                           {/* ✅ 제목 아래 가로선, 좌우 여백 제거 */}
                           <div className="-mx-4 border-t border-gray-300 my-4" />
 
@@ -468,7 +482,7 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
               </>
-            </Tab.Group>
+            </TabGroup>
           </div>
 
           <div className="hidden lg:block h-full w-px bg-gray-300" />
@@ -501,8 +515,9 @@ export default function ProductDetailPage() {
               )}
             </div>
             {brandData && (
-              <div
-                className="mb-2 flex items-center space-x-2 cursor-pointer"
+              <button
+                type="button"
+                className="mb-2 flex items-center space-x-2 cursor-pointer bg-transparent border-none p-0"
                 onClick={() =>
                   navigate('/products', {
                     state: {
@@ -510,7 +525,18 @@ export default function ProductDetailPage() {
                     },
                   })
                 }
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate('/products', {
+                      state: {
+                        selectedStoreId: brandData.store_id,
+                      },
+                    });
+                  }
+                }}
                 title={`${brandData.store_name} 상품 목록으로 이동`}
+                tabIndex={0}
               >
                 <img
                   src={
@@ -524,7 +550,7 @@ export default function ProductDetailPage() {
                 <span className="text-sm font-medium text-gray-700 underline hover:text-indigo-600">
                   {brandData.store_name}
                 </span>
-              </div>
+              </button>
             )}
             <h1 className="text-xl font-semibold tracking-tight text-gray-900">
               {product.name}
@@ -555,27 +581,30 @@ export default function ProductDetailPage() {
                     const isFull = diff >= 1;
                     const isHalf = diff > 0 && diff < 1;
 
+                    let starIcon;
+                    if (isFull) {
+                      starIcon = <StarIcon className="w-5 h-5 text-indigo-500" />;
+                    } else if (isHalf) {
+                      starIcon = <StarIcon className="w-5 h-5 text-indigo-500" style={{ clipPath: 'inset(0 50% 0 0)' }} />;
+                    } else {
+                      starIcon = <StarIcon className="w-5 h-5 text-gray-300" />;
+                    }
                     return (
                       <span key={i}>
-                        {isFull ? (
-                          <StarIcon className="w-5 h-5 text-indigo-500" />
-                        ) : isHalf ? (
-                          <StarIcon className="w-5 h-5 text-indigo-500" style={{ clipPath: 'inset(0 50% 0 0)' }} />
-                        ) : (
-                          <StarIcon className="w-5 h-5 text-gray-300" />
-                        )}
+                        {starIcon}
                       </span>
                     );
                   })}
                 </div>
 
                 {/* 후기 개수 클릭 시 스크롤 이동 */}
-                <span
-                  className="text-sm text-gray-600 cursor-pointer hover:underline"
+                <button
+                  type="button"
+                  className="text-sm text-gray-600 cursor-pointer hover:underline bg-transparent border-none p-0"
                   onClick={handleScrollToReview}
                 >
                   후기 {productReviews.length}개
-                </span>
+                </button>
               </div>
             </div>
 
@@ -601,7 +630,7 @@ export default function ProductDetailPage() {
                       .slice(colorStartIndex, colorStartIndex + itemsPerSlide)
                       .map((item: any, idx: number) => (
                         <a
-                          key={idx}
+                          key={item.product_id}
                           href={`/products/${item.product_id}`}
                           className="w-16 h-16 border rounded overflow-hidden transition flex-shrink-0"
                           title={`상품 ID: ${item.product_id}`}
@@ -612,7 +641,7 @@ export default function ProductDetailPage() {
                                 ? `https:${item.thumbnail_url}`
                                 : item.thumbnail_url
                             }
-                            alt={`다른 색상 ${idx + 1}`}
+                            alt={`다른 색상 ${item.product_id}`}
                             className="w-full h-full object-cover"
                           />
                         </a>

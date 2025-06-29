@@ -4,9 +4,9 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/re
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 interface FailProps {
-    title: string
-    message: string
-    onClose: () => void
+    readonly title: string
+    readonly message: string
+    readonly onClose: () => void
 }
 
 export default function Fail({ title, message, onClose }: FailProps) {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { addToWishList, removeToWishList } from 'utils/cart'
 
 export function useLocalLike(key: string) {
   const [likes, setLikes] = useState<Set<number>>(new Set())
@@ -22,12 +23,18 @@ export function useLocalLike(key: string) {
   }, [key, likes])
 
   const toggleLike = (id: number) => {
-    setLikes(prev => {
-      const updated = new Set(prev)
-      updated.has(id) ? updated.delete(id) : updated.add(id)
-      return updated
-    })
-  }
+    setLikes((prev) => {
+      const updated = new Set(prev);
+      if (updated.has(id)) {
+        updated.delete(id);
+        removeToWishList(id);
+      } else {
+        updated.add(id);
+        addToWishList(id);
+      }
+      return updated;
+    });
+  };
 
   const hasLiked = (id: number) => likes.has(id)
 

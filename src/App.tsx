@@ -23,10 +23,10 @@ const ProductEditPage = lazy(
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const ReviewsPage = lazy(() => import("./pages/ReviewsPage"));
-const ChatRoomListPage = lazy(() => import("./pages/ChatRoomListPage"));
-const ChatRoomDetailPage = lazy(() => import("./pages/ChatRoomDetailPage"));
+const UserManagePage = lazy(() => import("./pages/UserManagePage"));
 const ReportManagePage = lazy(() => import("./pages/ReportManagePage"));
 const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage"));
+const StatsDashboardPage = lazy(() => import("./pages/StatsDashboardPage"));
 const StoreHomePage = lazy(() => import("./pages/stores/StoreHomePage"));
 const CartPage = lazy(() => import("./pages/cart/CartPage"));
 const PaymentPage = lazy(() => import("./pages/order/PaymentPage"));
@@ -34,6 +34,8 @@ const OrdersPage = lazy(() => import("./pages/order/OrdersPage"));
 const CheckoutPage = lazy(() => import("./pages/order/CheckoutPage"));
 const WishListPage = lazy(() => import("./pages/cart/WishListPage"));
 const RecentViewPage = lazy(() => import("./pages/cart/RecentViewPage"));
+const ReviewEditPage = lazy(() => import("./pages/reviews/ReviewEditPage"));
+const ProfileSettingsPage = lazy(() => import("./pages/ProfileSettingsPage"));
 
 const App: FC = () => {
   return (
@@ -54,10 +56,10 @@ const App: FC = () => {
               <Route path="/search" element={<SearchPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/reviews" element={<ReviewsPage />} />
-              <Route path="/chatrooms" element={<ChatRoomListPage />} />
-              <Route path="/chatrooms/:id" element={<ChatRoomDetailPage />} />
               <Route path="/report-manage" element={<ReportManagePage />} />
+              <Route path="/user-manage" element={<UserManagePage />} />
               <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
+              <Route path="/stats-dashboard" element={<StatsDashboardPage />} />
               <Route path="/store-home" element={<StoreHomePage />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/orders" element={<OrdersPage />} />
@@ -65,6 +67,10 @@ const App: FC = () => {
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/wishlist" element={<WishListPage />} />
               <Route path="/recentview" element={<RecentViewPage />} />
+              <Route
+                path="/profile-settings"
+                element={<ProfileSettingsPage />}
+              />
             </Route>
 
             {/* Layout 없이 보여야 하는 페이지들 */}
