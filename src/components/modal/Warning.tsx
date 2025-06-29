@@ -1,13 +1,13 @@
 'use client'
 
-import { Dialog } from '@headlessui/react'
+import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 
 interface WarningProps {
-    open: boolean
-    title: string
-    message: string
-    onConfirm: () => void
-    onCancel: () => void
+    readonly open: boolean
+    readonly title: string
+    readonly message: string
+    readonly onConfirm: () => void
+    readonly onCancel: () => void
 }
 
 export default function Warning({ open, title, message, onConfirm, onCancel }: WarningProps) {
@@ -18,10 +18,10 @@ export default function Warning({ open, title, message, onConfirm, onCancel }: W
 
             {/* 다이얼로그 패널 */}
             <div className="fixed inset-0 flex items-center justify-center p-4">
-                <Dialog.Panel className="w-full max-w-md bg-white p-6 rounded shadow">
-                    <Dialog.Title className="text-lg font-bold text-center">
+                <DialogPanel className="w-full max-w-md bg-white p-6 rounded shadow">
+                    <DialogTitle className="text-lg font-bold text-center">
                         {title}
-                    </Dialog.Title>
+                    </DialogTitle>
                     <p className="mt-2 text-sm text-center text-gray-600">
                         {message}
                     </p>
@@ -33,7 +33,7 @@ export default function Warning({ open, title, message, onConfirm, onCancel }: W
                             확인
                         </button>
                     </div>
-                </Dialog.Panel>
+                </DialogPanel>
             </div>
         </Dialog>
     )

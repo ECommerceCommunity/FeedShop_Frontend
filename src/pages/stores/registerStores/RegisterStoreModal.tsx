@@ -4,9 +4,9 @@ import { useState } from 'react'
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import ProductUploadPage from './RegisterStorePage'
 
-type RegisterStoreModalProps = {
+type RegisterStoreModalProps = Readonly<{
     onClose: () => void
-}
+}>
 
 export default function RegisterStoreModal({ onClose }: RegisterStoreModalProps) {
     const [open, setOpen] = useState(true)
