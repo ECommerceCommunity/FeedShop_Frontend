@@ -32,3 +32,6 @@ pnpm-debug.log*
 # Optional: lock 파일은 하나만 유지
 #package-lock.json
 #yarn.lock
+
+# SonarLint related files
+.sonarlint/

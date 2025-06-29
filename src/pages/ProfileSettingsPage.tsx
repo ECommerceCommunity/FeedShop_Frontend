@@ -128,71 +128,8 @@ const ProfileSettingsPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white shadow-sm fixed w-full z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
-          <div className="flex items-center">
-            <div
-              className="flex-shrink-0 flex items-center cursor-pointer"
-              onClick={() => navigate("/")}
-            >
-              <img
-                className="h-8 w-auto"
-                src="https://readdy.ai/api/search-image?query=modern%20minimalist%20logo%20design%20for%20an%20e-commerce%20and%20community%20platform%20blue%20color%20theme%20clean%20and%20professional%20simple%20geometric%20shapes%20abstract%20representation%20of%20connection%20and%20shopping&width=120&height=40&seq=3&orientation=landscape"
-                alt="로고"
-              />
-            </div>
-          </div>
-          <nav className="hidden md:ml-6 md:flex md:space-x-8">
-            <a
-              href="#"
-              className="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-blue-300 text-sm font-medium"
-            >
-              홈
-            </a>
-            <a
-              href="#"
-              className="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-gray-300 text-sm font-medium"
-            >
-              상품
-            </a>
-            <a
-              href="#"
-              className="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-gray-300 text-sm font-medium"
-            >
-              커뮤니티
-            </a>
-            <a
-              href="#"
-              className="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-gray-300 text-sm font-medium"
-            >
-              채팅
-            </a>
-          </nav>
-          <div className="flex items-center">
-            <button className="p-1 rounded-full text-gray-500 hover:text-gray-700 focus:outline-none relative cursor-pointer">
-              <i className="fas fa-bell text-xl"></i>
-              <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-400"></span>
-            </button>
-            <div className="ml-4 relative">
-              <div className="flex items-center cursor-pointer">
-                <img
-                  className="h-8 w-8 rounded-full"
-                  src={profileInfo.profileImage}
-                  alt="프로필"
-                />
-                <span className="ml-2 text-sm font-medium text-gray-700 hidden md:block cursor-pointer">
-                  {profileInfo.nickname}
-                </span>
-                <i className="fas fa-chevron-down ml-1 text-gray-500 text-xs hidden md:block"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* 메인 콘텐츠 */}
-      <div className="flex flex-1 pt-16">
+      <div className="flex flex-1 pt-4">
         {/* 메인 콘텐츠 영역 */}
         <main className="flex-1">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
