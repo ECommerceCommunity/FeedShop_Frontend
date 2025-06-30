@@ -2,20 +2,53 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import * as echarts from "echarts";
+import { useAuth } from "../contexts/AuthContext";
+
+// 애니메이션 정의
+const fadeInUp = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const slideIn = keyframes`
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+`;
+
+const pulse = keyframes`
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+`;
 
 const Container = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f8fafc;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
 `;
 
 const Header = styled.header`
   height: 60px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   position: fixed;
   top: 0;
   left: 0;
@@ -25,6 +58,7 @@ const Header = styled.header`
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
+  animation: ${fadeInUp} 0.4s ease-out;
 `;
 
 const LogoWrapper = styled.div`
@@ -33,10 +67,17 @@ const LogoWrapper = styled.div`
 `;
 
 const Logo = styled.h1`
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #87ceeb;
-  width: 180px;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: scale(1.05);
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  }
 `;
 
 const Nav = styled.nav`
@@ -49,13 +90,19 @@ const Nav = styled.nav`
 `;
 
 const NavLink = styled.a`
-  color: #444;
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+
   &:hover {
-    color: #87ceeb;
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
   }
 `;
 
@@ -66,27 +113,38 @@ const UserMenu = styled.div`
 `;
 
 const IconButton = styled.button`
-  color: #666;
-  background: none;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
   border: none;
   cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+
   &:hover {
-    color: #87ceeb;
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
   }
 `;
 
 const LoginButton = styled.button`
-  background: linear-gradient(to right, #87ceeb, #5cacee);
+  background: rgba(255, 255, 255, 0.1);
   color: white;
   padding: 8px 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s;
+  border-radius: 25px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
   white-space: nowrap;
   cursor: pointer;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+
   &:hover {
-    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
   }
 `;
 
@@ -101,6 +159,7 @@ const MobileMenuOverlay = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
   z-index: 50;
   transition: opacity 0.3s;
   opacity: ${(props) => (props.$isOpen ? 1 : 0)};
@@ -117,7 +176,7 @@ const MobileMenuDrawer = styled.div<{ $isOpen: boolean }>`
   width: 256px;
   height: 100%;
   background: white;
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
   transform: translateX(${(props) => (props.$isOpen ? "0" : "100%")});
   transition: transform 0.3s;
 `;
@@ -133,7 +192,10 @@ const MobileMenuHeader = styled.div`
 const MobileMenuTitle = styled.h2`
   font-size: 1.125rem;
   font-weight: bold;
-  color: #87ceeb;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 `;
 
 const MobileMenuNav = styled.nav`
@@ -153,7 +215,7 @@ const MobileMenuListItem = styled.li`
     padding: 8px 0;
     color: #444;
     &:hover {
-      color: #87ceeb;
+      color: #667eea;
     }
   }
 `;
@@ -169,17 +231,37 @@ const FlexContainer = styled.div`
 `;
 
 const Sidebar = styled.aside<{ $isOpen: boolean }>`
-  background: #fff;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
   position: fixed;
   left: 0;
   top: 60px;
   bottom: 0;
-  width: ${(props) => (props.$isOpen ? "240px" : "60px")};
-  transition: all 0.3s;
+  width: ${(props) => (props.$isOpen ? "280px" : "60px")};
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 40;
+  animation: ${slideIn} 0.4s ease-out;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
   @media (min-width: 769px) {
-    width: ${(props) => (props.$isOpen ? "240px" : "60px")};
+    width: ${(props) => (props.$isOpen ? "280px" : "60px")};
     transform: translateX(0);
   }
 `;
@@ -188,60 +270,101 @@ const SidebarToggleButton = styled.button`
   position: absolute;
   right: -12px;
   top: 16px;
-  background: #fff;
+  background: white;
   border-radius: 50%;
-  padding: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  color: #666;
+  padding: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  color: #667eea;
   cursor: pointer;
+  transition: all 0.3s ease;
+
   &:hover {
-    color: #87ceeb;
+    color: #764ba2;
+    transform: scale(1.1);
+    animation: ${pulse} 0.6s ease-in-out;
   }
 `;
 
 const SidebarNav = styled.nav`
-  padding: 16px;
+  padding: 20px 0;
 `;
 
 const SidebarList = styled.ul`
   list-style: none;
   padding: 0;
   margin: 0;
-  space-y: 8px;
 `;
 
 const SidebarItem = styled.li`
-  a {
-    display: flex;
-    align-items: center;
-    height: 48px;
-    padding: 0 12px;
-    border-radius: 8px;
-    color: #444;
-    cursor: pointer;
-    &:hover {
-      background: #f1f5f9;
-      color: #87ceeb;
-    }
-  }
+  margin-bottom: 8px;
+  padding: 0 15px;
 `;
 
-const ActiveSidebarItem = styled(SidebarItem)`
-  a {
-    background: rgba(135, 206, 235, 0.2);
-    color: #87ceeb;
-    &:hover {
-      background: rgba(135, 206, 235, 0.2);
+const SidebarLink = styled.a`
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 400;
+  background: transparent;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+    transition: left 0.5s;
+  }
+
+  &:hover {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.15),
+      rgba(255, 255, 255, 0.05)
+    );
+    color: white;
+    transform: translateX(5px);
+
+    &::before {
+      left: 100%;
     }
+  }
+
+  &:hover .sidebar-icon {
+    animation: ${pulse} 0.6s ease-in-out;
   }
 `;
 
 const SidebarIcon = styled.i`
-  width: 24px;
+  width: 20px;
+  margin-right: 15px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
+
+  &.sidebar-icon {
+    transition: all 0.3s ease;
+  }
 `;
 
 const SidebarText = styled.span<{ $isOpen: boolean }>`
-  margin-left: 8px;
+  flex: 1;
+  transition: all 0.3s ease;
   display: ${(props) => (props.$isOpen ? "block" : "none")};
   @media (min-width: 769px) {
     display: ${(props) => (props.$isOpen ? "block" : "none")};
@@ -250,8 +373,8 @@ const SidebarText = styled.span<{ $isOpen: boolean }>`
 
 const MainContent = styled.main<{ $sidebarOpen: boolean }>`
   flex: 1;
-  transition: all 0.3s;
-  margin-left: ${({ $sidebarOpen }) => ($sidebarOpen ? "240px" : "60px")};
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-left: ${({ $sidebarOpen }) => ($sidebarOpen ? "280px" : "60px")};
   @media (max-width: 768px) {
     margin-left: 0;
   }
@@ -270,70 +393,145 @@ const Breadcrumb = styled.div`
   margin-bottom: 24px;
   font-size: 0.875rem;
   color: #666;
+  animation: ${fadeInUp} 0.6s ease-out;
 `;
 
 const BreadcrumbLink = styled.span`
   cursor: pointer;
+  transition: all 0.3s ease;
+
   &:hover {
-    color: #87ceeb;
+    color: #667eea;
+    transform: translateX(2px);
   }
 `;
 
 const PageTitle = styled.h1`
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #333;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1f2937;
   margin-bottom: 24px;
+  animation: ${fadeInUp} 0.6s ease-out 0.1s both;
+`;
+
+const TabContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  animation: ${fadeInUp} 0.6s ease-out 0.2s both;
+`;
+
+const TabButton = styled.button<{ $active: boolean }>`
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: ${(props) =>
+    props.$active
+      ? "linear-gradient(135deg, #667eea, #764ba2)"
+      : "rgba(255, 255, 255, 0.8)"};
+  color: ${(props) => (props.$active ? "white" : "#666")};
+  box-shadow: ${(props) =>
+    props.$active
+      ? "0 8px 25px rgba(102, 126, 234, 0.3)"
+      : "0 2px 8px rgba(0, 0, 0, 0.1)"};
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${(props) =>
+      props.$active
+        ? "0 12px 35px rgba(102, 126, 234, 0.4)"
+        : "0 4px 15px rgba(0, 0, 0, 0.15)"};
+  }
 `;
 
 const StatCardsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 24px;
-  margin-bottom: 32px;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
 `;
 
 const StatCard = styled.div`
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-  padding: 24px;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  transition: box-shadow 0.2s;
+  align-items: center;
+  transition: all 0.3s ease;
+  animation: ${fadeInUp} 0.6s ease-out;
+  position: relative;
+
   &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 20px 20px 0 0;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+
+  &:hover::before {
+    transform: scaleX(1);
   }
 `;
 
-const StatTitle = styled.p`
-  color: #666;
+const StatTitle = styled.div`
   font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
 `;
 
-const StatValue = styled.h3`
+const StatValue = styled.div`
   font-size: 1.5rem;
-  font-weight: bold;
-  margin-top: 4px;
+  font-weight: 800;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
 `;
 
-const StatChange = styled.p<{ $positive: boolean }>`
-  font-size: 0.875rem;
-  margin-top: 8px;
-  color: ${(props) => (props.$positive ? "#28a745" : "#dc3545")};
-  i {
-    margin-right: 4px;
-  }
+const StatChange = styled.div<{ $positive: boolean }>`
+  font-size: 0.75rem;
+  color: ${(props) => (props.$positive ? "#10b981" : "#ef4444")};
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 `;
 
 const StatIconWrapper = styled.div<{ $bgColor: string }>`
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
   background: ${(props) => props.$bgColor};
-  padding: 12px;
-  border-radius: 8px;
-  i {
-    color: inherit; /* Icon color will be set by parent */
-    font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: scale(1.1);
+    animation: ${pulse} 0.6s ease-in-out;
   }
 `;
 
@@ -646,28 +844,6 @@ const ToastCloseButton = styled.button`
 `;
 
 // 리뷰 관리 관련 styled-components
-const TabContainer = styled.div`
-  display: flex;
-  border-bottom: 1px solid #e5e7eb;
-  margin-bottom: 24px;
-`;
-
-const TabButton = styled.button<{ $active: boolean }>`
-  padding: 12px 24px;
-  border: none;
-  background: none;
-  color: ${(props) => (props.$active ? "#87ceeb" : "#6b7280")};
-  font-weight: ${(props) => (props.$active ? "600" : "500")};
-  border-bottom: 2px solid
-    ${(props) => (props.$active ? "#87ceeb" : "transparent")};
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    color: #87ceeb;
-  }
-`;
-
 const ReviewStatsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1209,7 +1385,8 @@ const ChartWrapper = styled.div`
 `;
 
 const AdminDashboardPage: React.FC = () => {
-  const nav = useNavigate();
+  const navigate = useNavigate();
+  const { nickname, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -1342,6 +1519,23 @@ const AdminDashboardPage: React.FC = () => {
     setTimeout(() => {
       setShowToast(false);
     }, 3000); // Hide after 3 seconds
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const handleHomeClick = () => {
+    navigate("/");
+  };
+
+  const handleProductsClick = () => {
+    navigate("/products");
+  };
+
+  const handleChatClick = () => {
+    navigate("/chatrooms");
   };
 
   // 리뷰 관리 관련 함수들
@@ -1561,14 +1755,26 @@ const AdminDashboardPage: React.FC = () => {
     <Container>
       <Header>
         <LogoWrapper>
-          <Logo>브랜드 로고</Logo>
+          <Logo onClick={handleHomeClick} style={{ cursor: "pointer" }}>
+            FeedShop
+          </Logo>
         </LogoWrapper>
         <Nav>
-          <NavLink href="#">홈</NavLink>
-          <NavLink href="#">서비스</NavLink>
-          <NavLink href="#">제품</NavLink>
-          <NavLink href="#">고객지원</NavLink>
-          <NavLink href="#">회사소개</NavLink>
+          <NavLink onClick={handleHomeClick} style={{ cursor: "pointer" }}>
+            홈
+          </NavLink>
+          <NavLink onClick={handleProductsClick} style={{ cursor: "pointer" }}>
+            상품
+          </NavLink>
+          <NavLink onClick={handleChatClick} style={{ cursor: "pointer" }}>
+            채팅
+          </NavLink>
+          <NavLink href="#" style={{ cursor: "pointer" }}>
+            고객지원
+          </NavLink>
+          <NavLink href="#" style={{ cursor: "pointer" }}>
+            회사소개
+          </NavLink>
         </Nav>
         <UserMenu>
           <IconButton onClick={handleShowToast}>
@@ -1577,7 +1783,32 @@ const AdminDashboardPage: React.FC = () => {
           <IconButton>
             <i className="fas fa-cog"></i>
           </IconButton>
-          <LoginButton>로그인</LoginButton>
+          {nickname ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <span
+                style={{
+                  fontSize: "14px",
+                  color: "rgba(255, 255, 255, 0.9)",
+                  fontWeight: "500",
+                }}
+              >
+                {nickname}님
+              </span>
+              <LoginButton
+                onClick={handleLogout}
+                style={{
+                  backgroundColor: "rgba(220, 53, 69, 0.8)",
+                  borderColor: "rgba(220, 53, 69, 0.3)",
+                  fontSize: "12px",
+                  padding: "6px 12px",
+                }}
+              >
+                로그아웃
+              </LoginButton>
+            </div>
+          ) : (
+            <LoginButton onClick={() => navigate("/login")}>로그인</LoginButton>
+          )}
           <MobileMenuButton onClick={toggleMobileMenu}>
             <i className="fas fa-bars text-xl"></i>
           </MobileMenuButton>
@@ -1595,23 +1826,88 @@ const AdminDashboardPage: React.FC = () => {
           <MobileMenuNav>
             <MobileMenuList>
               <MobileMenuListItem>
-                <NavLink href="#">홈</NavLink>
+                <NavLink
+                  onClick={() => {
+                    handleHomeClick();
+                    toggleMobileMenu();
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  홈
+                </NavLink>
               </MobileMenuListItem>
               <MobileMenuListItem>
-                <NavLink href="#">서비스</NavLink>
+                <NavLink
+                  onClick={() => {
+                    handleProductsClick();
+                    toggleMobileMenu();
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  상품
+                </NavLink>
               </MobileMenuListItem>
               <MobileMenuListItem>
-                <NavLink href="#">제품</NavLink>
+                <NavLink
+                  onClick={() => {
+                    handleChatClick();
+                    toggleMobileMenu();
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  채팅
+                </NavLink>
               </MobileMenuListItem>
               <MobileMenuListItem>
-                <NavLink href="#">고객지원</NavLink>
+                <NavLink href="#" style={{ cursor: "pointer" }}>
+                  고객지원
+                </NavLink>
               </MobileMenuListItem>
               <MobileMenuListItem>
-                <NavLink href="#">회사소개</NavLink>
+                <NavLink href="#" style={{ cursor: "pointer" }}>
+                  회사소개
+                </NavLink>
               </MobileMenuListItem>
             </MobileMenuList>
             <MobileMenuLoginSection>
-              <LoginButton style={{ width: "100%" }}>로그인</LoginButton>
+              {nickname ? (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      color: "#666",
+                      textAlign: "center",
+                    }}
+                  >
+                    {nickname}님
+                  </span>
+                  <LoginButton
+                    onClick={() => {
+                      handleLogout();
+                      toggleMobileMenu();
+                    }}
+                    style={{ width: "100%", backgroundColor: "#dc3545" }}
+                  >
+                    로그아웃
+                  </LoginButton>
+                </div>
+              ) : (
+                <LoginButton
+                  onClick={() => {
+                    navigate("/login");
+                    toggleMobileMenu();
+                  }}
+                  style={{ width: "100%" }}
+                >
+                  로그인
+                </LoginButton>
+              )}
             </MobileMenuLoginSection>
           </MobileMenuNav>
         </MobileMenuDrawer>
@@ -1629,46 +1925,52 @@ const AdminDashboardPage: React.FC = () => {
           <SidebarNav>
             <SidebarList>
               <SidebarItem>
-                <a
-                  onClick={() => setActiveTab("dashboard")}
-                  style={{ cursor: "pointer" }}
-                >
-                  <SidebarIcon className="fas fa-home"></SidebarIcon>
+                <SidebarLink onClick={() => setActiveTab("dashboard")}>
+                  <SidebarIcon className="fas fa-home sidebar-icon"></SidebarIcon>
                   <SidebarText $isOpen={sidebarOpen}>대시보드</SidebarText>
-                </a>
+                </SidebarLink>
               </SidebarItem>
               <SidebarItem>
-                <a
-                  onClick={() => setActiveTab("reviews")}
-                  style={{ cursor: "pointer" }}
-                >
-                  <SidebarIcon className="fas fa-star"></SidebarIcon>
+                <SidebarLink onClick={() => setActiveTab("reviews")}>
+                  <SidebarIcon className="fas fa-star sidebar-icon"></SidebarIcon>
                   <SidebarText $isOpen={sidebarOpen}>리뷰 관리</SidebarText>
-                </a>
+                </SidebarLink>
               </SidebarItem>
               <SidebarItem>
-                <a href="#">
-                  <SidebarIcon className="fas fa-user"></SidebarIcon>
+                <SidebarLink onClick={() => navigate("/user-manage")}>
+                  <SidebarIcon className="fas fa-user sidebar-icon"></SidebarIcon>
                   <SidebarText $isOpen={sidebarOpen}>사용자 관리</SidebarText>
-                </a>
+                </SidebarLink>
               </SidebarItem>
               <SidebarItem>
-                <a href="#">
-                  <SidebarIcon className="fas fa-store"></SidebarIcon>
+                <SidebarLink onClick={() => navigate("/report-manage")}>
+                  <SidebarIcon className="fas fa-flag sidebar-icon"></SidebarIcon>
+                  <SidebarText $isOpen={sidebarOpen}>신고 관리</SidebarText>
+                </SidebarLink>
+              </SidebarItem>
+              <SidebarItem>
+                <SidebarLink onClick={() => navigate("/store-home")}>
+                  <SidebarIcon className="fas fa-store sidebar-icon"></SidebarIcon>
                   <SidebarText $isOpen={sidebarOpen}>가게 관리</SidebarText>
-                </a>
+                </SidebarLink>
               </SidebarItem>
               <SidebarItem>
-                <a href="#">
-                  <SidebarIcon className="fas fa-chart-bar"></SidebarIcon>
-                  <SidebarText $isOpen={sidebarOpen}>통계</SidebarText>
-                </a>
+                <SidebarLink onClick={() => navigate("/products")}>
+                  <SidebarIcon className="fas fa-chart-bar sidebar-icon"></SidebarIcon>
+                  <SidebarText $isOpen={sidebarOpen}>상품 관리</SidebarText>
+                </SidebarLink>
               </SidebarItem>
               <SidebarItem>
-                <a href="#">
-                  <SidebarIcon className="fas fa-cog"></SidebarIcon>
+                <SidebarLink onClick={() => navigate("/stats-dashboard")}>
+                  <SidebarIcon className="fas fa-chart-line sidebar-icon"></SidebarIcon>
+                  <SidebarText $isOpen={sidebarOpen}>통계 분석</SidebarText>
+                </SidebarLink>
+              </SidebarItem>
+              <SidebarItem>
+                <SidebarLink onClick={() => navigate("/profile")}>
+                  <SidebarIcon className="fas fa-cog sidebar-icon"></SidebarIcon>
                   <SidebarText $isOpen={sidebarOpen}>설정</SidebarText>
-                </a>
+                </SidebarLink>
               </SidebarItem>
             </SidebarList>
           </SidebarNav>
@@ -1677,7 +1979,12 @@ const AdminDashboardPage: React.FC = () => {
         <MainContent $sidebarOpen={sidebarOpen}>
           <ContentPadding>
             <Breadcrumb>
-              <BreadcrumbLink>홈</BreadcrumbLink>{" "}
+              <BreadcrumbLink
+                onClick={handleHomeClick}
+                style={{ cursor: "pointer" }}
+              >
+                홈
+              </BreadcrumbLink>{" "}
               <span className="mx-2">/</span>{" "}
               <BreadcrumbLink>
                 {activeTab === "dashboard" ? "대시보드" : "리뷰 관리"}
