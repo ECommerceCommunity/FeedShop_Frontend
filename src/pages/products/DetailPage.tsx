@@ -1,5 +1,6 @@
 "use client";
 
+
 import { Fragment, useState, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
@@ -395,7 +396,7 @@ export default function ProductDetailPage() {
                         className="flex-1 py-3 text-black font-semibold"
                         onClick={handleScrollToReview}
                       >
-                        스냅·후기{" "}
+                        리뷰·후기{" "}
                         <span className="ml-1 text-indigo-600">
                           {productReviews.length}
                         </span>
@@ -573,6 +574,7 @@ export default function ProductDetailPage() {
                     },
                   })
                 }
+
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
