@@ -3,7 +3,6 @@ import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 import Layout from "./components/layout/Layout";
 import ScrollToTop from "./components/rollback/ScrollToTop";
-import { AuthProvider } from "./contexts/AuthContext";
 import theme from "./theme";
 
 // 페이지 컴포넌트들
@@ -36,10 +35,10 @@ const WishListPage = lazy(() => import("./pages/cart/WishListPage"));
 const RecentViewPage = lazy(() => import("./pages/cart/RecentViewPage"));
 const ReviewEditPage = lazy(() => import("./pages/reviews/ReviewEditPage"));
 
-
 const App: FC = () => {
   return (
     <ThemeProvider theme={theme}>
+
       <AuthProvider>
         <ScrollToTop />
         <Suspense fallback={<div>로딩중...</div>}>
@@ -66,12 +65,11 @@ const App: FC = () => {
               <Route path="/reviews/edit" element={<ReviewEditPage />} />
             </Route>
 
-            {/* Layout 없이 보여야 하는 페이지들 */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignUp />} />
-          </Routes>
-        </Suspense>
-      </AuthProvider>
+          {/* Layout 없이 보여야 하는 페이지들 */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUp />} />
+        </Routes>
+      </Suspense>
     </ThemeProvider>
   );
 };
