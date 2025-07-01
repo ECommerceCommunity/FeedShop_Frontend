@@ -56,10 +56,6 @@ const App: FC = () => {
               <Route path="/search" element={<SearchPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/reviews" element={<ReviewsPage />} />
-              <Route path="/chatrooms" element={<ChatRoomListPage />} />
-              <Route path="/chatrooms/:id" element={<ChatRoomDetailPage />} />
-              <Route path="/report-manage" element={<ReportManagePage />} />
-              <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
               <Route path="/store-home" element={<StoreHomePage />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/orders" element={<OrdersPage />} />
@@ -67,6 +63,7 @@ const App: FC = () => {
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/wishlist" element={<WishListPage />} />
               <Route path="/recentview" element={<RecentViewPage />} />
+              <Route path="/reviews/edit" element={<ReviewEditPage />} />
             </Route>
 
             {/* Layout 없이 보여야 하는 페이지들 */}
