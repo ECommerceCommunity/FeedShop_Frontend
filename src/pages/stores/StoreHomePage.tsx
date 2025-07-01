@@ -4,6 +4,7 @@ import reviews from "../../pages/data/reviews/reviews.json";
 import brands from "../../pages/data/products/brands.json";
 import RegisterStoreModal from "../../pages/stores/registerStores/RegisterStoreModal";
 import EditStoreModal from "pages/stores/editStores/EditStoreModal";
+import Warning from "../../components/modal/Warning";
 import { useNavigate } from "react-router-dom";
 
 const StoreHomePage: FC = () => {
@@ -40,6 +41,21 @@ const StoreHomePage: FC = () => {
             className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
           />
         )}
+        <Warning
+          open={showWarning}
+          title="경고"
+          message="정말 삭제하시겠습니까?"
+          onConfirm={() => {
+            // 삭제 로직을 여기에 구현
+            console.log("삭제할 brand:", brandToDelete);
+            setShowWarning(false);
+            setBrandToDelete(null);
+          }}
+          onCancel={() => {
+            setShowWarning(false);
+            setBrandToDelete(null);
+          }}
+        />
 
         <main className="pt-[60px] min-h-[calc(100vh-60px)] transition-all ml-0 md:ml-[60px]">
           <div className="p-6">
