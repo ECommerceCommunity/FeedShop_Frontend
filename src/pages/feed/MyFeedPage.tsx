@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import FeedList from "../../components/feed/FeedList";
 
 // 임시 피드 데이터 (기존 목록페이지 (1).tsx 참고)
 const feedPosts = Array.from({ length: 6 }, (_, index) => ({
@@ -12,7 +13,7 @@ const feedPosts = Array.from({ length: 6 }, (_, index) => ({
     `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20casual%20outfit&width=400&height=500&seq=mypost${index + 1}a&orientation=portrait`
   ],
   productName: ['트렌디 데님 자켓', '캐주얼 니트 원피스', '베이직 코튼 티셔츠', '스트라이프 셔츠', '미니멀 블레이저', '린넨 와이드 팬츠'][index],
-  size: ['S', 'M', 'L'][Math.floor(Math.random() * 3)],
+  size: [220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300][Math.floor(Math.random() * 17)],
   gender: '여성',
   height: 165,
   description: [
@@ -77,6 +78,23 @@ const MyFeedPage = () => {
   // 탭/정렬 상태
   const [activeTab, setActiveTab] = useState<'all' | '일상' | '이벤트' | '랭킹'>('all');
   const [sortBy, setSortBy] = useState<'latest' | 'popular'>('latest');
+
+  // filteredFeeds: 탭/정렬에 따라 feedPosts를 필터링/정렬
+  const filteredFeeds = feedPosts
+    .filter((post) => activeTab === 'all' ? true : post.type === activeTab)
+    .sort((a, b) => {
+      if (sortBy === 'latest') {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      } else {
+        return b.likes - a.likes;
+      }
+    });
+
+  // handleFeedClick: 상세 모달 오픈
+  const handleFeedClick = (post: FeedPost) => {
+    setSelectedPost(post);
+    setShowComments(false);
+  };
 
   // 좋아요
   const handleLike = (postId: number) => {
@@ -179,64 +197,8 @@ const MyFeedPage = () => {
         </div>
       </div>
 
-      {/* 피드 카드 목록 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-        {feedPosts
-          .filter((post) => activeTab === 'all' ? true : post.type === activeTab)
-          .sort((a, b) => {
-            if (sortBy === 'latest') {
-              return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-            } else {
-              return b.likes - a.likes;
-            }
-          })
-          .map((post) => (
-          <div
-            key={post.id}
-            className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition duration-200 cursor-pointer"
-            onClick={() => setSelectedPost(post)}
-          >
-            <div className="relative h-80 overflow-hidden">
-              <img src={post.images[0]} alt={post.productName} className="w-full h-full object-cover object-top" />
-            </div>
-            <div className="p-4">
-              <div className="flex items-center mb-3">
-                <img src={post.profileImg} alt={post.username} className="w-10 h-10 rounded-full object-cover mr-3" />
-                <div>
-                  <div className="flex items-center">
-                    <h3 className="font-medium">{post.username}</h3>
-                    <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
-                      <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
-                      <span>Lv.{post.level}</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-500">{post.gender} · {post.height}cm</p>
-                </div>
-              </div>
-              <h4 className="font-medium mb-1">{post.productName}</h4>
-              <p className="text-sm text-gray-600 mb-3">착용 사이즈: {post.size}</p>
-              <p className="text-sm text-gray-700 mb-4">{post.description}</p>
-              <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                <div className="flex space-x-4">
-                  <button className="flex items-center text-gray-500 hover:text-[#87CEEB] cursor-pointer"
-                    onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
-                    disabled={likedPosts.includes(post.id)}
-                  >
-                    <i className="fas fa-heart mr-1.5"></i>
-                    <span className="text-sm">{post.likes + (likedPosts.includes(post.id) ? 1 : 0)}</span>
-                  </button>
-                  <button className="flex items-center text-gray-500 hover:text-[#87CEEB] cursor-pointer"
-                    onClick={(e) => { e.stopPropagation(); setShowComments(true); setSelectedPost(post); }}
-                  >
-                    <i className="fas fa-comment mr-1.5"></i>
-                    <span className="text-sm">{post.comments}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* 피드 리스트 렌더링 부분을 아래처럼 대체 */}
+      <FeedList feeds={filteredFeeds} onFeedClick={handleFeedClick} />
 
       {/* 상세 모달 */}
       {selectedPost && (
@@ -276,7 +238,7 @@ const MyFeedPage = () => {
                 </div>
                 <div className="mb-6">
                   <h2 className="text-xl font-bold mb-2">{selectedPost.productName}</h2>
-                  <p className="text-gray-600">착용 사이즈: {selectedPost.size}</p>
+                  <p className="text-gray-600">신발 사이즈: {selectedPost.size}mm</p>
                 </div>
                 <div className="mb-6">
                   <h3 className="font-medium mb-2">상품 설명</h3>
@@ -303,7 +265,7 @@ const MyFeedPage = () => {
                   <div className="flex items-center space-x-2">
                     <button
                       className="px-3 py-2 rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition text-sm font-medium"
-                      onClick={() => { setSelectedPost(null); navigate(`/feed-create?id=${selectedPost.id}`); }}
+                      onClick={() => { setSelectedPost(null); navigate(`/feed-edit?id=${selectedPost.id}`); }}
                     >
                       수정
                     </button>

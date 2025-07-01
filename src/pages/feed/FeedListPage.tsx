@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import FeedList from "../../components/feed/FeedList";
 
 // 더미 데이터 생성 함수 및 타입 정의
 interface FeedPost {
@@ -10,7 +11,7 @@ interface FeedPost {
   profileImg: string;
   images: string[];
   productName: string;
-  size: string;
+  size: number;
   gender: string;
   height: number;
   description: string;
@@ -43,7 +44,7 @@ const generateFeedPost = (id: number): FeedPost => ({
     `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20elegant%20outfit&width=400&height=500&seq=post${id}b&orientation=portrait`
   ],
   productName: `트렌디 아이템 ${id}`,
-  size: ['S', 'M', 'L'][Math.floor(Math.random() * 3)],
+  size: [220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300][Math.floor(Math.random() * 17)],
   gender: Math.random() > 0.5 ? '여성' : '남성',
   height: Math.floor(Math.random() * 30) + 155,
   description: `트렌디한 스타일의 아이템입니다. 데일리룩으로 활용하기 좋아요. ${id}`,
@@ -277,55 +278,7 @@ const FeedListPage = () => {
       {activeTab === "all" && (
         <>
           {/* 피드 그리드 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-            {[...feedPosts, ...localFeeds.filter(f => f.feedType === 'all')].map((post) => (
-              <div key={post.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition duration-200 cursor-pointer" onClick={() => { console.log(post.feedType); handleOpenModal(post); }}>
-                {/* 이미지 (첫 번째 이미지만) */}
-                <div className="relative h-80 overflow-hidden">
-                  <img src={post.images[0]} alt={post.productName} className="w-full h-full object-cover object-top" />
-                </div>
-                {/* 콘텐츠 */}
-                <div className="p-4">
-                  {/* 유저 정보 */}
-                  <div className="flex items-center mb-3">
-                    <img src={post.profileImg} alt={post.username} className="w-10 h-10 rounded-full object-cover mr-3" />
-                    <div>
-                      <div className="flex items-center">
-                        <h3 className="font-medium">{post.username}</h3>
-                        <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
-                          <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
-                          <span>Lv.{post.level}</span>
-                        </div>
-                      </div>
-                      <p className="text-sm text-gray-500">{post.gender} · {post.height}cm</p>
-                    </div>
-                  </div>
-                  <h4 className="font-medium mb-1">{post.productName}</h4>
-                  <p className="text-sm text-gray-600 mb-3">착용 사이즈: {post.size}</p>
-                  <p className="text-sm text-gray-700 mb-4">{post.description}</p>
-                  <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                    <div className="flex space-x-4">
-                      <button className="flex items-center text-gray-500 hover:text-[#87CEEB] cursor-pointer"
-                        onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
-                        disabled={likedPosts.includes(post.id)}
-                      >
-                        <i className="fas fa-heart mr-1.5"></i>
-                        <span className="text-sm">{post.likes}</span>
-                      </button>
-                      <button className="flex items-center text-gray-500 hover:text-[#87CEEB] cursor-pointer">
-                        <i className="fas fa-comment mr-1.5"></i>
-                        <span className="text-sm">{post.comments}</span>
-                      </button>
-                      <span className="flex items-center text-gray-500">
-                        <i className="fas fa-vote-yea text-[#87CEEB] mr-1"></i>
-                        투표수: {post.votes}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <FeedList feeds={[...feedPosts, ...localFeeds.filter(f => f.feedType === 'all')]} onFeedClick={handleOpenModal} />
           {/* 더 보기 버튼 */}
           <div className="text-center mb-10">
             {hasMore ? (
@@ -380,58 +333,7 @@ const FeedListPage = () => {
             </div>
           ))}
           {/* 이벤트 피드용 피드 카드 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-            {[...feedPosts, ...localFeeds.filter(f => f.feedType === 'event')].map((post) => (
-              <div key={post.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition duration-200 cursor-pointer" onClick={() => { console.log(post.feedType); handleOpenModal(post); }}>
-                <div className="relative h-80 overflow-hidden">
-                  <img src={post.images[0]} alt={post.productName} className="w-full h-full object-cover object-top" />
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center mb-3">
-                    <img src={post.profileImg} alt={post.username} className="w-10 h-10 rounded-full object-cover mr-3" />
-                    <div>
-                      <div className="flex items-center">
-                        <h3 className="font-medium">{post.username}</h3>
-                        <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
-                          <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
-                          <span>Lv.{post.level}</span>
-                        </div>
-                      </div>
-                      <p className="text-sm text-gray-500">{post.gender} · {post.height}cm</p>
-                    </div>
-                  </div>
-                  <h4 className="font-medium mb-1">{post.productName}</h4>
-                  <p className="text-sm text-gray-600 mb-3">착용 사이즈: {post.size}</p>
-                  <p className="text-sm text-gray-700 mb-4">{post.description}</p>
-                  <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                    <div className="flex space-x-4">
-                      <button className="flex items-center text-gray-500 hover:text-[#87CEEB] cursor-pointer"
-                        onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
-                        disabled={likedPosts.includes(post.id)}
-                      >
-                        <i className="fas fa-heart mr-1.5"></i>
-                        <span className="text-sm">{post.likes}</span>
-                      </button>
-                      <button className="flex items-center text-gray-500 hover:text-[#87CEEB] cursor-pointer">
-                        <i className="fas fa-comment mr-1.5"></i>
-                        <span className="text-sm">{post.comments}</span>
-                      </button>
-                    </div>
-                    <div>
-                      <button
-                        className={`px-3 py-1 rounded-full text-sm bg-[#87CEEB] bg-opacity-10 text-[#87CEEB] hover:bg-opacity-20 cursor-pointer ${votedPosts.includes(post.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        onClick={(e) => { e.stopPropagation(); setSelectedPost(post); setShowVoteModal(true); }}
-                        disabled={votedPosts.includes(post.id)}
-                      >
-                        <i className="fas fa-vote-yea mr-1"></i>
-                        {votedPosts.includes(post.id) ? '투표완료' : '투표하기'} {post.votes}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <FeedList feeds={[...feedPosts, ...localFeeds.filter(f => f.feedType === 'event')]} onFeedClick={handleOpenModal} />
         </div>
       )}
 
@@ -477,52 +379,7 @@ const FeedListPage = () => {
             ))}
           </div>
           {/* 랭킹 피드용 피드 카드 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-            {feedPosts.map((post) => (
-              <div key={post.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition duration-200 cursor-pointer" onClick={() => { console.log(post.feedType); handleOpenModal(post); }}>
-                <div className="relative h-80 overflow-hidden">
-                  <img src={post.images[0]} alt={post.productName} className="w-full h-full object-cover object-top" />
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center mb-3">
-                    <img src={post.profileImg} alt={post.username} className="w-10 h-10 rounded-full object-cover mr-3" />
-                    <div>
-                      <div className="flex items-center">
-                        <h3 className="font-medium">{post.username}</h3>
-                        <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
-                          <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
-                          <span>Lv.{post.level}</span>
-                        </div>
-                      </div>
-                      <p className="text-sm text-gray-500">{post.gender} · {post.height}cm</p>
-                    </div>
-                  </div>
-                  <h4 className="font-medium mb-1">{post.productName}</h4>
-                  <p className="text-sm text-gray-600 mb-3">착용 사이즈: {post.size}</p>
-                  <p className="text-sm text-gray-700 mb-4">{post.description}</p>
-                  <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                    <div className="flex space-x-4">
-                      <button className="flex items-center text-gray-500 hover:text-[#87CEEB] cursor-pointer"
-                        onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
-                        disabled={likedPosts.includes(post.id)}
-                      >
-                        <i className="fas fa-heart mr-1.5"></i>
-                        <span className="text-sm">{post.likes}</span>
-                      </button>
-                      <button className="flex items-center text-gray-500 hover:text-[#87CEEB] cursor-pointer">
-                        <i className="fas fa-comment mr-1.5"></i>
-                        <span className="text-sm">{post.comments}</span>
-                      </button>
-                      <span className="flex items-center text-gray-500">
-                        <i className="fas fa-vote-yea text-[#87CEEB] mr-1"></i>
-                        투표수: {post.votes}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <FeedList feeds={feedPosts} onFeedClick={handleOpenModal} />
         </div>
       )}
 
@@ -567,7 +424,7 @@ const FeedListPage = () => {
                 </div>
                 <div className="mb-6">
                   <h2 className="text-xl font-bold mb-2">{selectedPost.productName}</h2>
-                  <p className="text-gray-600">착용 사이즈: {selectedPost.size}</p>
+                  <p className="text-gray-600">신발 사이즈: {selectedPost.size}mm</p>
                 </div>
                 <div className="mb-6">
                   <h3 className="font-medium mb-2">상품 설명</h3>
