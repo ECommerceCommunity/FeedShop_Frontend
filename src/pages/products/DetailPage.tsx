@@ -49,6 +49,7 @@ export default function ProductDetailPage() {
   const [showEmptySelectionModal, setShowEmptySelectionModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
 
   const productData = products.find((p) => String(p.id) === id)
   const brandData = brands.find((b) => String(b.store_id) === String(productData?.store_id))
@@ -296,6 +297,21 @@ export default function ProductDetailPage() {
           onClose={() => setShowEditModal(false)}
         />
       )}
+      {showDeleteWarning && (
+        <Warning
+          open={showDeleteWarning}
+          title="상품 삭제"
+          message="정말로 이 상품을 삭제하시겠습니까?"
+          onConfirm={() => {
+            setShowDeleteWarning(false);
+            console.log("Deleting product:", productData.id);
+            navigate('/products');
+          }}
+          onCancel={() => {
+            setShowDeleteWarning(false);
+          }}
+        />
+      )}
       <div className="bg-white mx-auto">
         <div className="lg:grid lg:grid-cols-[1.7fr_1px_1fr] lg:items-start gap-4">
           <div className="col-span-1 p-5">
@@ -424,11 +440,11 @@ export default function ProductDetailPage() {
                       {productReviews.length > 0 && (
                         <div className="mt-6 px-4 mx-auto bg-white border border-gray-300 rounded-md p-5 shadow-sm">
                           <h2 className="text-lg font-semibold text-gray-900 mb-4">리뷰</h2>
-                            <button onClick={handleReviewEdit}
-                                type="button"
-                                  className="bg-[#87CEEB] text-white px-4 py-2 rounded-lg hover:bg-blue-400 transition-colors"
-                            >리뷰 작성
-                            </button>
+                          <button onClick={handleReviewEdit}
+                            type="button"
+                            className="bg-[#87CEEB] text-white px-4 py-2 rounded-lg hover:bg-blue-400 transition-colors"
+                          >리뷰 작성
+                          </button>
                           {/* ✅ 제목 아래 가로선, 좌우 여백 제거 */}
                           <div className="-mx-4 border-t border-gray-300 my-4" />
 
@@ -506,12 +522,21 @@ export default function ProductDetailPage() {
 
               {/* 상품 수정 버튼 */}
               {productData && (
-                <button
-                  onClick={() => setShowEditModal(true)}
-                  className="inline-block text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-gray-700"
-                >
-                  상품 수정
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowDeleteWarning(true)}
+                    className="inline-block text-sm px-3 py-1 border border-red-300 rounded hover:bg-red-100 text-red-600"
+                  >
+                    상품 삭제
+                  </button>
+
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    className="inline-block text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-gray-700"
+                  >
+                    상품 수정
+                  </button>
+                </div>
               )}
             </div>
             {brandData && (
