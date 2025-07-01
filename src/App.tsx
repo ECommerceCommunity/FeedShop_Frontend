@@ -36,6 +36,9 @@ const WishListPage = lazy(() => import("./pages/cart/WishListPage"));
 const RecentViewPage = lazy(() => import("./pages/cart/RecentViewPage"));
 const ReviewEditPage = lazy(() => import("./pages/reviews/ReviewEditPage"));
 const ProfileSettingsPage = lazy(() => import("./pages/ProfileSettingsPage"));
+const FeedListPage = lazy(() => import("./pages/feed/FeedListPage"));
+const FeedCreatePage = lazy(() => import("./pages/feed/FeedCreatePage"));
+const MyFeedPage = lazy(() => import("./pages/feed/MyFeedPage"));
 
 const App: FC = () => {
   return (
@@ -71,6 +74,9 @@ const App: FC = () => {
                 path="/profile-settings"
                 element={<ProfileSettingsPage />}
               />
+              <Route path="/feed-list" element={<FeedListPage />} />
+              <Route path="/feed-create" element={<FeedCreatePage />} />
+              <Route path="/my-feed" element={<MyFeedPage />} />
             </Route>
 
             {/* Layout 없이 보여야 하는 페이지들 */}
