@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, FormEvent } from "react";
 
 // FormState 타입 선언
 type FormState = {
@@ -153,7 +153,7 @@ const EventEditPage = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!form.title || !form.description || !form.purchaseStartDate || !form.purchaseEndDate || !form.eventStartDate || !form.eventEndDate || !form.participationMethod || !form.rewards || !form.selectionCriteria || !form.precautions) {
       setError("모든 필수 항목을 입력해 주세요.");

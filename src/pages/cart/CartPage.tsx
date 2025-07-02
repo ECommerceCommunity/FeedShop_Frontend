@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { CartItem } from "types/types";
 import styled from "styled-components";
@@ -184,7 +184,7 @@ const StyledCheckbox = styled.input`
   margin-right: 12px;
 `;
 
-const CartPage: React.FC = () => {
+const CartPage: FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
   const [isAgree, setIsAgree] = useState(false);

@@ -1,5 +1,4 @@
-// The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work.
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, FC } from "react";
 import * as echarts from "echarts";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +15,7 @@ interface UserType {
   memo?: string;
 }
 
-const UserManagePage: React.FC = () => {
+const UserManagePage: FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [memberTypeFilter, setMemberTypeFilter] = useState("전체");
@@ -234,7 +233,7 @@ const UserManagePage: React.FC = () => {
     };
   }, []);
   // 차트 초기화 (회원 유형 분포)
-  React.useEffect(() => {
+  useEffect(() => {
     if (showDetailModal && selectedUser) {
       const chartDom = document.getElementById("memberTypeChart");
       if (chartDom) {

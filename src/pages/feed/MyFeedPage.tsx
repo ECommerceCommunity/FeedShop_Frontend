@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FeedList from "../../components/feed/FeedList";
 
@@ -103,7 +103,7 @@ const MyFeedPage = () => {
   };
 
   // 댓글 등록
-  const handleCommentSubmit = (e: React.FormEvent) => {
+  const handleCommentSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (newComment.trim()) {
       const newCommentObj = {

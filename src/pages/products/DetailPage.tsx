@@ -1,19 +1,9 @@
 "use client";
 
-<<<<<<< HEAD
-import { Fragment, useState, useMemo, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import ReactMarkdown from 'react-markdown'
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
-import { StarIcon } from '@heroicons/react/20/solid'
-=======
-
 import { Fragment, useState, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import ReactMarkdown from "react-markdown";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { StarIcon } from "@heroicons/react/20/solid";
->>>>>>> origin/MYCE-58-dosik-front-feat-review
 import {
   HeartIcon as OutlineHeartIcon,
   ChevronUpIcon,
@@ -37,6 +27,7 @@ import EditProductsModal from "./editProduct/EditProductsModal";
 import { isDiscountValid } from "utils/discount";
 import { getDiscountPrice } from "utils/price";
 import { useLocalLike } from "hooks/useLocalLike";
+import ReactMarkdown from "react-markdown";
 
 type SelectedItem = {
   size: string;
@@ -459,23 +450,6 @@ export default function ProductDetailPage() {
                           {/* ✅ 가로선: 좌우 여백 제거 (-mx-5), 박스와 붙게 */}
                           <div className="-mx-4 border-t border-gray-300 my-4" />
 
-<<<<<<< HEAD
-                        <div className="grid gap-0 sm:grid-cols-2">
-                          {product.detail_image_urls.map((url: string, idx: number) => {
-                            const isLeft = idx % 2 === 0;
-                            const roundedClass = isLeft
-                              ? 'rounded-tl-md rounded-bl-md'
-                              : 'rounded-tr-md rounded-br-md';
-                            return (
-                              <img
-                                key={url}
-                                src={url}
-                                alt={`자세한 이미지 ${idx + 1}`}
-                                className={`w-full object-cover block ${roundedClass}`}
-                              />
-                            );
-                          })}
-=======
                           <div className="grid gap-0 sm:grid-cols-2">
                             {product.detail_image_urls.map(
                               (url: string, idx: number) => {
@@ -494,19 +468,11 @@ export default function ProductDetailPage() {
                               }
                             )}
                           </div>
->>>>>>> origin/MYCE-58-dosik-front-feat-review
                         </div>
                       )}
                     <div ref={reviewRef}>
                       {productReviews.length > 0 && (
                         <div className="mt-6 px-4 mx-auto bg-white border border-gray-300 rounded-md p-5 shadow-sm">
-<<<<<<< HEAD
-                          <h2 className="text-lg font-semibold text-gray-900 mb-4">리뷰</h2>
-                          <button onClick={handleReviewEdit}
-                            type="button"
-                            className="bg-[#87CEEB] text-white px-4 py-2 rounded-lg hover:bg-blue-400 transition-colors"
-                          >리뷰 작성
-=======
                           <h2 className="text-lg font-semibold text-gray-900 mb-4">
                             리뷰
                           </h2>
@@ -516,7 +482,6 @@ export default function ProductDetailPage() {
                             className="bg-[#87CEEB] text-white px-4 py-2 rounded-lg hover:bg-blue-400 transition-colors"
                           >
                             리뷰 작성
->>>>>>> origin/MYCE-58-dosik-front-feat-review
                           </button>
                           {/* ✅ 제목 아래 가로선, 좌우 여백 제거 */}
                           <div className="-mx-4 border-t border-gray-300 my-4" />
@@ -633,18 +598,11 @@ export default function ProductDetailPage() {
                     },
                   })
                 }
-<<<<<<< HEAD
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    navigate('/products', {
-=======
 
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
                     navigate("/products", {
->>>>>>> origin/MYCE-58-dosik-front-feat-review
                       state: {
                         selectedStoreId: brandData.store_id,
                       },
@@ -699,19 +657,6 @@ export default function ProductDetailPage() {
 
                     let starIcon;
                     if (isFull) {
-<<<<<<< HEAD
-                      starIcon = <StarIcon className="w-5 h-5 text-indigo-500" />;
-                    } else if (isHalf) {
-                      starIcon = <StarIcon className="w-5 h-5 text-indigo-500" style={{ clipPath: 'inset(0 50% 0 0)' }} />;
-                    } else {
-                      starIcon = <StarIcon className="w-5 h-5 text-gray-300" />;
-                    }
-                    return (
-                      <span key={i}>
-                        {starIcon}
-                      </span>
-                    );
-=======
                       starIcon = (
                         <StarIcon className="w-5 h-5 text-indigo-500" />
                       );
@@ -726,7 +671,6 @@ export default function ProductDetailPage() {
                       starIcon = <StarIcon className="w-5 h-5 text-gray-300" />;
                     }
                     return <span key={i}>{starIcon}</span>;
->>>>>>> origin/MYCE-58-dosik-front-feat-review
                   })}
                 </div>
 

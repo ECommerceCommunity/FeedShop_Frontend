@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, FC } from "react";
 import styled, { keyframes } from "styled-components";
 
 const fadeInUp = keyframes`
@@ -259,7 +259,7 @@ const ModalDelete = styled.button`
   }
 `;
 
-const RecentViewPage: React.FC = () => {
+const RecentViewPage: FC = () => {
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);

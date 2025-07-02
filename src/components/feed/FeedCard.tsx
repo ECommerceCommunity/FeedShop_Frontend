@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 
 interface FeedCardProps {
   feed: {
@@ -14,7 +14,7 @@ interface FeedCardProps {
   onClick?: () => void;
 }
 
-const FeedCard: React.FC<FeedCardProps> = ({ feed, onClick }) => {
+const FeedCard: FC<FeedCardProps> = ({ feed, onClick }) => {
   return (
     <div className="border p-4 rounded-lg hover:shadow flex flex-col cursor-pointer" onClick={onClick}>
       <img src={feed.image} alt={feed.title} className="aspect-[3/4] object-cover rounded" />

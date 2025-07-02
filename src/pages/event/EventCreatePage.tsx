@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 
 const initialForm = {
@@ -44,7 +44,7 @@ const EventCreatePage = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     // 유효성 검사
     if (!eventForm.title || !eventForm.description || !eventForm.purchaseStartDate || !eventForm.purchaseEndDate || !eventForm.eventStartDate || !eventForm.eventEndDate || !eventForm.participationMethod || !eventForm.rewards || !eventForm.selectionCriteria || !eventForm.precautions) {
