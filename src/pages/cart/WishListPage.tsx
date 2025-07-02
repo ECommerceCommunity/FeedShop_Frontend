@@ -232,7 +232,10 @@ const WishListPage: React.FC = () => {
     currentPage * itemsPerPage
   );
 
-  const formatPrice = (price: number) => price.toLocaleString() + "원";
+  const formatPrice = (price?: number) => {
+    if (typeof price !== "number") return "가격 정보 없음";
+    return price.toLocaleString() + "원";
+  };
 
   const onClickProduct = (id: number) => {
     const item = wishlistItems.find((item) => item.id === id);
