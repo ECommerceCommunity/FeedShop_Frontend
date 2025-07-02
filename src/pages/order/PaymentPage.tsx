@@ -3,7 +3,6 @@ import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CartItem } from "types/types";
 import Fail from "components/modal/Fail";
-import { randomInt } from "crypto";
 
 const Container = styled.div`
   max-width: 1100px;
