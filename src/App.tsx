@@ -67,6 +67,7 @@ const App: FC = () => {
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/wishlist" element={<WishListPage />} />
               <Route path="/recentview" element={<RecentViewPage />} />
+              <Route path="/reviews/edit" element={<ReviewEditPage />} />
               <Route
                 path="/profile-settings"
                 element={<ProfileSettingsPage />}
