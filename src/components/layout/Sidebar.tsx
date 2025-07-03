@@ -354,6 +354,26 @@ const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
         </MenuSection>
 
         <MenuSection>
+          <MenuTitle>피드</MenuTitle>
+          <MenuList>
+            <MenuItem>
+              <MenuLink to="/my-feed" active={location.pathname === "/my-feed"}>
+                <MenuIcon className="fas fa-user menu-icon" active={location.pathname === "/my-feed"} />
+                <MenuText>마이 피드</MenuText>
+                {location.pathname === "/my-feed" && <ActiveIndicator />}
+              </MenuLink>
+            </MenuItem>
+            <MenuItem>
+              <MenuLink to="/feed-list" active={location.pathname === "/feed-list"}>
+                <MenuIcon className="fas fa-list menu-icon" active={location.pathname === "/feed-list"} />
+                <MenuText>피드 목록</MenuText>
+                {location.pathname === "/feed-list" && <ActiveIndicator />}
+              </MenuLink>
+            </MenuItem>
+          </MenuList>
+        </MenuSection>
+
+        <MenuSection>
           <MenuTitle>마이페이지</MenuTitle>
           <MenuList>
             <MenuItem>
@@ -408,19 +428,6 @@ const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
         <MenuSection>
           <MenuTitle>고객 지원</MenuTitle>
           <MenuList>
-            <MenuItem>
-              <MenuLink
-                to="/chatrooms"
-                active={location.pathname === "/chatrooms"}
-              >
-                <MenuIcon
-                  className="fas fa-comments menu-icon"
-                  active={location.pathname === "/chatrooms"}
-                />
-                <MenuText>실시간 채팅</MenuText>
-                {location.pathname === "/chatrooms" && <ActiveIndicator />}
-              </MenuLink>
-            </MenuItem>
             <MenuItem>
               <MenuLink to="/reviews" active={location.pathname === "/reviews"}>
                 <MenuIcon
