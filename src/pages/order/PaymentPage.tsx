@@ -1,9 +1,8 @@
-import { ChangeEvent, FC, useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CartItem } from "types/types";
 import Fail from "components/modal/Fail";
-import { randomInt } from "crypto";
 
 const Container = styled.div`
   max-width: 1100px;
@@ -177,7 +176,7 @@ const ProductPreview = styled.div`
   color: #374151;
 `;
 
-const PaymentPage: FC = () => {
+const PaymentPage: React.FC = () => {
   const nav = useNavigate();
   const location = useLocation();
   const items: CartItem[] = location.state?.items ?? [];
@@ -202,7 +201,7 @@ const PaymentPage: FC = () => {
   const [showCardInfoModal, setShowCardInfoModal] = useState(false);
 
   const handleDeliveryChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setShippingInfo((prev) => ({ ...prev, [name]: value }));

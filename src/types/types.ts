@@ -120,3 +120,14 @@ export type WishListItem = {
   image: string;
   addedAt: string;
 };
+
+export type RecentViewItem = {
+  id: number;
+  name: string;
+  originalPrice: number;
+  discountPrice: number;
+  discountRate: number;
+  category: string;
+  image: string;
+  viewedAt: string;
+}
