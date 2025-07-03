@@ -1,4 +1,4 @@
-import { FC } from "react";
+import React from "react";
 
 interface FeedCardProps {
   feed: {
@@ -10,11 +10,17 @@ interface FeedCardProps {
     date?: string;
     likes?: number;
     size?: number;
+    feedType?: string;
+    votes?: number;
   };
   onClick?: () => void;
+  onVoteClick?: () => void;
+  onLikeClick?: () => void;
+  liked?: boolean;
+  likes?: number;
 }
 
-const FeedCard: FC<FeedCardProps> = ({ feed, onClick }) => {
+const FeedCard: React.FC<FeedCardProps> = ({ feed, onClick, onVoteClick, onLikeClick, liked, likes }) => {
   return (
     <div className="border p-4 rounded-lg hover:shadow flex flex-col cursor-pointer" onClick={onClick}>
       <img src={feed.image} alt={feed.title} className="aspect-[3/4] object-cover rounded" />
@@ -26,12 +32,22 @@ const FeedCard: FC<FeedCardProps> = ({ feed, onClick }) => {
       <div className="flex justify-between items-center text-xs text-gray-400 mt-auto">
         {feed.author && <span>{feed.author}</span>}
         {feed.date && <span>{feed.date}</span>}
-        {typeof feed.likes === "number" && (
-          <span className="flex items-center gap-1">
-            <i className="fas fa-heart text-pink-400"></i> {feed.likes}
-          </span>
-        )}
+        <button
+          className="flex items-center gap-1 focus:outline-none"
+          onClick={e => { e.stopPropagation(); onLikeClick && onLikeClick(); }}
+          disabled={liked}
+        >
+          <i className={`fas fa-heart ${liked ? 'text-red-500' : 'text-gray-300'}`}></i> {typeof likes === 'number' ? likes : feed.likes}
+        </button>
       </div>
+      {feed.feedType === 'event' && (
+        <button
+          className="mt-3 w-full bg-[#87CEEB] text-white py-2 rounded-lg font-medium hover:bg-blue-400 transition"
+          onClick={e => { e.stopPropagation(); onVoteClick && onVoteClick(); }}
+        >
+          <i className="fas fa-vote-yea mr-1"></i> 투표하기{typeof feed.votes === 'number' ? ` (${feed.votes})` : ''}
+        </button>
+      )}
     </div>
   );
 };
