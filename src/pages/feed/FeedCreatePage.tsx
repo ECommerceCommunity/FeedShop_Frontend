@@ -1,5 +1,5 @@
 // The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work.
-import { useState, useRef, useEffect, FC, ChangeEvent, KeyboardEvent } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 // Add global styles for animation
 const style = document.createElement('style');
@@ -45,7 +45,7 @@ const purchasedProducts = [
   { id: 3, name: '뉴발란스 990v5', brand: 'New Balance', image: 'https://nb.scene7.com/is/image/NB/m990gl5_nb_02_i?$pdpflexf2$&wid=440&hei=440' },
 ];
 
-const App: FC = () => {
+const App: React.FC = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const editId = searchParams.get('id');
@@ -86,7 +86,7 @@ const App: FC = () => {
     }
   }, [editId]);
 
-  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newImages: string[] = [];
       Array.from(e.target.files).forEach(file => {
@@ -119,7 +119,7 @@ const App: FC = () => {
     }
   };
 
-  const handleHashtagKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleHashtagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       handleAddHashtag();

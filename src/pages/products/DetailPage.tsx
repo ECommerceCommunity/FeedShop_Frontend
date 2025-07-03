@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState, useMemo, useRef } from "react";
+import { Fragment, useState, useMemo, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
@@ -28,6 +28,7 @@ import EditProductsModal from "./editProduct/EditProductsModal";
 import { isDiscountValid } from "utils/discount";
 import { getDiscountPrice } from "utils/price";
 import { useLocalLike } from "hooks/useLocalLike";
+import { addToRecentView } from "utils/recentview";
 
 type SelectedItem = {
   size: string;
@@ -55,6 +56,13 @@ export default function ProductDetailPage() {
   const brandData = brands.find(
     (b) => String(b.store_id) === String(productData?.store_id)
   );
+
+  // 최근 본 상품에 추가
+  useEffect(() => {
+    if (productData) {
+      addToRecentView(productData.id);
+    }
+  }, [productData]);
 
   const productReviews = useMemo(() => {
     return reviews.filter((r) => r.product_id === productData?.id);
@@ -314,7 +322,7 @@ export default function ProductDetailPage() {
           onConfirm={() => {
             setShowDeleteWarning(false);
             console.log("Deleting product:", productData.id);
-            navigate('/products');
+            navigate("/products");
           }}
           onCancel={() => {
             setShowDeleteWarning(false);
@@ -598,7 +606,6 @@ export default function ProductDetailPage() {
                     },
                   })
                 }
-
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();

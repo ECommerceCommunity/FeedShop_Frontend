@@ -3,8 +3,8 @@ import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 import Layout from "./components/layout/Layout";
 import ScrollToTop from "./components/rollback/ScrollToTop";
+import { AuthProvider } from "./contexts/AuthContext";
 import theme from "./theme";
-import { AuthProvider } from "contexts/AuthContext";
 
 // 페이지 컴포넌트들
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -90,14 +90,13 @@ const App: FC = () => {
               <Route path="/events/:id" element={<EventDetailPage />} />
               <Route path="/events/edit/:id" element={<EventEditPage />} />
               <Route path="/events/result" element={<EventResultPage />} />
-              <Route path="/reviews/edit" element={<ReviewEditPage />} />
             </Route>
 
-          {/* Layout 없이 보여야 하는 페이지들 */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUp />} />
-        </Routes>
-      </Suspense>
+            {/* Layout 없이 보여야 하는 페이지들 */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignUp />} />
+          </Routes>
+        </Suspense>
       </AuthProvider>
     </ThemeProvider>
   );
