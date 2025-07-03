@@ -2,6 +2,7 @@
 
 import { Fragment, useState, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { StarIcon } from "@heroicons/react/20/solid";
 import {
@@ -27,7 +28,6 @@ import EditProductsModal from "./editProduct/EditProductsModal";
 import { isDiscountValid } from "utils/discount";
 import { getDiscountPrice } from "utils/price";
 import { useLocalLike } from "hooks/useLocalLike";
-import ReactMarkdown from "react-markdown";
 
 type SelectedItem = {
   size: string;
