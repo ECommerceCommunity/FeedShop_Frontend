@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 const events = [
   {
@@ -57,12 +58,24 @@ const events = [
 const EventDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { nickname } = useAuth();
 
   const event = events.find(e => e.id === Number(id));
 
   if (!event) {
     return <div className="p-5">존재하지 않는 이벤트입니다.</div>;
   }
+
+  const handleEventParticipation = () => {
+    if (!nickname) {
+      // 로그인되지 않은 경우 로그인 페이지로 이동
+      navigate('/login');
+      return;
+    }
+    
+    // 로그인된 경우 피드 생성 페이지로 이동 (이벤트 ID와 함께)
+    navigate(`/feed-create?eventId=${id}`);
+  };
 
   return (
     <div className="p-5 max-w-3xl mx-auto">
@@ -139,6 +152,7 @@ const EventDetailPage = () => {
         <button
           className={`px-8 py-3 rounded-lg font-bold transition duration-200 whitespace-nowrap cursor-pointer ${event.status === 'ended' ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : event.status === 'upcoming' ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' : 'bg-[#87CEEB] text-white hover:bg-blue-400'}`}
           disabled={event.status === 'ended'}
+          onClick={event.status === 'ongoing' ? handleEventParticipation : undefined}
         >
           {event.status === 'ended'
             ? '종료된 이벤트'

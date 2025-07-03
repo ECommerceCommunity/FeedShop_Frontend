@@ -88,12 +88,114 @@ const events = [
   }
 ];
 
+// 샘플 피드 데이터
+const initialFeedPosts: FeedPost[] = [
+  // 일상 피드 샘플
+  {
+    id: 1,
+    username: '데일리러버',
+    level: 2,
+    profileImg: 'https://readdy.ai/api/search-image?query=asian%20woman%20profile&width=60&height=60&seq=profile1',
+    images: ['https://readdy.ai/api/search-image?query=casual%20asian%20woman%20outfit&width=400&height=500&seq=post1'],
+    productName: '화이트 스니커즈',
+    size: 240,
+    gender: '여성',
+    height: 162,
+    description: '데일리로 신기 좋은 화이트 스니커즈! 어디에나 잘 어울려요.',
+    likes: 120,
+    votes: 0,
+    comments: 5,
+    instagramId: 'daily_lover',
+    createdAt: '2025-06-10',
+    isLiked: false,
+    feedType: 'all',
+  },
+  // 이벤트 피드 샘플
+  {
+    id: 2,
+    username: '이벤트참가자',
+    level: 3,
+    profileImg: 'https://readdy.ai/api/search-image?query=asian%20man%20profile&width=60&height=60&seq=profile2',
+    images: ['https://readdy.ai/api/search-image?query=summer%20event%20outfit&width=400&height=500&seq=event1'],
+    productName: '여름 샌들',
+    size: 260,
+    gender: '남성',
+    height: 175,
+    description: '여름 이벤트에 맞춰 시원하게 신은 샌들! 투표 부탁드려요~',
+    likes: 80,
+    votes: 15,
+    comments: 3,
+    instagramId: 'event_guy',
+    createdAt: '2025-06-25',
+    isLiked: false,
+    feedType: 'event',
+  },
+  {
+    id: 3,
+    username: '썸머퀸',
+    level: 4,
+    profileImg: 'https://readdy.ai/api/search-image?query=asian%20woman%20profile&width=60&height=60&seq=profile3',
+    images: ['https://readdy.ai/api/search-image?query=summer%20fashion%20asian%20woman&width=400&height=500&seq=event2'],
+    productName: '플랫폼 샌들',
+    size: 235,
+    gender: '여성',
+    height: 168,
+    description: '이벤트 참여! 플랫폼 샌들로 키도 커보이고 스타일도 굿!',
+    likes: 95,
+    votes: 22,
+    comments: 7,
+    instagramId: 'summer_queen',
+    createdAt: '2025-06-26',
+    isLiked: false,
+    feedType: 'event',
+  },
+  // 랭킹 피드 샘플
+  {
+    id: 1001,
+    username: '랭킹스타',
+    level: 5,
+    profileImg: 'https://readdy.ai/api/search-image?query=asian%20man%20winner%20profile&width=60&height=60&seq=ranking1',
+    images: ['https://readdy.ai/api/search-image?query=award%20winning%20asian%20man%20outfit&width=400&height=500&seq=ranking1'],
+    productName: '한정판 러닝화',
+    size: 270,
+    gender: '남성',
+    height: 180,
+    description: '이벤트 1위! 한정판 러닝화로 스타일과 기능 모두 잡았어요.',
+    likes: 300,
+    votes: 120,
+    comments: 20,
+    instagramId: 'ranking_star',
+    createdAt: '2025-07-16',
+    isLiked: false,
+    feedType: 'ranking',
+  },
+  {
+    id: 1002,
+    username: '베스트퀸',
+    level: 5,
+    profileImg: 'https://readdy.ai/api/search-image?query=asian%20woman%20winner%20profile&width=60&height=60&seq=ranking2',
+    images: ['https://readdy.ai/api/search-image?query=award%20winning%20asian%20woman%20outfit&width=400&height=500&seq=ranking2'],
+    productName: '골드 스트랩 힐',
+    size: 240,
+    gender: '여성',
+    height: 170,
+    description: '랭킹 2위! 골드 스트랩 힐로 포인트를 줬어요.',
+    likes: 250,
+    votes: 100,
+    comments: 15,
+    instagramId: 'best_queen',
+    createdAt: '2025-07-16',
+    isLiked: false,
+    feedType: 'ranking',
+  },
+];
+
 const FeedListPage = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [sortBy, setSortBy] = useState("latest");
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [feedPosts, setFeedPosts] = useState<FeedPost[]>(() => Array.from({ length: 6 }, (_, i) => generateFeedPost(i + 1)));
+  const [feedPosts, setFeedPosts] = useState<FeedPost[]>(() => initialFeedPosts);
   const [localFeeds, setLocalFeeds] = useState<FeedPost[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -210,6 +312,13 @@ const FeedListPage = () => {
     localStorage.setItem('localFeeds', JSON.stringify(updated));
   };
 
+  // FeedList에서 투표하기 버튼 클릭 시 상세 모달 오픈
+  const handleVoteCardClick = (feed: FeedPost) => {
+    setSelectedPost(feed);
+    setShowComments(false);
+    setShowVoteModal(true);
+  };
+
   return (
     <div className="p-5">
       {/* 탭 네비게이션 */}
@@ -254,7 +363,7 @@ const FeedListPage = () => {
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            {["여성", "남성", "S", "M", "L", "캐주얼", "미니멀"].map((filter) => (
+            {["여성", "남성", "캐주얼", "미니멀"].map((filter) => (
               <button
                 key={filter}
                 className={`px-3 py-1 rounded-full text-sm cursor-pointer ${selectedFilters.includes(filter) ? "bg-[#87CEEB] text-white" : "bg-white border border-gray-300 text-gray-700 hover:border-[#87CEEB]"}`}
@@ -278,7 +387,12 @@ const FeedListPage = () => {
       {activeTab === "all" && (
         <>
           {/* 피드 그리드 */}
-          <FeedList feeds={[...feedPosts, ...localFeeds.filter(f => f.feedType === 'all')]} onFeedClick={handleOpenModal} />
+          <FeedList
+            feeds={[...feedPosts, ...localFeeds].filter(f => f.feedType === 'all')}
+            onFeedClick={handleOpenModal}
+            onLikeClick={feed => handleLike(feed.id)}
+            likedPosts={likedPosts}
+          />
           {/* 더 보기 버튼 */}
           <div className="text-center mb-10">
             {hasMore ? (
@@ -333,7 +447,13 @@ const FeedListPage = () => {
             </div>
           ))}
           {/* 이벤트 피드용 피드 카드 */}
-          <FeedList feeds={[...feedPosts, ...localFeeds.filter(f => f.feedType === 'event')]} onFeedClick={handleOpenModal} />
+          <FeedList
+            feeds={[...feedPosts, ...localFeeds].filter(f => f.feedType === 'event')}
+            onFeedClick={handleOpenModal}
+            onVoteClick={handleVoteCardClick}
+            onLikeClick={feed => handleLike(feed.id)}
+            likedPosts={likedPosts}
+          />
         </div>
       )}
 
@@ -342,7 +462,26 @@ const FeedListPage = () => {
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">이번 주 베스트 콘텐츠</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-            {bestPosts.map((post, idx) => (
+            {/* 샘플 랭킹 피드 */}
+            {[...feedPosts, ...localFeeds, {
+              id: 9999,
+              username: '랭킹왕',
+              level: 5,
+              profileImg: 'https://readdy.ai/api/search-image?query=winner&width=60&height=60',
+              images: ['https://readdy.ai/api/search-image?query=winner&width=400&height=500'],
+              productName: '랭킹 신발',
+              size: 270,
+              gender: '남성',
+              height: 180,
+              description: '이벤트 결과로 선정된 랭킹 피드입니다.',
+              likes: 999,
+              votes: 300,
+              comments: 50,
+              instagramId: 'ranking_king',
+              createdAt: '2025-07-20',
+              isLiked: false,
+              feedType: 'ranking',
+            }].filter(f => f.feedType === 'ranking').map((post, idx) => (
               <div key={post.id} className="bg-gradient-to-br from-blue-50 to-white rounded-lg p-4 border border-blue-100 relative">
                 {/* 투표완료 뱃지 */}
                 {votedPosts.includes(post.id) && (
@@ -379,7 +518,12 @@ const FeedListPage = () => {
             ))}
           </div>
           {/* 랭킹 피드용 피드 카드 */}
-          <FeedList feeds={feedPosts} onFeedClick={handleOpenModal} />
+          <FeedList
+            feeds={[...feedPosts, ...localFeeds].filter(f => f.feedType === 'ranking')}
+            onFeedClick={handleOpenModal}
+            onLikeClick={feed => handleLike(feed.id)}
+            likedPosts={likedPosts}
+          />
         </div>
       )}
 
@@ -432,12 +576,13 @@ const FeedListPage = () => {
                 </div>
                 <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                   <div className="flex space-x-6">
-                    <button className="flex items-center text-gray-500 hover:text-[#87CEEB] cursor-pointer"
+                    <button
+                      className={`flex items-center cursor-pointer focus:outline-none ${likedPosts.includes(selectedPost.id) ? 'text-red-500' : 'text-gray-500 hover:text-[#87CEEB]'}`}
                       onClick={(e) => { e.stopPropagation(); handleLike(selectedPost.id); }}
                       disabled={likedPosts.includes(selectedPost.id)}
                     >
-                      <i className="fas fa-heart mr-2"></i>
-                      <span>{selectedPost.likes}</span>
+                      <i className={`fas fa-heart mr-2 ${likedPosts.includes(selectedPost.id) ? 'text-red-500' : ''}`}></i>
+                      <span>{selectedPost.likes + (likedPosts.includes(selectedPost.id) ? 1 : 0)}</span>
                     </button>
                     <button
                       className="flex items-center text-gray-500 hover:text-[#87CEEB] cursor-pointer"
@@ -448,6 +593,7 @@ const FeedListPage = () => {
                     </button>
                   </div>
                   <div className="flex items-center space-x-2">
+                    {/* 이벤트 피드일 때만 투표하기 버튼 */}
                     {selectedPost.feedType === 'event' && (
                       <button
                         onClick={() => setShowVoteModal(true)}
@@ -458,20 +604,17 @@ const FeedListPage = () => {
                         {votedPosts.includes(selectedPost.id) ? '투표완료' : '투표하기'} {selectedPost.votes}
                       </button>
                     )}
-                    {/* 본인 피드일 때만 수정/삭제 버튼 노출 */}
+                    {/* 본인 피드일 때만 수정 버튼 */}
                     {nickname && selectedPost.username === nickname && (
-                      <>
-                        <button
-                          className="px-3 py-2 rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition text-sm font-medium"
-                          onClick={() => {
-                            handleCloseModal();
-                            navigate(`/feed-create?id=${selectedPost.id}`);
-                          }}
-                        >
-                          수정
-                        </button>
-                        <button className="px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition text-sm font-medium">삭제</button>
-                      </>
+                      <button
+                        className="px-3 py-2 rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition text-sm font-medium"
+                        onClick={() => {
+                          handleCloseModal();
+                          navigate(`/feed-create?id=${selectedPost.id}`);
+                        }}
+                      >
+                        수정
+                      </button>
                     )}
                   </div>
                 </div>

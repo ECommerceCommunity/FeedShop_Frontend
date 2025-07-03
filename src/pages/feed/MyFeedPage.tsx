@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import FeedList from "../../components/feed/FeedList";
 
 // 임시 피드 데이터 (기존 목록페이지 (1).tsx 참고)
-const feedPosts = Array.from({ length: 6 }, (_, index) => ({
+const initialFeedPosts = Array.from({ length: 6 }, (_, index) => ({
   id: index + 1,
   username: '나',
   level: 4,
@@ -33,7 +33,7 @@ const feedPosts = Array.from({ length: 6 }, (_, index) => ({
   type: ['일상', '이벤트', '랭킹'][Math.floor(Math.random() * 3)]
 }));
 
-type FeedPost = typeof feedPosts[0];
+type FeedPost = typeof initialFeedPosts[0];
 type Comment = {
   id: number;
   username: string;
@@ -44,9 +44,11 @@ type Comment = {
 };
 
 const MyFeedPage = () => {
+  const [feedPosts, setFeedPosts] = useState(initialFeedPosts);
+  
   // 게시물/좋아요 수는 feedPosts에서 계산
   const feedCount = feedPosts.length;
-  const totalLikes = feedPosts.reduce((sum, post) => sum + post.likes, 0);
+  const totalLikes = feedPosts.reduce((sum: number, post: FeedPost) => sum + post.likes, 0);
   const followerCount = 324;
   const followingCount = 156;
   const navigate = useNavigate();
@@ -81,8 +83,8 @@ const MyFeedPage = () => {
 
   // filteredFeeds: 탭/정렬에 따라 feedPosts를 필터링/정렬
   const filteredFeeds = feedPosts
-    .filter((post) => activeTab === 'all' ? true : post.type === activeTab)
-    .sort((a, b) => {
+    .filter((post: FeedPost) => activeTab === 'all' ? true : post.type === activeTab)
+    .sort((a: FeedPost, b: FeedPost) => {
       if (sortBy === 'latest') {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       } else {
@@ -100,6 +102,25 @@ const MyFeedPage = () => {
   const handleLike = (postId: number) => {
     if (!postId || likedPosts.includes(postId)) return;
     setLikedPosts([...likedPosts, postId]);
+    
+    // 실제 피드 데이터의 좋아요 수도 증가
+    setFeedPosts(prev => prev.map(post => 
+      post.id === postId ? { ...post, likes: post.likes + 1 } : post
+    ));
+  };
+
+  // 피드 삭제
+  const handleDelete = (postId: number) => {
+    if (window.confirm('정말로 이 피드를 삭제하시겠습니까?')) {
+      // 피드 목록에서 해당 피드 제거
+      setFeedPosts(prev => prev.filter(post => post.id !== postId));
+      
+      // 모달 닫기
+      setSelectedPost(null);
+      setShowComments(false);
+      
+      alert('피드가 삭제되었습니다.');
+    }
   };
 
   // 댓글 등록
@@ -250,7 +271,7 @@ const MyFeedPage = () => {
                       onClick={() => handleLike(selectedPost.id)}
                       disabled={likedPosts.includes(selectedPost.id)}
                     >
-                      <i className="fas fa-heart mr-2"></i>
+                      <i className={`fas fa-heart mr-2 ${likedPosts.includes(selectedPost.id) ? 'text-red-500' : ''}`}></i>
                       <span>{selectedPost.likes + (likedPosts.includes(selectedPost.id) ? 1 : 0)}</span>
                     </button>
                     <button
@@ -269,7 +290,12 @@ const MyFeedPage = () => {
                     >
                       수정
                     </button>
-                    <button className="px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition text-sm font-medium">삭제</button>
+                    <button 
+                      className="px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition text-sm font-medium"
+                      onClick={() => handleDelete(selectedPost.id)}
+                    >
+                      삭제
+                    </button>
                   </div>
                 </div>
                 {/* 댓글 섹션 */}
