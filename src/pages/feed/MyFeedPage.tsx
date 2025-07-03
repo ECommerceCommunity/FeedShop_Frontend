@@ -13,7 +13,7 @@ const initialFeedPosts = Array.from({ length: 6 }, (_, index) => ({
     `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20casual%20outfit&width=400&height=500&seq=mypost${index + 1}a&orientation=portrait`
   ],
   productName: ['트렌디 데님 자켓', '캐주얼 니트 원피스', '베이직 코튼 티셔츠', '스트라이프 셔츠', '미니멀 블레이저', '린넨 와이드 팬츠'][index],
-  size: [220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300][Math.floor(Math.random() * 17)],
+  size: [220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300][getSecureRandomInt(0, 17)],
   gender: '여성',
   height: 165,
   description: [
@@ -24,13 +24,13 @@ const initialFeedPosts = Array.from({ length: 6 }, (_, index) => ({
     '깔끔한 핏의 블레이저로 포멀한 스타일링이 가능해요.',
     '시원한 린넨 소재의 와이드 팬츠입니다.'
   ][index],
-  likes: Math.floor(Math.random() * 200) + 50,
-  votes: Math.floor(Math.random() * 50) + 10,
-  comments: Math.floor(Math.random() * 20) + 5,
+  likes: getSecureRandomInt(50, 250),
+  votes: getSecureRandomInt(10, 60),
+  comments: getSecureRandomInt(5, 25),
   instagramId: 'my_fashion',
   createdAt: new Date(2025, 5, 30 - index).toISOString().split('T')[0],
   isLiked: false,
-  type: ['일상', '이벤트', '랭킹'][Math.floor(Math.random() * 3)]
+  type: ['일상', '이벤트', '랭킹'][getSecureRandomInt(0, 3)]
 }));
 
 type FeedPost = typeof initialFeedPosts[0];
@@ -42,6 +42,12 @@ type Comment = {
   content: string;
   createdAt: string;
 };
+
+function getSecureRandomInt(min: number, max: number): number {
+  const array = new Uint32Array(1);
+  window.crypto.getRandomValues(array);
+  return min + (array[0] % (max - min));
+}
 
 const MyFeedPage = () => {
   const [feedPosts, setFeedPosts] = useState(initialFeedPosts);

@@ -33,10 +33,16 @@ interface Comment {
   createdAt: string;
 }
 
+function getSecureRandomInt(min: number, max: number): number {
+  const array = new Uint32Array(1);
+  window.crypto.getRandomValues(array);
+  return min + (array[0] % (max - min));
+}
+
 const generateFeedPost = (id: number): FeedPost => ({
   id,
   username: `패션러버${id}`,
-  level: Math.floor(Math.random() * 5) + 1,
+  level: getSecureRandomInt(1, 6),
   profileImg: `https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=60&height=60&seq=profile${id}&orientation=squarish`,
   images: [
     `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20trendy%20outfit&width=400&height=500&seq=post${id}&orientation=portrait`,
@@ -44,13 +50,13 @@ const generateFeedPost = (id: number): FeedPost => ({
     `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20elegant%20outfit&width=400&height=500&seq=post${id}b&orientation=portrait`
   ],
   productName: `트렌디 아이템 ${id}`,
-  size: [220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300][Math.floor(Math.random() * 17)],
-  gender: Math.random() > 0.5 ? '여성' : '남성',
-  height: Math.floor(Math.random() * 30) + 155,
+  size: [220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300][getSecureRandomInt(0, 17)],
+  gender: getSecureRandomInt(0, 2) === 0 ? '여성' : '남성',
+  height: getSecureRandomInt(155, 185),
   description: `트렌디한 스타일의 아이템입니다. 데일리룩으로 활용하기 좋아요. ${id}`,
-  likes: Math.floor(Math.random() * 200) + 50,
-  votes: Math.floor(Math.random() * 50) + 10,
-  comments: Math.floor(Math.random() * 20) + 5,
+  likes: getSecureRandomInt(50, 250),
+  votes: getSecureRandomInt(10, 60),
+  comments: getSecureRandomInt(5, 25),
   instagramId: `fashion_lover${id}`,
   createdAt: '2025-06-12',
   isLiked: false,
@@ -346,16 +352,16 @@ const FeedListPage = () => {
       {/* 필터 및 정렬 옵션 */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
         <div className="flex flex-wrap items-center gap-4">
-          <div className="relative">
-            <button
-              className="bg-white border border-gray-300 rounded-lg px-4 py-2 flex items-center space-x-2"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            >
+        <div className="relative">
+          <button
+            className="bg-white border border-gray-300 rounded-lg px-4 py-2 flex items-center space-x-2"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          >
               <span>{sortBy === "latest" ? "최신순" : sortBy === "popular" ? "인기순" : "유사 유저"}</span>
               <i className={`fas fa-chevron-down text-sm transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}></i>
-            </button>
-            {isDropdownOpen && (
-              <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 w-40">
+          </button>
+          {isDropdownOpen && (
+            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 w-40">
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setSortBy("latest"); setIsDropdownOpen(false); }}>최신순</button>
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setSortBy("popular"); setIsDropdownOpen(false); }}>인기순</button>
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setSortBy("similar"); setIsDropdownOpen(false); }}>유사 유저</button>
@@ -442,7 +448,7 @@ const FeedListPage = () => {
                 </div>
                 <button className="mt-4 bg-[#87CEEB] text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-400 transition duration-200 cursor-pointer">
                   이벤트 참여하기
-                </button>
+              </button>
               </div>
             </div>
           ))}
