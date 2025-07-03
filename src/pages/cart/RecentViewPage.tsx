@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { RecentViewItem } from "types/types";
 import styled from "styled-components";
 import { getRecentViewItems } from "utils/recentview";
-import Fail from "components/modal/Fail";
 import Warning from "components/modal/Warning";
 import { useNavigate } from "react-router-dom";
 
@@ -158,20 +157,23 @@ const CartButton = styled.button`
   }
 `;
 
-const WishButton = styled.button`
+const WishButton = styled.button<{ $isWishlisted: boolean }>`
   width: 40px;
   height: 40px;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${(props) => (props.$isWishlisted ? "#ef4444" : "#d1d5db")};
+  background: ${(props) => (props.$isWishlisted ? "#ef4444" : "white")};
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #4b5563;
+  color: ${(props) => (props.$isWishlisted ? "white" : "#4b5563")};
   cursor: pointer;
+  transition: all 0.2s;
 
   &:hover {
-    border-color: #87ceeb;
-    color: #87ceeb;
+    border-color: #ef4444;
+    background: ${(props) => (props.$isWishlisted ? "#dc2626" : "#fef2f2")};
+    color: ${(props) => (props.$isWishlisted ? "white" : "#ef4444")};
   }
 `;
 
@@ -184,14 +186,27 @@ const ViewedAtText = styled.div`
 const RecentViewPage: React.FC = () => {
   const navigate = useNavigate();
   const [recentViewItems, setRecentViewItems] = useState<RecentViewItem[]>([]);
-  const [showAlreadyWishlistModal, setShowAlreadyWishlistModal] = useState(false);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [showAllRemoveModal, setShowAllRemoveModal] = useState(false);
   const [removeItemId, setRemoveItemId] = useState<number | null>(null);
+  const [wishlistItems, setWishlistItems] = useState<number[]>([]);
 
   useEffect(() => {
     const items = getRecentViewItems(8);
     setRecentViewItems(items);
+
+    const loadWishlist = () => {
+      try {
+        const currentWishlist = JSON.parse(localStorage.getItem('wishlist') ?? '[]');
+        const wishlistIds = currentWishlist.map((item: any) => item.id);
+        setWishlistItems(wishlistIds);
+      } catch (error) {
+        console.log('위시리스트 로드 중 오류 : ', error);
+        setWishlistItems([]);
+      }
+    };
+
+    loadWishlist();
   }, []);
 
   const formatViewdAt = (viewedAt: string) => {
@@ -219,27 +234,30 @@ const RecentViewPage: React.FC = () => {
     }
   };
 
-  const addToWishlist = (item: RecentViewItem) => {
+  const toggleWishlist = (item: RecentViewItem) => {
     const currentWishlist = JSON.parse(localStorage.getItem('wishlist') ?? '[]');
+    const isCurrentWishlist = wishlistItems.includes(item.id);
 
-    if (currentWishlist.some((wishItem: any) => wishItem.id === item.id)) {
-      setShowAlreadyWishlistModal(true);
-      return;
+    if (isCurrentWishlist) {
+      const updateWishlist = currentWishlist.filter((wishItem: any) => wishItem.id !== item.id);
+      localStorage.setItem('wishlist', JSON.stringify(updateWishlist));
+      setWishlistItems((prev) => prev.filter((id) => id !== item.id));
+    } else {
+      const wishItem = {
+        id: item.id,
+        name: item.name,
+        originalPrice: item.originalPrice,
+        discountPrice: item.discountPrice,
+        discountRate: item.discountRate,
+        category: item.category,
+        image: item.image,
+        addedAt: new Date().toISOString(),
+      }
+
+      const updatedWishlist = [...currentWishlist, wishItem];
+      localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
+      setWishlistItems((prev) => [...prev, item.id]);
     }
-
-    const wishItem = {
-      id: item.id,
-      name: item.name,
-      originalPrice: item.originalPrice,
-      discountPrice: item.discountPrice,
-      discountRate: item.discountRate,
-      category: item.category,
-      image: item.image,
-      addedAt: new Date().toISOString(),
-    }
-
-    const updatedWishlist = [...currentWishlist, wishItem];
-    localStorage.setItem('wishlist', JSON.stringify(updatedWishlist));
   }
 
   const onClickRemove = (id: number) => {
@@ -273,14 +291,6 @@ const RecentViewPage: React.FC = () => {
 
   return (
     <>
-      {showAlreadyWishlistModal && (
-        <Fail
-          title="찜한 상품 중복"
-          message="이미 찜한 상품입니다."
-          onClose={() => setShowAlreadyWishlistModal(false)}
-        />
-      )}
-
       {showRemoveModal && (
         <Warning
           open={showRemoveModal}
@@ -316,7 +326,9 @@ const RecentViewPage: React.FC = () => {
                 <i className="fa-solid fa-trash" style={{ marginRight: 4 }}></i>{" "}
                 전체 삭제
               </DeleteAllButton>
-            ): <></>}
+            ) : (
+              <></>
+            )}
           </TitleRow>
 
           {recentViewItems.length > 0 ? (
@@ -353,8 +365,11 @@ const RecentViewPage: React.FC = () => {
                         ></i>{" "}
                         상품 보기
                       </CartButton>
-                      <WishButton onClick={() => addToWishlist(item)}>
-                        <i className="fa-solid fa-heart"></i>
+                      <WishButton
+                        $isWishlisted={wishlistItems.includes(item.id)}
+                        onClick={() => toggleWishlist(item)}
+                      >
+                        <i className={wishlistItems.includes(item.id) ? "fa-solid fa-heart" : "fa-regular fa-heart"}></i>
                       </WishButton>
                     </ButtonRow>
                   </CardContent>
