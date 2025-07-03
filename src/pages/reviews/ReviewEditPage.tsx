@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef, FC, ChangeEvent } from 'react';
 import styled from 'styled-components';
 
 interface StarButtonProps {
@@ -206,7 +206,7 @@ const productMetrics = [
   },
 ];
 
-const ReviewEditPage: React.FC = () => {
+const ReviewEditPage: FC = () => {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [title, setTitle] = useState('');
@@ -223,7 +223,7 @@ const ReviewEditPage: React.FC = () => {
 
   const handleRating = (value: number) => setRating(value);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
       setImages(selectedFiles);

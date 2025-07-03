@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { FC, useState } from "react";
 import styled from "styled-components";
 import reviews from "../pages/data/reviews/reviews.json";
 
@@ -146,7 +146,7 @@ const DeleteButton = styled(ActionButton)`
 
   
 
-const ReviewsPage: React.FC = () => {
+const ReviewsPage: FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
 
