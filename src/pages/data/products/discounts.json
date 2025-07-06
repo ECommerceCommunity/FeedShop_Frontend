@@ -1,0 +1,282 @@
+[
+  {
+    "product_id": 5037021,
+    "discount_type": "정액",
+    "discount_value": 7000.0,
+    "discount_start": "2025-07-14",
+    "discount_end": "2025-07-28"
+  },
+  {
+    "product_id": 5143217,
+    "discount_type": "정액",
+    "discount_value": 4600.0,
+    "discount_start": "2025-07-13",
+    "discount_end": "2025-07-23"
+  },
+  {
+    "product_id": 5143249,
+    "discount_type": "정률",
+    "discount_value": 10.0,
+    "discount_start": "2025-06-28",
+    "discount_end": "2025-07-14"
+  },
+  {
+    "product_id": 5053900,
+    "discount_type": "정률",
+    "discount_value": 80.0,
+    "discount_start": "2025-12-06",
+    "discount_end": "2025-12-17"
+  },
+  {
+    "product_id": 4097739,
+    "discount_type": "정액",
+    "discount_value": 5200.0,
+    "discount_start": "2025-09-28",
+    "discount_end": "2025-10-17"
+  },
+  {
+    "product_id": 5059182,
+    "discount_type": "정액",
+    "discount_value": 3100.0,
+    "discount_start": "2025-09-18",
+    "discount_end": "2025-10-18"
+  },
+  {
+    "product_id": 5131085,
+    "discount_type": "정액",
+    "discount_value": 5000.0,
+    "discount_start": "2025-07-14",
+    "discount_end": "2025-08-05"
+  },
+  {
+    "product_id": 4798797,
+    "discount_type": "정액",
+    "discount_value": 8700.0,
+    "discount_start": "2025-09-04",
+    "discount_end": "2025-09-11"
+  },
+  {
+    "product_id": 4923320,
+    "discount_type": "정액",
+    "discount_value": 8600.0,
+    "discount_start": "2025-10-16",
+    "discount_end": "2025-11-09"
+  },
+  {
+    "product_id": 4234926,
+    "discount_type": "정액",
+    "discount_value": 5800.0,
+    "discount_start": "2025-11-21",
+    "discount_end": "2025-12-09"
+  },
+  {
+    "product_id": 5167852,
+    "discount_type": "정액",
+    "discount_value": 7900.0,
+    "discount_start": "2025-09-28",
+    "discount_end": "2025-10-17"
+  },
+  {
+    "product_id": 5120142,
+    "discount_type": "정률",
+    "discount_value": 20.0,
+    "discount_start": "2025-11-11",
+    "discount_end": "2025-12-05"
+  },
+  {
+    "product_id": 4724980,
+    "discount_type": "정률",
+    "discount_value": 60.0,
+    "discount_start": "2025-07-05",
+    "discount_end": "2025-07-25"
+  },
+  {
+    "product_id": 4923320,
+    "discount_type": "정률",
+    "discount_value": 30.0,
+    "discount_start": "2025-12-11",
+    "discount_end": "2025-12-21"
+  },
+  {
+    "product_id": 5038729,
+    "discount_type": "정액",
+    "discount_value": 9000.0,
+    "discount_start": "2025-07-13",
+    "discount_end": "2025-08-07"
+  },
+  {
+    "product_id": 5005257,
+    "discount_type": "정률",
+    "discount_value": 10.0,
+    "discount_start": "2025-07-19",
+    "discount_end": "2025-07-27"
+  },
+  {
+    "product_id": 3645257,
+    "discount_type": "정액",
+    "discount_value": 4600.0,
+    "discount_start": "2025-09-18",
+    "discount_end": "2025-10-18"
+  },
+  {
+    "product_id": 4836214,
+    "discount_type": "정률",
+    "discount_value": 80.0,
+    "discount_start": "2025-08-29",
+    "discount_end": "2025-09-07"
+  },
+  {
+    "product_id": 5123472,
+    "discount_type": "정액",
+    "discount_value": 5900.0,
+    "discount_start": "2025-10-16",
+    "discount_end": "2025-10-30"
+  },
+  {
+    "product_id": 5123466,
+    "discount_type": "정액",
+    "discount_value": 4000.0,
+    "discount_start": "2025-10-05",
+    "discount_end": "2025-11-01"
+  },
+  {
+    "product_id": 4654844,
+    "discount_type": "정액",
+    "discount_value": 6800.0,
+    "discount_start": "2025-10-01",
+    "discount_end": "2025-10-13"
+  },
+  {
+    "product_id": 5049385,
+    "discount_type": "정액",
+    "discount_value": 3100.0,
+    "discount_start": "2025-11-09",
+    "discount_end": "2025-11-17"
+  },
+  {
+    "product_id": 3645257,
+    "discount_type": "정액",
+    "discount_value": 4000.0,
+    "discount_start": "2025-08-04",
+    "discount_end": "2025-08-20"
+  },
+  {
+    "product_id": 4487070,
+    "discount_type": "정액",
+    "discount_value": 4300.0,
+    "discount_start": "2025-08-24",
+    "discount_end": "2025-09-13"
+  },
+  {
+    "product_id": 5168187,
+    "discount_type": "정액",
+    "discount_value": 6000.0,
+    "discount_start": "2025-11-09",
+    "discount_end": "2025-12-07"
+  },
+  {
+    "product_id": 4763282,
+    "discount_type": "정액",
+    "discount_value": 7600.0,
+    "discount_start": "2025-08-07",
+    "discount_end": "2025-09-02"
+  },
+  {
+    "product_id": 5104581,
+    "discount_type": "정액",
+    "discount_value": 3400.0,
+    "discount_start": "2025-09-28",
+    "discount_end": "2025-10-13"
+  },
+  {
+    "product_id": 5104578,
+    "discount_type": "정률",
+    "discount_value": 40.0,
+    "discount_start": "2025-11-03",
+    "discount_end": "2025-11-11"
+  },
+  {
+    "product_id": 5131846,
+    "discount_type": "정액",
+    "discount_value": 3300.0,
+    "discount_start": "2025-10-14",
+    "discount_end": "2025-11-12"
+  },
+  {
+    "product_id": 4931670,
+    "discount_type": "정률",
+    "discount_value": 90.0,
+    "discount_start": "2025-06-21",
+    "discount_end": "2025-06-28"
+  },
+  {
+    "product_id": 4201442,
+    "discount_type": "정률",
+    "discount_value": 60.0,
+    "discount_start": "2025-11-22",
+    "discount_end": "2025-12-02"
+  },
+  {
+    "product_id": 4201444,
+    "discount_type": "정률",
+    "discount_value": 60.0,
+    "discount_start": "2025-08-07",
+    "discount_end": "2025-08-30"
+  },
+  {
+    "product_id": 3850001,
+    "discount_type": "정액",
+    "discount_value": 8400.0,
+    "discount_start": "2025-11-25",
+    "discount_end": "2025-12-19"
+  },
+  {
+    "product_id": 3392007,
+    "discount_type": "정률",
+    "discount_value": 60.0,
+    "discount_start": "2025-09-05",
+    "discount_end": "2025-09-30"
+  },
+  {
+    "product_id": 4452584,
+    "discount_type": "정액",
+    "discount_value": 7200.0,
+    "discount_start": "2025-12-10",
+    "discount_end": "2025-12-31"
+  },
+  {
+    "product_id": 5056069,
+    "discount_type": "정액",
+    "discount_value": 7200.0,
+    "discount_start": "2025-07-15",
+    "discount_end": "2025-07-27"
+  },
+  {
+    "product_id": 5056072,
+    "discount_type": "정액",
+    "discount_value": 7100.0,
+    "discount_start": "2025-09-20",
+    "discount_end": "2025-10-18"
+  },
+  {
+    "product_id": 3392006,
+    "discount_type": "정률",
+    "discount_value": 30.0,
+    "discount_start": "2025-07-28",
+    "discount_end": "2025-08-18"
+  },
+  {
+    "product_id": 2410974,
+    "discount_type": "정액",
+    "discount_value": 9300.0,
+    "discount_start": "2025-08-10",
+    "discount_end": "2025-08-28"
+  },
+  {
+    "product_id": 4752687,
+    "discount_type": "정액",
+    "discount_value": 5100.0,
+    "discount_start": "2025-09-15",
+    "discount_end": "2025-10-06"
+  }
+]
