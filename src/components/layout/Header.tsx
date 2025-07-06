@@ -412,7 +412,7 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const { nickname, logout } = useAuth();
+  const { user, logout } = useAuth();
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -490,11 +490,24 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
           <i className="fas fa-shopping-cart"></i>
           장바구니
         </CartLink>
-        {nickname && nickname.trim() !== "" ? (
+        {user ? (
           <UserMenu ref={userMenuRef}>
             <UserInfo onClick={() => setShowUserMenu(!showUserMenu)}>
-              <UserAvatar>{getInitials(nickname)}</UserAvatar>
-              <UserName>{nickname}님</UserName>
+              <UserAvatar>{getInitials(user.nickname)}</UserAvatar>
+              <UserName>
+                {user.nickname}님
+                {user.userType === "seller" && (
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      color: "#fbbf24",
+                      marginLeft: "4px",
+                    }}
+                  >
+                    판매자
+                  </span>
+                )}
+              </UserName>
             </UserInfo>
             {showUserMenu && (
               <DropdownMenu>
@@ -506,6 +519,12 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
                   <i className="fas fa-cog"></i>
                   프로필 설정
                 </DropdownItem>
+                {user.userType === "customer" && (
+                  <DropdownItem to="/become-seller">
+                    <i className="fas fa-store"></i>
+                    판매자 전환
+                  </DropdownItem>
+                )}
                 <DropdownDivider />
                 <DropdownButton onClick={handleLogout}>
                   <i className="fas fa-sign-out-alt"></i>

@@ -1,6 +1,7 @@
 import { FC } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 // 애니메이션 정의
 const fadeInUp = keyframes`
@@ -607,6 +608,8 @@ const FooterCopyright = styled.div`
 `;
 
 const HomePage: FC = () => {
+  const { user } = useAuth();
+
   // 임시 상품 데이터
   const products = [
     {
@@ -651,17 +654,51 @@ const HomePage: FC = () => {
             <Title>FeedShop</Title>
             <Subtitle>스마트한 쇼핑 경험을 위한 최고의 선택</Subtitle>
             <ButtonGroup>
-              <PrimaryButton to="/store-home">
-                <i className="fas fa-store" style={{ marginRight: "8px" }}></i>
-                스토어 입장하기
-              </PrimaryButton>
-              <SecondaryButton to="/admin-dashboard">
-                <i
-                  className="fas fa-chart-line"
-                  style={{ marginRight: "8px" }}
-                ></i>
-                관리자 대시보드
-              </SecondaryButton>
+              {user ? (
+                <>
+                  {user.userType === "seller" ? (
+                    <PrimaryButton to="/store-home">
+                      <i
+                        className="fas fa-store"
+                        style={{ marginRight: "8px" }}
+                      ></i>
+                      내 스토어 관리
+                    </PrimaryButton>
+                  ) : (
+                    <PrimaryButton to="/store-home">
+                      <i
+                        className="fas fa-shopping-bag"
+                        style={{ marginRight: "8px" }}
+                      ></i>
+                      쇼핑 시작하기
+                    </PrimaryButton>
+                  )}
+                  <SecondaryButton to="/products">
+                    <i
+                      className="fas fa-th-large"
+                      style={{ marginRight: "8px" }}
+                    ></i>
+                    상품 둘러보기
+                  </SecondaryButton>
+                </>
+              ) : (
+                <>
+                  <PrimaryButton to="/login">
+                    <i
+                      className="fas fa-sign-in-alt"
+                      style={{ marginRight: "8px" }}
+                    ></i>
+                    로그인하기
+                  </PrimaryButton>
+                  <SecondaryButton to="/store-home">
+                    <i
+                      className="fas fa-store"
+                      style={{ marginRight: "8px" }}
+                    ></i>
+                    스토어 입장하기
+                  </SecondaryButton>
+                </>
+              )}
             </ButtonGroup>
           </HeroContent>
         </Container>
@@ -769,14 +806,51 @@ const HomePage: FC = () => {
             가능합니다. 지금 바로 무료로 시작해보세요.
           </CTADescription>
           <ButtonGroup>
-            <PrimaryButton to="/store-home">
-              <i className="fas fa-rocket" style={{ marginRight: "8px" }}></i>
-              스토어 시작하기
-            </PrimaryButton>
-            <SecondaryButton to="/admin-dashboard">
-              <i className="fas fa-cog" style={{ marginRight: "8px" }}></i>
-              관리자 페이지
-            </SecondaryButton>
+            {user ? (
+              <>
+                {user.userType === "seller" ? (
+                  <PrimaryButton to="/store-home">
+                    <i
+                      className="fas fa-store"
+                      style={{ marginRight: "8px" }}
+                    ></i>
+                    내 스토어 관리
+                  </PrimaryButton>
+                ) : (
+                  <PrimaryButton to="/become-seller">
+                    <i
+                      className="fas fa-store"
+                      style={{ marginRight: "8px" }}
+                    ></i>
+                    판매자 전환하기
+                  </PrimaryButton>
+                )}
+                <SecondaryButton to="/products">
+                  <i
+                    className="fas fa-shopping-bag"
+                    style={{ marginRight: "8px" }}
+                  ></i>
+                  쇼핑하기
+                </SecondaryButton>
+              </>
+            ) : (
+              <>
+                <PrimaryButton to="/login">
+                  <i
+                    className="fas fa-sign-in-alt"
+                    style={{ marginRight: "8px" }}
+                  ></i>
+                  로그인하기
+                </PrimaryButton>
+                <SecondaryButton to="/store-home">
+                  <i
+                    className="fas fa-store"
+                    style={{ marginRight: "8px" }}
+                  ></i>
+                  스토어 둘러보기
+                </SecondaryButton>
+              </>
+            )}
           </ButtonGroup>
         </Container>
       </CTASection>
