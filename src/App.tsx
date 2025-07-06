@@ -36,6 +36,15 @@ const WishListPage = lazy(() => import("./pages/cart/WishListPage"));
 const RecentViewPage = lazy(() => import("./pages/cart/RecentViewPage"));
 const ReviewEditPage = lazy(() => import("./pages/reviews/ReviewEditPage"));
 const ProfileSettingsPage = lazy(() => import("./pages/ProfileSettingsPage"));
+const FeedListPage = lazy(() => import("./pages/feed/FeedListPage"));
+const FeedCreatePage = lazy(() => import("./pages/feed/FeedCreatePage"));
+const FeedEditPage = lazy(() => import("./pages/feed/FeedEditPage"));
+const MyFeedPage = lazy(() => import("./pages/feed/MyFeedPage"));
+const EventListPage = lazy(() => import("./pages/event/EventListPage"));
+const EventCreatePage = lazy(() => import("./pages/event/EventCreatePage"));
+const EventDetailPage = lazy(() => import("./pages/event/EventDetailPage"));
+const EventEditPage = lazy(() => import("./pages/event/EventEditPage"));
+const EventResultPage = lazy(() => import("./pages/event/EventResultPage"));
 
 const App: FC = () => {
   return (
@@ -67,10 +76,20 @@ const App: FC = () => {
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/wishlist" element={<WishListPage />} />
               <Route path="/recentview" element={<RecentViewPage />} />
+              <Route path="/reviews/edit" element={<ReviewEditPage />} />
               <Route
                 path="/profile-settings"
                 element={<ProfileSettingsPage />}
               />
+              <Route path="/feed-list" element={<FeedListPage />} />
+              <Route path="/feed-create" element={<FeedCreatePage />} />
+              <Route path="/feed-edit" element={<FeedEditPage />} />
+              <Route path="/my-feed" element={<MyFeedPage />} />
+              <Route path="/event-list" element={<EventListPage />} />
+              <Route path="/events/create" element={<EventCreatePage />} />
+              <Route path="/events/:id" element={<EventDetailPage />} />
+              <Route path="/events/edit/:id" element={<EventEditPage />} />
+              <Route path="/events/result" element={<EventResultPage />} />
             </Route>
 
             {/* Layout 없이 보여야 하는 페이지들 */}
