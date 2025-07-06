@@ -13,9 +13,14 @@ const LayoutContainer = styled.div`
 
 const MainContent = styled.main<{ sidebarOpen: boolean }>`
   flex: 1;
-  margin-left: ${({ sidebarOpen }) => (sidebarOpen ? "250px" : "0")};
+  margin-left: ${({ sidebarOpen }) => (sidebarOpen ? "280px" : "0")};
   margin-top: 60px;
   background-color: var(--background-color);
+  transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+  }
 `;
 
 const Layout: FC = () => {

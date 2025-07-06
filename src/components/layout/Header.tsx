@@ -1,9 +1,41 @@
 import { FC, useState, useEffect, useRef } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import { FormEvent } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+
+// 애니메이션 정의
+const slideDown = keyframes`
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+`;
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+`;
+
+const pulse = keyframes`
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+`;
 
 const HeaderContainer = styled.header`
   position: fixed;
@@ -11,34 +43,74 @@ const HeaderContainer = styled.header`
   left: 0;
   right: 0;
   height: 60px;
-  background-color: var(--background-color);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
   padding: 0 20px;
   z-index: 40;
+  animation: ${slideDown} 0.4s ease-out;
 `;
 
 const Logo = styled(Link)`
   font-size: 24px;
   font-weight: bold;
-  color: var(--primary-color);
+  color: white;
   text-decoration: none;
   margin-right: 40px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  }
 `;
 
 const Nav = styled.nav`
   display: flex;
   gap: 20px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const NavLink = styled(Link)`
-  color: var(--text-color);
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   font-size: 16px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transition: left 0.5s;
+  }
 
   &:hover {
-    color: var(--primary-color);
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+
+    &::before {
+      left: 100%;
+    }
   }
 `;
 
@@ -50,14 +122,26 @@ const UserSection = styled.div`
 `;
 
 const MenuButton = styled.button`
-  background: none;
+  background: rgba(255, 255, 255, 0.1);
   border: none;
-  font-size: 24px;
+  font-size: 20px;
   margin-right: 16px;
   cursor: pointer;
-  color: var(--primary-color);
+  color: white;
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+    animation: ${pulse} 0.6s ease-in-out;
+  }
 `;
 
 const SearchForm = styled.form`
@@ -73,20 +157,41 @@ const SearchWrapper = styled.div`
 `;
 
 const SearchInput = styled.input`
-  padding: 6px 32px 6px 12px; /* 오른쪽 공간 확보 */
-  border-radius: 4px;
-  border: 1px solid #ccc;
+  padding: 10px 40px 10px 16px;
+  border-radius: 25px;
+  border: none;
   font-size: 14px;
-  width: 220px;
+  width: 240px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+  &:focus {
+    outline: none;
+    background: white;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    transform: scale(1.02);
+  }
+
+  &::placeholder {
+    color: #666;
+  }
 `;
 
 const SearchIcon = styled(MagnifyingGlassIcon)`
   position: absolute;
-  right: 8px;
+  right: 12px;
   width: 20px;
   height: 20px;
-  color: var(--primary-color);
-  cursor: pointer; /* 손가락 커서 표시 */
+  color: #667eea;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: scale(1.1);
+    color: #764ba2;
+  }
 `;
 
 const UserMenu = styled.div`
@@ -101,12 +206,15 @@ const UserInfo = styled.div`
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: background-color 0.2s;
+  padding: 8px 16px;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 
   &:hover {
-    background-color: rgba(135, 206, 235, 0.1);
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
   }
 `;
 
@@ -114,19 +222,26 @@ const UserAvatar = styled.div`
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, #667eea, #764ba2);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-weight: bold;
   font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
 `;
 
 const UserName = styled.span`
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-color);
+  color: white;
 `;
 
 const LogoutButton = styled.button`
@@ -151,64 +266,142 @@ const DropdownMenu = styled.div`
   right: 0;
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  min-width: 160px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  min-width: 180px;
   z-index: 50;
-  margin-top: 4px;
+  margin-top: 8px;
+  animation: ${fadeIn} 0.3s ease-out;
+  backdrop-filter: blur(10px);
 `;
 
 const DropdownItem = styled(Link)`
-  display: block;
-  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
   color: var(--text-color);
   text-decoration: none;
   font-size: 14px;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  margin: 4px;
 
   &:hover {
-    background-color: #f3f4f6;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    transform: translateX(5px);
   }
 
   &:first-child {
     border-radius: 8px 8px 0 0;
+    margin-top: 8px;
   }
 
   &:last-child {
     border-radius: 0 0 8px 8px;
+    margin-bottom: 8px;
   }
 `;
 
 const DropdownButton = styled.button`
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   width: 100%;
   text-align: left;
-  padding: 8px 16px;
+  padding: 12px 16px;
   color: var(--text-color);
   text-decoration: none;
   font-size: 14px;
   background: none;
   border: none;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  margin: 4px;
 
   &:hover {
-    background-color: #f3f4f6;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+    transform: translateX(5px);
   }
 
   &:first-child {
     border-radius: 8px 8px 0 0;
+    margin-top: 8px;
   }
 
   &:last-child {
     border-radius: 0 0 8px 8px;
+    margin-bottom: 8px;
   }
 `;
 
 const DropdownDivider = styled.div`
   height: 1px;
-  background-color: #e5e7eb;
-  margin: 4px 0;
+  background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
+  margin: 8px 16px;
+`;
+
+const CartLink = styled(Link)`
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transition: left 0.5s;
+  }
+
+  &:hover::before {
+    left: 100%;
+  }
+`;
+
+const LoginLink = styled(Link)`
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  &:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
 `;
 
 interface HeaderProps {
@@ -264,13 +457,22 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
   return (
     <HeaderContainer>
       <MenuButton onClick={onMenuClick} aria-label="메뉴 열기">
-        &#9776;
+        <i className="fas fa-bars"></i>
       </MenuButton>
-      <Logo to="/">feedShop</Logo>
+      <Logo to="/">FeedShop</Logo>
       <Nav>
-        <NavLink to="/products">상품</NavLink>
-        <NavLink to="/categories">카테고리</NavLink>
-        <NavLink to="/events">이벤트</NavLink>
+        <NavLink to="/products">
+          <i className="fas fa-shopping-bag" style={{ marginRight: "8px" }}></i>
+          상품
+        </NavLink>
+        <NavLink to="/categories">
+          <i className="fas fa-th-large" style={{ marginRight: "8px" }}></i>
+          카테고리
+        </NavLink>
+        <NavLink to="/event-list">
+          <i className="fas fa-gift" style={{ marginRight: "8px" }}></i>
+          이벤트
+        </NavLink>
       </Nav>
       <UserSection>
         <SearchForm onSubmit={handleSearch}>
@@ -284,7 +486,10 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
             <SearchIcon />
           </SearchWrapper>
         </SearchForm>
-        <NavLink to="/cart">장바구니</NavLink>
+        <CartLink to="/cart">
+          <i className="fas fa-shopping-cart"></i>
+          장바구니
+        </CartLink>
         {nickname && nickname.trim() !== "" ? (
           <UserMenu ref={userMenuRef}>
             <UserInfo onClick={() => setShowUserMenu(!showUserMenu)}>
@@ -293,15 +498,30 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
             </UserInfo>
             {showUserMenu && (
               <DropdownMenu>
-                <DropdownItem to="/mypage">마이페이지</DropdownItem>
-                <DropdownItem to="/profile">프로필 설정</DropdownItem>
+                <DropdownItem to="/mypage">
+                  <i className="fas fa-user"></i>
+                  마이페이지
+                </DropdownItem>
+                <DropdownItem to="/profile-settings">
+                  <i className="fas fa-cog"></i>
+                  프로필 설정
+                </DropdownItem>
                 <DropdownDivider />
-                <DropdownButton onClick={handleLogout}>로그아웃</DropdownButton>
+                <DropdownButton onClick={handleLogout}>
+                  <i className="fas fa-sign-out-alt"></i>
+                  로그아웃
+                </DropdownButton>
               </DropdownMenu>
             )}
           </UserMenu>
         ) : (
-          <NavLink to="/login">로그인</NavLink>
+          <LoginLink to="/login">
+            <i
+              className="fas fa-sign-in-alt"
+              style={{ marginRight: "8px" }}
+            ></i>
+            로그인
+          </LoginLink>
         )}
       </UserSection>
     </HeaderContainer>

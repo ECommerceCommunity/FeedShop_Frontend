@@ -1,288 +1,675 @@
-// The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work.
-
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Typography,
+  Box,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
+import {
+  Visibility as VisibilityIcon,
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
+  Warning as WarningIcon,
+  Refresh as RefreshIcon,
+} from "@mui/icons-material";
 
-const App: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [selectedType, setSelectedType] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [dateRange, setDateRange] = useState<string>("1week");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
+interface Report {
+  id: number;
+  reporterId: string;
+  reporterName: string;
+  reportedUserId?: string;
+  reportedUserName?: string;
+  reportedProductId?: number;
+  reportedProductName?: string;
+  reportType: "USER" | "PRODUCT" | "REVIEW" | "CHAT";
+  reason: string;
+  description: string;
+  status: "PENDING" | "IN_REVIEW" | "RESOLVED" | "REJECTED";
+  createdAt: string;
+  updatedAt: string;
+  adminComment?: string;
+}
+
+const ReportManagePage: React.FC = () => {
+  const navigate = useNavigate();
+  const [reports, setReports] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-  const [isStatusModalOpen, setIsStatusModalOpen] = useState<boolean>(false);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [newStatus, setNewStatus] = useState<string>("");
+  const [adminComment, setAdminComment] = useState<string>("");
+  const [filterStatus, setFilterStatus] = useState<string>("ALL");
+  const [filterType, setFilterType] = useState<string>("ALL");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // 가상의 신고 데이터
-  const reports: Report[] = [
+  // 샘플 데이터
+  const sampleReports: Report[] = [
     {
-      id: "R-2025-0001",
-      reportDate: "2025-06-06 14:23",
-      reporter: {
-        id: "user123",
-        name: "김민수",
-        profileImage:
-          "https://readdy.ai/api/search-image?query=professional%20portrait%20of%20a%20young%20asian%20man%20with%20short%20black%20hair%2C%20neutral%20expression%2C%20simple%20background%2C%20high%20quality%20professional%20headshot&width=40&height=40&seq=1001&orientation=squarish",
-      },
-      reportedUser: {
-        id: "user456",
-        name: "이지은",
-        profileImage:
-          "https://readdy.ai/api/search-image?query=professional%20portrait%20of%20a%20young%20asian%20woman%20with%20medium%20length%20black%20hair%2C%20neutral%20expression%2C%20simple%20background%2C%20high%20quality%20professional%20headshot&width=40&height=40&seq=1002&orientation=squarish",
-      },
-      messageContent: "야 너 진짜 XX야, 다시는 여기 오지마",
-      reason: "욕설/비방",
-      status: "대기중",
-      chatRoom: "일반 대화방",
-      handler: null,
-      handledDate: null,
-      handlerComment: null,
+      id: 1,
+      reporterId: "user1",
+      reporterName: "김철수",
+      reportedUserId: "user2",
+      reportedUserName: "이영희",
+      reportType: "USER",
+      reason: "부적절한 언어 사용",
+      description:
+        "채팅방에서 부적절한 언어를 사용하여 다른 사용자들에게 불편을 주고 있습니다.",
+      status: "PENDING",
+      createdAt: "2024-01-15T10:30:00Z",
+      updatedAt: "2024-01-15T10:30:00Z",
     },
     {
-      id: "R-2025-0002",
-      reportDate: "2025-06-05 10:15",
-      reporter: {
-        id: "user789",
-        name: "박준호",
-        profileImage:
-          "https://readdy.ai/api/search-image?query=professional%20portrait%20of%20a%20young%20asian%20man%20with%20glasses%20and%20short%20black%20hair%2C%20neutral%20expression%2C%20simple%20background%2C%20high%20quality%20professional%20headshot&width=40&height=40&seq=1003&orientation=squarish",
-      },
-      reportedUser: {
-        id: "user101",
-        name: "최유진",
-        profileImage:
-          "https://readdy.ai/api/search-image?query=professional%20portrait%20of%20a%20young%20asian%20woman%20with%20long%20black%20hair%2C%20neutral%20expression%2C%20simple%20background%2C%20high%20quality%20professional%20headshot&width=40&height=40&seq=1004&orientation=squarish",
-      },
-      messageContent:
-        "여기 클릭하면 무료 아이템 받을 수 있어요! http://scam-link.com",
-      reason: "스팸",
-      status: "처리중",
-      chatRoom: "게임 토론방",
-      handler: "관리자1",
-      handledDate: "2025-06-06 09:30",
-      handlerComment: "확인 중입니다.",
+      id: 2,
+      reporterId: "user3",
+      reporterName: "박민수",
+      reportedProductId: 12345,
+      reportedProductName: "나이키 운동화",
+      reportType: "PRODUCT",
+      reason: "허위 정보",
+      description: "제품 설명과 실제 제품이 다릅니다. 가짜 제품인 것 같습니다.",
+      status: "IN_REVIEW",
+      createdAt: "2024-01-14T15:20:00Z",
+      updatedAt: "2024-01-14T16:45:00Z",
+      adminComment: "제품 검증 중입니다.",
     },
     {
-      id: "R-2025-0003",
-      reportDate: "2025-06-04 18:45",
-      reporter: {
-        id: "user202",
-        name: "정수민",
-        profileImage:
-          "https://readdy.ai/api/search-image?query=professional%20portrait%20of%20a%20young%20asian%20woman%20with%20short%20black%20hair%2C%20neutral%20expression%2C%20simple%20background%2C%20high%20quality%20professional%20headshot&width=40&height=40&seq=1005&orientation=squarish",
-      },
-      reportedUser: {
-        id: "user303",
-        name: "강현우",
-        profileImage:
-          "https://readdy.ai/api/search-image?query=professional%20portrait%20of%20a%20young%20asian%20man%20with%20medium%20length%20black%20hair%2C%20neutral%20expression%2C%20simple%20background%2C%20high%20quality%20professional%20headshot&width=40&height=40&seq=1006&orientation=squarish",
-      },
-      messageContent: "개인 연락처 공유합니다. 010-1234-5678로 연락주세요.",
-      reason: "개인정보 침해",
-      status: "처리완료",
-      chatRoom: "음악 공유방",
-      handler: "관리자2",
-      handledDate: "2025-06-05 11:20",
-      handlerComment:
-        "개인정보 노출로 확인되어 해당 메시지 삭제 및 사용자에게 경고 조치하였습니다.",
+      id: 3,
+      reporterId: "user4",
+      reporterName: "최지영",
+      reportedUserId: "user5",
+      reportedUserName: "정수민",
+      reportType: "CHAT",
+      reason: "스팸 메시지",
+      description: "지속적으로 스팸 메시지를 보내고 있습니다.",
+      status: "RESOLVED",
+      createdAt: "2024-01-13T09:15:00Z",
+      updatedAt: "2024-01-13T14:30:00Z",
+      adminComment: "사용자에게 경고 조치를 취했습니다.",
     },
     {
-      id: "R-2025-0004",
-      reportDate: "2025-06-03 09:12",
-      reporter: {
-        id: "user404",
-        name: "이승훈",
-        profileImage:
-          "https://readdy.ai/api/search-image?query=professional%20portrait%20of%20a%20young%20asian%20man%20with%20short%20black%20hair%2C%20neutral%20expression%2C%20simple%20background%2C%20high%20quality%20professional%20headshot&width=40&height=40&seq=1007&orientation=squarish",
-      },
-      reportedUser: {
-        id: "user505",
-        name: "한지민",
-        profileImage:
-          "https://readdy.ai/api/search-image?query=professional%20portrait%20of%20a%20young%20asian%20woman%20with%20long%20black%20hair%20tied%20back%2C%20neutral%20expression%2C%20simple%20background%2C%20high%20quality%20professional%20headshot&width=40&height=40&seq=1008&orientation=squarish",
-      },
-      messageContent: "이 사진 어때요? (부적절한 이미지)",
-      reason: "부적절한 콘텐츠",
-      status: "처리완료",
-      chatRoom: "여행 이야기",
-      handler: "관리자1",
-      handledDate: "2025-06-03 14:35",
-      handlerComment: "부적절한 이미지로 확인되어 삭제 조치하였습니다.",
-    },
-    {
-      id: "R-2025-0005",
-      reportDate: "2025-06-02 16:50",
-      reporter: {
-        id: "user606",
-        name: "김태희",
-        profileImage:
-          "https://readdy.ai/api/search-image?query=professional%20portrait%20of%20a%20young%20asian%20woman%20with%20medium%20length%20black%20hair%2C%20neutral%20expression%2C%20simple%20background%2C%20high%20quality%20professional%20headshot&width=40&height=40&seq=1009&orientation=squarish",
-      },
-      reportedUser: {
-        id: "user707",
-        name: "박지성",
-        profileImage:
-          "https://readdy.ai/api/search-image?query=professional%20portrait%20of%20a%20young%20asian%20man%20with%20short%20black%20hair%20and%20glasses%2C%20neutral%20expression%2C%20simple%20background%2C%20high%20quality%20professional%20headshot&width=40&height=40&seq=1010&orientation=squarish",
-      },
-      messageContent:
-        "이 채팅방 사람들 다 바보 같아. 여기 있는 사람들 전부 싫어.",
-      reason: "욕설/비방",
-      status: "대기중",
-      chatRoom: "맛집 추천",
-      handler: null,
-      handledDate: null,
-      handlerComment: null,
+      id: 4,
+      reporterId: "user6",
+      reporterName: "강동원",
+      reportedProductId: 67890,
+      reportedProductName: "아디다스 티셔츠",
+      reportType: "PRODUCT",
+      reason: "저작권 침해",
+      description: "브랜드 로고를 무단으로 사용한 것 같습니다.",
+      status: "REJECTED",
+      createdAt: "2024-01-12T11:45:00Z",
+      updatedAt: "2024-01-12T13:20:00Z",
+      adminComment: "정식 라이센스 제품으로 확인되었습니다.",
     },
   ];
 
-  // 필터링된 신고 목록
-  const filteredReports = reports.filter((report) => {
-    // 상태 필터
-    if (selectedStatus !== "all" && report.status !== selectedStatus)
-      return false;
+  useEffect(() => {
+    // 실제 API 호출 대신 샘플 데이터 사용
+    setReports(sampleReports);
+    setLoading(false);
+  }, []);
 
-    // 신고 유형 필터
-    if (selectedType !== "all" && report.reason !== selectedType) return false;
+  const handleViewDetail = (report: Report) => {
+    setSelectedReport(report);
+    setDetailDialogOpen(true);
+  };
 
-    // 검색어 필터
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return (
-        report.id.toLowerCase().includes(query) ||
-        report.reporter.name.toLowerCase().includes(query) ||
-        report.reportedUser.name.toLowerCase().includes(query) ||
-        report.messageContent.toLowerCase().includes(query)
+  const handleStatusChange = (report: Report) => {
+    setSelectedReport(report);
+    setNewStatus(report.status);
+    setAdminComment(report.adminComment || "");
+    setStatusDialogOpen(true);
+  };
+
+  const handleUpdateStatus = async () => {
+    if (!selectedReport) return;
+
+    try {
+      // 실제 API 호출
+      // await updateReportStatus(selectedReport.id, newStatus, adminComment);
+
+      // 로컬 상태 업데이트
+      setReports((prev) =>
+        prev.map((report) =>
+          report.id === selectedReport.id
+            ? {
+                ...report,
+                status: newStatus as any,
+                adminComment,
+                updatedAt: new Date().toISOString(),
+              }
+            : report
+        )
       );
-    }
 
-    return true;
+      setStatusDialogOpen(false);
+      setSelectedReport(null);
+      setNewStatus("");
+      setAdminComment("");
+    } catch (error) {
+      console.error("신고 상태 업데이트 실패:", error);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "PENDING":
+        return "warning";
+      case "IN_REVIEW":
+        return "info";
+      case "RESOLVED":
+        return "success";
+      case "REJECTED":
+        return "error";
+      default:
+        return "default";
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "PENDING":
+        return "대기중";
+      case "IN_REVIEW":
+        return "검토중";
+      case "RESOLVED":
+        return "해결됨";
+      case "REJECTED":
+        return "거부됨";
+      default:
+        return status;
+    }
+  };
+
+  const getTypeText = (type: string) => {
+    switch (type) {
+      case "USER":
+        return "사용자";
+      case "PRODUCT":
+        return "상품";
+      case "REVIEW":
+        return "리뷰";
+      case "CHAT":
+        return "채팅";
+      default:
+        return type;
+    }
+  };
+
+  const filteredReports = reports.filter((report) => {
+    const statusMatch =
+      filterStatus === "ALL" || report.status === filterStatus;
+    const typeMatch = filterType === "ALL" || report.reportType === filterType;
+    return statusMatch && typeMatch;
   });
 
-  // 페이지네이션
-  const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredReports.length / itemsPerPage);
-  const paginatedReports = filteredReports.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  // 신고 상세 정보 모달 열기
-  const openDetailModal = (report: Report) => {
-    setSelectedReport(report);
-    setIsDetailModalOpen(true);
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString("ko-KR");
   };
 
-  // 처리 상태 변경 모달 열기
-  const openStatusModal = (report: Report) => {
-    setSelectedReport(report);
-    setIsStatusModalOpen(true);
+  // 사이드바 토글
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
   };
 
-  // 처리 상태 변경 함수
-  const handleStatusChange = (newStatus: string) => {
-    if (selectedReport) {
-      // 실제 구현에서는 API 호출로 상태 변경
-      console.log(`신고 ID ${selectedReport.id}의 상태를 ${newStatus}로 변경`);
-      setIsStatusModalOpen(false);
-    }
-  };
+  // 사이드바 메뉴 클릭 핸들러들
+  const handleDashboardClick = () => navigate("/admin-dashboard");
+  const handleUserManageClick = () => navigate("/user-manage");
+  const handleProductManageClick = () => navigate("/products");
+  const handleStoreManageClick = () => navigate("/store-home");
+  const handleReviewManageClick = () => navigate("/admin-dashboard");
+  const handleStatsClick = () => navigate("/stats-dashboard");
+  const handleSettingsClick = () => navigate("/profile");
 
-  // 필터 적용 함수
-  const applyFilters = () => {
-    setCurrentPage(1);
-  };
-
-  // 필터 초기화 함수
-  const resetFilters = () => {
-    setSelectedStatus("all");
-    setSelectedType("all");
-    setSearchQuery("");
-    setDateRange("1week");
-    setCurrentPage(1);
-  };
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
+      >
+        <Typography>로딩 중...</Typography>
+      </Box>
+    );
+  }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm fixed top-0 left-0 right-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              {/* 모바일 메뉴 버튼 */}
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none cursor-pointer !rounded-button whitespace-nowrap"
-              >
-                <i className="fas fa-bars text-xl"></i>
+    <div className="flex h-screen bg-gray-50">
+      {/* 헤더 */}
+      <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
+        <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center space-x-4">
+            <h1
+              className="text-2xl font-bold text-blue-400 cursor-pointer"
+              onClick={() => navigate("/")}
+            >
+              FeedShop
+            </h1>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button className="text-gray-600 hover:text-blue-400">
+              <i className="fas fa-bell text-xl"></i>
+            </button>
+            <div className="relative">
+              <button className="flex items-center space-x-2 text-gray-600 hover:text-blue-400">
+                <i className="fas fa-user-circle text-xl"></i>
+                <span className="hidden md:block">관리자</span>
               </button>
-              {/* 로고 */}
-              <div className="flex-shrink-0 flex items-center ml-2 md:ml-0">
-                <span className="text-2xl font-bold text-[#87CEEB]">
-                  채팅 서비스
-                </span>
-              </div>
-              {/* 데스크톱 네비게이션 */}
-              <nav className="hidden md:ml-6 md:flex md:space-x-8">
-                <a
-                  href="#"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  채팅방
-                </a>
-                <a
-                  href="#"
-                  className="border-[#87CEEB] text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  신고 관리
-                </a>
-              </nav>
-            </div>
-            {/* 우측 사용자 메뉴 */}
-            <div className="flex items-center">
-              <button className="p-2 rounded-full text-gray-500 hover:text-gray-900 focus:outline-none cursor-pointer !rounded-button whitespace-nowrap">
-                <i className="fas fa-bell text-lg"></i>
-              </button>
-              <div className="ml-3 relative">
-                <div className="flex items-center">
-                  <button className="flex text-sm rounded-full focus:outline-none cursor-pointer !rounded-button whitespace-nowrap">
-                    <div className="h-8 w-8 rounded-full bg-[#87CEEB] flex items-center justify-center text-white">
-                      <i className="fas fa-user"></i>
-                    </div>
-                  </button>
-                  <span className="ml-2 hidden md:block text-sm font-medium text-gray-700">
-                    사용자
-                  </span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
-      </header>
-      {/* 이하 전체 JSX는 첨부된 신고-목록-관리-페이지.tsx return문 전체와 동일하게 복사 */}
-      {/* ... (생략) ... */}
+      </div>
+
+      {/* 사이드바 */}
+      <div
+        className={`fixed left-0 top-16 h-full bg-white shadow-lg transition-all duration-300 ${
+          sidebarCollapsed ? "w-16" : "w-64"
+        }`}
+      >
+        <div className="p-4">
+          <button
+            onClick={toggleSidebar}
+            className="w-full flex items-center justify-center p-2 text-gray-600 hover:text-blue-400 hover:bg-blue-50 rounded-lg transition-colors"
+          >
+            <i
+              className={`fas ${
+                sidebarCollapsed ? "fa-chevron-right" : "fa-chevron-left"
+              }`}
+            ></i>
+          </button>
+        </div>
+
+        <nav className="mt-4">
+          <div className="px-4 space-y-2">
+            <button
+              onClick={handleDashboardClick}
+              className="w-full flex items-center space-x-3 p-3 text-gray-600 hover:text-blue-400 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              <i className="fas fa-home text-lg"></i>
+              {!sidebarCollapsed && <span>대시보드</span>}
+            </button>
+
+            <button
+              onClick={handleUserManageClick}
+              className="w-full flex items-center space-x-3 p-3 text-gray-600 hover:text-blue-400 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              <i className="fas fa-user text-lg"></i>
+              {!sidebarCollapsed && <span>사용자 관리</span>}
+            </button>
+
+            <button
+              onClick={handleProductManageClick}
+              className="w-full flex items-center space-x-3 p-3 text-gray-600 hover:text-blue-400 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              <i className="fas fa-box text-lg"></i>
+              {!sidebarCollapsed && <span>상품 관리</span>}
+            </button>
+
+            <button
+              onClick={handleStoreManageClick}
+              className="w-full flex items-center space-x-3 p-3 text-gray-600 hover:text-blue-400 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              <i className="fas fa-store text-lg"></i>
+              {!sidebarCollapsed && <span>가게 관리</span>}
+            </button>
+
+            <button
+              onClick={handleReviewManageClick}
+              className="w-full flex items-center space-x-3 p-3 text-gray-600 hover:text-blue-400 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              <i className="fas fa-star text-lg"></i>
+              {!sidebarCollapsed && <span>리뷰 관리</span>}
+            </button>
+
+            <button
+              onClick={() => navigate("/report-manage")}
+              className="w-full flex items-center space-x-3 p-3 text-blue-400 bg-blue-50 rounded-lg"
+            >
+              <i className="fas fa-flag text-lg"></i>
+              {!sidebarCollapsed && <span>신고 관리</span>}
+            </button>
+
+            <button
+              onClick={handleStatsClick}
+              className="w-full flex items-center space-x-3 p-3 text-gray-600 hover:text-blue-400 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              <i className="fas fa-chart-bar text-lg"></i>
+              {!sidebarCollapsed && <span>통계 분석</span>}
+            </button>
+
+            <button
+              onClick={handleSettingsClick}
+              className="w-full flex items-center space-x-3 p-3 text-gray-600 hover:text-blue-400 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              <i className="fas fa-cog text-lg"></i>
+              {!sidebarCollapsed && <span>설정</span>}
+            </button>
+          </div>
+        </nav>
+      </div>
+
+      {/* 메인 콘텐츠 */}
+      <div
+        className={`flex-1 transition-all duration-300 ${
+          sidebarCollapsed ? "ml-16" : "ml-64"
+        }`}
+      >
+        <div className="p-6 pt-24">
+          <Box sx={{ p: 3 }}>
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={3}
+            >
+              <Typography variant="h4" component="h1">
+                신고 관리
+              </Typography>
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={() => window.location.reload()}
+              >
+                새로고침
+              </Button>
+            </Box>
+
+            {/* 필터 */}
+            <Box display="flex" gap={2} mb={3}>
+              <FormControl sx={{ minWidth: 120 }}>
+                <InputLabel>상태</InputLabel>
+                <Select
+                  value={filterStatus}
+                  label="상태"
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                >
+                  <MenuItem value="ALL">전체</MenuItem>
+                  <MenuItem value="PENDING">대기중</MenuItem>
+                  <MenuItem value="IN_REVIEW">검토중</MenuItem>
+                  <MenuItem value="RESOLVED">해결됨</MenuItem>
+                  <MenuItem value="REJECTED">거부됨</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl sx={{ minWidth: 120 }}>
+                <InputLabel>유형</InputLabel>
+                <Select
+                  value={filterType}
+                  label="유형"
+                  onChange={(e) => setFilterType(e.target.value)}
+                >
+                  <MenuItem value="ALL">전체</MenuItem>
+                  <MenuItem value="USER">사용자</MenuItem>
+                  <MenuItem value="PRODUCT">상품</MenuItem>
+                  <MenuItem value="REVIEW">리뷰</MenuItem>
+                  <MenuItem value="CHAT">채팅</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+
+            {/* 신고 목록 테이블 */}
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>ID</TableCell>
+                    <TableCell>신고자</TableCell>
+                    <TableCell>신고 대상</TableCell>
+                    <TableCell>유형</TableCell>
+                    <TableCell>사유</TableCell>
+                    <TableCell>상태</TableCell>
+                    <TableCell>신고일</TableCell>
+                    <TableCell>작업</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredReports.map((report) => (
+                    <TableRow key={report.id}>
+                      <TableCell>{report.id}</TableCell>
+                      <TableCell>{report.reporterName}</TableCell>
+                      <TableCell>
+                        {report.reportedUserName ||
+                          report.reportedProductName ||
+                          "-"}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={getTypeText(report.reportType)}
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                        />
+                      </TableCell>
+                      <TableCell>{report.reason}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={getStatusText(report.status)}
+                          color={getStatusColor(report.status) as any}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>{formatDate(report.createdAt)}</TableCell>
+                      <TableCell>
+                        <Box display="flex" gap={1}>
+                          <Tooltip title="상세보기">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleViewDetail(report)}
+                            >
+                              <VisibilityIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="상태 변경">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleStatusChange(report)}
+                            >
+                              <CheckCircleIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            {/* 상세보기 다이얼로그 */}
+            <Dialog
+              open={detailDialogOpen}
+              onClose={() => setDetailDialogOpen(false)}
+              maxWidth="md"
+              fullWidth
+            >
+              <DialogTitle>신고 상세 정보</DialogTitle>
+              <DialogContent>
+                {selectedReport && (
+                  <Box>
+                    <Typography variant="h6" gutterBottom>
+                      기본 정보
+                    </Typography>
+                    <Box
+                      display="grid"
+                      gridTemplateColumns="1fr 1fr"
+                      gap={2}
+                      mb={3}
+                    >
+                      <Box>
+                        <Typography variant="subtitle2" color="textSecondary">
+                          신고 ID
+                        </Typography>
+                        <Typography>{selectedReport.id}</Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="subtitle2" color="textSecondary">
+                          신고 유형
+                        </Typography>
+                        <Typography>
+                          {getTypeText(selectedReport.reportType)}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="subtitle2" color="textSecondary">
+                          신고자
+                        </Typography>
+                        <Typography>{selectedReport.reporterName}</Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="subtitle2" color="textSecondary">
+                          신고 대상
+                        </Typography>
+                        <Typography>
+                          {selectedReport.reportedUserName ||
+                            selectedReport.reportedProductName ||
+                            "-"}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="subtitle2" color="textSecondary">
+                          신고 사유
+                        </Typography>
+                        <Typography>{selectedReport.reason}</Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="subtitle2" color="textSecondary">
+                          현재 상태
+                        </Typography>
+                        <Chip
+                          label={getStatusText(selectedReport.status)}
+                          color={getStatusColor(selectedReport.status) as any}
+                        />
+                      </Box>
+                    </Box>
+
+                    <Typography variant="h6" gutterBottom>
+                      신고 내용
+                    </Typography>
+                    <Paper sx={{ p: 2, mb: 3, bgcolor: "grey.50" }}>
+                      <Typography>{selectedReport.description}</Typography>
+                    </Paper>
+
+                    <Typography variant="h6" gutterBottom>
+                      시간 정보
+                    </Typography>
+                    <Box
+                      display="grid"
+                      gridTemplateColumns="1fr 1fr"
+                      gap={2}
+                      mb={3}
+                    >
+                      <Box>
+                        <Typography variant="subtitle2" color="textSecondary">
+                          신고일
+                        </Typography>
+                        <Typography>
+                          {formatDate(selectedReport.createdAt)}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="subtitle2" color="textSecondary">
+                          최종 수정일
+                        </Typography>
+                        <Typography>
+                          {formatDate(selectedReport.updatedAt)}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    {selectedReport.adminComment && (
+                      <>
+                        <Typography variant="h6" gutterBottom>
+                          관리자 코멘트
+                        </Typography>
+                        <Paper sx={{ p: 2, bgcolor: "blue.50" }}>
+                          <Typography>{selectedReport.adminComment}</Typography>
+                        </Paper>
+                      </>
+                    )}
+                  </Box>
+                )}
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setDetailDialogOpen(false)}>닫기</Button>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setDetailDialogOpen(false);
+                    handleStatusChange(selectedReport!);
+                  }}
+                >
+                  상태 변경
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+            {/* 상태 변경 다이얼로그 */}
+            <Dialog
+              open={statusDialogOpen}
+              onClose={() => setStatusDialogOpen(false)}
+              maxWidth="sm"
+              fullWidth
+            >
+              <DialogTitle>신고 상태 변경</DialogTitle>
+              <DialogContent>
+                <Box sx={{ mt: 2 }}>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <InputLabel>새로운 상태</InputLabel>
+                    <Select
+                      value={newStatus}
+                      label="새로운 상태"
+                      onChange={(e) => setNewStatus(e.target.value)}
+                    >
+                      <MenuItem value="PENDING">대기중</MenuItem>
+                      <MenuItem value="IN_REVIEW">검토중</MenuItem>
+                      <MenuItem value="RESOLVED">해결됨</MenuItem>
+                      <MenuItem value="REJECTED">거부됨</MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={4}
+                    label="관리자 코멘트"
+                    value={adminComment}
+                    onChange={(e) => setAdminComment(e.target.value)}
+                    placeholder="상태 변경 사유나 추가 조치 사항을 입력하세요"
+                  />
+                </Box>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setStatusDialogOpen(false)}>취소</Button>
+                <Button variant="contained" onClick={handleUpdateStatus}>
+                  상태 변경
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Box>
+        </div>
+      </div>
     </div>
   );
 };
 
-// 타입 정의
-interface User {
-  id: string;
-  name: string;
-  profileImage: string;
-}
-
-interface Report {
-  id: string;
-  reportDate: string;
-  reporter: User;
-  reportedUser: User;
-  messageContent: string;
-  reason: string;
-  status: string;
-  chatRoom: string;
-  handler: string | null;
-  handledDate: string | null;
-  handlerComment: string | null;
-}
-
-export default App;
+export default ReportManagePage;

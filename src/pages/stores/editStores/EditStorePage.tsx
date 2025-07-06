@@ -8,8 +8,8 @@ type EditStorePageProps = {
 
 const EditStorePage: FC<EditStorePageProps> = ({ onClose, storeData }) => {
   const [formData, setFormData] = useState({
-    store_name: storeData?.store_name || "",
-    brand_info: storeData?.brand_info || "",
+    store_name: storeData?.store_name ?? "",
+    brand_info: storeData?.brand_info ?? "",
     brand_logo: null as File | null,
   });
 
@@ -22,10 +22,11 @@ const EditStorePage: FC<EditStorePageProps> = ({ onClose, storeData }) => {
   };
 
   const handleLogoChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    const files = e.target.files;
+    if (files?.[0]) {
       setFormData((prev) => ({
         ...prev,
-        brand_logo: e.target.files![0],
+        brand_logo: files[0],
       }));
     }
   };
@@ -42,6 +43,24 @@ const EditStorePage: FC<EditStorePageProps> = ({ onClose, storeData }) => {
 
     onClose?.();
   };
+  let logoPreview = null;
+  if (formData.brand_logo) {
+    logoPreview = (
+      <img
+        src={URL.createObjectURL(formData.brand_logo)}
+        alt="로고 미리보기"
+        className="w-24 h-24 object-contain border mt-2"
+      />
+    );
+  } else if (storeData?.brand_logo_url) {
+    logoPreview = (
+      <img
+        src={storeData.brand_logo_url}
+        alt="기존 로고"
+        className="w-24 h-24 object-contain border mt-2"
+      />
+    );
+  }
 
   return (
     <div className="mx-auto h-[90vh] flex flex-col relative">
@@ -101,19 +120,7 @@ const EditStorePage: FC<EditStorePageProps> = ({ onClose, storeData }) => {
               onChange={handleLogoChange}
               className="border border-gray-300 rounded px-4 py-2 text-sm"
             />
-            {formData.brand_logo ? (
-              <img
-                src={URL.createObjectURL(formData.brand_logo)}
-                alt="로고 미리보기"
-                className="w-24 h-24 object-contain border mt-2"
-              />
-            ) : storeData?.brand_logo_url ? (
-              <img
-                src={storeData.brand_logo_url}
-                alt="기존 로고"
-                className="w-24 h-24 object-contain border mt-2"
-              />
-            ) : null}
+            {logoPreview}
           </div>
 
           {/* 제출 */}

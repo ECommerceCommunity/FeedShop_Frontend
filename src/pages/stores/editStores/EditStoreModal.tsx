@@ -4,10 +4,10 @@ import { useState } from 'react'
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import EditStorePage from './EditStorePage'
 
-type EditStoreModalProps = {
+type EditStoreModalProps = Readonly<{
     onClose: () => void;
     storeData: any;
-};
+}>;
 
 
 export default function EditStoreModal({ onClose, storeData }: EditStoreModalProps) {

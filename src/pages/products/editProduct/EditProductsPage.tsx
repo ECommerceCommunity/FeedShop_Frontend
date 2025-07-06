@@ -29,12 +29,12 @@ const ProductEditPage: FC<EditProductModalProps> = ({ onClose, product }) => {
     const selected = product ?? products.find((p) => String(p.id) === id);
     if (selected) {
       setFormData({
-        title: selected.name || '',
-        price: String(selected.price || ''),
-        description: selected.description || '',
-        shoes_type: selected.shoes_type || '',
+        title: selected.name ?? '',
+        price: String(selected.price ?? ''),
+        description: selected.description ?? '',
+        shoes_type: selected.shoes_type ?? '',
         existingImages: Array.isArray(selected.main_image_urls) ? selected.main_image_urls : [],
-        sizes: selected.size_stock_list || [],
+        sizes: selected.size_stock_list ?? [],
         detailImages: Array.isArray(selected.detail_image_urls) ? selected.detail_image_urls : [],
         mainImageFiles: [],
         detailImageFiles: [],
@@ -138,8 +138,8 @@ const ProductEditPage: FC<EditProductModalProps> = ({ onClose, product }) => {
 
         {/* 사이즈 목록 */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-700">사이즈 목록</label>
-          <table className="table-auto border w-full text-sm">
+          <label htmlFor="sizes-table" className="text-sm font-medium text-gray-700">사이즈 목록</label>
+          <table id="sizes-table" className="table-auto border w-full text-sm">
             <thead className="bg-gray-100 text-gray-700">
               <tr>
                 <th className="border px-2 py-2 w-1/4">사이즈</th>
@@ -149,7 +149,7 @@ const ProductEditPage: FC<EditProductModalProps> = ({ onClose, product }) => {
             </thead>
             <tbody>
               {formData.sizes.map((s, i) => (
-                <tr key={i}>
+                <tr key={s.size ? `size-${s.size}` : `size-row-${i}`}>
                   <td className="border px-2 py-2">
                     <input
                       type="text"
@@ -212,7 +212,7 @@ const ProductEditPage: FC<EditProductModalProps> = ({ onClose, product }) => {
 
         {/* 상세 이미지 */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-700">상세 이미지</label>
+          <label htmlFor="detailImageFiles" className="text-sm font-medium text-gray-700">상세 이미지</label>
           <table className="table-auto w-full border text-sm">
             <thead className="bg-gray-100 text-gray-700">
               <tr>
@@ -222,7 +222,7 @@ const ProductEditPage: FC<EditProductModalProps> = ({ onClose, product }) => {
             </thead>
             <tbody>
               {formData.detailImages.map((img, i) => (
-                <tr key={i}>
+                <tr key={img}>
                   <td className="border px-4 py-2">
                     <img src={img} alt={`상세 이미지 ${i + 1}`} className="w-24 h-24 object-cover rounded" />
                   </td>
@@ -268,7 +268,7 @@ const ProductEditPage: FC<EditProductModalProps> = ({ onClose, product }) => {
 
         {/* 기존 이미지 */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-700">기존 이미지</label>
+          <label htmlFor="mainImageFiles" className="text-sm font-medium text-gray-700">기존 이미지</label>
           <table className="table-auto w-full border text-sm">
             <thead className="bg-gray-100 text-gray-700">
               <tr>
@@ -278,7 +278,7 @@ const ProductEditPage: FC<EditProductModalProps> = ({ onClose, product }) => {
             </thead>
             <tbody>
               {formData.existingImages.map((img, i) => (
-                <tr key={i}>
+                <tr key={img}>
                   <td className="border px-4 py-2">
                     <img src={img} alt={`기존 이미지 ${i + 1}`} className="w-24 h-24 object-cover rounded" />
                   </td>

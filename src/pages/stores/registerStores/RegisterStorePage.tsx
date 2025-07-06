@@ -21,10 +21,10 @@ const EditStorePage: FC<EditStorePageeProps> = ({ onClose }) => {
   };
 
   const handleLogoChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files?.[0]) {
       setFormData((prev) => ({
         ...prev,
-        brand_logo: e.target.files![0],
+        brand_logo: e.target.files?.[0] ?? null,
       }));
     }
   };

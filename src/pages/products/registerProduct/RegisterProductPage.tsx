@@ -43,11 +43,11 @@ const ProductUploadPage: FC<ProductUploadPageProps> = ({ onClose }) => {
   };
 
   const renderImagePreview = (files: File[]) => {
-    return files.map((file, idx) => (
+    return files.map((file) => (
       <img
-        key={idx}
+        key={file.name + file.lastModified}
         src={URL.createObjectURL(file)}
-        alt={`preview-${idx}`}
+        alt={`preview-${file.name}`}
         className="w-24 h-24 object-cover rounded border"
       />
     ));
@@ -183,9 +183,10 @@ const ProductUploadPage: FC<ProductUploadPageProps> = ({ onClose }) => {
 
           {/* 색상 입력 */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700">색상</label>
+            <label htmlFor="colorInput" className="text-sm font-medium text-gray-700">색상</label>
             <div className="flex gap-2">
               <input
+                id="colorInput"
                 type="text"
                 name="colorInput"
                 value={formData.colorInput}
@@ -204,7 +205,7 @@ const ProductUploadPage: FC<ProductUploadPageProps> = ({ onClose }) => {
             <div className="flex flex-wrap gap-2 mt-2">
               {formData.colors.map((color, index) => (
                 <div
-                  key={index}
+                  key={color.name}
                   className="flex items-center gap-1 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
                 >
                   {color.name}
@@ -229,7 +230,7 @@ const ProductUploadPage: FC<ProductUploadPageProps> = ({ onClose }) => {
 
           {/* 사이즈/재고 */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700">사이즈 & 재고</label>
+            <label htmlFor="sizeInput" className="text-sm font-medium text-gray-700">사이즈 & 재고</label>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -257,7 +258,7 @@ const ProductUploadPage: FC<ProductUploadPageProps> = ({ onClose }) => {
             </div>
             <ul className="text-sm text-gray-800 space-y-1">
               {formData.sizes.map((s, index) => (
-                <li key={index} className="flex justify-between items-center bg-gray-100 px-3 py-1 rounded">
+                <li key={s.size} className="flex justify-between items-center bg-gray-100 px-3 py-1 rounded">
                   <span>{s.size} 사이즈 - {s.stock}개</span>
                   <button onClick={() => handleSizeRemove(index)} className="text-red-500 text-xs hover:underline">삭제</button>
                 </li>
