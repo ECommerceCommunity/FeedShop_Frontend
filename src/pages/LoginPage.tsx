@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import styled, { keyframes } from "styled-components";
+import { FC, FormEvent, useState } from "react";
+import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axios";
 import { useAuth } from "../contexts/AuthContext";
@@ -224,82 +224,11 @@ const SignUpLink = styled(Link)`
 const ErrorMsg = styled.div`
   color: #ef4444;
   text-align: center;
-  margin-bottom: 20px;
-  font-size: 0.9rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  padding: 12px;
-  border-radius: 8px;
-  animation: ${fadeInUp} 0.3s ease-out;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
 `;
 
-const PasswordHint = styled.div`
-  color: #6b7280;
-  font-size: 0.8rem;
-  margin-top: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-`;
-
-const PasswordStrength = styled.div<{ isValid: boolean }>`
-  color: ${(props) => (props.isValid ? "#10b981" : "#6b7280")};
-  font-size: 0.8rem;
-  margin-top: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-`;
-
-const Divider = styled.div`
-  display: flex;
-  align-items: center;
-  margin: 32px 0;
-  color: #9ca3af;
-  font-size: 0.9rem;
-
-  &::before,
-  &::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: #e5e7eb;
-  }
-
-  &::before {
-    margin-right: 16px;
-  }
-
-  &::after {
-    margin-left: 16px;
-  }
-`;
-
-const SocialLoginButton = styled.button`
-  width: 100%;
-  padding: 14px;
-  background: white;
-  color: #374151;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 12px;
-
-  &:hover {
-    border-color: #667eea;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  }
-`;
-
-const LoginPage: React.FC = () => {
+const LoginPage: FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -307,7 +236,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);

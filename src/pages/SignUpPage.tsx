@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { ChangeEvent, FC, FormEvent, useState } from "react";
 import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import SuccessModal from "../components/modal/SuccessModal";
@@ -104,7 +104,7 @@ const LoginLink = styled(Link)`
   }
 `;
 
-const SignUpPage: React.FC = () => {
+const SignUpPage: FC = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -121,7 +121,7 @@ const SignUpPage: React.FC = () => {
   const isPasswordValid = formData.password.length >= 8;
   const isPasswordMatch = formData.password === formData.confirmPassword;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -130,7 +130,7 @@ const SignUpPage: React.FC = () => {
     setError(""); // 입력 시 에러 메시지 초기화
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);

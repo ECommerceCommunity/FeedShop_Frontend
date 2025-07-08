@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import styled from "styled-components";
 
 const Container = styled.div`
@@ -28,7 +28,7 @@ const Content = styled.div`
   color: #666;
 `;
 
-const PrivacyPolicy: React.FC = () => {
+const PrivacyPolicy: FC = () => {
   return (
     <Container>
       <Title>개인정보처리방침</Title>

@@ -1,10 +1,8 @@
-// The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work.
-
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, FC } from "react";
 import * as echarts from "echarts";
 import { useNavigate } from "react-router-dom";
 
-const StatsDashboardPage: React.FC = () => {
+const StatsDashboardPage: FC = () => {
   const navigate = useNavigate();
   // 사이드바 토글 상태
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

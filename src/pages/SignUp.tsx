@@ -1,48 +1,7 @@
-import React, { useState } from "react";
+import { ChangeEvent, FC, FormEvent, useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import SuccessModal from "../components/modal/SuccessModal";
-
-// 애니메이션 정의
-const fadeInUp = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`;
-
-const slideInLeft = keyframes`
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-`;
-
-const pulse = keyframes`
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-`;
-
-const float = keyframes`
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-`;
 
 const SignUpContainer = styled.div`
   min-height: 100vh;
@@ -327,7 +286,7 @@ const SocialSignUpButton = styled.button`
   }
 `;
 
-const SignUp: React.FC = () => {
+const SignUp: FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
@@ -345,7 +304,7 @@ const SignUp: React.FC = () => {
   const isPasswordValid = formData.password.length >= 8;
   const isPasswordMatch = formData.password === formData.confirmPassword;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -353,7 +312,7 @@ const SignUp: React.FC = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, FC } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Table,
@@ -49,7 +49,7 @@ interface Report {
   adminComment?: string;
 }
 
-const ReportManagePage: React.FC = () => {
+const ReportManagePage: FC = () => {
   const navigate = useNavigate();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
