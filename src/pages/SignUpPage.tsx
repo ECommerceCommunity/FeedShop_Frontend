@@ -130,7 +130,7 @@ const SignUpPage: FC = () => {
     setError(""); // 입력 시 에러 메시지 초기화
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);

@@ -1,5 +1,5 @@
 import { FC, FormEvent, useState } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axios";
 import { useAuth } from "../contexts/AuthContext";
@@ -226,6 +226,54 @@ const ErrorMsg = styled.div`
   text-align: center;
   margin-bottom: 16px;
   font-size: 0.95rem;
+`;
+
+const Divider = styled.div`
+  display: flex;
+  align-items: center;
+  margin: 32px 0;
+  color: #9ca3af;
+  font-size: 0.9rem;
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #e5e7eb;
+  }
+
+  &::before {
+    margin-right: 16px;
+  }
+
+  &::after {
+    margin-left: 16px;
+  }
+`;
+
+const SocialLoginButton = styled.button`
+  width: 100%;
+  padding: 14px;
+  background: white;
+  color: #374151;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  &:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const LoginPage: FC = () => {
