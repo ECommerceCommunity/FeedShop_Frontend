@@ -1,6 +1,4 @@
-// The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work.
-
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, FC, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import * as echarts from "echarts";
@@ -1384,7 +1382,7 @@ const ChartWrapper = styled.div`
   height: 300px;
 `;
 
-const AdminDashboardPage: React.FC = () => {
+const AdminDashboardPage: FC = () => {
   const navigate = useNavigate();
   const { nickname, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -1647,7 +1645,7 @@ const AdminDashboardPage: React.FC = () => {
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   const handleItemsPerPageChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
+    e: ChangeEvent<HTMLSelectElement>
   ) => {
     setItemsPerPage(parseInt(e.target.value));
     setCurrentPage(1);

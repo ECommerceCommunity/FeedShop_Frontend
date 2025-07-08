@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { ChangeEvent, FC, FormEvent, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 
@@ -85,7 +85,7 @@ const PrivacyLink = styled.a`
   }
 `;
 
-const SignUp: React.FC = () => {
+const SignUp: FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
@@ -96,7 +96,7 @@ const SignUp: React.FC = () => {
   const [error, setError] = useState("");
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -104,7 +104,7 @@ const SignUp: React.FC = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
 

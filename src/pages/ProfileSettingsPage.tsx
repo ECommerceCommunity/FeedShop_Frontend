@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, ChangeEvent, FC } from "react";
 import { useNavigate } from "react-router-dom";
 
-const ProfileSettingsPage: React.FC = () => {
+const ProfileSettingsPage: FC = () => {
   const navigate = useNavigate();
 
   // 프로필 정보 상태
@@ -53,7 +53,7 @@ const ProfileSettingsPage: React.FC = () => {
   const [isChanged, setIsChanged] = useState(false);
 
   // 프로필 정보 변경 핸들러
-  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setProfileInfo({
       ...profileInfo,
@@ -88,7 +88,7 @@ const ProfileSettingsPage: React.FC = () => {
   };
 
   // 파일 선택 핸들러
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();

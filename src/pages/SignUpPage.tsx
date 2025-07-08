@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { ChangeEvent, FC, FormEvent, useState } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 
@@ -74,7 +74,7 @@ const LoginLink = styled(Link)`
   }
 `;
 
-const SignUpPage: React.FC = () => {
+const SignUpPage: FC = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -83,7 +83,7 @@ const SignUpPage: React.FC = () => {
     phone: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -91,7 +91,7 @@ const SignUpPage: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     // TODO: 회원가입 로직 구현
     console.log("회원가입 시도:", formData);
