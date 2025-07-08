@@ -1,8 +1,5 @@
 import { WishListItem } from "types/types";
-import products from "../pages/data/products/products.json";
-import discounts from "../pages/data/products/discounts.json";
-import { getDiscountPrice } from "./price";
-import { isDiscountValid } from "./discount";
+import { getCartData } from "./cart";
 
 export const addToWishList = (id: number) => {
   const existing = localStorage.getItem("wishlist");
@@ -12,37 +9,14 @@ export const addToWishList = (id: number) => {
     return;
   }
 
-  const productData = products.find((product) => product.id === id);
-  if (!productData) {
-    throw new Error("Product Data Not Found");
-  }
-
-  const originalPrice = Number(
-    typeof productData?.price === "number" ? productData.price : 0
-  );
-  const discountDataRaw = discounts.find((d) => d.product_id === Number(id));
-  const discountDataTyped = discountDataRaw
-    ? {
-        ...discountDataRaw,
-        discount_type: (discountDataRaw.discount_type ?? "정률") as
-          | "정률"
-          | "정액",
-      }
-    : undefined;
-  const safeDiscount = isDiscountValid(discountDataTyped)
-    ? discountDataTyped
-    : undefined;
-  const discountPrice = getDiscountPrice(originalPrice, safeDiscount);
-  const isDiscounted = discountPrice < originalPrice;
+  const { productData, originalPrice, discountPrice, discountRate } = getCartData(id);
 
   const item = {
     id: productData.id,
     name: productData.name,
-    originalPrice: productData.price,
-    discountPrice: Math.floor(discountPrice),
-    discountRate: isDiscounted
-      ? Math.floor(((originalPrice - discountPrice) / originalPrice) * 100)
-      : 0,
+    originalPrice,
+    discountPrice,
+    discountRate,
     category: productData.shoes_type,
     image: productData.main_image_urls[0],
     addedAt: new Date().toISOString(),
