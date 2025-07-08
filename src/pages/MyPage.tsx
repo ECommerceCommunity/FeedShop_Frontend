@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
+import { Order } from "types/types";
 
 const MyPageContainer = styled.div`
   max-width: 1200px;
@@ -97,6 +98,10 @@ const OrderHeader = styled.div`
   margin-bottom: 10px;
 `;
 
+const OrderContent = styled.div`
+  margin-bottom: 12px;
+`;
+
 const OrderNumber = styled.span`
   font-weight: bold;
   color: #333;
@@ -133,27 +138,24 @@ const OrderStatus = styled.span<{ status: string }>`
 `;
 
 const MyPage: React.FC = () => {
+  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   // 임시 사용자 데이터
   const user = {
     name: "홍길동",
     email: "hong@example.com",
   };
 
-  // 임시 주문 데이터
-  const recentOrders = [
-    {
-      id: "1",
-      date: "2024-03-15",
-      status: "배송중",
-      items: ["프리미엄 티셔츠", "스니커즈"],
-    },
-    {
-      id: "2",
-      date: "2024-03-10",
-      status: "배송완료",
-      items: ["청바지"],
-    },
-  ];
+  useEffect(() => {
+    const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+    const userOrders = orders
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.orderedAt).getTime() - new Date(a.orderedAt).getTime()
+      )
+      .slice(0, 5);
+
+    setRecentOrders(userOrders);
+  }, []);
 
   return (
     <MyPageContainer>
@@ -165,11 +167,9 @@ const MyPage: React.FC = () => {
         <UserEmail>{user.email}</UserEmail>
       </UserInfo>
       <MenuGrid>
-        <MenuCard to="/orders">
-          <MenuTitle>주문 내역</MenuTitle>
-          <MenuDescription>
-            주문한 상품의 배송 현황을 확인하세요.
-          </MenuDescription>
+        <MenuCard to="/recentview">
+          <MenuTitle>최근 본 상품</MenuTitle>
+          <MenuDescription>최근 본 상품을 확인하세요.</MenuDescription>
         </MenuCard>
         <MenuCard to="/wishlist">
           <MenuTitle>찜한 상품</MenuTitle>
@@ -187,22 +187,51 @@ const MyPage: React.FC = () => {
       <RecentOrders>
         <SectionTitle>최근 주문</SectionTitle>
         <OrderList>
-          {recentOrders.map((order) => (
-            <OrderItem key={order.id}>
-              <OrderHeader>
-                <OrderNumber>주문번호: {order.id}</OrderNumber>
-                <OrderDate>{order.date}</OrderDate>
-              </OrderHeader>
-              <div>
-                <p>{order.items.join(", ")}</p>
-                <OrderStatus status={order.status}>{order.status}</OrderStatus>
-              </div>
-            </OrderItem>
-          ))}
+          {recentOrders.length === 0 ? (
+            <p>최근 주문 내역이 없습니다.</p>
+          ) : (
+            recentOrders.map((order) => (
+              <OrderItem key={order.orderId}>
+                <OrderHeader>
+                  <OrderNumber>주문번호: {order.orderId}</OrderNumber>
+                  <OrderDate>
+                    {new Date(order.orderedAt).toLocaleDateString()}
+                  </OrderDate>
+                </OrderHeader>
+                <div>
+                  <OrderContent>
+                    {order.items.map((p: any) => (
+                      <div key={p.name}>{p.name}</div>
+                    ))}
+                  </OrderContent>
+                  <OrderStatus status={convertStatus(order.status)}>
+                    {convertStatus(order.status)}
+                  </OrderStatus>
+                </div>
+              </OrderItem>
+            ))
+          )}
         </OrderList>
       </RecentOrders>
     </MyPageContainer>
   );
+};
+
+const convertStatus = (status: string) => {
+  switch (status) {
+    case "ORDERED":
+      return "주문완료";
+    case "SHIPPED":
+      return "배송중";
+    case "DELIVERED":
+      return "배송완료";
+    case "CANCELLED":
+      return "취소됨";
+    case "RETURNED":
+      return "반품됨";
+    default:
+      return "처리중";
+  }
 };
 
 export default MyPage;
