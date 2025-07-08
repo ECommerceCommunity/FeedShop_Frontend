@@ -656,13 +656,13 @@ const HomePage: FC = () => {
             <ButtonGroup>
               {user ? (
                 <>
-                  {user.userType === "seller" ? (
-                    <PrimaryButton to="/store-home">
+                  {user.userType === "admin" ? (
+                    <PrimaryButton to="/admin-dashboard">
                       <i
-                        className="fas fa-store"
+                        className="fas fa-chart-line"
                         style={{ marginRight: "8px" }}
                       ></i>
-                      내 스토어 관리
+                      관리자 대시보드
                     </PrimaryButton>
                   ) : (
                     <PrimaryButton to="/store-home">
@@ -680,6 +680,15 @@ const HomePage: FC = () => {
                     ></i>
                     상품 둘러보기
                   </SecondaryButton>
+                  {user.userType === "admin" && (
+                    <SecondaryButton to="/store-home">
+                      <i
+                        className="fas fa-store"
+                        style={{ marginRight: "8px" }}
+                      ></i>
+                      스토어 관리
+                    </SecondaryButton>
+                  )}
                 </>
               ) : (
                 <>
@@ -808,21 +817,30 @@ const HomePage: FC = () => {
           <ButtonGroup>
             {user ? (
               <>
-                {user.userType === "seller" ? (
-                  <PrimaryButton to="/store-home">
-                    <i
-                      className="fas fa-store"
-                      style={{ marginRight: "8px" }}
-                    ></i>
-                    내 스토어 관리
-                  </PrimaryButton>
+                {user.userType === "admin" ? (
+                  <>
+                    <PrimaryButton to="/admin-dashboard">
+                      <i
+                        className="fas fa-chart-line"
+                        style={{ marginRight: "8px" }}
+                      ></i>
+                      관리자 대시보드
+                    </PrimaryButton>
+                    <SecondaryButton to="/store-home">
+                      <i
+                        className="fas fa-store"
+                        style={{ marginRight: "8px" }}
+                      ></i>
+                      스토어 관리
+                    </SecondaryButton>
+                  </>
                 ) : (
-                  <PrimaryButton to="/become-seller">
+                  <PrimaryButton to="/become-admin">
                     <i
-                      className="fas fa-store"
+                      className="fas fa-user-shield"
                       style={{ marginRight: "8px" }}
                     ></i>
-                    판매자 전환하기
+                    관리자 전환하기
                   </PrimaryButton>
                 )}
                 <SecondaryButton to="/products">

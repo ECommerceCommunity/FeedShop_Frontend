@@ -119,6 +119,14 @@ const UserSection = styled.div`
   display: flex;
   align-items: center;
   gap: 20px;
+
+  @media (max-width: 768px) {
+    gap: 12px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 8px;
+  }
 `;
 
 const MenuButton = styled.button`
@@ -142,12 +150,23 @@ const MenuButton = styled.button`
     transform: scale(1.1);
     animation: ${pulse} 0.6s ease-in-out;
   }
+
+  @media (max-width: 768px) {
+    margin-right: 12px;
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
 `;
 
 const SearchForm = styled.form`
   display: flex;
   align-items: center;
   margin-right: 8px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const SearchWrapper = styled.div`
@@ -382,6 +401,18 @@ const CartLink = styled(Link)`
   &:hover::before {
     left: 100%;
   }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 6px 12px;
+    gap: 6px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+    padding: 4px 8px;
+    gap: 4px;
+  }
 `;
 
 const LoginLink = styled(Link)`
@@ -401,6 +432,16 @@ const LoginLink = styled(Link)`
     background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+    padding: 6px 12px;
   }
 `;
 
@@ -496,7 +537,7 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
               <UserAvatar>{getInitials(user.nickname)}</UserAvatar>
               <UserName>
                 {user.nickname}님
-                {user.userType === "seller" && (
+                {user.userType === "admin" && (
                   <span
                     style={{
                       fontSize: "12px",
@@ -504,7 +545,7 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
                       marginLeft: "4px",
                     }}
                   >
-                    판매자
+                    관리자
                   </span>
                 )}
               </UserName>
@@ -520,9 +561,15 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
                   프로필 설정
                 </DropdownItem>
                 {user.userType === "customer" && (
-                  <DropdownItem to="/become-seller">
-                    <i className="fas fa-store"></i>
-                    판매자 전환
+                  <DropdownItem to="/become-admin">
+                    <i className="fas fa-user-shield"></i>
+                    관리자 전환
+                  </DropdownItem>
+                )}
+                {user.userType === "admin" && (
+                  <DropdownItem to="/admin-dashboard">
+                    <i className="fas fa-chart-line"></i>
+                    관리자 대시보드
                   </DropdownItem>
                 )}
                 <DropdownDivider />

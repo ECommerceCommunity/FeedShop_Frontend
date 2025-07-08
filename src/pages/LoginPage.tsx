@@ -233,6 +233,24 @@ const ErrorMsg = styled.div`
   animation: ${fadeInUp} 0.3s ease-out;
 `;
 
+const PasswordHint = styled.div`
+  color: #6b7280;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const PasswordStrength = styled.div<{ isValid: boolean }>`
+  color: ${(props) => (props.isValid ? "#10b981" : "#6b7280")};
+  font-size: 0.8rem;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
 const Divider = styled.div`
   display: flex;
   align-items: center;
@@ -311,10 +329,14 @@ const LoginPage: React.FC = () => {
         setError("로그인에 실패했습니다. 다시 시도해 주세요.");
       }
     } catch (err: any) {
-      setError(
+      const msg =
         err.response?.data?.message ||
-          "이메일 또는 비밀번호가 올바르지 않습니다."
-      );
+        "이메일 또는 비밀번호가 올바르지 않습니다.";
+      if (msg.includes("이메일 인증") || msg.includes("PENDING")) {
+        setError("이메일 인증이 필요합니다. 인증 메일을 확인해주세요.");
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }

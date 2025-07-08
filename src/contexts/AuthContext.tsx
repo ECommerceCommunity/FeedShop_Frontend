@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface User {
   nickname: string;
-  userType: "customer" | "seller";
+  userType: "customer" | "admin";
   token: string;
 }
 
@@ -10,11 +10,11 @@ interface AuthContextType {
   user: User | null;
   login: (
     nickname: string,
-    userType: "customer" | "seller",
+    userType: "customer" | "admin",
     token: string
   ) => void;
   logout: () => void;
-  updateUserType: (userType: "customer" | "seller") => void;
+  updateUserType: (userType: "customer" | "admin") => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     if (storedToken && storedNickname && storedUserType) {
       setUser({
         nickname: storedNickname,
-        userType: storedUserType as "customer" | "seller",
+        userType: storedUserType as "customer" | "admin",
         token: storedToken,
       });
     } else {
@@ -51,7 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const login = (
     nickname: string,
-    userType: "customer" | "seller",
+    userType: "customer" | "admin",
     token: string
   ) => {
     const userData = { nickname, userType, token };
@@ -68,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.removeItem("userType");
   };
 
-  const updateUserType = (userType: "customer" | "seller") => {
+  const updateUserType = (userType: "customer" | "admin") => {
     if (user) {
       const updatedUser = { ...user, userType };
       setUser(updatedUser);

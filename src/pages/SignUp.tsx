@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
+import SuccessModal from "../components/modal/SuccessModal";
 
 // 애니메이션 정의
 const fadeInUp = keyframes`
@@ -231,6 +232,24 @@ const ErrorMessage = styled.div`
   animation: ${fadeInUp} 0.3s ease-out;
 `;
 
+const PasswordHint = styled.div`
+  color: #6b7280;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const PasswordStrength = styled.div<{ isValid: boolean }>`
+  color: ${(props) => (props.isValid ? "#10b981" : "#6b7280")};
+  font-size: 0.8rem;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
 const CheckboxContainer = styled.div`
   display: flex;
   align-items: flex-start;
@@ -315,10 +334,16 @@ const SignUp: React.FC = () => {
     password: "",
     confirmPassword: "",
     name: "",
+    phone: "",
   });
   const [error, setError] = useState("");
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // 비밀번호 유효성 검사
+  const isPasswordValid = formData.password.length >= 8;
+  const isPasswordMatch = formData.password === formData.confirmPassword;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -339,6 +364,12 @@ const SignUp: React.FC = () => {
       return;
     }
 
+    if (formData.password.length < 8) {
+      setError("비밀번호는 8자 이상이어야 합니다.");
+      setLoading(false);
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError("비밀번호가 일치하지 않습니다.");
       setLoading(false);
@@ -346,12 +377,44 @@ const SignUp: React.FC = () => {
     }
 
     try {
-      // TODO: API 연동
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // 시뮬레이션
-      console.log("회원가입 시도:", formData);
-      navigate("/login");
-    } catch (err) {
-      setError("회원가입 중 오류가 발생했습니다.");
+      // 회원가입 API 호출 (fetch 사용)
+      const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+      const response = await fetch(`${baseURL}/api/auth/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword,
+          name: formData.name,
+          phone: formData.phone,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("회원가입 성공:", data);
+        setShowSuccess(true);
+      } else {
+        const errorData = await response.json();
+        if (
+          errorData.message?.includes("인증이 필요") ||
+          errorData.message?.includes("재인증")
+        ) {
+          setError("재인증 메일이 발송되었습니다. 이메일을 확인해주세요.");
+        } else {
+          setError(errorData.message || "회원가입에 실패했습니다.");
+        }
+        setLoading(false);
+        return;
+      }
+    } catch (err: any) {
+      console.error("회원가입 오류:", err);
+      setError(
+        err.message || "회원가입 중 오류가 발생했습니다. 다시 시도해주세요."
+      );
     } finally {
       setLoading(false);
     }
@@ -365,6 +428,11 @@ const SignUp: React.FC = () => {
   const handleSocialSignUp = (provider: string) => {
     // 소셜 회원가입 구현
     console.log(`${provider} 회원가입 시도`);
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccess(false);
+    navigate("/login");
   };
 
   return (
@@ -425,11 +493,28 @@ const SignUp: React.FC = () => {
                 onChange={handleChange}
                 placeholder="비밀번호를 입력하세요"
                 required
+                minLength={8}
               />
               <InputIcon>
                 <i className="fas fa-lock"></i>
               </InputIcon>
             </InputWrapper>
+            <PasswordHint>
+              <i className="fas fa-info-circle"></i>
+              비밀번호는 8자 이상이어야 합니다
+            </PasswordHint>
+            {formData.password && (
+              <PasswordStrength isValid={isPasswordValid}>
+                <i
+                  className={`fas fa-${
+                    isPasswordValid ? "check-circle" : "times-circle"
+                  }`}
+                ></i>
+                {isPasswordValid
+                  ? "비밀번호 조건을 만족합니다"
+                  : "비밀번호가 너무 짧습니다"}
+              </PasswordStrength>
+            )}
           </FormGroup>
 
           <FormGroup>
@@ -443,9 +528,46 @@ const SignUp: React.FC = () => {
                 onChange={handleChange}
                 placeholder="비밀번호를 다시 입력하세요"
                 required
+                minLength={8}
               />
               <InputIcon>
                 <i className="fas fa-lock"></i>
+              </InputIcon>
+            </InputWrapper>
+            {formData.confirmPassword && (
+              <PasswordStrength
+                isValid={
+                  isPasswordMatch && formData.confirmPassword.length >= 8
+                }
+              >
+                <i
+                  className={`fas fa-${
+                    isPasswordMatch && formData.confirmPassword.length >= 8
+                      ? "check-circle"
+                      : "times-circle"
+                  }`}
+                ></i>
+                {isPasswordMatch && formData.confirmPassword.length >= 8
+                  ? "비밀번호가 일치합니다"
+                  : "비밀번호가 일치하지 않습니다"}
+              </PasswordStrength>
+            )}
+          </FormGroup>
+
+          <FormGroup>
+            <Label htmlFor="phone">전화번호</Label>
+            <InputWrapper>
+              <Input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="010-1234-5678"
+                required
+              />
+              <InputIcon>
+                <i className="fas fa-phone"></i>
               </InputIcon>
             </InputWrapper>
           </FormGroup>
@@ -512,6 +634,13 @@ const SignUp: React.FC = () => {
           </LoginLink>
         </Form>
       </SignUpCard>
+
+      <SuccessModal
+        open={showSuccess}
+        title="회원가입 완료"
+        message="회원가입이 신청이 성공적으로 완료되었습니다! 회원가입을 최종 완료하려면 사용자 이메일 주소로 발송된 인증 메일을 확인해주세요."
+        onClose={handleSuccessClose}
+      />
     </SignUpContainer>
   );
 };

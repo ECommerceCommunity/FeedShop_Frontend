@@ -1792,7 +1792,7 @@ const AdminDashboardPage: React.FC = () => {
                   fontWeight: "500",
                 }}
               >
-                {user.nickname}님
+                {user?.nickname}님
               </span>
               <LoginButton
                 onClick={handleLogout}
@@ -1886,7 +1886,7 @@ const AdminDashboardPage: React.FC = () => {
                       fontWeight: "500",
                     }}
                   >
-                    {user.nickname}님
+                    {user?.nickname}님
                   </span>
                   <LoginButton
                     onClick={() => {

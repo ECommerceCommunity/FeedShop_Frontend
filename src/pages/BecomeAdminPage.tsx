@@ -3,6 +3,7 @@ import styled, { keyframes } from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
+// 애니메이션 정의
 const fadeInUp = keyframes`
   from {
     opacity: 0;
@@ -31,6 +32,15 @@ const pulse = keyframes`
   }
   50% {
     transform: scale(1.05);
+  }
+`;
+
+const float = keyframes`
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 `;
 
@@ -266,15 +276,13 @@ const WarningText = styled.p`
   line-height: 1.5;
 `;
 
-const BecomeSellerPage: FC = () => {
+const BecomeAdminPage: FC = () => {
   const navigate = useNavigate();
   const { user, updateUserType } = useAuth();
   const [formData, setFormData] = useState({
-    storeName: "",
-    storeDescription: "",
-    businessNumber: "",
-    contactEmail: "",
-    contactPhone: "",
+    adminCode: "",
+    reason: "",
+    experience: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -284,9 +292,9 @@ const BecomeSellerPage: FC = () => {
     return null;
   }
 
-  // 이미 판매자인 경우 스토어 홈으로 리다이렉트
-  if (user.userType === "seller") {
-    navigate("/store-home");
+  // 이미 관리자인 경우 관리자 대시보드로 리다이렉트
+  if (user.userType === "admin") {
+    navigate("/admin-dashboard");
     return null;
   }
 
@@ -305,17 +313,17 @@ const BecomeSellerPage: FC = () => {
     setIsSubmitting(true);
 
     try {
-      // 실제로는 API 호출을 통해 판매자 전환 요청을 보냄
+      // 실제로는 API 호출을 통해 관리자 전환 요청을 보냄
       await new Promise((resolve) => setTimeout(resolve, 2000)); // 시뮬레이션
 
-      // 성공적으로 판매자로 전환
-      updateUserType("seller");
+      // 성공적으로 관리자로 전환
+      updateUserType("admin");
 
-      // 성공 메시지와 함께 스토어 홈으로 이동
-      alert("판매자 전환이 완료되었습니다!");
-      navigate("/store-home");
+      // 성공 메시지와 함께 관리자 대시보드로 이동
+      alert("관리자 전환이 완료되었습니다!");
+      navigate("/admin-dashboard");
     } catch (error) {
-      alert("판매자 전환 중 오류가 발생했습니다. 다시 시도해주세요.");
+      alert("관리자 전환 중 오류가 발생했습니다. 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
     }
@@ -330,40 +338,41 @@ const BecomeSellerPage: FC = () => {
       <Container>
         <Card>
           <Header>
-            <Title>판매자 전환</Title>
+            <Title>관리자 전환</Title>
             <Subtitle>
-              FeedShop에서 판매자가 되어 새로운 비즈니스 기회를 만들어보세요
+              FeedShop에서 관리자가 되어 시스템을 관리하고 모니터링하세요
             </Subtitle>
           </Header>
 
           <BenefitsSection>
-            <BenefitsTitle>판매자가 되면 얻을 수 있는 혜택</BenefitsTitle>
+            <BenefitsTitle>관리자가 되면 얻을 수 있는 혜택</BenefitsTitle>
             <BenefitsGrid>
-              <BenefitCard>
-                <BenefitIcon>
-                  <i className="fas fa-store"></i>
-                </BenefitIcon>
-                <BenefitTitle>전용 스토어</BenefitTitle>
-                <BenefitDescription>
-                  나만의 브랜드 스토어를 만들고 상품을 등록할 수 있습니다
-                </BenefitDescription>
-              </BenefitCard>
               <BenefitCard>
                 <BenefitIcon>
                   <i className="fas fa-chart-line"></i>
                 </BenefitIcon>
-                <BenefitTitle>매출 분석</BenefitTitle>
+                <BenefitTitle>시스템 모니터링</BenefitTitle>
                 <BenefitDescription>
-                  실시간 매출 통계와 고객 분석 데이터를 확인할 수 있습니다
+                  전체 시스템의 상태와 성능을 실시간으로 모니터링하고 관리할 수
+                  있습니다
                 </BenefitDescription>
               </BenefitCard>
               <BenefitCard>
                 <BenefitIcon>
-                  <i className="fas fa-comments"></i>
+                  <i className="fas fa-users"></i>
                 </BenefitIcon>
-                <BenefitTitle>고객 소통</BenefitTitle>
+                <BenefitTitle>사용자 관리</BenefitTitle>
                 <BenefitDescription>
-                  실시간 채팅으로 고객과 직접 소통하고 문의를 처리할 수 있습니다
+                  모든 사용자의 정보를 관리하고 권한을 조정할 수 있습니다
+                </BenefitDescription>
+              </BenefitCard>
+              <BenefitCard>
+                <BenefitIcon>
+                  <i className="fas fa-shield-alt"></i>
+                </BenefitIcon>
+                <BenefitTitle>보안 관리</BenefitTitle>
+                <BenefitDescription>
+                  시스템 보안을 관리하고 신고된 콘텐츠를 처리할 수 있습니다
                 </BenefitDescription>
               </BenefitCard>
             </BenefitsGrid>
@@ -375,74 +384,47 @@ const BecomeSellerPage: FC = () => {
               주의사항
             </WarningTitle>
             <WarningText>
-              판매자 전환 시 제공하신 정보는 검토 후 승인됩니다. 허위 정보 제공
-              시 서비스 이용이 제한될 수 있습니다.
+              관리자 전환은 신중하게 결정해야 합니다. 관리자 권한은 시스템
+              전체에 영향을 미칠 수 있으며, 잘못된 사용 시 법적 책임이 따를 수
+              있습니다.
             </WarningText>
           </WarningSection>
 
           <FormSection>
-            <FormTitle>스토어 정보 입력</FormTitle>
+            <FormTitle>관리자 인증 정보 입력</FormTitle>
             <form onSubmit={handleSubmit}>
               <FormGroup>
-                <Label htmlFor="storeName">스토어명 *</Label>
+                <Label htmlFor="adminCode">관리자 인증 코드 *</Label>
                 <Input
-                  type="text"
-                  id="storeName"
-                  name="storeName"
-                  value={formData.storeName}
+                  type="password"
+                  id="adminCode"
+                  name="adminCode"
+                  value={formData.adminCode}
                   onChange={handleInputChange}
-                  placeholder="스토어명을 입력해주세요"
+                  placeholder="관리자 인증 코드를 입력하세요"
                   required
                 />
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="storeDescription">스토어 설명</Label>
+                <Label htmlFor="reason">관리자 전환 사유</Label>
                 <TextArea
-                  id="storeDescription"
-                  name="storeDescription"
-                  value={formData.storeDescription}
+                  id="reason"
+                  name="reason"
+                  value={formData.reason}
                   onChange={handleInputChange}
-                  placeholder="스토어에 대한 간단한 설명을 입력해주세요"
+                  placeholder="관리자로 전환하고자 하는 사유를 입력하세요"
                 />
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="businessNumber">사업자등록번호 *</Label>
-                <Input
-                  type="text"
-                  id="businessNumber"
-                  name="businessNumber"
-                  value={formData.businessNumber}
+                <Label htmlFor="experience">관리 경험</Label>
+                <TextArea
+                  id="experience"
+                  name="experience"
+                  value={formData.experience}
                   onChange={handleInputChange}
-                  placeholder="000-00-00000"
-                  required
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <Label htmlFor="contactEmail">연락처 이메일 *</Label>
-                <Input
-                  type="email"
-                  id="contactEmail"
-                  name="contactEmail"
-                  value={formData.contactEmail}
-                  onChange={handleInputChange}
-                  placeholder="example@email.com"
-                  required
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <Label htmlFor="contactPhone">연락처 전화번호 *</Label>
-                <Input
-                  type="tel"
-                  id="contactPhone"
-                  name="contactPhone"
-                  value={formData.contactPhone}
-                  onChange={handleInputChange}
-                  placeholder="010-0000-0000"
-                  required
+                  placeholder="이전 관리 경험이 있다면 간단히 설명해주세요"
                 />
               </FormGroup>
 
@@ -459,10 +441,10 @@ const BecomeSellerPage: FC = () => {
                   ) : (
                     <>
                       <i
-                        className="fas fa-store"
+                        className="fas fa-user-shield"
                         style={{ marginRight: "8px" }}
                       ></i>
-                      판매자 전환하기
+                      관리자 전환하기
                     </>
                   )}
                 </PrimaryButton>
@@ -482,4 +464,4 @@ const BecomeSellerPage: FC = () => {
   );
 };
 
-export default BecomeSellerPage;
+export default BecomeAdminPage;
