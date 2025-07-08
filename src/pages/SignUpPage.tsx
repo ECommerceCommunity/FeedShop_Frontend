@@ -1,6 +1,7 @@
 import { ChangeEvent, FC, FormEvent, useState } from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import SuccessModal from "../components/modal/SuccessModal";
 
 const SignUpContainer = styled.div`
   max-width: 400px;
@@ -45,6 +46,35 @@ const Input = styled.input`
   }
 `;
 
+const PasswordHint = styled.div`
+  color: #666;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const PasswordStrength = styled.div<{ isValid: boolean }>`
+  color: ${(props) => (props.isValid ? "#10b981" : "#666")};
+  font-size: 0.8rem;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const ErrorMessage = styled.div`
+  color: #ef4444;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 12px;
+  border-radius: 8px;
+`;
+
 const SignUpButton = styled.button`
   width: 100%;
   padding: 12px;
@@ -82,6 +112,14 @@ const SignUpPage: FC = () => {
     name: "",
     phone: "",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const navigate = useNavigate();
+
+  // 비밀번호 유효성 검사
+  const isPasswordValid = formData.password.length >= 8;
+  const isPasswordMatch = formData.password === formData.confirmPassword;
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -89,18 +127,80 @@ const SignUpPage: FC = () => {
       ...prev,
       [name]: value,
     }));
+    setError(""); // 입력 시 에러 메시지 초기화
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // TODO: 회원가입 로직 구현
-    console.log("회원가입 시도:", formData);
+    setError("");
+    setLoading(true);
+
+    // 비밀번호 유효성 검사
+    if (formData.password.length < 8) {
+      setError("비밀번호는 8자 이상이어야 합니다.");
+      setLoading(false);
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("비밀번호가 일치하지 않습니다.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // 회원가입 API 호출 (fetch 사용)
+      const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+      const response = await fetch(`${baseURL}/api/auth/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+          phone: formData.phone,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("회원가입 성공:", data);
+        setShowSuccess(true);
+      } else {
+        const errorData = await response.json();
+        if (
+          errorData.message?.includes("인증이 필요") ||
+          errorData.message?.includes("재인증")
+        ) {
+          setError("재인증 메일이 발송되었습니다. 이메일을 확인해주세요.");
+        } else {
+          setError(errorData.message || "회원가입에 실패했습니다.");
+        }
+        setLoading(false);
+        return;
+      }
+    } catch (err: any) {
+      console.error("회원가입 오류:", err);
+      setError(
+        err.message || "회원가입 중 오류가 발생했습니다. 다시 시도해주세요."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccess(false);
+    navigate("/login");
   };
 
   return (
     <SignUpContainer>
       <SignUpForm onSubmit={handleSubmit}>
         <Title>회원가입</Title>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
         <FormGroup>
           <Label htmlFor="email">이메일</Label>
           <Input
@@ -121,7 +221,24 @@ const SignUpPage: FC = () => {
             value={formData.password}
             onChange={handleChange}
             required
+            minLength={8}
           />
+          <PasswordHint>
+            <i className="fas fa-info-circle"></i>
+            비밀번호는 8자 이상이어야 합니다
+          </PasswordHint>
+          {formData.password && (
+            <PasswordStrength isValid={isPasswordValid}>
+              <i
+                className={`fas fa-${
+                  isPasswordValid ? "check-circle" : "times-circle"
+                }`}
+              ></i>
+              {isPasswordValid
+                ? "비밀번호 조건을 만족합니다"
+                : "비밀번호가 너무 짧습니다"}
+            </PasswordStrength>
+          )}
         </FormGroup>
         <FormGroup>
           <Label htmlFor="confirmPassword">비밀번호 확인</Label>
@@ -132,7 +249,24 @@ const SignUpPage: FC = () => {
             value={formData.confirmPassword}
             onChange={handleChange}
             required
+            minLength={8}
           />
+          {formData.confirmPassword && (
+            <PasswordStrength
+              isValid={isPasswordMatch && formData.confirmPassword.length >= 8}
+            >
+              <i
+                className={`fas fa-${
+                  isPasswordMatch && formData.confirmPassword.length >= 8
+                    ? "check-circle"
+                    : "times-circle"
+                }`}
+              ></i>
+              {isPasswordMatch && formData.confirmPassword.length >= 8
+                ? "비밀번호가 일치합니다"
+                : "비밀번호가 일치하지 않습니다"}
+            </PasswordStrength>
+          )}
         </FormGroup>
         <FormGroup>
           <Label htmlFor="name">이름</Label>
@@ -156,9 +290,17 @@ const SignUpPage: FC = () => {
             required
           />
         </FormGroup>
-        <SignUpButton type="submit">회원가입</SignUpButton>
+        <SignUpButton type="submit" disabled={loading}>
+          {loading ? "회원가입 중..." : "회원가입"}
+        </SignUpButton>
         <LoginLink to="/login">이미 계정이 있으신가요? 로그인</LoginLink>
       </SignUpForm>
+      <SuccessModal
+        open={showSuccess}
+        title="회원가입 완료"
+        message="회원가입이 성공적으로 완료되었습니다! 로그인 후 서비스를 이용해 주세요."
+        onClose={handleSuccessClose}
+      />
     </SignUpContainer>
   );
 };
