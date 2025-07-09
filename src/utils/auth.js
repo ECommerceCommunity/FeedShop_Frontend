@@ -45,12 +45,12 @@ export function validatePasswordConfirm(password, confirmPassword) {
 
 // 이메일 유효성 검사
 export function validateEmail(email) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   return emailRegex.test(email);
 }
 
 // 전화번호 유효성 검사
 export function validatePhone(phone) {
-  const phoneRegex = /^[0-9-]+$/;
+  const phoneRegex = /^01[016789]-?\d{3,4}-?\d{4}$/;
   return phoneRegex.test(phone) && phone.length >= 10;
 }
