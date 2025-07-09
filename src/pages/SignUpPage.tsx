@@ -2,6 +2,13 @@ import { ChangeEvent, FC, FormEvent, useState } from "react";
 import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import SuccessModal from "../components/modal/SuccessModal";
+import {
+  signUp,
+  validatePassword,
+  validatePasswordConfirm,
+  validateEmail,
+  validatePhone,
+} from "../utils/auth";
 
 const SignUpContainer = styled.div`
   max-width: 400px;
@@ -118,8 +125,13 @@ const SignUpPage: FC = () => {
   const navigate = useNavigate();
 
   // 비밀번호 유효성 검사
-  const isPasswordValid = formData.password.length >= 8;
-  const isPasswordMatch = formData.password === formData.confirmPassword;
+  const isPasswordValid = validatePassword(formData.password);
+  const isPasswordMatch = validatePasswordConfirm(
+    formData.password,
+    formData.confirmPassword
+  );
+  const isEmailValid = validateEmail(formData.email);
+  const isPhoneValid = validatePhone(formData.phone);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -135,57 +147,39 @@ const SignUpPage: FC = () => {
     setError("");
     setLoading(true);
 
-    // 비밀번호 유효성 검사
-    if (formData.password.length < 8) {
-      setError("비밀번호는 8자 이상이어야 합니다.");
-      setLoading(false);
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("비밀번호가 일치하지 않습니다.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      // 회원가입 API 호출 (fetch 사용)
-      const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
-      const response = await fetch(`${baseURL}/api/auth/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          name: formData.name,
-          phone: formData.phone,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("회원가입 성공:", data);
-        setShowSuccess(true);
-      } else {
-        const errorData = await response.json();
-        if (
-          errorData.message?.includes("인증이 필요") ||
-          errorData.message?.includes("재인증")
-        ) {
-          setError("재인증 메일이 발송되었습니다. 이메일을 확인해주세요.");
-        } else {
-          setError(errorData.message || "회원가입에 실패했습니다.");
-        }
+      // 유효성 검사
+      if (!isEmailValid) {
+        setError("올바른 이메일 형식을 입력해주세요.");
         setLoading(false);
         return;
       }
+
+      if (!isPasswordValid) {
+        setError("비밀번호는 8자 이상이어야 합니다.");
+        setLoading(false);
+        return;
+      }
+
+      if (!isPasswordMatch) {
+        setError("비밀번호가 일치하지 않습니다.");
+        setLoading(false);
+        return;
+      }
+
+      if (!isPhoneValid) {
+        setError("올바른 전화번호 형식을 입력해주세요.");
+        setLoading(false);
+        return;
+      }
+
+      // 공통 유틸리티 함수 사용
+      const result = await signUp(formData);
+      console.log("회원가입 성공:", result);
+      setShowSuccess(true);
     } catch (err: any) {
       console.error("회원가입 오류:", err);
-      setError(
-        err.message || "회원가입 중 오류가 발생했습니다. 다시 시도해주세요."
-      );
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -201,6 +195,7 @@ const SignUpPage: FC = () => {
       <SignUpForm onSubmit={handleSubmit}>
         <Title>회원가입</Title>
         {error && <ErrorMessage>{error}</ErrorMessage>}
+
         <FormGroup>
           <Label htmlFor="email">이메일</Label>
           <Input
@@ -211,7 +206,20 @@ const SignUpPage: FC = () => {
             onChange={handleChange}
             required
           />
+          {formData.email && (
+            <PasswordStrength isValid={isEmailValid}>
+              <i
+                className={`fas fa-${
+                  isEmailValid ? "check-circle" : "times-circle"
+                }`}
+              ></i>
+              {isEmailValid
+                ? "올바른 이메일 형식입니다"
+                : "올바른 이메일 형식을 입력해주세요"}
+            </PasswordStrength>
+          )}
         </FormGroup>
+
         <FormGroup>
           <Label htmlFor="password">비밀번호</Label>
           <Input
@@ -240,6 +248,7 @@ const SignUpPage: FC = () => {
             </PasswordStrength>
           )}
         </FormGroup>
+
         <FormGroup>
           <Label htmlFor="confirmPassword">비밀번호 확인</Label>
           <Input
@@ -252,22 +261,19 @@ const SignUpPage: FC = () => {
             minLength={8}
           />
           {formData.confirmPassword && (
-            <PasswordStrength
-              isValid={isPasswordMatch && formData.confirmPassword.length >= 8}
-            >
+            <PasswordStrength isValid={isPasswordMatch}>
               <i
                 className={`fas fa-${
-                  isPasswordMatch && formData.confirmPassword.length >= 8
-                    ? "check-circle"
-                    : "times-circle"
+                  isPasswordMatch ? "check-circle" : "times-circle"
                 }`}
               ></i>
-              {isPasswordMatch && formData.confirmPassword.length >= 8
+              {isPasswordMatch
                 ? "비밀번호가 일치합니다"
                 : "비밀번호가 일치하지 않습니다"}
             </PasswordStrength>
           )}
         </FormGroup>
+
         <FormGroup>
           <Label htmlFor="name">이름</Label>
           <Input
@@ -279,6 +285,7 @@ const SignUpPage: FC = () => {
             required
           />
         </FormGroup>
+
         <FormGroup>
           <Label htmlFor="phone">전화번호</Label>
           <Input
@@ -289,7 +296,20 @@ const SignUpPage: FC = () => {
             onChange={handleChange}
             required
           />
+          {formData.phone && (
+            <PasswordStrength isValid={isPhoneValid}>
+              <i
+                className={`fas fa-${
+                  isPhoneValid ? "check-circle" : "times-circle"
+                }`}
+              ></i>
+              {isPhoneValid
+                ? "올바른 전화번호 형식입니다"
+                : "올바른 전화번호 형식을 입력해주세요"}
+            </PasswordStrength>
+          )}
         </FormGroup>
+
         <SignUpButton type="submit" disabled={loading}>
           {loading ? "회원가입 중..." : "회원가입"}
         </SignUpButton>

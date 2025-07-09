@@ -1,8 +1,8 @@
 import { FC, FormEvent, useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
-import axiosInstance from "../api/axios";
 import { useAuth } from "../contexts/AuthContext";
+import { login, validateEmail } from "../utils/auth";
 
 // 애니메이션 정의
 const fadeInUp = keyframes`
@@ -276,44 +276,53 @@ const SocialLoginButton = styled.button`
   }
 `;
 
+const PasswordStrength = styled.div<{ isValid: boolean }>`
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: ${(props) => (props.isValid ? "#4CAF50" : "#EF5350")};
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  i {
+    font-size: 0.9rem;
+  }
+`;
+
 const LoginPage: FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login: authLogin } = useAuth();
+
+  const isEmailValid = validateEmail(email);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+
     try {
-      const res = await axiosInstance.post("/api/auth/login", {
-        email,
-        password,
-      });
-      // LoginResponse: { token, user, ... }
-      if (res.data && res.data.token) {
-        // AuthContext의 login 함수 사용 (userType과 token 추가)
-        login(
-          res.data.nickname,
-          res.data.userType || "customer",
-          res.data.token
-        );
+      if (!isEmailValid) {
+        setError("올바른 이메일 형식을 입력해주세요.");
+        setLoading(false);
+        return;
+      }
+
+      // 공통 유틸리티 함수 사용
+      const result = await login({ email, password });
+
+      if (result && result.token) {
+        // AuthContext의 login 함수 사용
+        authLogin(result.nickname, result.userType || "customer", result.token);
         navigate("/");
       } else {
         setError("로그인에 실패했습니다. 다시 시도해 주세요.");
       }
     } catch (err: any) {
-      const msg =
-        err.response?.data?.message ||
-        "이메일 또는 비밀번호가 올바르지 않습니다.";
-      if (msg.includes("이메일 인증") || msg.includes("PENDING")) {
-        setError("이메일 인증이 필요합니다. 인증 메일을 확인해주세요.");
-      } else {
-        setError(msg);
-      }
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -351,6 +360,18 @@ const LoginPage: FC = () => {
                 <i className="fas fa-envelope"></i>
               </InputIcon>
             </InputWrapper>
+            {email && (
+              <PasswordStrength isValid={isEmailValid}>
+                <i
+                  className={`fas fa-${
+                    isEmailValid ? "check-circle" : "times-circle"
+                  }`}
+                ></i>
+                {isEmailValid
+                  ? "올바른 이메일 형식입니다"
+                  : "올바른 이메일 형식을 입력해주세요"}
+              </PasswordStrength>
+            )}
           </FormGroup>
 
           <FormGroup>
