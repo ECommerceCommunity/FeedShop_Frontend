@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import SuccessModal from "../components/modal/SuccessModal";
+import {
+  signUp,
+  validatePassword,
+  validatePasswordConfirm,
+  validateEmail,
+  validatePhone,
+} from "../utils/auth";
 
 const SignUpContainer = styled.div`
   max-width: 400px;
@@ -82,6 +90,19 @@ const SignUpPage: React.FC = () => {
     name: "",
     phone: "",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const navigate = useNavigate();
+
+  // 비밀번호 유효성 검사
+  const isPasswordValid = validatePassword(formData.password);
+  const isPasswordMatch = validatePasswordConfirm(
+    formData.password,
+    formData.confirmPassword
+  );
+  const isEmailValid = validateEmail(formData.email);
+  const isPhoneValid = validatePhone(formData.phone);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -93,14 +114,58 @@ const SignUpPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 회원가입 로직 구현
-    console.log("회원가입 시도:", formData);
+    setError("");
+    setLoading(true);
+
+    try {
+      // 유효성 검사
+      if (!isEmailValid) {
+        setError("올바른 이메일 형식을 입력해주세요.");
+        setLoading(false);
+        return;
+      }
+
+      if (!isPasswordValid) {
+        setError("비밀번호는 8자 이상이어야 합니다.");
+        setLoading(false);
+        return;
+      }
+
+      if (!isPasswordMatch) {
+        setError("비밀번호가 일치하지 않습니다.");
+        setLoading(false);
+        return;
+      }
+
+      if (!isPhoneValid) {
+        setError("올바른 전화번호 형식을 입력해주세요.");
+        setLoading(false);
+        return;
+      }
+
+      // 공통 유틸리티 함수 사용
+      const result = await signUp(formData);
+      console.log("회원가입 성공:", result);
+      setShowSuccess(true);
+    } catch (err: any) {
+      console.error("회원가입 오류:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccess(false);
+    navigate("/login");
   };
 
   return (
     <SignUpContainer>
       <SignUpForm onSubmit={handleSubmit}>
         <Title>회원가입</Title>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+
         <FormGroup>
           <Label htmlFor="email">이메일</Label>
           <Input
@@ -111,7 +176,20 @@ const SignUpPage: React.FC = () => {
             onChange={handleChange}
             required
           />
+          {formData.email && (
+            <PasswordStrength isValid={isEmailValid}>
+              <i
+                className={`fas fa-${
+                  isEmailValid ? "check-circle" : "times-circle"
+                }`}
+              ></i>
+              {isEmailValid
+                ? "올바른 이메일 형식입니다"
+                : "올바른 이메일 형식을 입력해주세요"}
+            </PasswordStrength>
+          )}
         </FormGroup>
+
         <FormGroup>
           <Label htmlFor="password">비밀번호</Label>
           <Input
@@ -123,6 +201,7 @@ const SignUpPage: React.FC = () => {
             required
           />
         </FormGroup>
+
         <FormGroup>
           <Label htmlFor="confirmPassword">비밀번호 확인</Label>
           <Input
@@ -132,8 +211,22 @@ const SignUpPage: React.FC = () => {
             value={formData.confirmPassword}
             onChange={handleChange}
             required
+            minLength={8}
           />
+          {formData.confirmPassword && (
+            <PasswordStrength isValid={isPasswordMatch}>
+              <i
+                className={`fas fa-${
+                  isPasswordMatch ? "check-circle" : "times-circle"
+                }`}
+              ></i>
+              {isPasswordMatch
+                ? "비밀번호가 일치합니다"
+                : "비밀번호가 일치하지 않습니다"}
+            </PasswordStrength>
+          )}
         </FormGroup>
+
         <FormGroup>
           <Label htmlFor="name">이름</Label>
           <Input
@@ -145,6 +238,7 @@ const SignUpPage: React.FC = () => {
             required
           />
         </FormGroup>
+
         <FormGroup>
           <Label htmlFor="phone">전화번호</Label>
           <Input
@@ -155,8 +249,23 @@ const SignUpPage: React.FC = () => {
             onChange={handleChange}
             required
           />
+          {formData.phone && (
+            <PasswordStrength isValid={isPhoneValid}>
+              <i
+                className={`fas fa-${
+                  isPhoneValid ? "check-circle" : "times-circle"
+                }`}
+              ></i>
+              {isPhoneValid
+                ? "올바른 전화번호 형식입니다"
+                : "올바른 전화번호 형식을 입력해주세요"}
+            </PasswordStrength>
+          )}
         </FormGroup>
-        <SignUpButton type="submit">회원가입</SignUpButton>
+
+        <SignUpButton type="submit" disabled={loading}>
+          {loading ? "회원가입 중..." : "회원가입"}
+        </SignUpButton>
         <LoginLink to="/login">이미 계정이 있으신가요? 로그인</LoginLink>
       </SignUpForm>
     </SignUpContainer>
