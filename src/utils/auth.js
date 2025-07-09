@@ -45,6 +45,7 @@ export function validatePasswordConfirm(password, confirmPassword) {
 
 // 이메일 유효성 검사
 export function validateEmail(email) {
+  if (email.length > 254) return false;
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   return emailRegex.test(email);
 }
