@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { FC, FormEvent, useState } from "react";
 import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axios";
@@ -83,7 +83,7 @@ const ErrorMsg = styled.div`
   font-size: 0.95rem;
 `;
 
-const LoginPage: React.FC = () => {
+const LoginPage: FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -91,7 +91,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);

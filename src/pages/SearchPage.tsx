@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { FC, FormEvent, useState } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 
@@ -100,7 +100,7 @@ const NoResults = styled.div`
   color: ${(props) => props.theme.colors.text};
 `;
 
-const SearchPage: React.FC = () => {
+const SearchPage: FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
@@ -120,7 +120,7 @@ const SearchPage: React.FC = () => {
     // 더미 데이터
   ]);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = (e: FormEvent) => {
     e.preventDefault();
     // TODO: Implement search logic
     console.log("Search:", { searchQuery, category, sortBy });
