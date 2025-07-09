@@ -599,22 +599,6 @@ const SignUp: FC = () => {
 
           <Divider>또는</Divider>
 
-          <SocialSignUpButton
-            type="button"
-            onClick={() => handleSocialSignUp("google")}
-          >
-            <i className="fab fa-google" style={{ color: "#DB4437" }}></i>
-            Google로 회원가입
-          </SocialSignUpButton>
-
-          <SocialSignUpButton
-            type="button"
-            onClick={() => handleSocialSignUp("kakao")}
-          >
-            <i className="fas fa-comment" style={{ color: "#FEE500" }}></i>
-            카카오로 회원가입
-          </SocialSignUpButton>
-
           <LoginLink to="/login">
             <i
               className="fas fa-sign-in-alt"

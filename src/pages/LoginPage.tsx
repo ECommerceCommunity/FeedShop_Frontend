@@ -1,48 +1,19 @@
-import { FC, FormEvent, useState } from "react";
+import { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
-import axiosInstance from "../api/axios";
-import { useAuth } from "../contexts/AuthContext";
+import { login, validateEmail } from "../utils/auth";
 
-// 애니메이션 정의
 const fadeInUp = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 `;
-
 const slideInLeft = keyframes`
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
 `;
-
-const pulse = keyframes`
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-`;
-
 const float = keyframes`
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 `;
 
 const LoginContainer = styled.div`
@@ -54,7 +25,6 @@ const LoginContainer = styled.div`
   padding: 20px;
   position: relative;
   overflow: hidden;
-
   &::before {
     content: "";
     position: absolute;
@@ -66,7 +36,6 @@ const LoginContainer = styled.div`
     background-size: cover;
   }
 `;
-
 const LoginCard = styled.div`
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
@@ -78,19 +47,16 @@ const LoginCard = styled.div`
   position: relative;
   z-index: 2;
   animation: ${fadeInUp} 0.8s ease-out;
-
   @media (max-width: 768px) {
     padding: 32px 24px;
     margin: 20px;
   }
 `;
-
 const LogoSection = styled.div`
   text-align: center;
   margin-bottom: 40px;
   animation: ${slideInLeft} 0.8s ease-out 0.2s both;
 `;
-
 const Logo = styled.div`
   font-size: 2.5rem;
   font-weight: 900;
@@ -101,21 +67,17 @@ const Logo = styled.div`
   margin-bottom: 8px;
   animation: ${float} 3s ease-in-out infinite;
 `;
-
 const Subtitle = styled.p`
   color: #6b7280;
   font-size: 1rem;
   margin: 0;
 `;
-
 const Form = styled.form`
   animation: ${fadeInUp} 0.8s ease-out 0.4s both;
 `;
-
 const FormGroup = styled.div`
   margin-bottom: 24px;
 `;
-
 const Label = styled.label`
   display: block;
   font-weight: 600;
@@ -123,11 +85,9 @@ const Label = styled.label`
   margin-bottom: 8px;
   font-size: 0.9rem;
 `;
-
 const InputWrapper = styled.div`
   position: relative;
 `;
-
 const Input = styled.input`
   width: 100%;
   padding: 16px 20px;
@@ -137,19 +97,16 @@ const Input = styled.input`
   background: white;
   transition: all 0.3s ease;
   box-sizing: border-box;
-
   &:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     transform: translateY(-2px);
   }
-
   &::placeholder {
     color: #9ca3af;
   }
 `;
-
 const InputIcon = styled.div`
   position: absolute;
   right: 16px;
@@ -158,7 +115,6 @@ const InputIcon = styled.div`
   color: #9ca3af;
   font-size: 1.1rem;
 `;
-
 const LoginButton = styled.button`
   width: 100%;
   padding: 16px;
@@ -173,7 +129,6 @@ const LoginButton = styled.button`
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
   position: relative;
   overflow: hidden;
-
   &::before {
     content: "";
     position: absolute;
@@ -189,69 +144,19 @@ const LoginButton = styled.button`
     );
     transition: left 0.5s;
   }
-
   &:hover {
     transform: translateY(-3px);
     box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
-
     &::before {
       left: 100%;
     }
   }
-
   &:disabled {
     opacity: 0.7;
     cursor: not-allowed;
     transform: none;
   }
 `;
-
-const SignUpLink = styled(Link)`
-  display: block;
-  text-align: center;
-  margin-top: 24px;
-  color: #667eea;
-  text-decoration: none;
-  font-weight: 500;
-  transition: all 0.3s ease;
-
-  &:hover {
-    color: #764ba2;
-    transform: translateY(-1px);
-  }
-`;
-
-const ErrorMsg = styled.div`
-  color: #ef4444;
-  text-align: center;
-  margin-bottom: 16px;
-  font-size: 0.95rem;
-`;
-
-const Divider = styled.div`
-  display: flex;
-  align-items: center;
-  margin: 32px 0;
-  color: #9ca3af;
-  font-size: 0.9rem;
-
-  &::before,
-  &::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: #e5e7eb;
-  }
-
-  &::before {
-    margin-right: 16px;
-  }
-
-  &::after {
-    margin-left: 16px;
-  }
-`;
-
 const SocialLoginButton = styled.button`
   width: 100%;
   padding: 14px;
@@ -268,60 +173,80 @@ const SocialLoginButton = styled.button`
   justify-content: center;
   gap: 12px;
   margin-bottom: 12px;
-
   &:hover {
     border-color: #667eea;
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   }
 `;
+const Divider = styled.div`
+  display: flex;
+  align-items: center;
+  margin: 32px 0;
+  color: #9ca3af;
+  font-size: 0.9rem;
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #e5e7eb;
+  }
+  &::before {
+    margin-right: 16px;
+  }
+  &::after {
+    margin-left: 16px;
+  }
+`;
+const SignUpLink = styled(Link)`
+  display: block;
+  text-align: center;
+  margin-top: 24px;
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  &:hover {
+    color: #764ba2;
+    transform: translateY(-1px);
+  }
+`;
+const ErrorMsg = styled.div`
+  color: #e74c3c;
+  text-align: center;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+`;
 
-const LoginPage: FC = () => {
+export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const isEmailValid = validateEmail(email);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const res = await axiosInstance.post("/api/auth/login", {
-        email,
-        password,
-      });
-      // LoginResponse: { token, user, ... }
-      if (res.data && res.data.token) {
-        // AuthContext의 login 함수 사용 (userType과 token 추가)
-        login(
-          res.data.nickname,
-          res.data.userType || "customer",
-          res.data.token
-        );
+      if (!isEmailValid) throw new Error("올바른 이메일 형식을 입력해주세요.");
+      const result = await login({ email, password });
+      if (result && result.token) {
+        localStorage.setItem("nickname", result.nickname);
+        localStorage.setItem("userType", result.userType || "customer");
+        localStorage.setItem("token", result.token);
         navigate("/");
       } else {
         setError("로그인에 실패했습니다. 다시 시도해 주세요.");
       }
     } catch (err: any) {
-      const msg =
-        err.response?.data?.message ||
-        "이메일 또는 비밀번호가 올바르지 않습니다.";
-      if (msg.includes("이메일 인증") || msg.includes("PENDING")) {
-        setError("이메일 인증이 필요합니다. 인증 메일을 확인해주세요.");
-      } else {
-        setError(msg);
-      }
+      setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSocialLogin = (provider: string) => {
-    // 소셜 로그인 구현
-    console.log(`${provider} 로그인 시도`);
   };
 
   return (
@@ -331,10 +256,8 @@ const LoginPage: FC = () => {
           <Logo>FeedShop</Logo>
           <Subtitle>스마트한 쇼핑 경험을 위한 최고의 선택</Subtitle>
         </LogoSection>
-
         <Form onSubmit={handleSubmit}>
           {error && <ErrorMsg>{error}</ErrorMsg>}
-
           <FormGroup>
             <Label htmlFor="email">이메일</Label>
             <InputWrapper>
@@ -352,7 +275,6 @@ const LoginPage: FC = () => {
               </InputIcon>
             </InputWrapper>
           </FormGroup>
-
           <FormGroup>
             <Label htmlFor="password">비밀번호</Label>
             <InputWrapper>
@@ -370,7 +292,6 @@ const LoginPage: FC = () => {
               </InputIcon>
             </InputWrapper>
           </FormGroup>
-
           <LoginButton type="submit" disabled={loading}>
             {loading ? (
               <>
@@ -395,15 +316,15 @@ const LoginPage: FC = () => {
 
           <SocialLoginButton
             type="button"
-            onClick={() => handleSocialLogin("google")}
+            onClick={() => alert("구글 로그인 연동 필요")}
           >
             <i className="fab fa-google" style={{ color: "#DB4437" }}></i>
-            Google로 로그인
+            구글로 로그인
           </SocialLoginButton>
 
           <SocialLoginButton
             type="button"
-            onClick={() => handleSocialLogin("kakao")}
+            onClick={() => alert("카카오 로그인 연동 필요")}
           >
             <i className="fas fa-comment" style={{ color: "#FEE500" }}></i>
             카카오로 로그인
@@ -417,6 +338,4 @@ const LoginPage: FC = () => {
       </LoginCard>
     </LoginContainer>
   );
-};
-
-export default LoginPage;
+}
