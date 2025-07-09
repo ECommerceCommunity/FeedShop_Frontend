@@ -1,5 +1,5 @@
 import Warning from "components/modal/Warning";
-import { useState, useEffect } from "react";
+import { useState, useEffect, FC } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { WishListItem } from "types/types";
@@ -181,7 +181,7 @@ const PaginationButton = styled.button<{
 `;
 
 // ✅ 본문 컴포넌트
-const WishListPage: React.FC = () => {
+const WishListPage: FC = () => {
   const [sortOption, setSortOption] = useState("최신순");
   const [priceFilter, setPriceFilter] = useState("전체");
   const [currentPage, setCurrentPage] = useState(1);
@@ -232,7 +232,10 @@ const WishListPage: React.FC = () => {
     currentPage * itemsPerPage
   );
 
-  const formatPrice = (price: number) => price.toLocaleString() + "원";
+  const formatPrice = (price?: number) => {
+    if (typeof price !== "number") return "가격 정보 없음";
+    return price.toLocaleString() + "원";
+  };
 
   const onClickProduct = (id: number) => {
     const item = wishlistItems.find((item) => item.id === id);

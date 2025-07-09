@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { addToWishList, removeToWishList } from 'utils/cart'
+import { addToWishList, removeToWishList } from 'utils/wishlist'
 
 export function useLocalLike(key: string) {
   const [likes, setLikes] = useState<Set<number>>(new Set())
