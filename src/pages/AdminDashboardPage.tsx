@@ -1384,7 +1384,7 @@ const ChartWrapper = styled.div`
 
 const AdminDashboardPage: FC = () => {
   const navigate = useNavigate();
-  const { nickname, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -1781,16 +1781,16 @@ const AdminDashboardPage: FC = () => {
           <IconButton>
             <i className="fas fa-cog"></i>
           </IconButton>
-          {nickname ? (
+          {user ? (
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <span
                 style={{
+                  color: "white",
                   fontSize: "14px",
-                  color: "rgba(255, 255, 255, 0.9)",
                   fontWeight: "500",
                 }}
               >
-                {nickname}님
+                {user?.nickname}님
               </span>
               <LoginButton
                 onClick={handleLogout}
@@ -1868,22 +1868,23 @@ const AdminDashboardPage: FC = () => {
               </MobileMenuListItem>
             </MobileMenuList>
             <MobileMenuLoginSection>
-              {nickname ? (
+              {user ? (
                 <div
                   style={{
                     display: "flex",
-                    flexDirection: "column",
-                    gap: "8px",
+                    alignItems: "center",
+                    gap: "12px",
+                    marginBottom: "16px",
                   }}
                 >
                   <span
                     style={{
+                      color: "white",
                       fontSize: "14px",
-                      color: "#666",
-                      textAlign: "center",
+                      fontWeight: "500",
                     }}
                   >
-                    {nickname}님
+                    {user?.nickname}님
                   </span>
                   <LoginButton
                     onClick={() => {
