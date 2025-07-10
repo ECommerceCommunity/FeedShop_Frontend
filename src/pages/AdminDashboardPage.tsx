@@ -1644,9 +1644,7 @@ const AdminDashboardPage: FC = () => {
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
-  const handleItemsPerPageChange = (
-    e: ChangeEvent<HTMLSelectElement>
-  ) => {
+  const handleItemsPerPageChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setItemsPerPage(parseInt(e.target.value));
     setCurrentPage(1);
   };
@@ -1781,7 +1779,7 @@ const AdminDashboardPage: FC = () => {
           <IconButton>
             <i className="fas fa-cog"></i>
           </IconButton>
-          {user ? (
+          {user && user.nickname ? (
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <span
                 style={{
@@ -1790,7 +1788,7 @@ const AdminDashboardPage: FC = () => {
                   fontWeight: "500",
                 }}
               >
-                {user?.nickname}님
+                {user.nickname}님
               </span>
               <LoginButton
                 onClick={handleLogout}
@@ -1868,7 +1866,7 @@ const AdminDashboardPage: FC = () => {
               </MobileMenuListItem>
             </MobileMenuList>
             <MobileMenuLoginSection>
-              {user ? (
+              {user && user.nickname ? (
                 <div
                   style={{
                     display: "flex",
@@ -1884,7 +1882,7 @@ const AdminDashboardPage: FC = () => {
                       fontWeight: "500",
                     }}
                   >
-                    {user?.nickname}님
+                    {user.nickname}님
                   </span>
                   <LoginButton
                     onClick={() => {
