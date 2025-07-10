@@ -1,6 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  signUp,
+  validatePassword,
+  validatePasswordConfirm,
+  validateEmail,
+  validatePhone,
+} from "../utils/auth";
 
 const SignUpContainer = styled.div`
   max-width: 400px;
@@ -45,6 +52,17 @@ const Input = styled.input`
   }
 `;
 
+const ErrorMessage = styled.div`
+  color: #ef4444;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 12px;
+  border-radius: 8px;
+`;
+
 const SignUpButton = styled.button`
   width: 100%;
   padding: 12px;
@@ -74,7 +92,7 @@ const LoginLink = styled(Link)`
   }
 `;
 
-const SignUpPage: React.FC = () => {
+export default function SignUpPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -82,25 +100,56 @@ const SignUpPage: React.FC = () => {
     name: "",
     phone: "",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const navigate = useNavigate();
+
+  // 유효성 검사
+  const isPasswordValid = validatePassword(formData.password);
+  const isPasswordMatch = validatePasswordConfirm(
+    formData.password,
+    formData.confirmPassword
+  );
+  const isEmailValid = validateEmail(formData.email);
+  const isPhoneValid = validatePhone(formData.phone);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setError("");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: 회원가입 로직 구현
-    console.log("회원가입 시도:", formData);
+    setError("");
+    setLoading(true);
+    try {
+      if (!isEmailValid) throw new Error("올바른 이메일 형식을 입력해주세요.");
+      if (!isPasswordValid)
+        throw new Error("비밀번호는 8자 이상이어야 합니다.");
+      if (!isPasswordMatch) throw new Error("비밀번호가 일치하지 않습니다.");
+      if (!isPhoneValid)
+        throw new Error("올바른 전화번호 형식을 입력해주세요.");
+      await signUp(formData);
+      setShowSuccess(true);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccess(false);
+    navigate("/login");
   };
 
   return (
     <SignUpContainer>
       <SignUpForm onSubmit={handleSubmit}>
         <Title>회원가입</Title>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
         <FormGroup>
           <Label htmlFor="email">이메일</Label>
           <Input
@@ -121,6 +170,7 @@ const SignUpPage: React.FC = () => {
             value={formData.password}
             onChange={handleChange}
             required
+            minLength={8}
           />
         </FormGroup>
         <FormGroup>
@@ -132,6 +182,7 @@ const SignUpPage: React.FC = () => {
             value={formData.confirmPassword}
             onChange={handleChange}
             required
+            minLength={8}
           />
         </FormGroup>
         <FormGroup>
@@ -156,11 +207,58 @@ const SignUpPage: React.FC = () => {
             required
           />
         </FormGroup>
-        <SignUpButton type="submit">회원가입</SignUpButton>
+        <SignUpButton type="submit" disabled={loading}>
+          {loading ? "회원가입 중..." : "회원가입"}
+        </SignUpButton>
         <LoginLink to="/login">이미 계정이 있으신가요? 로그인</LoginLink>
       </SignUpForm>
+      {showSuccess && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "32px",
+              borderRadius: "12px",
+              maxWidth: "500px",
+              width: "90%",
+            }}
+          >
+            <h3 style={{ marginBottom: "16px", color: "#10b981" }}>
+              회원가입 완료
+            </h3>
+            <p style={{ marginBottom: "24px", lineHeight: "1.6" }}>
+              회원가입이 성공적으로 완료되었습니다! 로그인 후 서비스를 이용해
+              주세요.
+            </p>
+            <button
+              onClick={handleSuccessClose}
+              style={{
+                backgroundColor: "#10b981",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                padding: "12px 24px",
+                cursor: "pointer",
+              }}
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </SignUpContainer>
   );
-};
-
-export default SignUpPage;
+}

@@ -1,6 +1,4 @@
-// The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work.
-
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, FC, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import * as echarts from "echarts";
@@ -1384,9 +1382,9 @@ const ChartWrapper = styled.div`
   height: 300px;
 `;
 
-const AdminDashboardPage: React.FC = () => {
+const AdminDashboardPage: FC = () => {
   const navigate = useNavigate();
-  const { nickname, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -1647,7 +1645,7 @@ const AdminDashboardPage: React.FC = () => {
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   const handleItemsPerPageChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
+    e: ChangeEvent<HTMLSelectElement>
   ) => {
     setItemsPerPage(parseInt(e.target.value));
     setCurrentPage(1);
@@ -1783,16 +1781,16 @@ const AdminDashboardPage: React.FC = () => {
           <IconButton>
             <i className="fas fa-cog"></i>
           </IconButton>
-          {nickname ? (
+          {user ? (
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <span
                 style={{
+                  color: "white",
                   fontSize: "14px",
-                  color: "rgba(255, 255, 255, 0.9)",
                   fontWeight: "500",
                 }}
               >
-                {nickname}님
+                {user?.nickname}님
               </span>
               <LoginButton
                 onClick={handleLogout}
@@ -1870,22 +1868,23 @@ const AdminDashboardPage: React.FC = () => {
               </MobileMenuListItem>
             </MobileMenuList>
             <MobileMenuLoginSection>
-              {nickname ? (
+              {user ? (
                 <div
                   style={{
                     display: "flex",
-                    flexDirection: "column",
-                    gap: "8px",
+                    alignItems: "center",
+                    gap: "12px",
+                    marginBottom: "16px",
                   }}
                 >
                   <span
                     style={{
+                      color: "white",
                       fontSize: "14px",
-                      color: "#666",
-                      textAlign: "center",
+                      fontWeight: "500",
                     }}
                   >
-                    {nickname}님
+                    {user?.nickname}님
                   </span>
                   <LoginButton
                     onClick={() => {

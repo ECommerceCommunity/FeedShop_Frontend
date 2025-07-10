@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, FC, ChangeEvent } from "react";
 import styled from "styled-components";
 
 const Container = styled.div`
@@ -253,7 +253,7 @@ const ButtonGroup = styled.div`
   margin-top: 2rem;
 `;
 
-const ProfilePage: React.FC = () => {
+const ProfilePage: FC = () => {
   const [profileInfo, setProfileInfo] = useState({
     name: "김관리자",
     email: "admin@example.com",
@@ -281,7 +281,7 @@ const ProfilePage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isChanged, setIsChanged] = useState(false);
 
-  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setProfileInfo((prev) => ({
       ...prev,
@@ -308,7 +308,7 @@ const ProfilePage: React.FC = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
