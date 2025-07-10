@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState, useMemo, useRef } from "react";
+import { Fragment, useState, useMemo, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
@@ -28,6 +28,7 @@ import EditProductsModal from "./editProduct/EditProductsModal";
 import { isDiscountValid } from "utils/discount";
 import { getDiscountPrice } from "utils/price";
 import { useLocalLike } from "hooks/useLocalLike";
+import { addToRecentView } from "utils/recentview";
 
 type SelectedItem = {
   size: string;
@@ -49,11 +50,19 @@ export default function ProductDetailPage() {
   const [showEmptySelectionModal, setShowEmptySelectionModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
 
   const productData = products.find((p) => String(p.id) === id);
   const brandData = brands.find(
     (b) => String(b.store_id) === String(productData?.store_id)
   );
+
+  // 최근 본 상품에 추가
+  useEffect(() => {
+    if (productData) {
+      addToRecentView(productData.id);
+    }
+  }, [productData]);
 
   const productReviews = useMemo(() => {
     return reviews.filter((r) => r.product_id === productData?.id);
@@ -305,6 +314,21 @@ export default function ProductDetailPage() {
           onClose={() => setShowEditModal(false)}
         />
       )}
+      {showDeleteWarning && (
+        <Warning
+          open={showDeleteWarning}
+          title="상품 삭제"
+          message="정말로 이 상품을 삭제하시겠습니까?"
+          onConfirm={() => {
+            setShowDeleteWarning(false);
+            console.log("Deleting product:", productData.id);
+            navigate("/products");
+          }}
+          onCancel={() => {
+            setShowDeleteWarning(false);
+          }}
+        />
+      )}
       <div className="bg-white mx-auto">
         <div className="lg:grid lg:grid-cols-[1.7fr_1px_1fr] lg:items-start gap-4">
           <div className="col-span-1 p-5">
@@ -554,12 +578,21 @@ export default function ProductDetailPage() {
 
               {/* 상품 수정 버튼 */}
               {productData && (
-                <button
-                  onClick={() => setShowEditModal(true)}
-                  className="inline-block text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-gray-700"
-                >
-                  상품 수정
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowDeleteWarning(true)}
+                    className="inline-block text-sm px-3 py-1 border border-red-300 rounded hover:bg-red-100 text-red-600"
+                  >
+                    상품 삭제
+                  </button>
+
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    className="inline-block text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-gray-700"
+                  >
+                    상품 수정
+                  </button>
+                </div>
               )}
             </div>
             {brandData && (

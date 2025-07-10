@@ -119,6 +119,14 @@ const UserSection = styled.div`
   display: flex;
   align-items: center;
   gap: 20px;
+
+  @media (max-width: 768px) {
+    gap: 12px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 8px;
+  }
 `;
 
 const MenuButton = styled.button`
@@ -142,12 +150,23 @@ const MenuButton = styled.button`
     transform: scale(1.1);
     animation: ${pulse} 0.6s ease-in-out;
   }
+
+  @media (max-width: 768px) {
+    margin-right: 12px;
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
 `;
 
 const SearchForm = styled.form`
   display: flex;
   align-items: center;
   margin-right: 8px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const SearchWrapper = styled.div`
@@ -382,6 +401,18 @@ const CartLink = styled(Link)`
   &:hover::before {
     left: 100%;
   }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 6px 12px;
+    gap: 6px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+    padding: 4px 8px;
+    gap: 4px;
+  }
 `;
 
 const LoginLink = styled(Link)`
@@ -402,6 +433,16 @@ const LoginLink = styled(Link)`
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
 `;
 
 interface HeaderProps {
@@ -412,7 +453,7 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const { nickname, logout } = useAuth();
+  const { user, logout } = useAuth();
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -490,11 +531,11 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
           <i className="fas fa-shopping-cart"></i>
           장바구니
         </CartLink>
-        {nickname && nickname.trim() !== "" ? (
+        {user && user.nickname && user.nickname.trim() !== "" ? (
           <UserMenu ref={userMenuRef}>
             <UserInfo onClick={() => setShowUserMenu(!showUserMenu)}>
-              <UserAvatar>{getInitials(nickname)}</UserAvatar>
-              <UserName>{nickname}님</UserName>
+              <UserAvatar>{getInitials(user.nickname)}</UserAvatar>
+              <UserName>{user.nickname}님</UserName>
             </UserInfo>
             {showUserMenu && (
               <DropdownMenu>
@@ -506,6 +547,18 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
                   <i className="fas fa-cog"></i>
                   프로필 설정
                 </DropdownItem>
+                {user && user.userType === "seller" && (
+                  <DropdownItem to="/become-admin">
+                    <i className="fas fa-user-shield"></i>
+                    관리자 전환
+                  </DropdownItem>
+                )}
+                {user && user.userType === "admin" && (
+                  <DropdownItem to="/admin-dashboard">
+                    <i className="fas fa-chart-line"></i>
+                    관리자 대시보드
+                  </DropdownItem>
+                )}
                 <DropdownDivider />
                 <DropdownButton onClick={handleLogout}>
                   <i className="fas fa-sign-out-alt"></i>

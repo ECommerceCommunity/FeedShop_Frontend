@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { Order } from "types/types";
@@ -137,7 +137,7 @@ const OrderStatus = styled.span<{ status: string }>`
   }};
 `;
 
-const MyPage: React.FC = () => {
+const MyPage: FC = () => {
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   // 임시 사용자 데이터
   const user = {

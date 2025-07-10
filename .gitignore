@@ -35,3 +35,5 @@ pnpm-debug.log*
 
 # SonarLint related files
 .sonarlint/
+
+FETCH_HEAD
