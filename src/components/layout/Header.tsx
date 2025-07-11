@@ -539,7 +539,13 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
             </UserInfo>
             {showUserMenu && (
               <DropdownMenu>
-                <DropdownItem to="/mypage">
+                <DropdownItem
+                  to={
+                    user && user.userType === "seller"
+                      ? "/seller-mypage"
+                      : "/mypage"
+                  }
+                >
                   <i className="fas fa-user"></i>
                   마이페이지
                 </DropdownItem>
@@ -547,10 +553,10 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
                   <i className="fas fa-cog"></i>
                   프로필 설정
                 </DropdownItem>
-                {user && user.userType === "seller" && (
-                  <DropdownItem to="/become-admin">
-                    <i className="fas fa-user-shield"></i>
-                    관리자 전환
+                {user && user.userType === "user" && (
+                  <DropdownItem to="/become-seller">
+                    <i className="fas fa-store"></i>
+                    판매자 전환
                   </DropdownItem>
                 )}
                 {user && user.userType === "admin" && (
