@@ -1,6 +1,7 @@
 import { FC } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 // 애니메이션 정의
 const slideIn = keyframes`
@@ -282,7 +283,144 @@ const Overlay = styled.div<{ open: boolean }>`
 
 const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
   const location = useLocation();
+  const { user } = useAuth();
 
+  // 판매자 메뉴 분기
+  if (user?.userType === "seller") {
+    return (
+      <>
+        <Overlay open={open} onClick={onClose} />
+        <SidebarContainer open={open}>
+          <SidebarHeader>
+            <SidebarLogo>FeedShop</SidebarLogo>
+            <SidebarSubtitle>판매자 센터</SidebarSubtitle>
+          </SidebarHeader>
+
+          <QuickStats>
+            <QuickStatsTitle>판매 현황</QuickStatsTitle>
+            <QuickStatsGrid>
+              <QuickStatItem>
+                <QuickStatValue>23</QuickStatValue>
+                <QuickStatLabel>오늘 주문</QuickStatLabel>
+              </QuickStatItem>
+              <QuickStatItem>
+                <QuickStatValue>₩1.2M</QuickStatValue>
+                <QuickStatLabel>오늘 매출</QuickStatLabel>
+              </QuickStatItem>
+              <QuickStatItem>
+                <QuickStatValue>5</QuickStatValue>
+                <QuickStatLabel>신규 리뷰</QuickStatLabel>
+              </QuickStatItem>
+              <QuickStatItem>
+                <QuickStatValue>4.7</QuickStatValue>
+                <QuickStatLabel>평점</QuickStatLabel>
+              </QuickStatItem>
+            </QuickStatsGrid>
+          </QuickStats>
+
+          <MenuSection>
+            <MenuTitle>판매자 메뉴</MenuTitle>
+            <MenuList>
+              <MenuItem>
+                <MenuLink
+                  to="/store-home"
+                  active={location.pathname === "/store-home"}
+                >
+                  <MenuIcon
+                    className="fas fa-store menu-icon"
+                    active={location.pathname === "/store-home"}
+                  />
+                  <MenuText>내 가게 홈</MenuText>
+                  {location.pathname === "/store-home" && <ActiveIndicator />}
+                </MenuLink>
+              </MenuItem>
+              <MenuItem>
+                <MenuLink
+                  to="/product-manage"
+                  active={location.pathname === "/product-manage"}
+                >
+                  <MenuIcon
+                    className="fas fa-box menu-icon"
+                    active={location.pathname === "/product-manage"}
+                  />
+                  <MenuText>상품 관리</MenuText>
+                  {location.pathname === "/product-manage" && (
+                    <ActiveIndicator />
+                  )}
+                </MenuLink>
+              </MenuItem>
+              <MenuItem>
+                <MenuLink
+                  to="/order-manage"
+                  active={location.pathname === "/order-manage"}
+                >
+                  <MenuIcon
+                    className="fas fa-shopping-cart menu-icon"
+                    active={location.pathname === "/order-manage"}
+                  />
+                  <MenuText>주문 관리</MenuText>
+                  {location.pathname === "/order-manage" && <ActiveIndicator />}
+                </MenuLink>
+              </MenuItem>
+              <MenuItem>
+                <MenuLink
+                  to="/review-manage"
+                  active={location.pathname === "/review-manage"}
+                >
+                  <MenuIcon
+                    className="fas fa-star menu-icon"
+                    active={location.pathname === "/review-manage"}
+                  />
+                  <MenuText>리뷰 관리</MenuText>
+                  {location.pathname === "/review-manage" && (
+                    <ActiveIndicator />
+                  )}
+                </MenuLink>
+              </MenuItem>
+              <MenuItem>
+                <MenuLink
+                  to="/stats-dashboard"
+                  active={location.pathname === "/stats-dashboard"}
+                >
+                  <MenuIcon
+                    className="fas fa-chart-bar menu-icon"
+                    active={location.pathname === "/stats-dashboard"}
+                  />
+                  <MenuText>통계 분석</MenuText>
+                  {location.pathname === "/stats-dashboard" && (
+                    <ActiveIndicator />
+                  )}
+                </MenuLink>
+              </MenuItem>
+              <MenuItem>
+                <MenuLink
+                  to="/settings"
+                  active={location.pathname === "/settings"}
+                >
+                  <MenuIcon
+                    className="fas fa-cog menu-icon"
+                    active={location.pathname === "/settings"}
+                  />
+                  <MenuText>판매자 설정</MenuText>
+                  {location.pathname === "/settings" && <ActiveIndicator />}
+                </MenuLink>
+              </MenuItem>
+            </MenuList>
+          </MenuSection>
+
+          <SidebarFooter>
+            <SidebarFooterText>
+              © 2025 FeedShop
+              <br />
+              판매자 센터
+            </SidebarFooterText>
+          </SidebarFooter>
+        </SidebarContainer>
+      </>
+    );
+  }
+
+  // 기존(관리자/일반유저) 사이드바 렌더링
   return (
     <>
       <Overlay open={open} onClick={onClose} />
@@ -358,14 +496,23 @@ const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
           <MenuList>
             <MenuItem>
               <MenuLink to="/my-feed" active={location.pathname === "/my-feed"}>
-                <MenuIcon className="fas fa-user menu-icon" active={location.pathname === "/my-feed"} />
+                <MenuIcon
+                  className="fas fa-user menu-icon"
+                  active={location.pathname === "/my-feed"}
+                />
                 <MenuText>마이 피드</MenuText>
                 {location.pathname === "/my-feed" && <ActiveIndicator />}
               </MenuLink>
             </MenuItem>
             <MenuItem>
-              <MenuLink to="/feed-list" active={location.pathname === "/feed-list"}>
-                <MenuIcon className="fas fa-list menu-icon" active={location.pathname === "/feed-list"} />
+              <MenuLink
+                to="/feed-list"
+                active={location.pathname === "/feed-list"}
+              >
+                <MenuIcon
+                  className="fas fa-list menu-icon"
+                  active={location.pathname === "/feed-list"}
+                />
                 <MenuText>피드 목록</MenuText>
                 {location.pathname === "/feed-list" && <ActiveIndicator />}
               </MenuLink>
