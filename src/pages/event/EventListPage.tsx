@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../api/axios";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 
 interface Event {
-  id: number;
+  eventId: number;
   title: string;
   status: "upcoming" | "ongoing" | "ended";
   description: string;
   purchasePeriod: string;
   votePeriod: string;
   announcementDate: string;
-  participantCount: number;
+  maxParticipants: number;
   rewards: { rank: number; reward: string }[];
-  image: string;
+  imageUrl: string;
   eventStartDate?: string;
   eventEndDate?: string;
 }
@@ -61,7 +61,7 @@ const EventListPage = () => {
         if (searchTerm || activeFilter !== "all" || sortType !== "latest") {
           url = "/api/events/search";
         }
-        const res = await axios.get(url, { params });
+        const res = await axiosInstance.get(url, { params });
         setEvents(res.data.content);
         setTotalPages(res.data.totalPages);
       } catch (err) {
@@ -162,11 +162,11 @@ const EventListPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {events.map((event) => (
           <div
-            key={event.id}
+            key={event.eventId}
             className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md relative"
-            onClick={() => navigate(`/events/${event.id}`)}
+            onClick={() => navigate(`/events/${event.eventId}`)}
           >
-            <img src={event.image} alt={event.title} className="w-full h-40 object-cover rounded mb-4" />
+            <img src={event.imageUrl} alt={event.title} className="w-full h-40 object-cover rounded mb-4" />
             <h2 className="text-lg font-bold mb-2">{event.title}</h2>
             <p className="text-gray-500 mb-2">{event.description}</p>
             <div className="flex items-center gap-2 mb-1">
@@ -175,7 +175,7 @@ const EventListPage = () => {
                 <span className="ml-2 text-xs text-red-500 font-semibold">{getDday(event.eventEndDate)}</span>
               )}
             </div>
-            <div className="text-xs text-gray-400">참여자: {event.participantCount.toLocaleString()}명</div>
+            <div className="text-xs text-gray-400">참여자: {event.maxParticipants.toLocaleString()}명</div>
           </div>
         ))}
       </div>

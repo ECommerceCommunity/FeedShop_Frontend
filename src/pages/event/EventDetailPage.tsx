@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../api/axios";
 
 interface Reward {
   rank: number;
@@ -9,7 +9,7 @@ interface Reward {
 }
 
 interface EventDetail {
-  id: number;
+  eventId: number;
   title: string;
   status: "upcoming" | "ongoing" | "ended";
   type: string;
@@ -17,9 +17,9 @@ interface EventDetail {
   purchasePeriod: string;
   votePeriod: string;
   announcementDate: string;
-  participantCount: number;
+  maxParticipants: number;
   rewards: Reward[];
-  image: string;
+  imageUrl: string;
 }
 
 const EventDetailPage = () => {
@@ -36,7 +36,7 @@ const EventDetailPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.get(`/api/events/${id}`);
+        const res = await axiosInstance.get(`/api/events/${id}`);
         setEvent(res.data);
       } catch (err) {
         setError("이벤트 상세 정보를 불러오지 못했습니다.");
@@ -76,7 +76,7 @@ const EventDetailPage = () => {
       </div>
       <div className="relative h-56 mb-6">
         <img
-          src={event.image}
+          src={event.imageUrl}
           alt={event.title}
           className="w-full h-full object-cover rounded-lg"
         />
@@ -109,7 +109,7 @@ const EventDetailPage = () => {
         </div>
         {event.status === "ongoing" && (
           <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm">
-            {event.participantCount.toLocaleString()}명 참여중
+            {event.maxParticipants}명 참여중
           </span>
         )}
         <p className="text-lg text-gray-600 mt-4">{event.description}</p>
