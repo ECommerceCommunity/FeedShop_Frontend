@@ -1,9 +1,6 @@
 import { useState, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
 import axios from "axios";
-=======
->>>>>>> origin/develop
 
 const initialForm = {
   title: "",
@@ -48,20 +45,13 @@ const EventCreatePage = () => {
     }
   };
 
-<<<<<<< HEAD
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-=======
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // 유효성 검사
->>>>>>> origin/develop
     if (!eventForm.title || !eventForm.description || !eventForm.purchaseStartDate || !eventForm.purchaseEndDate || !eventForm.eventStartDate || !eventForm.eventEndDate || !eventForm.participationMethod || !eventForm.rewards || !eventForm.selectionCriteria || !eventForm.precautions) {
       setError("모든 필수 항목을 입력해 주세요.");
       return;
     }
     setError("");
-<<<<<<< HEAD
 
     // FormData 생성
     const formData = new FormData();
@@ -90,17 +80,6 @@ const EventCreatePage = () => {
     } catch (err) {
       setError("이벤트 생성에 실패했습니다. 다시 시도해 주세요.");
     }
-=======
-    // 제출 객체
-    const submitObj = {
-      ...eventForm,
-      image: eventForm.image ? eventForm.image.name : undefined
-    };
-    console.log("이벤트 생성:", submitObj);
-    alert("이벤트가 생성되었습니다! (콘솔 확인)");
-    setEventForm(initialForm);
-    navigate(-1);
->>>>>>> origin/develop
   };
 
   return (

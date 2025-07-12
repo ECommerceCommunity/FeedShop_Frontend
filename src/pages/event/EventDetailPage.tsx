@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -22,68 +21,11 @@ interface EventDetail {
   rewards: Reward[];
   image: string;
 }
-=======
-
-const events = [
-  {
-    id: 1,
-    title: "여름 스타일 챌린지",
-    status: "upcoming",
-    type: "battle",
-    description: "다가오는 여름, 나만의 스타일로 시원하고 트렌디한 여름 패션을 선보여주세요. 베스트 스타일러에게는 풍성한 경품이 준비되어 있습니다.",
-    purchasePeriod: "2025.06.25 - 2025.07.07",
-    votePeriod: "2025.07.08 - 2025.07.14",
-    announcementDate: "2025.07.15",
-    participantCount: 0,
-    rewards: [
-      { rank: 1, reward: "100만원 상당의 브랜드 상품권" },
-      { rank: 2, reward: "50만원 상당의 브랜드 상품권" },
-      { rank: 3, reward: "30만원 상당의 브랜드 상품권" }
-    ],
-    image: "https://readdy.ai/api/search-image?query=summer%20fashion%20collection%20display%20with%20bright%20colors%20and%20modern%20aesthetic%2C%20professional%20marketing%20campaign%2C%20clean%20minimalist%20background%20with%20summer%20vibes&width=800&height=400&seq=event1&orientation=landscape"
-  },
-  {
-    id: 2,
-    title: "데일리룩 스타일링 대전",
-    status: "ongoing",
-    type: "mission",
-    description: "일상 속 나만의 스타일을 공유해주세요. 데일리룩으로 특별한 당신의 패션 감각을 보여주세요.",
-    purchasePeriod: "2025.06.15 - 2025.06.30",
-    votePeriod: "2025.07.01 - 2025.07.07",
-    announcementDate: "2025.07.08",
-    participantCount: 1234,
-    rewards: [
-      { rank: 1, reward: "최신 스마트폰" },
-      { rank: 2, reward: "무선이어폰" },
-      { rank: 3, reward: "패션 브랜드 기프트카드" }
-    ],
-    image: "https://readdy.ai/api/search-image?query=casual%20daily%20fashion%20collection%20display%20with%20modern%20aesthetic%2C%20professional%20marketing%20campaign%2C%20clean%20minimalist%20background%20with%20urban%20vibes&width=800&height=400&seq=event2&orientation=landscape"
-  },
-  {
-    id: 3,
-    title: "봄 패션 위크",
-    status: "ended",
-    type: "multiple",
-    description: "봄의 설렘을 담은 패션으로 특별한 순간을 만들어보세요. 다양한 스타일로 봄의 감성을 표현해주세요.",
-    purchasePeriod: "2025.05.01 - 2025.05.15",
-    votePeriod: "2025.05.16 - 2025.05.22",
-    announcementDate: "2025.05.23",
-    participantCount: 3456,
-    rewards: [
-      { rank: 1, reward: "럭셔리 브랜드 가방" },
-      { rank: 2, reward: "디자이너 의류 세트" },
-      { rank: 3, reward: "뷰티 제품 세트" }
-    ],
-    image: "https://readdy.ai/api/search-image?query=spring%20fashion%20collection%20display%20with%20soft%20pastel%20colors%20and%20modern%20aesthetic%2C%20professional%20marketing%20campaign%2C%20clean%20minimalist%20background%20with%20spring%20vibes&width=800&height=400&seq=event3&orientation=landscape"
-  }
-];
->>>>>>> origin/develop
 
 const EventDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { nickname } = useAuth();
-<<<<<<< HEAD
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -113,23 +55,6 @@ const EventDetailPage = () => {
       navigate('/login');
       return;
     }
-=======
-
-  const event = events.find(e => e.id === Number(id));
-
-  if (!event) {
-    return <div className="p-5">존재하지 않는 이벤트입니다.</div>;
-  }
-
-  const handleEventParticipation = () => {
-    if (!nickname) {
-      // 로그인되지 않은 경우 로그인 페이지로 이동
-      navigate('/login');
-      return;
-    }
-    
-    // 로그인된 경우 피드 생성 페이지로 이동 (이벤트 ID와 함께)
->>>>>>> origin/develop
     navigate(`/feed-create?eventId=${id}`);
   };
 
