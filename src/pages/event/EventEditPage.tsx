@@ -66,6 +66,7 @@ const EventEditPage = () => {
           imagePreview: event.image
         });
       } catch (err) {
+        console.error("이벤트 정보 조회 실패:", err);
         setError("이벤트 정보를 불러오지 못했습니다.");
       } finally {
         setLoading(false);
@@ -125,6 +126,7 @@ const EventEditPage = () => {
       alert("이벤트가 성공적으로 수정되었습니다!");
       navigate(`/events/${id}`);
     } catch (err) {
+      console.error("이벤트 수정 실패:", err);
       setError("이벤트 수정에 실패했습니다. 다시 시도해 주세요.");
     }
   };

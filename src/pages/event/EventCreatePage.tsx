@@ -78,6 +78,7 @@ const EventCreatePage = () => {
       setEventForm(initialForm);
       navigate(-1);
     } catch (err) {
+      console.error("이벤트 생성 실패:", err);
       setError("이벤트 생성에 실패했습니다. 다시 시도해 주세요.");
     }
   };

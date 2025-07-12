@@ -39,6 +39,7 @@ const EventDetailPage = () => {
         const res = await axiosInstance.get(`/api/events/${id}`);
         setEvent(res.data);
       } catch (err) {
+        console.error("이벤트 상세 정보 조회 실패:", err);
         setError("이벤트 상세 정보를 불러오지 못했습니다.");
       } finally {
         setLoading(false);

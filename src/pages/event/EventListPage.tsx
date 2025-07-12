@@ -65,6 +65,7 @@ const EventListPage = () => {
         setEvents(res.data.content);
         setTotalPages(res.data.totalPages);
       } catch (err) {
+        console.error("이벤트 목록 조회 실패:", err);
         setError("이벤트 목록을 불러오지 못했습니다.");
       } finally {
         setLoading(false);
