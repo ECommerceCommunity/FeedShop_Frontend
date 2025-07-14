@@ -1,3 +1,4 @@
+import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
@@ -226,6 +227,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const isEmailValid = validateEmail(email);
+  const { login: authLogin } = useAuth();
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -234,10 +237,11 @@ export default function LoginPage() {
     try {
       if (!isEmailValid) throw new Error("올바른 이메일 형식을 입력해주세요.");
       const result = await login({ email, password });
-      if (result && result.token) {
-        localStorage.setItem("nickname", result.nickname);
-        localStorage.setItem("userType", result.userType || "customer");
-        localStorage.setItem("token", result.token);
+      if (result && result.data && result.data.token) {
+        authLogin(result.data.nickname, result.data.role, result.data.token);
+        navigate("/");
+      } else if (result && result.token && result.nickname && result.userType) {
+        authLogin(result.nickname, result.userType, result.token);
         navigate("/");
       } else {
         setError("로그인에 실패했습니다. 다시 시도해 주세요.");
