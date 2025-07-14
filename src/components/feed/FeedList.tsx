@@ -1,5 +1,6 @@
 import React from "react";
 import FeedCard from "./FeedCard";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface FeedListProps {
   feeds: any[];
@@ -9,15 +10,23 @@ interface FeedListProps {
   likedPosts?: number[];
 }
 
-const FeedList: React.FC<FeedListProps> = ({ feeds, onFeedClick, onVoteClick, onLikeClick, likedPosts }) => {
+const FeedList: React.FC<FeedListProps> = ({
+  feeds,
+  onFeedClick,
+  onVoteClick,
+  onLikeClick,
+  likedPosts,
+}) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {feeds.map(feed => (
+      {feeds.map((feed) => (
         <FeedCard
           key={feed.id}
           feed={feed}
           onClick={() => onFeedClick?.(feed)}
-          onVoteClick={feed.feedType === 'event' ? () => onVoteClick?.(feed) : undefined}
+          onVoteClick={
+            feed.feedType === "event" ? () => onVoteClick?.(feed) : undefined
+          }
           onLikeClick={() => onLikeClick?.(feed)}
           liked={likedPosts?.includes(feed.id)}
           likes={feed.likes}
@@ -27,4 +36,4 @@ const FeedList: React.FC<FeedListProps> = ({ feeds, onFeedClick, onVoteClick, on
   );
 };
 
-export default FeedList; 
+export default FeedList;

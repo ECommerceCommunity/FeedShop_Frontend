@@ -14,9 +14,16 @@ export interface LoginData {
 }
 
 export interface AuthResponse {
+  success: boolean;
+  data: {
+    loginId: string;
+    role: "admin" | "user" | "seller";
+    token: string;
+    nickname: string;
+  };
   token: string;
   nickname: string;
-  userType: "customer" | "admin";
+  userType: "admin" | "user" | "seller";
   message?: string;
 }
 
