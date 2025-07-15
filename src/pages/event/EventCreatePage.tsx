@@ -1,5 +1,6 @@
 import { useState, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const initialForm = {
   title: "",
@@ -44,23 +45,42 @@ const EventCreatePage = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 유효성 검사
     if (!eventForm.title || !eventForm.description || !eventForm.purchaseStartDate || !eventForm.purchaseEndDate || !eventForm.eventStartDate || !eventForm.eventEndDate || !eventForm.participationMethod || !eventForm.rewards || !eventForm.selectionCriteria || !eventForm.precautions) {
       setError("모든 필수 항목을 입력해 주세요.");
       return;
     }
     setError("");
-    // 제출 객체
-    const submitObj = {
-      ...eventForm,
-      image: eventForm.image ? eventForm.image.name : undefined
-    };
-    console.log("이벤트 생성:", submitObj);
-    alert("이벤트가 생성되었습니다! (콘솔 확인)");
-    setEventForm(initialForm);
-    navigate(-1);
+
+    // FormData 생성
+    const formData = new FormData();
+    formData.append("title", eventForm.title);
+    formData.append("type", eventForm.type);
+    formData.append("purchaseStartDate", eventForm.purchaseStartDate);
+    formData.append("purchaseEndDate", eventForm.purchaseEndDate);
+    formData.append("eventStartDate", eventForm.eventStartDate);
+    formData.append("eventEndDate", eventForm.eventEndDate);
+    formData.append("description", eventForm.description);
+    formData.append("participationMethod", eventForm.participationMethod);
+    formData.append("rewards", eventForm.rewards);
+    formData.append("selectionCriteria", eventForm.selectionCriteria);
+    formData.append("precautions", eventForm.precautions);
+    if (eventForm.image) {
+      formData.append("image", eventForm.image);
+    }
+
+    try {
+      await axios.post("/api/events", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      alert("이벤트가 성공적으로 생성되었습니다!");
+      setEventForm(initialForm);
+      navigate(-1);
+    } catch (err) {
+      console.error("이벤트 생성 실패:", err);
+      setError("이벤트 생성에 실패했습니다. 다시 시도해 주세요.");
+    }
   };
 
   return (
