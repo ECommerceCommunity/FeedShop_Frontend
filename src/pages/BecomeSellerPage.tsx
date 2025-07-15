@@ -208,95 +208,80 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 16px;
   justify-content: center;
-  flex-wrap: wrap;
+  margin-top: 32px;
 `;
 
-const PrimaryButton = styled.button`
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  border: none;
+const Button = styled.button<{ variant?: "primary" | "secondary" }>`
   padding: 14px 32px;
-  border-radius: 50px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
-
-const SecondaryButton = styled.button`
-  background: transparent;
-  color: #667eea;
-  border: 2px solid #667eea;
-  padding: 12px 30px;
-  border-radius: 50px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: #667eea;
-    color: white;
-    transform: translateY(-2px);
-  }
-`;
-
-const WarningSection = styled.div`
-  background: #fef3c7;
-  border: 1px solid #f59e0b;
   border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
-`;
-
-const WarningTitle = styled.h4`
-  color: #92400e;
+  font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  min-width: 140px;
+
+  ${({ variant }) =>
+    variant === "primary"
+      ? `
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+  `
+      : `
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+
+    &:hover {
+      background: #667eea;
+      color: white;
+      transform: translateY(-2px);
+    }
+  `}
 `;
 
-const WarningText = styled.p`
-  color: #92400e;
-  font-size: 0.9rem;
-  line-height: 1.5;
+const Alert = styled.div<{ type: "success" | "error" }>`
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 500;
+  text-align: center;
+
+  ${({ type }) =>
+    type === "success"
+      ? `
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+  `
+      : `
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+  `}
 `;
 
-const BecomeAdminPage: FC = () => {
+const BecomeSellerPage: FC = () => {
   const navigate = useNavigate();
-  const { user, updateUserType } = useAuth();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
-    adminCode: "",
-    reason: "",
-    experience: "",
+    storeName: "",
+    businessNumber: "",
+    phoneNumber: "",
+    address: "",
+    description: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
-  if (!user) {
-    navigate("/login");
-    return null;
-  }
-
-  // 이미 관리자인 경우 관리자 대시보드로 리다이렉트
-  if (user.userType === "admin") {
-    navigate("/admin-dashboard");
-    return null;
-  }
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -311,26 +296,33 @@ const BecomeAdminPage: FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setMessage(null);
 
     try {
-      // 실제로는 API 호출을 통해 관리자 전환 요청을 보냄
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // 시뮬레이션
+      // 여기에 판매자 전환 API 호출 로직 추가
+      // const response = await api.post('/user/become-seller', formData);
 
-      // 성공적으로 관리자로 전환
-      updateUserType("admin");
+      // 임시로 성공 메시지 표시
+      setMessage({
+        type: "success",
+        text: "판매자 전환 신청이 성공적으로 제출되었습니다!",
+      });
 
-      // 성공 메시지와 함께 관리자 대시보드로 이동
-      alert("관리자 전환이 완료되었습니다!");
-      navigate("/admin-dashboard");
+      setTimeout(() => {
+        navigate("/seller-mypage");
+      }, 2000);
     } catch (error) {
-      alert("관리자 전환 중 오류가 발생했습니다. 다시 시도해주세요.");
+      setMessage({
+        type: "error",
+        text: "판매자 전환 신청 중 오류가 발생했습니다. 다시 시도해주세요.",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCancel = () => {
-    navigate("/");
+    navigate(-1);
   };
 
   return (
@@ -338,123 +330,136 @@ const BecomeAdminPage: FC = () => {
       <Container>
         <Card>
           <Header>
-            <Title>관리자 전환</Title>
+            <Title>판매자 전환</Title>
             <Subtitle>
-              FeedShop에서 관리자가 되어 시스템을 관리하고 모니터링하세요
+              FeedShop에서 상품을 판매하고 비즈니스를 성장시켜보세요!
             </Subtitle>
           </Header>
 
           <BenefitsSection>
-            <BenefitsTitle>관리자가 되면 얻을 수 있는 혜택</BenefitsTitle>
+            <BenefitsTitle>판매자가 되면 얻을 수 있는 혜택</BenefitsTitle>
             <BenefitsGrid>
+              <BenefitCard>
+                <BenefitIcon>
+                  <i className="fas fa-store"></i>
+                </BenefitIcon>
+                <BenefitTitle>상품 등록 및 관리</BenefitTitle>
+                <BenefitDescription>
+                  다양한 상품을 등록하고 효율적으로 관리할 수 있습니다.
+                </BenefitDescription>
+              </BenefitCard>
+
               <BenefitCard>
                 <BenefitIcon>
                   <i className="fas fa-chart-line"></i>
                 </BenefitIcon>
-                <BenefitTitle>시스템 모니터링</BenefitTitle>
+                <BenefitTitle>매출 분석</BenefitTitle>
                 <BenefitDescription>
-                  전체 시스템의 상태와 성능을 실시간으로 모니터링하고 관리할 수
-                  있습니다
+                  실시간 매출 현황과 판매 통계를 확인할 수 있습니다.
                 </BenefitDescription>
               </BenefitCard>
+
               <BenefitCard>
                 <BenefitIcon>
                   <i className="fas fa-users"></i>
                 </BenefitIcon>
-                <BenefitTitle>사용자 관리</BenefitTitle>
+                <BenefitTitle>고객 관리</BenefitTitle>
                 <BenefitDescription>
-                  모든 사용자의 정보를 관리하고 권한을 조정할 수 있습니다
+                  주문 관리, 리뷰 관리, 고객 문의를 체계적으로 처리할 수
+                  있습니다.
                 </BenefitDescription>
               </BenefitCard>
+
               <BenefitCard>
                 <BenefitIcon>
-                  <i className="fas fa-shield-alt"></i>
+                  <i className="fas fa-truck"></i>
                 </BenefitIcon>
-                <BenefitTitle>보안 관리</BenefitTitle>
+                <BenefitTitle>배송 관리</BenefitTitle>
                 <BenefitDescription>
-                  시스템 보안을 관리하고 신고된 콘텐츠를 처리할 수 있습니다
+                  주문 상태 추적과 배송 관리를 효율적으로 할 수 있습니다.
                 </BenefitDescription>
               </BenefitCard>
             </BenefitsGrid>
           </BenefitsSection>
 
-          <WarningSection>
-            <WarningTitle>
-              <i className="fas fa-exclamation-triangle"></i>
-              주의사항
-            </WarningTitle>
-            <WarningText>
-              관리자 전환은 신중하게 결정해야 합니다. 관리자 권한은 시스템
-              전체에 영향을 미칠 수 있으며, 잘못된 사용 시 법적 책임이 따를 수
-              있습니다.
-            </WarningText>
-          </WarningSection>
-
           <FormSection>
-            <FormTitle>관리자 인증 정보 입력</FormTitle>
+            <FormTitle>판매자 정보 입력</FormTitle>
+            {message && <Alert type={message.type}>{message.text}</Alert>}
             <form onSubmit={handleSubmit}>
               <FormGroup>
-                <Label htmlFor="adminCode">관리자 인증 코드 *</Label>
+                <Label htmlFor="storeName">상점명 *</Label>
                 <Input
-                  type="password"
-                  id="adminCode"
-                  name="adminCode"
-                  value={formData.adminCode}
+                  type="text"
+                  id="storeName"
+                  name="storeName"
+                  value={formData.storeName}
                   onChange={handleInputChange}
-                  placeholder="관리자 인증 코드를 입력하세요"
+                  placeholder="상점명을 입력하세요"
                   required
                 />
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="reason">관리자 전환 사유</Label>
-                <TextArea
-                  id="reason"
-                  name="reason"
-                  value={formData.reason}
+                <Label htmlFor="businessNumber">사업자등록번호 *</Label>
+                <Input
+                  type="text"
+                  id="businessNumber"
+                  name="businessNumber"
+                  value={formData.businessNumber}
                   onChange={handleInputChange}
-                  placeholder="관리자로 전환하고자 하는 사유를 입력하세요"
+                  placeholder="000-00-00000"
+                  required
                 />
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="experience">관리 경험</Label>
-                <TextArea
-                  id="experience"
-                  name="experience"
-                  value={formData.experience}
+                <Label htmlFor="phoneNumber">연락처 *</Label>
+                <Input
+                  type="tel"
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
                   onChange={handleInputChange}
-                  placeholder="이전 관리 경험이 있다면 간단히 설명해주세요"
+                  placeholder="010-0000-0000"
+                  required
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <Label htmlFor="address">주소 *</Label>
+                <Input
+                  type="text"
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  placeholder="상점 주소를 입력하세요"
+                  required
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <Label htmlFor="description">상점 소개</Label>
+                <TextArea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="상점에 대한 소개를 작성해주세요"
                 />
               </FormGroup>
 
               <ButtonGroup>
-                <PrimaryButton type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <i
-                        className="fas fa-spinner fa-spin"
-                        style={{ marginRight: "8px" }}
-                      ></i>
-                      처리중...
-                    </>
-                  ) : (
-                    <>
-                      <i
-                        className="fas fa-user-shield"
-                        style={{ marginRight: "8px" }}
-                      ></i>
-                      관리자 전환하기
-                    </>
-                  )}
-                </PrimaryButton>
-                <SecondaryButton type="button" onClick={handleCancel}>
-                  <i
-                    className="fas fa-times"
-                    style={{ marginRight: "8px" }}
-                  ></i>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleCancel}
+                >
                   취소
-                </SecondaryButton>
+                </Button>
+                <Button type="submit" variant="primary" disabled={isSubmitting}>
+                  {isSubmitting ? "처리중..." : "판매자 전환 신청"}
+                </Button>
               </ButtonGroup>
             </form>
           </FormSection>
@@ -464,4 +469,4 @@ const BecomeAdminPage: FC = () => {
   );
 };
 
-export default BecomeAdminPage;
+export default BecomeSellerPage;

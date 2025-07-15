@@ -229,7 +229,6 @@ export default function LoginPage() {
   const isEmailValid = validateEmail(email);
   const { login: authLogin } = useAuth();
 
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
