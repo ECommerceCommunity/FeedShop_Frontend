@@ -45,7 +45,8 @@ const EventCreatePage = lazy(() => import("./pages/event/EventCreatePage"));
 const EventDetailPage = lazy(() => import("./pages/event/EventDetailPage"));
 const EventEditPage = lazy(() => import("./pages/event/EventEditPage"));
 const EventResultPage = lazy(() => import("./pages/event/EventResultPage"));
-const BecomeAdminPage = lazy(() => import("./pages/BecomeAdminPage"));
+const BecomeSellerPage = lazy(() => import("./pages/BecomeSellerPage"));
+const SellerMyPage = lazy(() => import("./pages/SellerMyPage"));
 
 const App: FC = () => {
   return (
@@ -91,7 +92,8 @@ const App: FC = () => {
               <Route path="/events/:id" element={<EventDetailPage />} />
               <Route path="/events/edit/:id" element={<EventEditPage />} />
               <Route path="/events/result" element={<EventResultPage />} />
-              <Route path="/become-admin" element={<BecomeAdminPage />} />
+              <Route path="/become-seller" element={<BecomeSellerPage />} />
+              <Route path="/seller-mypage" element={<SellerMyPage />} />
             </Route>
 
             {/* Layout 없이 보여야 하는 페이지들 */}

@@ -56,10 +56,11 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     userType: "admin" | "seller" | "user",
     token: string
   ) => {
-    const userData = { nickname, userType, token };
+    const userTypeLower = userType.toLowerCase() as "admin" | "seller" | "user";
+    const userData = { nickname, userType: userTypeLower, token };
     setUser(userData);
     localStorage.setItem("nickname", nickname);
-    localStorage.setItem("userType", userType);
+    localStorage.setItem("userType", userTypeLower);
     localStorage.setItem("token", token);
   };
 
