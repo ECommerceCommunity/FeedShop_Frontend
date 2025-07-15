@@ -531,28 +531,21 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
           <i className="fas fa-shopping-cart"></i>
           장바구니
         </CartLink>
-        {user ? (
+        {user && user.nickname && user.nickname.trim() !== "" ? (
           <UserMenu ref={userMenuRef}>
             <UserInfo onClick={() => setShowUserMenu(!showUserMenu)}>
               <UserAvatar>{getInitials(user.nickname)}</UserAvatar>
-              <UserName>
-                {user.nickname}님
-                {user.userType === "admin" && (
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      color: "#fbbf24",
-                      marginLeft: "4px",
-                    }}
-                  >
-                    관리자
-                  </span>
-                )}
-              </UserName>
+              <UserName>{user.nickname}님</UserName>
             </UserInfo>
             {showUserMenu && (
               <DropdownMenu>
-                <DropdownItem to="/mypage">
+                <DropdownItem
+                  to={
+                    user && user.userType === "seller"
+                      ? "/seller-mypage"
+                      : "/mypage"
+                  }
+                >
                   <i className="fas fa-user"></i>
                   마이페이지
                 </DropdownItem>
@@ -560,13 +553,13 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
                   <i className="fas fa-cog"></i>
                   프로필 설정
                 </DropdownItem>
-                {user.userType === "customer" && (
-                  <DropdownItem to="/become-admin">
-                    <i className="fas fa-user-shield"></i>
-                    관리자 전환
+                {user && user.userType === "user" && (
+                  <DropdownItem to="/become-seller">
+                    <i className="fas fa-store"></i>
+                    판매자 전환
                   </DropdownItem>
                 )}
-                {user.userType === "admin" && (
+                {user && user.userType === "admin" && (
                   <DropdownItem to="/admin-dashboard">
                     <i className="fas fa-chart-line"></i>
                     관리자 대시보드

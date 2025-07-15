@@ -1,8 +1,15 @@
-import { createContext, useContext, useState, useEffect, ReactNode, FC } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  FC,
+} from "react";
 
 interface User {
   nickname: string;
-  userType: "customer" | "admin";
+  userType: "user" | "admin" | "seller";
   token: string;
 }
 
@@ -10,32 +17,28 @@ interface AuthContextType {
   user: User | null;
   login: (
     nickname: string,
-    userType: "customer" | "admin",
+    userType: "user" | "admin" | "seller",
     token: string
   ) => void;
   logout: () => void;
-  updateUserType: (userType: "customer" | "admin") => void;
+  updateUserType: (userType: "seller" | "admin" | "user") => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // localStorage에서 사용자 정보 가져오기
     const storedNickname = localStorage.getItem("nickname");
     const storedToken = localStorage.getItem("token");
     const storedUserType = localStorage.getItem("userType");
-
     // 모든 필수 정보가 있어야 로그인 상태로 인정
     if (storedToken && storedNickname && storedUserType) {
       setUser({
         nickname: storedNickname,
-        userType: storedUserType as "customer" | "admin",
+        userType: storedUserType as "admin" | "seller" | "user",
         token: storedToken,
       });
     } else {
@@ -45,20 +48,20 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({
       localStorage.removeItem("userType");
       setUser(null);
     }
-
     setIsInitialized(true);
   }, []);
 
   const login = (
     nickname: string,
-    userType: "customer" | "admin",
+    userType: "admin" | "seller" | "user",
     token: string
   ) => {
-    const userData = { nickname, userType, token };
+    const userTypeLower = userType.toLowerCase() as "admin" | "seller" | "user";
+    const userData = { nickname, userType: userTypeLower, token };
     setUser(userData);
     localStorage.setItem("nickname", nickname);
+    localStorage.setItem("userType", userTypeLower);
     localStorage.setItem("token", token);
-    localStorage.setItem("userType", userType);
   };
 
   const logout = () => {
@@ -68,7 +71,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({
     localStorage.removeItem("userType");
   };
 
-  const updateUserType = (userType: "customer" | "admin") => {
+  const updateUserType = (userType: "admin" | "seller" | "user") => {
     if (user) {
       const updatedUser = { ...user, userType };
       setUser(updatedUser);
