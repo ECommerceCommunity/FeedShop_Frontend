@@ -1,20 +1,23 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, ChangeEvent, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../api/axios";
+import { EventType } from "../../types/types";
 
 // FormState 타입 선언
 type FormState = {
   title: string;
-  type: string;
+  type: EventType;
   purchaseStartDate: string;
   purchaseEndDate: string;
   eventStartDate: string;
   eventEndDate: string;
+  announcement: string;
   description: string;
   participationMethod: string;
   rewards: string;
   selectionCriteria: string;
   precautions: string;
+  maxParticipants: number;
   image: string;
   imageFile: File | null;
   imagePreview: string;
@@ -25,16 +28,18 @@ const EventEditPage = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState<FormState>({
     title: "",
-    type: "battle",
+    type: "BATTLE",
     purchaseStartDate: "",
     purchaseEndDate: "",
     eventStartDate: "",
     eventEndDate: "",
+    announcement: "",
     description: "",
     participationMethod: "",
     rewards: "",
     selectionCriteria: "",
     precautions: "",
+    maxParticipants: 100,
     image: "",
     imageFile: null,
     imagePreview: ""
@@ -47,23 +52,25 @@ const EventEditPage = () => {
       setLoading(true);
       setError("");
       try {
-        const res = await axios.get(`/api/events/${id}`);
+        const res = await axiosInstance.get(`/api/events/${id}`);
         const event = res.data;
         setForm({
-          title: event.title,
+          title: event.eventDetail.title,
           type: event.type,
-          purchaseStartDate: event.purchaseStartDate,
-          purchaseEndDate: event.purchaseEndDate,
-          eventStartDate: event.eventStartDate,
-          eventEndDate: event.eventEndDate,
-          description: event.description,
-          participationMethod: event.participationMethod,
-          rewards: Array.isArray(event.rewards) ? event.rewards.map((r: any) => r.reward).join('\n') : event.rewards || "",
-          selectionCriteria: event.selectionCriteria,
-          precautions: event.precautions,
-          image: event.image,
+          purchaseStartDate: event.eventDetail.purchaseStartDate,
+          purchaseEndDate: event.eventDetail.purchaseEndDate,
+          eventStartDate: event.eventDetail.eventStartDate,
+          eventEndDate: event.eventDetail.eventEndDate,
+          announcement: event.eventDetail.announcement,
+          description: event.eventDetail.description,
+          participationMethod: event.eventDetail.participationMethod,
+          rewards: event.eventDetail.rewards || "",
+          selectionCriteria: event.eventDetail.selectionCriteria,
+          precautions: event.eventDetail.precautions,
+          maxParticipants: event.maxParticipants || 100,
+          image: event.eventDetail.imageUrl,
           imageFile: null,
-          imagePreview: event.image
+          imagePreview: event.eventDetail.imageUrl
         });
       } catch (err) {
         console.error("이벤트 정보 조회 실패:", err);
@@ -77,10 +84,14 @@ const EventEditPage = () => {
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target as { name: string; value: string };
-    setForm((prev: FormState) => ({ ...prev, [name]: value }));
+    if (name === "maxParticipants") {
+      setForm((prev: FormState) => ({ ...prev, [name]: parseInt(value) || 0 }));
+    } else {
+      setForm((prev: FormState) => ({ ...prev, [name]: value }));
+    }
   };
 
-  const handleTypeSelect = (type: string) => {
+  const handleTypeSelect = (type: EventType) => {
     setForm((prev: FormState) => ({ ...prev, type }));
   };
 
@@ -99,7 +110,7 @@ const EventEditPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title || !form.description || !form.purchaseStartDate || !form.purchaseEndDate || !form.eventStartDate || !form.eventEndDate || !form.participationMethod || !form.rewards || !form.selectionCriteria || !form.precautions) {
+    if (!form.title || !form.description || !form.purchaseStartDate || !form.purchaseEndDate || !form.eventStartDate || !form.eventEndDate || !form.announcement || !form.participationMethod || !form.rewards || !form.selectionCriteria || !form.precautions) {
       setError("모든 필수 항목을 입력해 주세요.");
       return;
     }
@@ -111,16 +122,18 @@ const EventEditPage = () => {
     formData.append("purchaseEndDate", form.purchaseEndDate);
     formData.append("eventStartDate", form.eventStartDate);
     formData.append("eventEndDate", form.eventEndDate);
+    formData.append("announcement", form.announcement);
     formData.append("description", form.description);
     formData.append("participationMethod", form.participationMethod);
     formData.append("rewards", form.rewards);
     formData.append("selectionCriteria", form.selectionCriteria);
     formData.append("precautions", form.precautions);
+    formData.append("maxParticipants", form.maxParticipants.toString());
     if (form.imageFile) {
       formData.append("image", form.imageFile);
     }
     try {
-      await axios.put(`/api/events/${id}`, formData, {
+      await axiosInstance.put(`/api/events/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
       alert("이벤트가 성공적으로 수정되었습니다!");
@@ -128,6 +141,15 @@ const EventEditPage = () => {
     } catch (err) {
       console.error("이벤트 수정 실패:", err);
       setError("이벤트 수정에 실패했습니다. 다시 시도해 주세요.");
+    }
+  };
+
+  const getTypeText = (type: EventType) => {
+    switch (type) {
+      case "BATTLE": return "배틀";
+      case "MISSION": return "미션";
+      case "MULTIPLE": return "다수";
+      default: return "";
     }
   };
 
@@ -154,9 +176,9 @@ const EventEditPage = () => {
         <div>
           <label className="block mb-1 font-medium">이벤트 유형</label>
           <div className="flex gap-2">
-            <button type="button" className={`px-4 py-2 rounded border ${form.type === 'battle' ? 'bg-blue-100 border-blue-400' : 'border-gray-300'}`} onClick={() => handleTypeSelect('battle')}>배틀</button>
-            <button type="button" className={`px-4 py-2 rounded border ${form.type === 'mission' ? 'bg-blue-100 border-blue-400' : 'border-gray-300'}`} onClick={() => handleTypeSelect('mission')}>미션</button>
-            <button type="button" className={`px-4 py-2 rounded border ${form.type === 'multiple' ? 'bg-blue-100 border-blue-400' : 'border-gray-300'}`} onClick={() => handleTypeSelect('multiple')}>다수</button>
+            <button type="button" className={`px-4 py-2 rounded border ${form.type === 'BATTLE' ? 'bg-blue-100 border-blue-400' : 'border-gray-300'}`} onClick={() => handleTypeSelect('BATTLE')}>{getTypeText('BATTLE')}</button>
+            <button type="button" className={`px-4 py-2 rounded border ${form.type === 'MISSION' ? 'bg-blue-100 border-blue-400' : 'border-gray-300'}`} onClick={() => handleTypeSelect('MISSION')}>{getTypeText('MISSION')}</button>
+            <button type="button" className={`px-4 py-2 rounded border ${form.type === 'MULTIPLE' ? 'bg-blue-100 border-blue-400' : 'border-gray-300'}`} onClick={() => handleTypeSelect('MULTIPLE')}>{getTypeText('MULTIPLE')}</button>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -176,6 +198,14 @@ const EventEditPage = () => {
             <label className="block mb-1 font-medium">이벤트 종료일</label>
             <input type="date" name="eventEndDate" value={form.eventEndDate} onChange={handleChange} className="w-full border border-gray-300 rounded px-4 py-2" required />
           </div>
+        </div>
+        <div>
+          <label className="block mb-1 font-medium">발표일</label>
+          <input type="date" name="announcement" value={form.announcement} onChange={handleChange} className="w-full border border-gray-300 rounded px-4 py-2" required />
+        </div>
+        <div>
+          <label className="block mb-1 font-medium">최대 참여자 수</label>
+          <input type="number" name="maxParticipants" value={form.maxParticipants} onChange={handleChange} className="w-full border border-gray-300 rounded px-4 py-2" required min="1" placeholder="최대 참여자 수를 입력하세요" />
         </div>
         <div>
           <label className="block mb-1 font-medium">이벤트 설명</label>

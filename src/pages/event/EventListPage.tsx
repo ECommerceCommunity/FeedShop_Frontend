@@ -2,20 +2,23 @@ import { useState, useEffect } from "react";
 import axiosInstance from "../../api/axios";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { Event, EventStatus, EventType } from "../../types/types";
 
-interface Event {
-  eventId: number;
-  title: string;
-  status: "upcoming" | "ongoing" | "ended";
-  description: string;
-  purchasePeriod: string;
-  votePeriod: string;
-  announcementDate: string;
+interface EventListItem {
+  id: number; // event_id
+  type: EventType;
+  status: EventStatus;
   maxParticipants: number;
-  rewards: { rank: number; reward: string }[];
-  imageUrl: string;
-  eventStartDate?: string;
-  eventEndDate?: string;
+  eventDetail: {
+    title: string;
+    description: string;
+    purchaseStartDate: string;
+    purchaseEndDate: string;
+    eventStartDate: string;
+    eventEndDate: string;
+    imageUrl: string;
+  };
+  participantCount?: number;
 }
 
 const PAGE_SIZE = 4;
@@ -34,7 +37,7 @@ const EventListPage = () => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [sortType, setSortType] = useState("latest");
   const [page, setPage] = useState(1);
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<EventListItem[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +56,7 @@ const EventListPage = () => {
           size: PAGE_SIZE,
           sort: sortType,
         };
-        if (activeFilter !== "all") params.status = activeFilter;
+        if (activeFilter !== "all") params.status = activeFilter.toUpperCase();
         if (searchTerm) params.keyword = searchTerm;
 
         // API 경로 분기: 검색어 또는 필터가 있으면 /search, 아니면 /all
@@ -62,8 +65,8 @@ const EventListPage = () => {
           url = "/api/events/search";
         }
         const res = await axiosInstance.get(url, { params });
-        setEvents(res.data.content);
-        setTotalPages(res.data.totalPages);
+        setEvents(res.data.content || res.data);
+        setTotalPages(res.data.totalPages || 1);
       } catch (err) {
         console.error("이벤트 목록 조회 실패:", err);
         setError("이벤트 목록을 불러오지 못했습니다.");
@@ -74,14 +77,27 @@ const EventListPage = () => {
     fetchEvents();
   }, [searchTerm, activeFilter, sortType, page]);
 
-  const getStatusText = (status: Event["status"]) => {
+  const getStatusText = (status: EventStatus) => {
     switch (status) {
-      case "upcoming":
+      case "UPCOMING":
         return "진행 예정";
-      case "ongoing":
+      case "ONGOING":
         return "진행중";
-      case "ended":
+      case "ENDED":
         return "종료";
+      default:
+        return "";
+    }
+  };
+
+  const getTypeText = (type: EventType) => {
+    switch (type) {
+      case "BATTLE":
+        return "배틀";
+      case "MISSION":
+        return "미션";  
+      case "MULTIPLE":
+        return "다수";
       default:
         return "";
     }
@@ -95,12 +111,14 @@ const EventListPage = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">이벤트 목록</h1>
         <div className="flex gap-2">
-          <button
-            className="bg-[#87CEEB] text-white px-4 py-2 rounded-lg hover:bg-blue-400"
-            onClick={() => navigate("/events/create")}
-          >
-            이벤트 생성하기
-          </button>
+          {nickname === "admin" && (
+            <button
+              className="bg-[#87CEEB] text-white px-4 py-2 rounded-lg hover:bg-blue-400"
+              onClick={() => navigate("/events/create")}
+            >
+              이벤트 생성하기
+            </button>
+          )}
           {nickname === "admin" && (
             <button
               className="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-900"
@@ -163,20 +181,25 @@ const EventListPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {events.map((event) => (
           <div
-            key={event.eventId}
+            key={event.id}
             className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md relative"
-            onClick={() => navigate(`/events/${event.eventId}`)}
+            onClick={() => navigate(`/events/${event.id}`)}
           >
-            <img src={event.imageUrl} alt={event.title} className="w-full h-40 object-cover rounded mb-4" />
-            <h2 className="text-lg font-bold mb-2">{event.title}</h2>
-            <p className="text-gray-500 mb-2">{event.description}</p>
+            <img src={event.eventDetail.imageUrl} alt={event.eventDetail.title} className="w-full h-40 object-cover rounded mb-4" />
+            <h2 className="text-lg font-bold mb-2">{event.eventDetail.title}</h2>
+            <p className="text-gray-500 mb-2">{event.eventDetail.description}</p>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-sm text-blue-500 font-medium">{getStatusText(event.status)}</span>
-              {(event.status === "upcoming" || event.status === "ongoing") && event.eventEndDate && (
-                <span className="ml-2 text-xs text-red-500 font-semibold">{getDday(event.eventEndDate)}</span>
+              {(event.status === "UPCOMING" || event.status === "ONGOING") && event.eventDetail.eventEndDate && (
+                <span className="ml-2 text-xs text-red-500 font-semibold">{getDday(event.eventDetail.eventEndDate)}</span>
               )}
             </div>
-            <div className="text-xs text-gray-400">참여자: {event.maxParticipants.toLocaleString()}명</div>
+            <div className="text-xs text-gray-400">
+              참여자: {event.participantCount || event.maxParticipants}명
+            </div>
+            <div className="text-xs text-blue-400 mt-1">
+              유형: {getTypeText(event.type)}
+            </div>
           </div>
         ))}
       </div>
