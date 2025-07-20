@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { HeartIcon } from '@heroicons/react/24/outline'
 import { getDiscountPrice } from 'utils/price'
 import { Discount } from 'types/types';
-import { convertToUrl } from 'utils/images';
+import { toUrl } from 'utils/images';
 
 type ProductCardProps = {
     product: {
@@ -25,7 +25,7 @@ export default function ProductCard({ product, brandName, discount }: ProductCar
         <Link to={`/products/${product.id}`}>
             <div className="border p-4 rounded-lg hover:shadow flex flex-col justify-between">
                 <img
-                    src={convertToUrl(product.main_image_urls[0])}
+                    src={toUrl(product.main_image_urls[0])}
                     alt={product.name}
                     className="aspect-[3/4] object-cover rounded"
                 />

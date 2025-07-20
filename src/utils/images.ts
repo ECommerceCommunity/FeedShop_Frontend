@@ -20,7 +20,7 @@ export const getImageBaseUrl = (): string => {
 /**
  * 상대 경로를 전체 GCS URL로 변환
  */
-export const convertToUrl = (relativePath: string | undefined | null): string => {
+export const toUrl = (relativePath: string | undefined | null): string => {
   if (!relativePath) return '';
   
   // 이미 전체 URL인 경우 그대로 반환
@@ -45,5 +45,5 @@ export const convertToUrl = (relativePath: string | undefined | null): string =>
  */
 export const convertImageArrayToGCS = (relativePathArray: string[] | undefined | null): string[] => {
   if (!Array.isArray(relativePathArray)) return [];
-  return relativePathArray.map(convertToUrl);
+  return relativePathArray.map(toUrl);
 };

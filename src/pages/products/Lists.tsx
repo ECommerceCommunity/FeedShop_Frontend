@@ -15,7 +15,7 @@ import RegisterProductModal from './registerProduct/RegisterProductModal'
 import { isDiscountValid } from 'utils/discount';
 import { getDiscountPrice } from 'utils/price';
 import { useLocalLike } from 'hooks/useLocalLike'
-import { convertToUrl } from 'utils/images'
+import { toUrl } from 'utils/images'
 
 type Product = typeof productsData[number]
 type Brand = typeof brands[number]
@@ -144,7 +144,7 @@ export default function ProductPage() {
     name: '색상',
     options: availableColorOptions.map(color => ({
       name: color.color_name,
-      color_image_url: convertToUrl(color.color_image_url)
+      color_image_url: toUrl(color.color_image_url)
     }))
   }
 
@@ -176,7 +176,7 @@ export default function ProductPage() {
                       }`}
                   >
                     <img
-                      src={convertToUrl(brand.brand_logo_url)}
+                      src={toUrl(brand.brand_logo_url)}
                       alt={brand.store_name}
                       className="w-5 h-5 bg-black p-1 rounded"
                     />
@@ -225,7 +225,7 @@ export default function ProductPage() {
                         {filter.options.map((option: any) => {
                           const value = typeof option === 'string' ? option : String(option.id ?? option.name)
                           const label = typeof option === 'string' ? option : option.name
-                          const imageUrl = convertToUrl(option.color_image_url) // 색상 이미지가 있을 경우
+                          const imageUrl = toUrl(option.color_image_url) // 색상 이미지가 있을 경우
 
                           const isChecked = selectedFilters[filter.id]?.has(value) || false
 
@@ -240,7 +240,7 @@ export default function ProductPage() {
                                 />
                                 {/* 색상 이미지가 있다면 렌더링 */}
                                 <img
-                                  src={convertToUrl(imageUrl)}
+                                  src={toUrl(imageUrl)}
                                   alt={label}
                                   className="w-4 h-4 rounded border border-gray-300"
                                 />
@@ -263,7 +263,7 @@ export default function ProductPage() {
                   <div key={brand.store_id}>
                     <div className="flex items-center gap-4 mb-2">
                       <img
-                        src={convertToUrl(brand.brand_logo_url)}
+                        src={toUrl(brand.brand_logo_url)}
                         alt={brand.store_name}
                         className="w-10 h-10 bg-black p-1 rounded"
                       />
@@ -317,7 +317,7 @@ export default function ProductPage() {
                       {filter.options.map((option: any) => {
                         const value = typeof option === 'string' ? option : String(option.id ?? option.name)
                         const label = typeof option === 'string' ? option : option.name
-                        const imageUrl = convertToUrl(option.color_image_url) // 색상 이미지가 있을 경우
+                        const imageUrl = toUrl(option.color_image_url) // 색상 이미지가 있을 경우
 
                         const isChecked = selectedFilters[filter.id]?.has(value) || false
 
@@ -334,7 +334,7 @@ export default function ProductPage() {
                               {imageUrl ? (
                                 <>
                                   <img
-                                    src={convertToUrl(imageUrl)}
+                                    src={toUrl(imageUrl)}
                                     alt={label}
                                     className="w-4 h-4 rounded border border-gray-300"
                                   />
@@ -369,7 +369,7 @@ export default function ProductPage() {
                         <div>
                           <div className="aspect-[3/4] overflow-hidden rounded-md">
                             <img
-                              src={convertToUrl(product.main_image_urls[0])}
+                              src={toUrl(product.main_image_urls[0])}
                               alt={product.name}
                               className="w-full h-full object-cover"
                             />

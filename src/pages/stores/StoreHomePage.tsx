@@ -6,7 +6,7 @@ import RegisterStoreModal from "../../pages/stores/registerStores/RegisterStoreM
 import EditStoreModal from "pages/stores/editStores/EditStoreModal";
 import Warning from "../../components/modal/Warning";
 import { useNavigate } from "react-router-dom";
-import { convertToUrl } from "utils/images";
+import { toUrl } from "utils/images";
 
 const StoreHomePage: FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -200,7 +200,7 @@ const StoreHomePage: FC = () => {
                 <div key={brand.store_id} className="bg-white rounded-lg shadow p-6 relative flex flex-col justify-between">
                   <div>
                     <div className="flex items-center mb-4">
-                      <img src={convertToUrl(brand.brand_logo_url)} alt={brand.store_name} className="bg-black rounded-md w-12 h-12 mr-4" />
+                      <img src={toUrl(brand.brand_logo_url)} alt={brand.store_name} className="bg-black rounded-md w-12 h-12 mr-4" />
                       <div>
                         <h3 className="text-lg font-semibold text-gray-800">{brand.store_name}</h3>
                         <p className="text-sm text-gray-500">{brand.brand_likes.toLocaleString()} likes</p>
