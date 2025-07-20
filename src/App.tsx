@@ -6,6 +6,10 @@ import ScrollToTop from "./components/rollback/ScrollToTop";
 import { AuthProvider } from "./contexts/AuthContext";
 import theme from "./theme";
 
+// 보호 라우트 컴포넌트 임포트
+import SellerProtectedRoute from "./components/SellerProtectedRoute";
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
+
 // 페이지 컴포넌트들
 const HomePage = lazy(() => import("./pages/HomePage"));
 const ProductsPage = lazy(() => import("./pages/products/Lists"));
@@ -69,8 +73,26 @@ const App: FC = () => {
               <Route path="/reviews" element={<ReviewsPage />} />
               <Route path="/report-manage" element={<ReportManagePage />} />
               <Route path="/user-manage" element={<UserManagePage />} />
-              <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
-              <Route path="/stats-dashboard" element={<StatsDashboardPage />} />
+              <Route
+                path="/admin-dashboard"
+                element={
+                  <AdminProtectedRoute redirectPath="/">
+                    {" "}
+                    {/* admin만 허용, 아니면 메인으로 리디렉션 */}
+                    <AdminDashboardPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/stats-dashboard" // 통계 대시보드 경로
+                element={
+                  <AdminProtectedRoute redirectPath="/">
+                    {" "}
+                    {/* admin만 허용, 아니면 메인으로 리디렉션 */}
+                    <StatsDashboardPage />
+                  </AdminProtectedRoute>
+                }
+              />
               <Route path="/store-home" element={<StoreHomePage />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/orders" element={<OrdersPage />} />
@@ -93,7 +115,17 @@ const App: FC = () => {
               <Route path="/events/edit/:id" element={<EventEditPage />} />
               <Route path="/events/result" element={<EventResultPage />} />
               <Route path="/become-seller" element={<BecomeSellerPage />} />
-              <Route path="/seller-mypage" element={<SellerMyPage />} />
+              <Route
+                path="/seller-mypage"
+                element={
+                  <SellerProtectedRoute
+                    allowedUserType="seller"
+                    redirectPath="/"
+                  >
+                    <SellerMyPage />
+                  </SellerProtectedRoute>
+                }
+              />
             </Route>
 
             {/* Layout 없이 보여야 하는 페이지들 */}
