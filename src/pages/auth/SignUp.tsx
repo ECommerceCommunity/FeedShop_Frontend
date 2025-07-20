@@ -385,7 +385,6 @@ const SignUp: FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("회원가입 성공:", data);
         setShowSuccess(true);
       } else {
         const errorData = await response.json();
