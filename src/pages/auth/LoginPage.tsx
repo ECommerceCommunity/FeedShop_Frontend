@@ -1,8 +1,8 @@
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
-import { login, validateEmail } from "../utils/auth";
+import { login, validateEmail } from "../../utils/auth";
 
 const fadeInUp = keyframes`
   from { opacity: 0; transform: translateY(30px); }

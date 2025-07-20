@@ -1,7 +1,7 @@
 import { ChangeEvent, FC, FormEvent, useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
-import SuccessModal from "../components/modal/SuccessModal";
+import SuccessModal from "../../components/modal/SuccessModal";
 
 const fadeInUp = keyframes`
   from {
