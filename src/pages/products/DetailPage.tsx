@@ -29,6 +29,7 @@ import { isDiscountValid } from "utils/discount";
 import { getDiscountPrice } from "utils/price";
 import { useLocalLike } from "hooks/useLocalLike";
 import { addToRecentView } from "utils/recentview";
+import { toUrl } from "utils/images";
 
 type SelectedItem = {
   size: string;
@@ -170,16 +171,16 @@ export default function ProductDetailPage() {
     price: originalPrice,
     rating: 4,
     likes: productData.product_likes ?? 0,
-    images: Array.isArray(productData.main_image_urls)
-      ? productData.main_image_urls.map((url: string, idx: number) => ({
+    images: Array.isArray(productData.main_image_urls?.map(toUrl))
+      ? productData.main_image_urls?.map(toUrl).map((url: string, idx: number) => ({
           id: idx,
           name: `${productData.name} 이미지 ${idx + 1}`,
-          src: url,
+          src: toUrl(url),
           alt: productData.name,
         }))
       : [],
     description: productData.description || "",
-    detail_image_urls: productData.detail_image_urls || [],
+    detail_image_urls: productData.detail_image_urls?.map(toUrl) || [],
   };
 
   const handlePrev = () => {
@@ -359,7 +360,7 @@ export default function ProductDetailPage() {
                             )}
                           >
                             <img
-                              src={image.src}
+                              src={toUrl(image.src)}
                               alt={image.alt}
                               className="h-full w-full object-cover rounded-md"
                             />
@@ -384,7 +385,7 @@ export default function ProductDetailPage() {
                     {product.images.map((image) => (
                       <TabPanel key={image.id}>
                         <img
-                          src={image.src}
+                          src={toUrl(image.src)}
                           alt={image.alt}
                           className="w-[720px] h-[720px] object-cover rounded-lg"
                         />
@@ -468,7 +469,7 @@ export default function ProductDetailPage() {
                                 return (
                                   <img
                                     key={url}
-                                    src={url}
+                                    src={toUrl(url)}
                                     alt={`자세한 이미지 ${idx + 1}`}
                                     className={`w-full object-cover block ${roundedClass}`}
                                   />
@@ -502,7 +503,7 @@ export default function ProductDetailPage() {
                               >
                                 <div className="flex items-center space-x-3">
                                   <img
-                                    src={review.userImage}
+                                    src={toUrl(review.userImage)}
                                     alt={`${review.userName} 프로필`}
                                     className="w-10 h-10 rounded-full object-cover"
                                   />
@@ -537,7 +538,7 @@ export default function ProductDetailPage() {
                                         {review.images.map((img, idx) => (
                                           <img
                                             key={`review-${review.id}-image-${idx}`}
-                                            src={img}
+                                            src={toUrl(img)}
                                             alt={`리뷰 이미지 ${idx + 1}`}
                                             className="w-24 h-24 object-cover rounded"
                                           />
@@ -620,11 +621,11 @@ export default function ProductDetailPage() {
                 tabIndex={0}
               >
                 <img
-                  src={
-                    brandData.brand_logo_url?.startsWith("//")
-                      ? `https:${brandData.brand_logo_url}`
-                      : brandData.brand_logo_url
-                  }
+                  src={toUrl(
+                    toUrl(brandData.brand_logo_url)?.startsWith("//")
+                      ? `https:${toUrl(brandData.brand_logo_url)}`
+                      : toUrl(brandData.brand_logo_url)
+            )}
                   alt={`${brandData.store_name} 로고`}
                   className="w-6 h-6 object-contain bg-black rounded-full"
                 />
@@ -721,10 +722,9 @@ export default function ProductDetailPage() {
                           title={`상품 ID: ${item.product_id}`}
                         >
                           <img
-                            src={
-                              item.thumbnail_url.startsWith("//")
-                                ? `https:${item.thumbnail_url}`
-                                : item.thumbnail_url
+                            src={item.thumbnail_url.startsWith("//")
+                                ? toUrl(`https:${item.thumbnail_url}`)
+                                : toUrl(item.thumbnail_url)
                             }
                             alt={`다른 색상 ${item.product_id}`}
                             className="w-full h-full object-cover"
