@@ -1,5 +1,6 @@
 import { RecentViewItem } from "types/types";
 import { getCartData } from "./cart";
+import { convertToUrl } from "./images";
 
 export const addToRecentView = (id: number) => {
     const existing = localStorage.getItem("recentview");
@@ -16,7 +17,7 @@ export const addToRecentView = (id: number) => {
         discountPrice,
         discountRate,
         category: productData.shoes_type || "",
-        image: productData.main_image_urls[0],
+        image: productData.main_image_urls?.map(convertToUrl)[0],
         viewedAt: new Date().toISOString(),
     };
 
