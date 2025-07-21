@@ -41,6 +41,8 @@ const StatsDashboardPage: FC = () => {
   }, []);
   // 차트 초기화
   useEffect(() => {
+    const resizeHandlers: (() => void)[] = [];
+
     // 매출 추이 차트
     if (revenueChartRef.current) {
       const revenueChart = echarts.init(revenueChartRef.current);
@@ -132,9 +134,11 @@ const StatsDashboardPage: FC = () => {
         ],
       };
       revenueChart.setOption(revenueOption);
-      window.addEventListener("resize", () => {
-        revenueChart.resize();
-      });
+      const handleResize = () => revenueChart.resize();
+      window.addEventListener("resize", handleResize);
+      resizeHandlers.push(() =>
+        window.removeEventListener("resize", handleResize)
+      );
     }
     // 카테고리별 매출 분포 차트
     if (categoryChartRef.current) {
@@ -340,6 +344,8 @@ const StatsDashboardPage: FC = () => {
     }
     // 컴포넌트 언마운트 시 차트 인스턴스 제거
     return () => {
+      resizeHandlers.forEach((handler) => handler());
+
       if (revenueChartRef.current) {
         echarts.getInstanceByDom(revenueChartRef.current)?.dispose();
       }
