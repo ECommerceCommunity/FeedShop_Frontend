@@ -19,7 +19,7 @@ export const addToWishList = (id: number) => {
     discountPrice,
     discountRate,
     category: productData.shoes_type,
-    image: productData.main_image_urls?.map(toUrl)[0],
+    image: productData.main_image_urls?.map((url) => toUrl(url))[0],
     addedAt: new Date().toISOString(),
   };
 

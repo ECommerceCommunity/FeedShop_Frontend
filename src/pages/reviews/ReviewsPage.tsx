@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import styled from "styled-components";
-import reviews from "../pages/data/reviews/reviews.json";
+import reviews from "../data/reviews/reviews.json";
 
 // 스타일 컴포넌트
 const PageContainer = styled.div`
@@ -143,8 +143,6 @@ const DeleteButton = styled(ActionButton)`
     color: ${(props) => props.theme.colors.error};
   }
 `;
-
-  
 
 const ReviewsPage: FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
