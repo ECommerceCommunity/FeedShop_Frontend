@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 // 애니메이션 정의
 const fadeInUp = keyframes`

@@ -146,17 +146,26 @@ const MyPage: FC = () => {
   };
 
   useEffect(() => {
-    const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-    const userOrders = orders
-      .sort(
-        (a: any, b: any) =>
-          new Date(b.orderedAt).getTime() - new Date(a.orderedAt).getTime()
-      )
-      .slice(0, 5);
+    try {
+      const ordersData = localStorage.getItem("orders");
+      if (!ordersData) {
+        setRecentOrders([]);
+        return;
+      }
 
-    setRecentOrders(userOrders);
+      const orders: Order[] = JSON.parse(ordersData);
+      const userOrders = orders
+        .sort(
+          (a: Order, b: Order) =>
+            new Date(b.orderedAt).getTime() - new Date(a.orderedAt).getTime()
+        )
+        .slice(0, 5);
+      setRecentOrders(userOrders);
+    } catch (error) {
+      console.error("Failed to load orders from localStorage:", error);
+      setRecentOrders([]);
+    }
   }, []);
-
   return (
     <MyPageContainer>
       <Header>
@@ -200,8 +209,8 @@ const MyPage: FC = () => {
                 </OrderHeader>
                 <div>
                   <OrderContent>
-                    {order.items.map((p: any) => (
-                      <div key={p.name}>{p.name}</div>
+                    {order.items.map((item, index) => (
+                      <div key={`${order.orderId}-${index}`}>{item.name}</div>
                     ))}
                   </OrderContent>
                   <OrderStatus status={convertStatus(order.status)}>
