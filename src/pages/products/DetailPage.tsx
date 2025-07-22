@@ -171,8 +171,8 @@ export default function ProductDetailPage() {
     price: originalPrice,
     rating: 4,
     likes: productData.product_likes ?? 0,
-    images: Array.isArray(productData.main_image_urls?.map(toUrl))
-      ? productData.main_image_urls?.map(toUrl).map((url: string, idx: number) => ({
+    images: Array.isArray(productData.main_image_urls?.map((url) => toUrl(url)))
+      ? productData.main_image_urls?.map((url) => toUrl(url)).map((url: string, idx: number) => ({
           id: idx,
           name: `${productData.name} 이미지 ${idx + 1}`,
           src: toUrl(url),
@@ -180,7 +180,7 @@ export default function ProductDetailPage() {
         }))
       : [],
     description: productData.description || "",
-    detail_image_urls: productData.detail_image_urls?.map(toUrl) || [],
+    detail_image_urls: productData.detail_image_urls?.map((url) => toUrl(url)) || [],
   };
 
   const handlePrev = () => {

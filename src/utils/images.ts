@@ -4,15 +4,21 @@ interface ImageBaseUrls {
 }
 
 const IMAGE_BASE_URLS: ImageBaseUrls = {
-  development: 'https://storage.cloud.google.com/feedshop-bucket',
-  production: 'https://storage.googleapis.com/feedshop-bucket'
+  development: 'https://dev.cdn-feedshop.store',
+  production: 'https://cdn-feedshop.store'
 };
 
 // 현재 환경에 따른 베이스 URL 선택
 export const getImageBaseUrl = (): string => {
-  const isProduction = window.location.hostname !== 'localhost' && 
-                      window.location.hostname !== '127.0.0.1' &&
-                      !window.location.hostname.includes('localhost');
+    if (typeof window === 'undefined') {
+    return IMAGE_BASE_URLS.development;
+  }
+
+  const hostname = window.location.hostname;
+
+  const isProduction = hostname !== 'localhost' && 
+                      hostname !== '127.0.0.1' &&
+                      !hostname.includes('localhost');
   
   return isProduction ? IMAGE_BASE_URLS.production : IMAGE_BASE_URLS.development;
 };
@@ -20,30 +26,26 @@ export const getImageBaseUrl = (): string => {
 /**
  * 상대 경로를 전체 GCS URL로 변환
  */
-export const toUrl = (relativePath: string | undefined | null): string => {
-  if (!relativePath) return '';
-  
-  // 이미 전체 URL인 경우 그대로 반환
-  if (relativePath.includes('storage.googleapis.com') || relativePath.includes('storage.cloud.google.com')) {
-    return relativePath;
-  }
-  
-  // 상대 경로에 베이스 URL 붙이기
-  const baseUrl = getImageBaseUrl();
-  
-  // 경로 정리
-  let cleanPath = relativePath;
-  if (cleanPath.startsWith('/')) {
-    cleanPath = cleanPath.substring(1);
-  }
-  
-  return `${baseUrl}/${cleanPath}`;
-};
+export const toUrl = (relativePath: string | undefined | null, fallbackPath: string = 'images/common/no-image.png'): string => {
+  try {
+    const path = relativePath || fallbackPath;
 
-/**
- * 배열의 모든 상대 경로를 전체 URL로 변환
- */
-export const convertImageArrayToGCS = (relativePathArray: string[] | undefined | null): string[] => {
-  if (!Array.isArray(relativePathArray)) return [];
-  return relativePathArray.map(toUrl);
+    // 이미 전체 URL인 경우 그대로 반환
+    if (path.includes('dev.cdn-feedshop.store')
+      || path.includes('cdn-feedshop.store')) {
+      return path;
+    }
+
+    const baseUrl = getImageBaseUrl();
+
+    // 경로 앞 슬래시 제거
+    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    return `${baseUrl}/${cleanPath}`;
+  } catch (error) {
+    const baseUrl = getImageBaseUrl();
+
+    // 경로 앞 슬래시 제거
+    const cleanFallback = fallbackPath.startsWith('/') ? fallbackPath.substring(1) : fallbackPath;
+    return `${baseUrl}/${cleanFallback}`;
+  }
 };
