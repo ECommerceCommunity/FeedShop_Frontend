@@ -416,7 +416,13 @@ const MyFeedPage = () => {
             : undefined
         }
         showVoteButton={selectedPost?.type === "이벤트"}
-        showEditButton={showEditButton}
+        showEditButton={
+          !!(
+            user?.nickname &&
+            selectedPost &&
+            selectedPost.username === user.nickname
+          )
+        }
         showVoteModal={showVoteModal}
         onVoteModalClose={() => setShowVoteModal(false)}
         onVoteConfirm={() => selectedPost && handleVote(selectedPost.id)}
