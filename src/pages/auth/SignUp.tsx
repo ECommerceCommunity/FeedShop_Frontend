@@ -1,7 +1,7 @@
 import { ChangeEvent, FC, FormEvent, useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
-import SuccessModal from "../components/modal/SuccessModal";
+import SuccessModal from "../../components/modal/SuccessModal";
 
 const fadeInUp = keyframes`
   from {
@@ -385,7 +385,6 @@ const SignUp: FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("회원가입 성공:", data);
         setShowSuccess(true);
       } else {
         const errorData = await response.json();
