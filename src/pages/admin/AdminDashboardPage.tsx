@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, FC, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import * as echarts from "echarts";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 // 애니메이션 정의
 const fadeInUp = keyframes`
