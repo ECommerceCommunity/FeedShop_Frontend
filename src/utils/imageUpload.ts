@@ -64,16 +64,27 @@ export const uploadMultipleImages = async (
  * @returns Blob 객체
  */
 export const dataURLToBlob = (dataURL: string): Blob => {
+  if (typeof dataURL !== 'string' || !dataURL.startsWith('data:')) {
+    throw new Error('잘못된 데이터 URL 형식입니다.');
+  }
   const arr = dataURL.split(',');
-  const mime = arr[0].match(/:(.*?);/)![1];
-  const bstr = atob(arr[1]);
+  // 엄격한 MIME 타입 추출 및 예외 처리
+  const mimeMatch = arr[0].match(/^data:([a-zA-Z0-9\/+\-.]+);base64$/);
+  const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+  if (!arr[1]) {
+    throw new Error('Base64 데이터가 존재하지 않습니다.');
+  }
+  let bstr;
+  try {
+    bstr = atob(arr[1]);
+  } catch (e) {
+    throw new Error('Base64 디코딩에 실패했습니다.');
+  }
   let n = bstr.length;
   const u8arr = new Uint8Array(n);
-  
   while (n--) {
     u8arr[n] = bstr.charCodeAt(n);
   }
-  
   return new Blob([u8arr], { type: mime });
 };
 
