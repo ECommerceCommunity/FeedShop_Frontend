@@ -333,6 +333,15 @@ export default function LoginPage() {
             카카오로 로그인
           </SocialLoginButton>
 
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <Link to="/find-account" style={{ color: '#667eea', textDecoration: 'none', fontSize: '0.9rem' }}>
+              계정 찾기
+            </Link>
+            <Link to="/find-password" style={{ color: '#667eea', textDecoration: 'none', fontSize: '0.9rem' }}>
+              비밀번호 찾기
+            </Link>
+          </div>
+
           <SignUpLink to="/signup">
             <i className="fas fa-user-plus" style={{ marginRight: "8px" }}></i>
             계정이 없으신가요? 회원가입
