@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../api/axios';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface EventDetailModalProps {
   open: boolean;
@@ -30,6 +31,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   setShowDeleteModal,
 }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [detail, setDetail] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +64,15 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
       <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] flex flex-col relative items-center justify-center p-10 text-red-500 text-lg font-semibold">{error}</div>
     </div>
   );
-  if (!detail) return null;
+  if (!detail) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] flex flex-col relative items-center justify-center p-10 text-gray-700 text-lg font-semibold">
+          상세 정보를 찾을 수 없습니다.
+        </div>
+      </div>
+    );
+  }
   const isAdmin = user?.userType === 'admin';
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -81,8 +91,10 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 <button
                   className="text-gray-700 hover:text-[#87CEEB] transition-colors cursor-pointer"
                   onClick={() => {
-                    setEditingEvent && setEditingEvent(detail);
-                    setShowEditModal && setShowEditModal(true);
+                    const eventId = detail?.id || detail?.eventId;
+                    if (eventId) {
+                      navigate(`/events/edit/${eventId}`);
+                    }
                   }}
                   aria-label="수정"
                 >
