@@ -22,6 +22,19 @@ type FormState = {
   imagePreview: string;
 };
 
+// Helper to format date string for input type="datetime-local"
+function toDatetimeLocal(str: string | undefined) {
+  if (!str) return '';
+  const d = new Date(str);
+  if (isNaN(d as any)) return '';
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+}
+
 const EventEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -49,28 +62,29 @@ const EventEditPage = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       if (!id) return;
-      
       try {
         setLoading(true);
         const res = await axiosInstance.get(`/api/events/${id}`);
         const event = res.data;
+        // Flexible mapping for both eventDetail and direct event fields
+        const detail = event.eventDetail || event;
         setForm({
-          title: event.eventDetail.title,
-          type: event.type,
-          purchaseStartDate: event.eventDetail.purchaseStartDate,
-          purchaseEndDate: event.eventDetail.purchaseEndDate,
-          eventStartDate: event.eventDetail.eventStartDate,
-          eventEndDate: event.eventDetail.eventEndDate,
-          announcement: event.eventDetail.announcement,
-          description: event.eventDetail.description,
-          participationMethod: event.eventDetail.participationMethod,
-          rewards: event.eventDetail.rewards || "",
-          selectionCriteria: event.eventDetail.selectionCriteria,
-          precautions: event.eventDetail.precautions,
-          maxParticipants: event.maxParticipants || 100,
-          image: event.eventDetail.imageUrl,
+          title: detail.title || event.title || '',
+          type: (detail.type || event.type || 'BATTLE').toUpperCase(),
+          purchaseStartDate: toDatetimeLocal(detail.purchaseStartDate),
+          purchaseEndDate: toDatetimeLocal(detail.purchaseEndDate),
+          eventStartDate: toDatetimeLocal(detail.eventStartDate),
+          eventEndDate: toDatetimeLocal(detail.eventEndDate),
+          announcement: toDatetimeLocal(detail.announcement || detail.announcementDate),
+          description: detail.description || '',
+          participationMethod: detail.participationMethod || '',
+          rewards: detail.rewards || '',
+          selectionCriteria: detail.selectionCriteria || '',
+          precautions: detail.precautions || '',
+          maxParticipants: event.maxParticipants || detail.maxParticipants || 100,
+          image: detail.imageUrl || '/placeholder-image.jpg',
           imageFile: null,
-          imagePreview: event.eventDetail.imageUrl
+          imagePreview: detail.imageUrl || '/placeholder-image.jpg',
         });
       } catch (err) {
         console.error("이벤트 정보 조회 실패:", err);
@@ -79,7 +93,6 @@ const EventEditPage = () => {
         setLoading(false);
       }
     };
-
     fetchEvent();
   }, [id]);
 
@@ -113,33 +126,26 @@ const EventEditPage = () => {
 
     try {
       setLoading(true);
-      const formData = new FormData();
-      formData.append("title", form.title);
-      formData.append("type", form.type);
-      formData.append("purchaseStartDate", form.purchaseStartDate);
-      formData.append("purchaseEndDate", form.purchaseEndDate);
-      formData.append("eventStartDate", form.eventStartDate);
-      formData.append("eventEndDate", form.eventEndDate);
-      formData.append("announcement", form.announcement);
-      formData.append("description", form.description);
-      formData.append("participationMethod", form.participationMethod);
-      formData.append("rewards", form.rewards);
-      formData.append("selectionCriteria", form.selectionCriteria);
-      formData.append("precautions", form.precautions);
-      formData.append("maxParticipants", form.maxParticipants.toString());
-      
-      if (form.imageFile) {
-        formData.append("image", form.imageFile);
-      }
-
-      await axiosInstance.put(`/api/events/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
+      // 이미지 업로드 제외, 나머지 필드만 객체로 전송
+      const payload = {
+        title: form.title,
+        type: form.type,
+        purchaseStartDate: form.purchaseStartDate,
+        purchaseEndDate: form.purchaseEndDate,
+        eventStartDate: form.eventStartDate,
+        eventEndDate: form.eventEndDate,
+        announcement: form.announcement,
+        description: form.description,
+        participationMethod: form.participationMethod,
+        rewards: Array.isArray(form.rewards) ? form.rewards.join(', ') : form.rewards,
+        selectionCriteria: form.selectionCriteria,
+        precautions: form.precautions,
+        maxParticipants: form.maxParticipants,
+        // image: form.image, // 이미지 업로드는 별도 API 필요
+      };
+      await axiosInstance.put(`/api/events/${id}`, payload);
       alert("이벤트가 성공적으로 수정되었습니다.");
-      navigate(`/events/${id}`);
+      navigate('/event-list');
     } catch (error) {
       console.error("이벤트 수정 실패:", error);
       alert("이벤트 수정에 실패했습니다.");
@@ -347,7 +353,7 @@ const EventEditPage = () => {
             className="w-full border border-gray-300 rounded px-3 py-2"
           />
           {form.imagePreview && (
-            <img src={form.imagePreview} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded" />
+            <img src={form.imagePreview || '/placeholder-image.jpg'} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded" />
           )}
         </div>
 
