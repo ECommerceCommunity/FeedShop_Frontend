@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 const fadeInUp = keyframes`
   from { opacity: 0; transform: translateY(30px); }
@@ -169,19 +170,38 @@ export default function FindAccountPage() {
     setMessage("");
 
     try {
-      // TODO: API 연동 필요
-      // const response = await findUserAccountByNameAndPhone({ name, phone });
+      // API 연동 - /find-account 엔드포인트 호출 (axios 사용)
+      const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+      const response = await axios.get(`${baseURL}/api/auth/find-account`, {
+        params: {
+          username: name,
+          phoneNumber: phone
+        }
+      });
+
+      // 성공 응답 처리
+      setIsSuccess(true);
+      const apiResponse = response.data;
+      const userData = apiResponse.data;
       
-      // 임시 처리 - 실제로는 API 호출 결과에 따라 처리
-      setTimeout(() => {
-        setIsSuccess(true);
-        setMessage("입력하신 정보로 가입된 이메일 주소는 'user***@example.com' 입니다.");
-        setLoading(false);
-      }, 1500);
+      setMessage(`입력하신 정보로 가입된 이메일 주소는 '${userData.email || userData.maskedEmail}' 입니다.`);
       
-    } catch (error) {
+    } catch (error: any) {
       setIsSuccess(false);
-      setMessage("입력하신 정보와 일치하는 계정을 찾을 수 없습니다.");
+      
+      // axios 에러 처리
+      if (error.response) {
+        // 서버에서 응답을 받았지만 에러 상태코드
+        const errorMessage = error.response.data?.message || "입력하신 정보와 일치하는 계정을 찾을 수 없습니다.";
+        setMessage(errorMessage);
+      } else if (error.request) {
+        // 요청은 보냈지만 응답을 받지 못함
+        setMessage("서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      } else {
+        // 요청 설정 중 에러 발생
+        setMessage("요청 처리 중 오류가 발생했습니다.");
+      }
+    } finally {
       setLoading(false);
     }
   };
