@@ -164,10 +164,62 @@ export default function FindAccountPage() {
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
 
+  // 휴대폰 번호 포맷팅 함수
+  const formatPhoneNumber = (value: string) => {
+    // 숫자만 추출
+    const numbers = value.replace(/[^\d]/g, '');
+    
+    // 11자리 초과 시 자르기
+    if (numbers.length > 11) {
+      return phone; // 기존 값 유지
+    }
+    
+    // 010-XXXX-XXXX 형식으로 포맷팅
+    if (numbers.length <= 3) {
+      return numbers;
+    } else if (numbers.length <= 7) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    } else {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
+    }
+  };
+
+  // 휴대폰 번호 유효성 검사
+  const validatePhoneNumber = (phoneNumber: string) => {
+    const phoneRegex = /^010-\d{4}-\d{4}$/;
+    return phoneRegex.test(phoneNumber);
+  };
+
+  // 이름 유효성 검사
+  const validateName = (name: string) => {
+    const nameRegex = /^[가-힣]{2,10}$/;
+    return nameRegex.test(name);
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedPhone = formatPhoneNumber(e.target.value);
+    setPhone(formattedPhone);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+
+    // 입력 유효성 검사
+    if (!validateName(name)) {
+      setIsSuccess(false);
+      setMessage("이름은 2-10자의 한글만 입력 가능합니다.");
+      setLoading(false);
+      return;
+    }
+
+    if (!validatePhoneNumber(phone)) {
+      setIsSuccess(false);
+      setMessage("휴대폰 번호는 010-XXXX-XXXX 형식으로 입력해주세요.");
+      setLoading(false);
+      return;
+    }
 
     try {
       // API 연동 - /find-account 엔드포인트 호출 (axios 사용)
@@ -175,7 +227,7 @@ export default function FindAccountPage() {
       const response = await axios.get(`${baseURL}/api/auth/find-account`, {
         params: {
           username: name,
-          phoneNumber: phone
+          phoneNumber: phone.replace(/-/g, '') // 하이픈 제거해서 전송
         }
       });
 
@@ -239,8 +291,9 @@ export default function FindAccountPage() {
               type="tel"
               id="phone"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={handlePhoneChange}
               placeholder="010-1234-5678"
+              maxLength={13}
               required
             />
           </FormGroup>
