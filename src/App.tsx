@@ -17,6 +17,8 @@ const ProductDetailPage = lazy(() => import("./pages/products/DetailPage"));
 const MyPage = lazy(() => import("./pages/auth/MyPage"));
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const SignUp = lazy(() => import("./pages/auth/SignUp"));
+const FindAccountPage = lazy(() => import("./pages/auth/FindAccountPage"));
+const FindPasswordPage = lazy(() => import("./pages/auth/FindPasswordPage"));
 const PrivacyPolicy = lazy(() => import("./pages/common/PrivacyPolicy"));
 const ProductUploadPage = lazy(
   () => import("./pages/products/registerProduct/RegisterProductPage")
@@ -137,6 +139,8 @@ const App: FC = () => {
             {/* Layout 없이 보여야 하는 페이지들 */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/find-account" element={<FindAccountPage />} />
+            <Route path="/find-password" element={<FindPasswordPage />} />
           </Routes>
         </Suspense>
       </AuthProvider>
