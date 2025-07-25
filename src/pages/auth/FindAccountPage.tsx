@@ -227,9 +227,10 @@ export default function FindAccountPage() {
       const response = await axios.get(`${baseURL}/api/auth/find-account`, {
         params: {
           username: name,
-          phoneNumber: phone.replace(/-/g, '') // 하이픈 제거해서 전송
+          phoneNumber: phone 
         }
       });
+      console.log(response);
 
       // 성공 응답 처리
       setIsSuccess(true);
