@@ -74,6 +74,21 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
     );
   }
   const isAdmin = user?.userType === 'admin';
+
+  const handleDelete = async () => {
+    const eventId = detail?.id || detail?.eventId;
+    if (!eventId) return;
+    if (!window.confirm('정말로 이 이벤트를 삭제하시겠습니까?')) return;
+    try {
+      await axiosInstance.delete(`/api/events/${eventId}`);
+      alert('이벤트가 삭제되었습니다.');
+      navigate('/event-list', { replace: true });
+      window.location.reload(); // 강제 새로고침 추가
+    } catch (err) {
+      alert('이벤트 삭제에 실패했습니다.');
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col relative transition-all duration-300 overflow-hidden">
@@ -102,10 +117,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 </button>
                 <button
                   className="text-gray-700 hover:text-red-500 transition-colors cursor-pointer"
-                  onClick={() => {
-                    setEventToDelete && setEventToDelete(detail.id);
-                    setShowDeleteModal && setShowDeleteModal(true);
-                  }}
+                  onClick={handleDelete}
                   aria-label="삭제"
                 >
                   <i className="fas fa-trash-alt text-xl"></i>
