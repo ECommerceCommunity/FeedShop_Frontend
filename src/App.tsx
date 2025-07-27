@@ -19,6 +19,7 @@ const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const SignUp = lazy(() => import("./pages/auth/SignUp"));
 const FindAccountPage = lazy(() => import("./pages/auth/FindAccountPage"));
 const FindPasswordPage = lazy(() => import("./pages/auth/FindPasswordPage"));
+const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage"));
 const PrivacyPolicy = lazy(() => import("./pages/common/PrivacyPolicy"));
 const ProductUploadPage = lazy(
   () => import("./pages/products/registerProduct/RegisterProductPage")
@@ -141,6 +142,7 @@ const App: FC = () => {
             <Route path="/signup" element={<SignUp />} />
             <Route path="/find-account" element={<FindAccountPage />} />
             <Route path="/find-password" element={<FindPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
           </Routes>
         </Suspense>
       </AuthProvider>
