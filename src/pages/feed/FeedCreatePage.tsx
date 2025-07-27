@@ -3,7 +3,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import FeedService from '../../api/feedService';
+import OrderService from '../../api/orderService';
+import EventService, { FeedEventDto } from '../../api/eventService';
 import { CreateFeedRequest, FeedPost } from '../../types/feed';
+import { OrderItem } from '../../api/orderService';
 import { 
   uploadBase64Images, 
   validateImageFile, 
@@ -35,11 +38,11 @@ interface ImageUploadState {
   url?: string;
 }
 
-// 임시 구매 상품 데이터 (실제로는 백엔드에서 사용자의 구매 내역을 가져와야 함)
-const purchasedProducts = [
-  { id: 1, name: '나이키 에어맥스 97', brand: 'Nike', image: 'https://static.nike.com/a/images/t_PDP_864_v1/f_auto,q_auto:eco/air-max-97-shoe.jpg' },
-  { id: 2, name: '아디다스 울트라부스트 21', brand: 'Adidas', image: 'https://assets.adidas.com/images/ultraboost-21.jpg' },
-  { id: 3, name: '뉴발란스 990v5', brand: 'New Balance', image: 'https://nb.scene7.com/is/image/NB/m990gl5_nb_02_i?$pdpflexf2$&wid=440&hei=440' },
+// 임시 구매 상품 데이터 (백엔드 연결 실패시 fallback용)
+const fallbackProducts = [
+  { orderItemId: 1, productId: 1, productName: '나이키 에어맥스 97', productImageUrl: 'https://static.nike.com/a/images/t_PDP_864_v1/f_auto,q_auto:eco/air-max-97-shoe.jpg', orderedAt: new Date().toISOString() },
+  { orderItemId: 2, productId: 2, productName: '아디다스 울트라부스트 21', productImageUrl: 'https://assets.adidas.com/images/ultraboost-21.jpg', orderedAt: new Date().toISOString() },
+  { orderItemId: 3, productId: 3, productName: '뉴발란스 990v5', productImageUrl: 'https://nb.scene7.com/is/image/NB/m990gl5_nb_02_i?$pdpflexf2$&wid=440&hei=440', orderedAt: new Date().toISOString() },
 ];
 
 const FeedCreatePage: React.FC = () => {
@@ -61,6 +64,14 @@ const FeedCreatePage: React.FC = () => {
   const [instagramId, setInstagramId] = useState('');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   
+  // 🔧 백엔드 연동: 구매 상품 목록
+  const [purchasedProducts, setPurchasedProducts] = useState<OrderItem[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  
+  // 🔧 백엔드 연동: 이벤트 목록
+  const [availableEvents, setAvailableEvents] = useState<FeedEventDto[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+  
   // UI 상태
   const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -69,6 +80,46 @@ const FeedCreatePage: React.FC = () => {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const MAX_IMAGES = 5;
+
+  // 🔧 백엔드 연동: 사용자의 구매 상품 목록 가져오기
+  useEffect(() => {
+    const fetchPurchasedProducts = async () => {
+      try {
+        setProductsLoading(true);
+        const response = await OrderService.getPurchasedItems();
+        setPurchasedProducts(response.items);
+      } catch (error: any) {
+        console.error('구매 상품 목록 조회 실패:', error);
+        // 백엔드 연결 실패시 fallback 데이터 사용
+        console.warn('백엔드 연결 실패 - fallback 데이터 사용');
+        setPurchasedProducts(fallbackProducts as any);
+      } finally {
+        setProductsLoading(false);
+      }
+    };
+
+    fetchPurchasedProducts();
+  }, []);
+
+  // 🔧 백엔드 연동: 이벤트 목록 가져오기
+  useEffect(() => {
+    const fetchAvailableEvents = async () => {
+      try {
+        setEventsLoading(true);
+        const events = await EventService.getFeedAvailableEvents();
+        setAvailableEvents(events);
+      } catch (error: any) {
+        console.error('이벤트 목록 조회 실패:', error);
+        // 백엔드 연결 실패시 fallback 데이터 사용
+        console.warn('백엔드 연결 실패 - fallback 이벤트 데이터 사용');
+        setAvailableEvents([]);
+      } finally {
+        setEventsLoading(false);
+      }
+    };
+
+    fetchAvailableEvents();
+  }, []);
 
   // 수정 모드: id가 있으면 localFeeds에서 해당 피드 불러오기
   useEffect(() => {
@@ -83,7 +134,7 @@ const FeedCreatePage: React.FC = () => {
         setHashtags(feed.hashtags || []);
         setInstagramLinked(!!feed.instagramId);
         setInstagramId(feed.instagramId || '');
-        setSelectedEventId(feed.feedType === 'event' ? (feed.eventId || 'summer') : null);
+        setSelectedEventId(feed.feedType === 'event' ? String(feed.eventId || '1') : null);
       }
     }
   }, [editId]);
@@ -159,7 +210,7 @@ const FeedCreatePage: React.FC = () => {
       <main className="container mx-auto px-4 py-6 max-w-2xl">
         {/* 사진 업로드 섹션 */}
         <section className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">사진 업로드 <span className="text-red-500">*</span></h2>
+          <h2 className="text-lg font-semibold mb-4">사진 업로드 (선택사항)</h2>
           <div className="mb-4">
             <div
               className={`border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#87CEEB] transition duration-200 ${uploadedImages.length === 0 ? 'h-64' : 'h-auto'}`}
@@ -170,7 +221,7 @@ const FeedCreatePage: React.FC = () => {
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                     <i className="fas fa-camera text-2xl text-gray-400"></i>
                   </div>
-                  <p className="text-gray-500 mb-2">사진을 업로드해주세요</p>
+                  <p className="text-gray-500 mb-2">사진을 업로드하세요 (선택사항)</p>
                   <p className="text-gray-400 text-sm">최대 5장까지 업로드 가능합니다</p>
                 </>
               ) : (
@@ -230,13 +281,13 @@ const FeedCreatePage: React.FC = () => {
             >
               <option value="">구매한 상품을 선택하세요</option>
               {purchasedProducts.map((p) => (
-                <option key={p.id} value={p.id}>{p.brand} - {p.name}</option>
+                <option key={p.orderItemId} value={p.orderItemId}>{p.productName}</option>
               ))}
             </select>
             {selectedProductId && (
               <div className="flex items-center mt-2">
-                <img src={purchasedProducts.find(p => String(p.id) === selectedProductId)?.image} alt="상품 이미지" className="w-16 h-16 object-cover rounded mr-3" />
-                <span className="font-medium">{purchasedProducts.find(p => String(p.id) === selectedProductId)?.name}</span>
+                <img src={purchasedProducts.find(p => String(p.orderItemId) === selectedProductId)?.productImageUrl} alt="상품 이미지" className="w-16 h-16 object-cover rounded mr-3" />
+                <span className="font-medium">{purchasedProducts.find(p => String(p.orderItemId) === selectedProductId)?.productName}</span>
               </div>
             )}
           </div>
@@ -377,96 +428,65 @@ const FeedCreatePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="border border-gray-200 rounded-lg p-4 hover:border-[#87CEEB] transition-colors cursor-pointer">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center">
-                  <div className="bg-[#87CEEB] rounded-full p-2 text-white mr-3">
-                    <i className="fas fa-gift"></i>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800">여름 스타일 챌린지</h3>
-                    <p className="text-gray-600 text-sm">2025.06.25 - 2025.07.07</p>
-                  </div>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={selectedEventId === 'summer'}
-                    onChange={() => setSelectedEventId(selectedEventId === 'summer' ? null : 'summer')}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#87CEEB]"></div>
-                </label>
-              </div>
-              {selectedEventId === 'summer' && (
-                <div className="bg-blue-50 rounded-lg p-4 mt-2">
-                  <p className="text-gray-600 text-sm mb-3">여름 시즌 베스트 코디를 공유하고 투표에 참여하세요!</p>
-                  <div className="flex space-x-4">
-                    <div className="text-center">
-                      <div className="bg-[#87CEEB] text-white w-6 h-6 rounded-full flex items-center justify-center font-bold mb-1 mx-auto">1</div>
-                      <p className="text-xs">전액 환급</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="bg-[#87CEEB] text-white w-6 h-6 rounded-full flex items-center justify-center font-bold mb-1 mx-auto">2</div>
-                      <p className="text-xs">50,000원 쿠폰</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="bg-[#87CEEB] text-white w-6 h-6 rounded-full flex items-center justify-center font-bold mb-1 mx-auto">3</div>
-                      <p className="text-xs">30,000원 쿠폰</p>
-                    </div>
-                  </div>
-                </div>
-              )}
+          {eventsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#87CEEB]"></div>
+              <span className="ml-3 text-gray-600">이벤트 목록을 불러오는 중...</span>
             </div>
-
-            <div className="border border-gray-200 rounded-lg p-4 hover:border-[#87CEEB] transition-colors cursor-pointer">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center">
-                  <div className="bg-[#87CEEB] rounded-full p-2 text-white mr-3">
-                    <i className="fas fa-camera"></i>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800">신상품 리뷰 이벤트</h3>
-                    <p className="text-gray-600 text-sm">2025.06.20 - 2025.07.10</p>
-                  </div>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={selectedEventId === 'review'}
-                    onChange={() => setSelectedEventId(selectedEventId === 'review' ? null : 'review')}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#87CEEB]"></div>
-                </label>
-              </div>
+          ) : availableEvents.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <i className="fas fa-calendar-times text-3xl mb-3"></i>
+              <p>현재 진행중인 이벤트가 없습니다.</p>
             </div>
-
-            <div className="border border-gray-200 rounded-lg p-4 hover:border-[#87CEEB] transition-colors cursor-pointer">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center">
-                  <div className="bg-[#87CEEB] rounded-full p-2 text-white mr-3">
-                    <i className="fas fa-star"></i>
+          ) : (
+            <div className="space-y-4">
+              {availableEvents.map((event) => (
+                <div key={event.eventId} className="border border-gray-200 rounded-lg p-4 hover:border-[#87CEEB] transition-colors cursor-pointer">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center">
+                      <div className="bg-[#87CEEB] rounded-full p-2 text-white mr-3">
+                        <i className="fas fa-gift"></i>
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-800">{event.title}</h3>
+                        <p className="text-gray-600 text-sm">
+                          {new Date(event.eventStartDate).toLocaleDateString('ko-KR')} - {new Date(event.eventEndDate).toLocaleDateString('ko-KR')}
+                        </p>
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={selectedEventId === String(event.eventId)}
+                        onChange={() => setSelectedEventId(selectedEventId === String(event.eventId) ? null : String(event.eventId))}
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#87CEEB]"></div>
+                    </label>
                   </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800">베스트 리뷰어 선발대회</h3>
-                    <p className="text-gray-600 text-sm">2025.06.15 - 2025.07.15</p>
-                  </div>
+                  {selectedEventId === String(event.eventId) && (
+                    <div className="bg-blue-50 rounded-lg p-4 mt-2">
+                      <p className="text-gray-600 text-sm mb-3">이벤트에 참여하여 특별한 혜택을 받아보세요!</p>
+                      <div className="flex space-x-4">
+                        <div className="text-center">
+                          <div className="bg-[#87CEEB] text-white w-6 h-6 rounded-full flex items-center justify-center font-bold mb-1 mx-auto">1</div>
+                          <p className="text-xs">전액 환급</p>
+                        </div>
+                        <div className="text-center">
+                          <div className="bg-[#87CEEB] text-white w-6 h-6 rounded-full flex items-center justify-center font-bold mb-1 mx-auto">2</div>
+                          <p className="text-xs">50,000원 쿠폰</p>
+                        </div>
+                        <div className="text-center">
+                          <div className="bg-[#87CEEB] text-white w-6 h-6 rounded-full flex items-center justify-center font-bold mb-1 mx-auto">3</div>
+                          <p className="text-xs">30,000원 쿠폰</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={selectedEventId === 'best'}
-                    onChange={() => setSelectedEventId(selectedEventId === 'best' ? null : 'best')}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#87CEEB]"></div>
-                </label>
-              </div>
+              ))}
             </div>
-
-          </div>
+          )}
         </section>
         {showToast && (
           <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-out">
@@ -483,13 +503,13 @@ const FeedCreatePage: React.FC = () => {
             className={`relative bg-[#87CEEB] text-white py-3 rounded-lg font-medium hover:bg-blue-400 transition duration-200 !rounded-button whitespace-nowrap ${isLoading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
             onClick={async () => {
               if (isLoading) return;
-              // Validation
-              if (uploadedImages.length === 0) {
-                setToastMessage('사진을 업로드해주세요');
-                setToastType('error');
-                setShowToast(true);
-                return;
-              }
+              // Validation (사진 업로드는 선택사항)
+              // if (uploadedImages.length === 0) {
+              //   setToastMessage('사진을 업로드해주세요');
+              //   setToastType('error');
+              //   setShowToast(true);
+              //   return;
+              // }
               if (!selectedProductId) {
                 setToastMessage('상품을 선택해주세요');
                 setToastType('error');
@@ -517,12 +537,12 @@ const FeedCreatePage: React.FC = () => {
               setIsLoading(true);
               
               // 선택된 상품 정보 (공통으로 사용)
-              const selectedProduct = purchasedProducts.find(p => String(p.id) === selectedProductId);
+              const selectedProduct = purchasedProducts.find(p => String(p.orderItemId) === selectedProductId);
               
               try {
                 // 🔧 백엔드 연동 버전: 피드 생성 API 호출
                 
-                // 이미지 업로드 (Base64 -> 실제 파일 업로드)
+                // 이미지 업로드 (선택사항)
                 let imageUrls: string[] = [];
                 if (uploadedImages.length > 0) {
                   try {
@@ -534,11 +554,12 @@ const FeedCreatePage: React.FC = () => {
                 }
                 
                 const createFeedRequest: CreateFeedRequest = {
-                  title: selectedProduct?.name || '피드 제목', // 상품명을 제목으로 사용
+                  title: selectedProduct?.productName || '피드 제목', // 상품명을 제목으로 사용
                   content: content,
                   instagramId: instagramLinked ? instagramId : undefined,
                   feedType: selectedEventId ? 'EVENT' : 'DAILY',
                   orderItemId: parseInt(selectedProductId, 10),
+                  eventId: selectedEventId ? parseInt(selectedEventId, 10) : undefined,
                   imageUrls: imageUrls,
                   hashtags: hashtags,
                 };
@@ -546,30 +567,39 @@ const FeedCreatePage: React.FC = () => {
                 const createdFeed = await FeedService.createFeed(createFeedRequest);
                 
                 console.log('피드 생성 성공:', createdFeed);
-                setToastMessage('피드가 성공적으로 업로드되었습니다!');
+                setToastMessage('피드가 성공적으로 생성되었습니다! 피드 목록으로 이동합니다.');
                 setToastType('success');
                 setShowToast(true);
                 
                 setTimeout(() => {
                   setShowToast(false);
                   navigate('/feed-list');
-                }, 1500);
+                }, 2000);
                 
               } catch (error: any) {
                 console.error('피드 업로드 실패:', error);
                 
                 // 에러 타입별 처리
                 if (error.response?.status === 401) {
-                  setToastMessage('로그인이 필요합니다.');
+                  setToastMessage('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+                  setToastType('error');
+                  setShowToast(true);
                   setTimeout(() => navigate('/login'), 2000);
                 } else if (error.response?.status === 400) {
-                  setToastMessage(error.response.data?.message || '입력 정보를 확인해주세요.');
+                  const errorMessage = error.response.data?.message || '입력 정보를 확인해주세요.';
+                  setToastMessage(`피드 생성 실패: ${errorMessage}`);
+                  setToastType('error');
+                  setShowToast(true);
                 } else if (error.response?.status === 404) {
-                  setToastMessage('선택한 상품을 찾을 수 없습니다.');
+                  setToastMessage('피드 생성 실패: 선택한 상품을 찾을 수 없습니다.');
+                  setToastType('error');
+                  setShowToast(true);
                 } else if (error.response?.status >= 500) {
-                  setToastMessage('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-                } else {
-                  // 백엔드 연결 실패 시 로컬스토리지에 저장 (fallback)
+                  setToastMessage('피드 생성 실패: 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                  setToastType('error');
+                  setShowToast(true);
+                } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+                  // 네트워크 에러 또는 백엔드 연결 실패 시 로컬스토리지에 저장 (fallback)
                   console.warn('백엔드 연결 실패 - 로컬 저장 시도');
                   
                   const newFeed = {
@@ -578,7 +608,7 @@ const FeedCreatePage: React.FC = () => {
                     level: 1,
                     profileImg: 'https://readdy.ai/api/search-image?query=casual%20young%20asian%20person%20portrait&width=60&height=60&seq=myprofile',
                     images: uploadedImages,
-                    productName: selectedProduct?.name || '',
+                    productName: selectedProduct?.productName || '',
                     size: selectedSize,
                     gender: '여성',
                     height: 165,
@@ -598,15 +628,19 @@ const FeedCreatePage: React.FC = () => {
                   localFeeds.push(newFeed);
                   localStorage.setItem('localFeeds', JSON.stringify(localFeeds));
                   
-                  setToastMessage('피드가 임시 저장되었습니다.');
+                  setToastMessage('피드 생성 실패: 서버 연결이 불안정합니다. 임시로 저장되었습니다.');
+                  setToastType('error');
+                  setShowToast(true);
+                } else {
+                  // 기타 알 수 없는 에러
+                  setToastMessage(`피드 생성 실패: ${error.message || '알 수 없는 오류가 발생했습니다.'}`);
+                  setToastType('error');
+                  setShowToast(true);
                 }
-                
-                setToastType('error');
-                setShowToast(true);
                 
               } finally {
                 setIsLoading(false);
-                setTimeout(() => setShowToast(false), 3000);
+                setTimeout(() => setShowToast(false), 5000); // 에러 메시지는 5초간 표시
               }
             }}
             disabled={isLoading}
@@ -677,6 +711,25 @@ const FeedCreatePage: React.FC = () => {
           </div>
         </div>
       </footer>
+      
+      {/* 토스트 메시지 */}
+      {showToast && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-md ${
+          toastType === 'success' 
+            ? 'bg-green-500 text-white' 
+            : 'bg-red-500 text-white'
+        }`}>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">{toastMessage}</span>
+            <button
+              onClick={() => setShowToast(false)}
+              className="ml-4 text-white hover:text-gray-200"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
