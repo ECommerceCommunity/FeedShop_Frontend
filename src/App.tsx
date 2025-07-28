@@ -47,6 +47,7 @@ const ProfileSettingsPage = lazy(
   () => import("./pages/auth/ProfileSettingsPage")
 );
 const FeedListPage = lazy(() => import("./pages/feed/FeedListPage"));
+const FeedDetailPage = lazy(() => import("./pages/feed/FeedDetailPage"));
 const FeedCreatePage = lazy(() => import("./pages/feed/FeedCreatePage"));
 const FeedEditPage = lazy(() => import("./pages/feed/FeedEditPage"));
 const MyFeedPage = lazy(() => import("./pages/feed/MyFeedPage"));
@@ -112,6 +113,7 @@ const App: FC = () => {
                 element={<ProfileSettingsPage />}
               />
               <Route path="/feed-list" element={<FeedListPage />} />
+              <Route path="/feed/:id" element={<FeedDetailPage />} />
               <Route path="/feed-create" element={<FeedCreatePage />} />
               <Route path="/feed-edit" element={<FeedEditPage />} />
               <Route path="/my-feed" element={<MyFeedPage />} />

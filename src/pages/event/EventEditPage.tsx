@@ -1,69 +1,76 @@
+import { useState, useEffect, ChangeEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, ChangeEvent, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../api/axios";
+import { EventType } from "../../types/types";
 
-// FormState 타입 선언
 type FormState = {
   title: string;
-  type: string;
+  type: EventType;
   purchaseStartDate: string;
   purchaseEndDate: string;
   eventStartDate: string;
   eventEndDate: string;
+  announcement: string;
   description: string;
   participationMethod: string;
   rewards: string;
   selectionCriteria: string;
   precautions: string;
+  maxParticipants: number;
   image: string;
   imageFile: File | null;
   imagePreview: string;
 };
 
 const EventEditPage = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [form, setForm] = useState<FormState>({
     title: "",
-    type: "battle",
+    type: "BATTLE",
     purchaseStartDate: "",
     purchaseEndDate: "",
     eventStartDate: "",
     eventEndDate: "",
+    announcement: "",
     description: "",
     participationMethod: "",
     rewards: "",
     selectionCriteria: "",
     precautions: "",
+    maxParticipants: 100,
     image: "",
     imageFile: null,
     imagePreview: ""
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchEvent = async () => {
-      setLoading(true);
-      setError("");
+      if (!id) return;
+      
       try {
-        const res = await axios.get(`/api/events/${id}`);
+        setLoading(true);
+        const res = await axiosInstance.get(`/api/events/${id}`);
         const event = res.data;
         setForm({
-          title: event.title,
+          title: event.eventDetail.title,
           type: event.type,
-          purchaseStartDate: event.purchaseStartDate,
-          purchaseEndDate: event.purchaseEndDate,
-          eventStartDate: event.eventStartDate,
-          eventEndDate: event.eventEndDate,
-          description: event.description,
-          participationMethod: event.participationMethod,
-          rewards: Array.isArray(event.rewards) ? event.rewards.map((r: any) => r.reward).join('\n') : event.rewards || "",
-          selectionCriteria: event.selectionCriteria,
-          precautions: event.precautions,
-          image: event.image,
+          purchaseStartDate: event.eventDetail.purchaseStartDate,
+          purchaseEndDate: event.eventDetail.purchaseEndDate,
+          eventStartDate: event.eventDetail.eventStartDate,
+          eventEndDate: event.eventDetail.eventEndDate,
+          announcement: event.eventDetail.announcement,
+          description: event.eventDetail.description,
+          participationMethod: event.eventDetail.participationMethod,
+          rewards: event.eventDetail.rewards || "",
+          selectionCriteria: event.eventDetail.selectionCriteria,
+          precautions: event.eventDetail.precautions,
+          maxParticipants: event.maxParticipants || 100,
+          image: event.eventDetail.imageUrl,
           imageFile: null,
-          imagePreview: event.image
+          imagePreview: event.eventDetail.imageUrl
         });
       } catch (err) {
         console.error("이벤트 정보 조회 실패:", err);
@@ -72,143 +79,293 @@ const EventEditPage = () => {
         setLoading(false);
       }
     };
+
     fetchEvent();
   }, [id]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target as { name: string; value: string };
-    setForm((prev: FormState) => ({ ...prev, [name]: value }));
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleTypeSelect = (type: string) => {
-    setForm((prev: FormState) => ({ ...prev, type }));
+  const handleTypeSelect = (type: EventType) => {
+    setForm(prev => ({ ...prev, type }));
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file: File | null = e.target.files?.[0] || null;
+    const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setForm((prev: FormState) => ({ ...prev, imageFile: file, imagePreview: ev.target?.result as string }));
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setForm((prev: FormState) => ({ ...prev, imageFile: null, imagePreview: prev.image }));
+      setForm(prev => ({
+        ...prev,
+        imageFile: file,
+        imagePreview: URL.createObjectURL(file)
+      }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title || !form.description || !form.purchaseStartDate || !form.purchaseEndDate || !form.eventStartDate || !form.eventEndDate || !form.participationMethod || !form.rewards || !form.selectionCriteria || !form.precautions) {
-      setError("모든 필수 항목을 입력해 주세요.");
+    
+    if (!form.title || !form.description || !form.purchaseStartDate || !form.purchaseEndDate || !form.eventStartDate || !form.eventEndDate || !form.announcement || !form.participationMethod || !form.rewards || !form.selectionCriteria || !form.precautions) {
+      alert("모든 필수 항목을 입력해주세요.");
       return;
     }
-    setError("");
-    const formData = new FormData();
-    formData.append("title", form.title);
-    formData.append("type", form.type);
-    formData.append("purchaseStartDate", form.purchaseStartDate);
-    formData.append("purchaseEndDate", form.purchaseEndDate);
-    formData.append("eventStartDate", form.eventStartDate);
-    formData.append("eventEndDate", form.eventEndDate);
-    formData.append("description", form.description);
-    formData.append("participationMethod", form.participationMethod);
-    formData.append("rewards", form.rewards);
-    formData.append("selectionCriteria", form.selectionCriteria);
-    formData.append("precautions", form.precautions);
-    if (form.imageFile) {
-      formData.append("image", form.imageFile);
-    }
+
     try {
-      await axios.put(`/api/events/${id}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("title", form.title);
+      formData.append("type", form.type);
+      formData.append("purchaseStartDate", form.purchaseStartDate);
+      formData.append("purchaseEndDate", form.purchaseEndDate);
+      formData.append("eventStartDate", form.eventStartDate);
+      formData.append("eventEndDate", form.eventEndDate);
+      formData.append("announcement", form.announcement);
+      formData.append("description", form.description);
+      formData.append("participationMethod", form.participationMethod);
+      formData.append("rewards", form.rewards);
+      formData.append("selectionCriteria", form.selectionCriteria);
+      formData.append("precautions", form.precautions);
+      formData.append("maxParticipants", form.maxParticipants.toString());
+      
+      if (form.imageFile) {
+        formData.append("image", form.imageFile);
+      }
+
+      await axiosInstance.put(`/api/events/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
-      alert("이벤트가 성공적으로 수정되었습니다!");
+
+      alert("이벤트가 성공적으로 수정되었습니다.");
       navigate(`/events/${id}`);
-    } catch (err) {
-      console.error("이벤트 수정 실패:", err);
-      setError("이벤트 수정에 실패했습니다. 다시 시도해 주세요.");
+    } catch (error) {
+      console.error("이벤트 수정 실패:", error);
+      alert("이벤트 수정에 실패했습니다.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading) return <div className="p-5">로딩 중...</div>;
-  if (error) return <div className="p-5 text-red-500">{error}</div>;
+  const getTypeText = (type: EventType) => {
+    switch (type) {
+      case "BATTLE": return "배틀";
+      case "MISSION": return "미션";
+      case "MULTIPLE": return "다수";
+      default: return "";
+    }
+  };
+
+  if (loading && !form.title) {
+    return <div className="p-5">로딩 중...</div>;
+  }
+
+  if (error) {
+    return <div className="p-5 text-red-500">{error}</div>;
+  }
 
   return (
-    <div className="p-5 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">이벤트 수정</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="p-5 max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">이벤트 수정</h1>
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium mb-2">이벤트 제목 *</label>
+            <input
+              type="text"
+              name="title"
+              value={form.title}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2">이벤트 유형 *</label>
+            <div className="flex gap-2">
+              {(["BATTLE", "MISSION", "MULTIPLE"] as EventType[]).map(type => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => handleTypeSelect(type)}
+                  className={`px-4 py-2 rounded ${form.type === type ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+                >
+                  {getTypeText(type)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium mb-2">구매 시작일 *</label>
+            <input
+              type="datetime-local"
+              name="purchaseStartDate"
+              value={form.purchaseStartDate}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2">구매 종료일 *</label>
+            <input
+              type="datetime-local"
+              name="purchaseEndDate"
+              value={form.purchaseEndDate}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium mb-2">이벤트 시작일 *</label>
+            <input
+              type="datetime-local"
+              name="eventStartDate"
+              value={form.eventStartDate}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2">이벤트 종료일 *</label>
+            <input
+              type="datetime-local"
+              name="eventEndDate"
+              value={form.eventEndDate}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              required
+            />
+          </div>
+        </div>
+
         <div>
-          <label className="block mb-1 font-medium">이벤트명</label>
+          <label className="block text-sm font-medium mb-2">발표일 *</label>
           <input
-            type="text"
-            name="title"
-            value={form.title}
+            type="datetime-local"
+            name="announcement"
+            value={form.announcement}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded px-4 py-2"
+            className="w-full border border-gray-300 rounded px-3 py-2"
             required
-            maxLength={100}
-            placeholder="이벤트명을 입력하세요"
           />
         </div>
+
         <div>
-          <label className="block mb-1 font-medium">이벤트 유형</label>
-          <div className="flex gap-2">
-            <button type="button" className={`px-4 py-2 rounded border ${form.type === 'battle' ? 'bg-blue-100 border-blue-400' : 'border-gray-300'}`} onClick={() => handleTypeSelect('battle')}>배틀</button>
-            <button type="button" className={`px-4 py-2 rounded border ${form.type === 'mission' ? 'bg-blue-100 border-blue-400' : 'border-gray-300'}`} onClick={() => handleTypeSelect('mission')}>미션</button>
-            <button type="button" className={`px-4 py-2 rounded border ${form.type === 'multiple' ? 'bg-blue-100 border-blue-400' : 'border-gray-300'}`} onClick={() => handleTypeSelect('multiple')}>다수</button>
-          </div>
+          <label className="block text-sm font-medium mb-2">이벤트 설명 *</label>
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            rows={4}
+            className="w-full border border-gray-300 rounded px-3 py-2"
+            required
+          />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block mb-1 font-medium">구매 시작일</label>
-            <input type="date" name="purchaseStartDate" value={form.purchaseStartDate} onChange={handleChange} className="w-full border border-gray-300 rounded px-4 py-2" required />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">구매 종료일</label>
-            <input type="date" name="purchaseEndDate" value={form.purchaseEndDate} onChange={handleChange} className="w-full border border-gray-300 rounded px-4 py-2" required />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">이벤트 시작일</label>
-            <input type="date" name="eventStartDate" value={form.eventStartDate} onChange={handleChange} className="w-full border border-gray-300 rounded px-4 py-2" required />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">이벤트 종료일</label>
-            <input type="date" name="eventEndDate" value={form.eventEndDate} onChange={handleChange} className="w-full border border-gray-300 rounded px-4 py-2" required />
-          </div>
-        </div>
+
         <div>
-          <label className="block mb-1 font-medium">이벤트 설명</label>
-          <textarea name="description" value={form.description} onChange={handleChange} className="w-full border border-gray-300 rounded px-4 py-2" required rows={3} placeholder="이벤트 설명을 입력하세요" />
+          <label className="block text-sm font-medium mb-2">참여 방법 *</label>
+          <textarea
+            name="participationMethod"
+            value={form.participationMethod}
+            onChange={handleChange}
+            rows={3}
+            className="w-full border border-gray-300 rounded px-3 py-2"
+            required
+          />
         </div>
+
         <div>
-          <label className="block mb-1 font-medium">참여 방법</label>
-          <textarea name="participationMethod" value={form.participationMethod} onChange={handleChange} className="w-full border border-gray-300 rounded px-4 py-2" required rows={2} placeholder="참여 방법을 입력하세요" />
+          <label className="block text-sm font-medium mb-2">상품 정보 *</label>
+          <textarea
+            name="rewards"
+            value={form.rewards}
+            onChange={handleChange}
+            rows={3}
+            className="w-full border border-gray-300 rounded px-3 py-2"
+            placeholder="상품명, 브랜드, 가격 등을 입력하세요"
+            required
+          />
         </div>
+
         <div>
-          <label className="block mb-1 font-medium">이벤트 혜택</label>
-          <textarea name="rewards" value={form.rewards} onChange={handleChange} className="w-full border border-gray-300 rounded px-4 py-2" required rows={2} placeholder="혜택을 입력하세요 (줄바꿈으로 구분)" />
+          <label className="block text-sm font-medium mb-2">선정 기준 *</label>
+          <textarea
+            name="selectionCriteria"
+            value={form.selectionCriteria}
+            onChange={handleChange}
+            rows={3}
+            className="w-full border border-gray-300 rounded px-3 py-2"
+            required
+          />
         </div>
+
         <div>
-          <label className="block mb-1 font-medium">선정 기준</label>
-          <textarea name="selectionCriteria" value={form.selectionCriteria} onChange={handleChange} className="w-full border border-gray-300 rounded px-4 py-2" required rows={2} placeholder="선정 기준을 입력하세요" />
+          <label className="block text-sm font-medium mb-2">주의사항 *</label>
+          <textarea
+            name="precautions"
+            value={form.precautions}
+            onChange={handleChange}
+            rows={3}
+            className="w-full border border-gray-300 rounded px-3 py-2"
+            required
+          />
         </div>
+
         <div>
-          <label className="block mb-1 font-medium">유의사항</label>
-          <textarea name="precautions" value={form.precautions} onChange={handleChange} className="w-full border border-gray-300 rounded px-4 py-2" required rows={2} placeholder="유의사항을 입력하세요" />
+          <label className="block text-sm font-medium mb-2">최대 참여자 수 *</label>
+          <input
+            type="number"
+            name="maxParticipants"
+            value={form.maxParticipants}
+            onChange={handleChange}
+            min="1"
+            className="w-full border border-gray-300 rounded px-3 py-2"
+            required
+          />
         </div>
+
         <div>
-          <label className="block mb-1 font-medium">이벤트 이미지</label>
-          <input type="file" accept="image/*" onChange={handleImageChange} className="block mb-2" />
+          <label className="block text-sm font-medium mb-2">이벤트 이미지</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="w-full border border-gray-300 rounded px-3 py-2"
+          />
           {form.imagePreview && (
-            <img src={form.imagePreview} alt="이벤트 미리보기" className="max-h-40 rounded border" />
+            <img src={form.imagePreview} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded" />
           )}
-          <p className="text-sm text-gray-500 mt-1">권장 크기: 1200 x 600px, 최대 5MB</p>
         </div>
-        {error && <div className="text-red-500 font-medium">{error}</div>}
-        <div className="flex space-x-3">
-          <button type="submit" className="bg-[#87CEEB] text-white px-4 py-2 rounded hover:bg-blue-400">수정 완료</button>
-          <button type="button" onClick={() => navigate(-1)} className="border border-gray-300 px-4 py-2 rounded">취소</button>
+
+        <div className="flex gap-4">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+          >
+            {loading ? "수정 중..." : "이벤트 수정"}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate(`/events/${id}`)}
+            className="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600"
+          >
+            취소
+          </button>
         </div>
       </form>
     </div>
