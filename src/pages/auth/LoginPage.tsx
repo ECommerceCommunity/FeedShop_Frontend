@@ -3,6 +3,7 @@ import { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import { login, validateEmail } from "../../utils/auth";
+import axios from "axios";
 
 const fadeInUp = keyframes`
   from { opacity: 0; transform: translateY(30px); }
@@ -235,18 +236,32 @@ export default function LoginPage() {
     setLoading(true);
     try {
       if (!isEmailValid) throw new Error("올바른 이메일 형식을 입력해주세요.");
-      const result = await login({ email, password });
-      if (result && result.data && result.data.token) {
-        authLogin(result.data.nickname, result.data.role, result.data.token);
-        navigate("/");
-      } else if (result && result.token && result.nickname && result.userType) {
-        authLogin(result.nickname, result.userType, result.token);
+  
+      const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+      const response = await axios.post(`${baseURL}/api/auth/login`, { email, password });
+  
+      console.log("API Response:", response); // 서버 응답 전체를 먼저 확인
+  
+      const apiResponseData = response.data; // { success: true, message: "...", data: { ... } }
+  
+      if (apiResponseData && apiResponseData.success && apiResponseData.data) {
+        const userData = apiResponseData.data; // { loginId, role, email, userId, username, phone, createdAt, token }
+  
+        authLogin(userData.nickname , userData.role, userData.token); // authLogin 함수에 맞게 필드 이름 수정
         navigate("/");
       } else {
-        setError("로그인에 실패했습니다. 다시 시도해 주세요.");
+        // 서버에서 성공은 아니지만 응답은 있는 경우 (예: success: false)
+        setError(apiResponseData.message || "로그인에 실패했습니다. 다시 시도해 주세요.");
       }
     } catch (err: any) {
-      setError(err.message);
+      // Axios 에러 처리 (네트워크 오류, 4xx/5xx 응답 등)
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data?.message || "로그인에 실패했습니다. 서버 응답 오류.");
+        console.error("Login Error Response:", err.response); // 에러 응답 디버깅
+      } else {
+        setError(err.message || "알 수 없는 오류가 발생했습니다.");
+        console.error("Login Error:", err); // 기타 에러 디버깅
+      }
     } finally {
       setLoading(false);
     }
@@ -332,6 +347,15 @@ export default function LoginPage() {
             <i className="fas fa-comment" style={{ color: "#FEE500" }}></i>
             카카오로 로그인
           </SocialLoginButton>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <Link to="/find-account" style={{ color: '#667eea', textDecoration: 'none', fontSize: '0.9rem' }}>
+              계정 찾기
+            </Link>
+            <Link to="/find-password" style={{ color: '#667eea', textDecoration: 'none', fontSize: '0.9rem' }}>
+              비밀번호 찾기
+            </Link>
+          </div>
 
           <SignUpLink to="/signup">
             <i className="fas fa-user-plus" style={{ marginRight: "8px" }}></i>
