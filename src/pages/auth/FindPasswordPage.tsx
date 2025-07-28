@@ -10,7 +10,7 @@ const fadeInUp = keyframes`
 
 const Container = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -24,7 +24,7 @@ const Container = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(249,115,22,0.08)" points="0,1000 1000,0 1000,1000"/></svg>');
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.05)" points="0,1000 1000,0 1000,1000"/></svg>');
     background-size: cover;
   }
 `;
@@ -186,35 +186,21 @@ export default function FindPasswordPage() {
     setMessage("");
 
     try {
-<<<<<<< HEAD
-      // TODO: API 연동 필요
-      // const response = await sendPasswordResetEmail({ email });
-
-      // 임시 처리 - 실제로는 API 호출 결과에 따라 처리
-      setTimeout(() => {
-        setIsSuccess(true);
-        setMessage(
-          "비밀번호 재설정 링크가 이메일로 전송되었습니다. 이메일을 확인해주세요."
-        );
-        setLoading(false);
-      }, 1500);
-    } catch (error) {
-=======
       const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
       const response = await axios.post(`${baseURL}/api/auth/forgot-password`, {
-        email: email
+        email: email,
       });
 
       if (response.status === 200) {
         setIsSuccess(true);
-        setMessage("비밀번호 재설정 링크가 이메일로 전송되었습니다. 이메일을 확인해주세요.");
+        setMessage(
+          "비밀번호 재설정 링크가 이메일로 전송되었습니다. 이메일을 확인해주세요."
+        );
       }
-      
     } catch (error: any) {
-      console.error('Password reset error:', error);
->>>>>>> findEmailPw
+      console.error("Password reset error:", error);
       setIsSuccess(false);
-      
+
       if (error.response?.data?.message) {
         setMessage(error.response.data.message);
       } else if (error.response?.status === 404) {
