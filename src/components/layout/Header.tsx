@@ -160,7 +160,6 @@ const NavLink = styled(Link)`
 
 const SearchContainer = styled.div`
   position: relative;
-  margin-left: auto;
   margin-right: 20px;
   z-index: 2;
 
@@ -228,9 +227,10 @@ const SearchButton = styled.button`
 const UserSection = styled.div`
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 20px;
   position: relative;
   z-index: 2;
+  margin-left: auto;
 `;
 
 const UserMenu = styled.div`
