@@ -86,8 +86,16 @@ const HeroSection = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 30% 20%, rgba(249, 115, 22, 0.2) 0%, transparent 50%),
-                radial-gradient(circle at 70% 80%, rgba(239, 68, 68, 0.2) 0%, transparent 50%);
+    background: radial-gradient(
+        circle at 30% 20%,
+        rgba(249, 115, 22, 0.2) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 70% 80%,
+        rgba(239, 68, 68, 0.2) 0%,
+        transparent 50%
+      );
   }
 `;
 
@@ -115,6 +123,8 @@ const Title = styled.h1`
   animation: ${float} 3s ease-in-out infinite;
   text-shadow: 0 4px 20px rgba(249, 115, 22, 0.3);
 
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
   @media (max-width: 768px) {
     font-size: 2.5rem;
   }
@@ -214,6 +224,7 @@ const StatNumber = styled.div`
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: ${pulse} 2s infinite;
+  animation: ${pulse} 2s infinite;
 `;
 
 const StatLabel = styled.div`
@@ -305,6 +316,7 @@ const ProductCard = styled.div`
     background: linear-gradient(135deg, #f97316, #ea580c, #dc2626);
     transform: scaleX(0);
     transition: transform 0.4s ease;
+    transition: transform 0.4s ease;
   }
 
   &:hover::before {
@@ -318,7 +330,11 @@ const ProductCard = styled.div`
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(249, 115, 22, 0.03) 0%, transparent 70%);
+    background: radial-gradient(
+      circle,
+      rgba(249, 115, 22, 0.03) 0%,
+      transparent 70%
+    );
     opacity: 0;
     transition: opacity 0.4s ease;
     pointer-events: none;
@@ -333,6 +349,8 @@ const ProductImage = styled.div`
   width: 100%;
   height: 280px;
   background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  height: 280px;
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
   overflow: hidden;
   position: relative;
 
@@ -340,6 +358,7 @@ const ProductImage = styled.div`
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
@@ -353,13 +372,16 @@ const ProductImage = styled.div`
     background: linear-gradient(
       135deg,
       rgba(14, 165, 233, 0.1),
+      rgba(99, 102, 241, 0.1) rgba(14, 165, 233, 0.1),
       rgba(99, 102, 241, 0.1)
     );
     opacity: 0;
     transition: opacity 0.4s ease;
+    transition: opacity 0.4s ease;
   }
 
   &:hover img {
+    transform: scale(1.08);
     transform: scale(1.08);
   }
 
@@ -370,13 +392,26 @@ const ProductImage = styled.div`
 
 const ProductInfo = styled.div`
   padding: 2rem 1.5rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(248, 250, 252, 0.95) 100%
+  );
+  backdrop-filter: blur(10px);
+  padding: 2rem 1.5rem;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(248, 250, 252, 0.95) 100%
+  );
   backdrop-filter: blur(10px);
 `;
 
 const ProductName = styled.h3`
   font-size: 1.2rem;
+  font-size: 1.2rem;
   font-weight: 700;
+  margin-bottom: 0.75rem;
   margin-bottom: 0.75rem;
   color: #1f2937;
   line-height: 1.4;
@@ -403,6 +438,9 @@ const ProductDescription = styled.p`
   font-size: 0.95rem;
   margin-bottom: 1.5rem;
   line-height: 1.6;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
 `;
 
 const ViewMoreButton = styled(Link)`
@@ -423,6 +461,14 @@ const ViewMoreButton = styled(Link)`
     background: rgba(220, 38, 38, 0.15);
     border-color: rgba(220, 38, 38, 0.3);
     transform: translateX(5px);
+  }
+
+  i {
+    transition: transform 0.3s ease;
+  }
+
+  &:hover i {
+    transform: translateX(3px);
   }
 
   i {
@@ -457,6 +503,7 @@ const FeatureCard = styled.div`
   box-shadow: 0 8px 32px rgba(249, 115, 22, 0.12);
   text-align: center;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   overflow: hidden;
   animation: ${fadeInUp} 1s ease-out;
@@ -478,6 +525,7 @@ const FeatureCard = styled.div`
     background: linear-gradient(135deg, #f97316, #ea580c, #dc2626);
     transform: scaleX(0);
     transition: transform 0.4s ease;
+    transition: transform 0.4s ease;
   }
 
   &:hover::before {
@@ -491,7 +539,11 @@ const FeatureCard = styled.div`
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(249, 115, 22, 0.03) 0%, transparent 70%);
+    background: radial-gradient(
+      circle,
+      rgba(249, 115, 22, 0.03) 0%,
+      transparent 70%
+    );
     opacity: 0;
     transition: opacity 0.4s ease;
     pointer-events: none;
@@ -510,6 +562,7 @@ const FeatureIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0 auto 2rem;
   margin: 0 auto 2rem;
   color: white;
   font-size: 2.2rem;
@@ -530,6 +583,7 @@ const FeatureIcon = styled.div`
 
   &:hover {
     transform: scale(1.15) rotate(5deg);
+    transform: scale(1.15) rotate(5deg);
     animation: ${pulse} 0.6s ease-in-out;
     box-shadow: 0 16px 40px rgba(249, 115, 22, 0.5);
   }
@@ -541,7 +595,9 @@ const FeatureIcon = styled.div`
 
 const FeatureTitle = styled.h3`
   font-size: 1.4rem;
+  font-size: 1.4rem;
   font-weight: 700;
+  margin-bottom: 1.25rem;
   margin-bottom: 1.25rem;
   color: #1f2937;
   transition: color 0.3s ease;
@@ -553,6 +609,8 @@ const FeatureTitle = styled.h3`
 
 const FeatureDescription = styled.p`
   color: #6b7280;
+  line-height: 1.7;
+  font-size: 1rem;
   line-height: 1.7;
   font-size: 1rem;
 `;
@@ -571,8 +629,16 @@ const CTASection = styled.section`
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 30% 30%, rgba(249, 115, 22, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 70% 70%, rgba(239, 68, 68, 0.1) 0%, transparent 50%);
+    background: radial-gradient(
+        circle at 30% 30%,
+        rgba(249, 115, 22, 0.15) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 70% 70%,
+        rgba(239, 68, 68, 0.1) 0%,
+        transparent 50%
+      );
   }
 `;
 
@@ -625,7 +691,12 @@ const CTAButton = styled.button`
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
     transition: left 0.6s;
   }
 
