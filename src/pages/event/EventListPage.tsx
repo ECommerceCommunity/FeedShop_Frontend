@@ -119,19 +119,19 @@ const EventListPage = () => {
           
           // 백엔드 필드명에 따라 매핑
           return {
-            id: event.id || event.eventId,
-            type: event.type || event.eventType,
-            status: event.status || event.eventStatus,
-            maxParticipants: event.maxParticipants || event.maxParticipantCount,
-            participantCount: event.participantCount || event.currentParticipantCount,
+            id: event.id ?? event.eventId,
+            type: event.type ?? event.eventType,
+            status: event.status ?? event.eventStatus,
+            maxParticipants: event.maxParticipants ?? event.maxParticipantCount,
+            participantCount: event.participantCount ?? event.currentParticipantCount,
             eventDetail: {
-              title: event.title || event.eventTitle || event.eventDetail?.title,
-              description: event.description || event.eventDescription || event.eventDetail?.description,
-              purchaseStartDate: event.purchaseStartDate || event.eventDetail?.purchaseStartDate,
-              purchaseEndDate: event.purchaseEndDate || event.eventDetail?.purchaseEndDate,
-              eventStartDate: event.eventStartDate || event.startDate || event.eventDetail?.eventStartDate,
-              eventEndDate: event.eventEndDate || event.endDate || event.eventDetail?.eventEndDate,
-              imageUrl: event.imageUrl || event.image || event.eventDetail?.imageUrl || '/img/products/3392006/main/3392006_1.jpg'
+              title: event.title ?? event.eventTitle ?? event.eventDetail?.title,
+              description: event.description ?? event.eventDescription ?? event.eventDetail?.description,
+              purchaseStartDate: event.purchaseStartDate ?? event.eventDetail?.purchaseStartDate,
+              purchaseEndDate: event.purchaseEndDate ?? event.eventDetail?.purchaseEndDate,
+              eventStartDate: event.eventStartDate ?? event.startDate ?? event.eventDetail?.eventStartDate,
+              eventEndDate: event.eventEndDate ?? event.endDate ?? event.eventDetail?.eventEndDate,
+              imageUrl: event.imageUrl ?? event.image ?? event.eventDetail?.imageUrl ?? '/img/products/3392006/main/3392006_1.jpg'
             }
           };
         });
