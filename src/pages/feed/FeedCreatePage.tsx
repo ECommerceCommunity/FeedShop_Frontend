@@ -1,6 +1,16 @@
 // The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work.
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import FeedService from '../../api/feedService';
+import { CreateFeedRequest, FeedPost } from '../../types/feed';
+import { 
+  uploadBase64Images, 
+  validateImageFile, 
+  createImagePreview, 
+  compressImage 
+} from '../../utils/imageUpload';
+
 // Add global styles for animation
 const style = document.createElement('style');
 style.textContent = `
@@ -16,55 +26,49 @@ animation: fadeInOut 3s ease-in-out forwards;
 `;
 document.head.appendChild(style);
 
-// 피드 데이터 타입 정의 (FeedListPage와 동일하게 맞춰줌)
-interface FeedPost {
-  id: number;
-  username: string;
-  level: number;
-  profileImg: string;
-  images: string[];
-  productName: string;
-  size: string;
-  gender: string;
-  height: number;
-  description: string;
-  likes: number;
-  votes: number;
-  comments: number;
-  instagramId: string;
-  createdAt: string;
-  isLiked?: boolean;
-  feedType: 'event' | 'all';
-  eventId?: string;
+// 🔧 백엔드 연동 버전: 피드 생성 시 이미지 업로드 상태 타입
+interface ImageUploadState {
+  file: File;
+  preview: string;
+  uploaded: boolean;
+  uploading: boolean;
+  url?: string;
 }
 
-// 임시 구매 상품 데이터
+// 임시 구매 상품 데이터 (실제로는 백엔드에서 사용자의 구매 내역을 가져와야 함)
 const purchasedProducts = [
   { id: 1, name: '나이키 에어맥스 97', brand: 'Nike', image: 'https://static.nike.com/a/images/t_PDP_864_v1/f_auto,q_auto:eco/air-max-97-shoe.jpg' },
   { id: 2, name: '아디다스 울트라부스트 21', brand: 'Adidas', image: 'https://assets.adidas.com/images/ultraboost-21.jpg' },
   { id: 3, name: '뉴발란스 990v5', brand: 'New Balance', image: 'https://nb.scene7.com/is/image/NB/m990gl5_nb_02_i?$pdpflexf2$&wid=440&hei=440' },
 ];
 
-const App: React.FC = () => {
+const FeedCreatePage: React.FC = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const editId = searchParams.get('id');
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // 폼 상태
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [selectedProductId, setSelectedProductId] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
-  const [wearingFeel, setWearingFeel] = useState('');
-  const [heightInfo, setHeightInfo] = useState('');
-  const [weightInfo, setWeightInfo] = useState('');
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [hashtagInput, setHashtagInput] = useState('');
   const [instagramLinked, setInstagramLinked] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showToast, setShowToast] = useState(false);
   const [instagramId, setInstagramId] = useState('');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  
+  // UI 상태
+  const [isLoading, setIsLoading] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const MAX_IMAGES = 5;
-  const navigate = useNavigate();
 
   // 수정 모드: id가 있으면 localFeeds에서 해당 피드 불러오기
   useEffect(() => {
@@ -75,9 +79,7 @@ const App: React.FC = () => {
         setUploadedImages(feed.images || []);
         setSelectedProductId(feed.productName || '');
         setSelectedSize(feed.size || '');
-        setWearingFeel(feed.description || '');
-        setHeightInfo(feed.height ? String(feed.height) : '');
-        setWeightInfo(feed.weight ? String(feed.weight) : '');
+        setContent(feed.description || '');
         setHashtags(feed.hashtags || []);
         setInstagramLinked(!!feed.instagramId);
         setInstagramId(feed.instagramId || '');
@@ -267,8 +269,8 @@ const App: React.FC = () => {
 추천/비추천 상황: 러닝, 데일리, 출근 등
 
 자유롭게 신발 착용 경험과 스타일링 팁을 남겨주세요!`}
-              value={wearingFeel}
-              onChange={e => setWearingFeel(e.target.value)}
+              value={content}
+              onChange={e => setContent(e.target.value)}
             ></textarea>
           </div>
         </section>
@@ -483,72 +485,128 @@ const App: React.FC = () => {
               if (isLoading) return;
               // Validation
               if (uploadedImages.length === 0) {
-                const toastDiv = document.createElement('div');
-                toastDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                toastDiv.innerHTML = '<div class="flex items-center"><i class="fas fa-exclamation-circle mr-2"></i>사진을 업로드해주세요</div>';
-                document.body.appendChild(toastDiv);
-                setTimeout(() => toastDiv.remove(), 3000);
+                setToastMessage('사진을 업로드해주세요');
+                setToastType('error');
+                setShowToast(true);
                 return;
               }
               if (!selectedProductId) {
-                const toastDiv = document.createElement('div');
-                toastDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                toastDiv.innerHTML = '<div class="flex items-center"><i class="fas fa-exclamation-circle mr-2"></i>상품을 선택해주세요</div>';
-                document.body.appendChild(toastDiv);
-                setTimeout(() => toastDiv.remove(), 3000);
+                setToastMessage('상품을 선택해주세요');
+                setToastType('error');
+                setShowToast(true);
                 return;
               }
               if (!selectedSize) {
-                const toastDiv = document.createElement('div');
-                toastDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                toastDiv.innerHTML = '<div class="flex items-center"><i class="fas fa-exclamation-circle mr-2"></i>사이즈를 선택해주세요</div>';
-                document.body.appendChild(toastDiv);
-                setTimeout(() => toastDiv.remove(), 3000);
+                setToastMessage('사이즈를 선택해주세요');
+                setToastType('error');
+                setShowToast(true);
+                return;
+              }
+              if (!content) {
+                setToastMessage('착용 느낌을 입력해주세요');
+                setToastType('error');
+                setShowToast(true);
+                return;
+              }
+              if (hashtags.length === 0) {
+                setToastMessage('해시태그를 추가해주세요');
+                setToastType('error');
+                setShowToast(true);
                 return;
               }
               setIsLoading(true);
+              
+              // 선택된 상품 정보 (공통으로 사용)
+              const selectedProduct = purchasedProducts.find(p => String(p.id) === selectedProductId);
+              
               try {
-                // Simulate upload process
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                setShowToast(true);
-                // 피드 데이터 생성
-                const selectedProduct = purchasedProducts.find(p => String(p.id) === selectedProductId);
-                const newFeed: FeedPost = {
-                  id: Date.now(),
-                  username: '나',
-                  level: 1,
-                  profileImg: 'https://readdy.ai/api/search-image?query=casual%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=60&height=60&seq=myprofile&orientation=squarish',
-                  images: uploadedImages,
-                  productName: selectedProduct ? selectedProduct.name : '',
-                  size: selectedSize,
-                  gender: '여성', // 임시
-                  height: 165, // 임시
-                  description: wearingFeel,
-                  likes: 0,
-                  votes: 0,
-                  comments: 0,
-                  instagramId: instagramId,
-                  createdAt: new Date().toISOString(),
-                  isLiked: false,
-                  feedType: selectedEventId ? 'event' : 'all',
-                  eventId: selectedEventId ?? undefined,
+                // 🔧 백엔드 연동 버전: 피드 생성 API 호출
+                
+                // 이미지 업로드 (Base64 -> 실제 파일 업로드)
+                let imageUrls: string[] = [];
+                if (uploadedImages.length > 0) {
+                  try {
+                    imageUrls = await uploadBase64Images(uploadedImages);
+                  } catch (uploadError: any) {
+                    console.warn('이미지 업로드 실패, 원본 URL 사용:', uploadError);
+                    imageUrls = uploadedImages; // fallback
+                  }
+                }
+                
+                const createFeedRequest: CreateFeedRequest = {
+                  title: selectedProduct?.name || '피드 제목', // 상품명을 제목으로 사용
+                  content: content,
+                  instagramId: instagramLinked ? instagramId : undefined,
+                  feedType: selectedEventId ? 'EVENT' : 'DAILY',
+                  orderItemId: parseInt(selectedProductId, 10),
+                  imageUrls: imageUrls,
+                  hashtags: hashtags,
                 };
-                // localStorage에 저장
-                const localFeeds = JSON.parse(localStorage.getItem('localFeeds') || '[]');
-                localFeeds.push(newFeed);
-                localStorage.setItem('localFeeds', JSON.stringify(localFeeds));
+
+                const createdFeed = await FeedService.createFeed(createFeedRequest);
+                
+                console.log('피드 생성 성공:', createdFeed);
+                setToastMessage('피드가 성공적으로 업로드되었습니다!');
+                setToastType('success');
+                setShowToast(true);
+                
                 setTimeout(() => {
                   setShowToast(false);
                   navigate('/feed-list');
                 }, 1500);
-              } catch (error) {
-                const toastDiv = document.createElement('div');
-                toastDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                toastDiv.innerHTML = '<div class="flex items-center"><i class="fas fa-exclamation-circle mr-2"></i>업로드 중 오류가 발생했습니다</div>';
-                document.body.appendChild(toastDiv);
-                setTimeout(() => toastDiv.remove(), 3000);
+                
+              } catch (error: any) {
+                console.error('피드 업로드 실패:', error);
+                
+                // 에러 타입별 처리
+                if (error.response?.status === 401) {
+                  setToastMessage('로그인이 필요합니다.');
+                  setTimeout(() => navigate('/login'), 2000);
+                } else if (error.response?.status === 400) {
+                  setToastMessage(error.response.data?.message || '입력 정보를 확인해주세요.');
+                } else if (error.response?.status === 404) {
+                  setToastMessage('선택한 상품을 찾을 수 없습니다.');
+                } else if (error.response?.status >= 500) {
+                  setToastMessage('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                } else {
+                  // 백엔드 연결 실패 시 로컬스토리지에 저장 (fallback)
+                  console.warn('백엔드 연결 실패 - 로컬 저장 시도');
+                  
+                  const newFeed = {
+                    id: Date.now(),
+                    username: user?.nickname || '나',
+                    level: 1,
+                    profileImg: 'https://readdy.ai/api/search-image?query=casual%20young%20asian%20person%20portrait&width=60&height=60&seq=myprofile',
+                    images: uploadedImages,
+                    productName: selectedProduct?.name || '',
+                    size: selectedSize,
+                    gender: '여성',
+                    height: 165,
+                    description: content,
+                    likes: 0,
+                    votes: 0,
+                    comments: 0,
+                    instagramId: instagramId,
+                    createdAt: new Date().toISOString(),
+                    isLiked: false,
+                    feedType: selectedEventId ? 'event' : 'all',
+                    eventId: selectedEventId ?? undefined,
+                    hashtags: hashtags,
+                  };
+                  
+                  const localFeeds = JSON.parse(localStorage.getItem('localFeeds') || '[]');
+                  localFeeds.push(newFeed);
+                  localStorage.setItem('localFeeds', JSON.stringify(localFeeds));
+                  
+                  setToastMessage('피드가 임시 저장되었습니다.');
+                }
+                
+                setToastType('error');
+                setShowToast(true);
+                
               } finally {
                 setIsLoading(false);
+                setTimeout(() => setShowToast(false), 3000);
               }
             }}
             disabled={isLoading}
@@ -623,4 +681,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App
+export default FeedCreatePage

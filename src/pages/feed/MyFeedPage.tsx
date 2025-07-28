@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import FeedList from "../../components/feed/FeedList";
 import FeedDetailModal from "../../components/feed/FeedDetailModal";
 import { useAuth } from "../../contexts/AuthContext";
+import FeedService from "../../api/feedService";
+import { FeedVoteRequest } from "../../types/feed";
 
 // 임시 피드 데이터 (기존 목록페이지 (1).tsx 참고)
 const initialFeedPosts = Array.from({ length: 6 }, (_, index) => ({
@@ -134,30 +136,70 @@ const MyFeedPage = () => {
     setShowComments(false);
   };
 
-  // 좋아요
-  const handleLike = (postId: number) => {
-    if (!postId || likedPosts.includes(postId)) return;
-    setLikedPosts([...likedPosts, postId]);
+  // 좋아요 토글 (백엔드 API 연동)
+  const handleLike = async (postId: number) => {
+    if (!postId) return;
+    
+    try {
+      const likeResult = await FeedService.likeFeed(postId);
+      
+      // 백엔드 응답에 따라 좋아요 상태 업데이트
+      if (likeResult.liked) {
+        setLikedPosts([...likedPosts, postId]);
+      } else {
+        setLikedPosts(likedPosts.filter(id => id !== postId));
+      }
 
-    // 실제 피드 데이터의 좋아요 수도 증가
-    setFeedPosts((prev) =>
-      prev.map((post) =>
-        post.id === postId ? { ...post, likes: post.likes + 1 } : post
-      )
-    );
+      // 실제 피드 데이터의 좋아요 수 업데이트
+      setFeedPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId ? { ...post, likes: likeResult.likeCount } : post
+        )
+      );
+      
+    } catch (error: any) {
+      console.error('좋아요 실패:', error);
+      
+      if (error.response?.status === 401) {
+        alert("로그인이 필요합니다.");
+        navigate('/login');
+      } else {
+        alert(error.response?.data?.message || "좋아요 처리에 실패했습니다.");
+      }
+    }
   };
 
   // 피드 삭제
-  const handleDelete = (postId: number) => {
-    if (window.confirm("정말로 이 피드를 삭제하시겠습니까?")) {
-      // 피드 목록에서 해당 피드 제거
+  const handleDelete = async (postId: number) => {
+    if (!window.confirm("정말로 이 피드를 삭제하시겠습니까?")) return;
+    
+    try {
+      // 🔧 백엔드 API 연동 버전
+      await FeedService.deleteFeed(postId);
+      
+      // ✅ API 성공 후 로컬 상태 업데이트
       setFeedPosts((prev) => prev.filter((post) => post.id !== postId));
-
+      
       // 모달 닫기
       setSelectedPost(null);
       setShowComments(false);
-
+      
       alert("피드가 삭제되었습니다.");
+      
+    } catch (error: any) {
+      console.error('피드 삭제 실패:', error);
+      
+      // 에러 타입별 처리
+      if (error.response?.status === 401) {
+        alert("로그인이 필요합니다.");
+        navigate('/login');
+      } else if (error.response?.status === 403) {
+        alert("삭제 권한이 없습니다.");
+      } else if (error.response?.status === 404) {
+        alert("피드를 찾을 수 없습니다.");
+      } else {
+        alert(error.response?.data?.message || "피드 삭제에 실패했습니다. 다시 시도해 주세요.");
+      }
     }
   };
 
@@ -189,17 +231,43 @@ const MyFeedPage = () => {
   const [showVoteModal, setShowVoteModal] = useState(false);
   const [votedPosts, setVotedPosts] = useState<number[]>([]);
 
-  // 투표 처리
-  const handleVote = (postId: number) => {
+  // 투표 처리 (백엔드 API 연동)
+  const handleVote = async (postId: number) => {
     if (!postId || votedPosts.includes(postId)) return;
-    setVotedPosts([...votedPosts, postId]);
+    
+    try {
+      // 해당 피드 찾기
+      const targetFeed = feedPosts.find(post => post.id === postId);
+      if (!targetFeed || targetFeed.type !== '이벤트') {
+        alert("투표할 수 있는 이벤트 피드가 아닙니다.");
+        return;
+      }
+      
+             // 임시로 eventId를 1로 설정 (실제로는 피드에서 eventId를 가져와야 함)
+       const voteRequest: FeedVoteRequest = { eventId: 1 };
+       const voteResult = await FeedService.voteFeed(postId, voteRequest);
+      
+      setVotedPosts([...votedPosts, postId]);
 
-    // 실제 피드 데이터의 투표 수도 증가
-    setFeedPosts((prev) =>
-      prev.map((post) =>
-        post.id === postId ? { ...post, votes: post.votes + 1 } : post
-      )
-    );
+      // 실제 피드 데이터의 투표 수 업데이트
+      setFeedPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId ? { ...post, votes: voteResult.voteCount } : post
+        )
+      );
+      
+    } catch (error: any) {
+      console.error('투표 실패:', error);
+      
+      if (error.response?.status === 401) {
+        alert("로그인이 필요합니다.");
+        navigate('/login');
+      } else if (error.response?.status === 409) {
+        alert("이미 투표하셨습니다.");
+      } else {
+        alert(error.response?.data?.message || "투표 처리에 실패했습니다.");
+      }
+    }
   };
 
   // 투표 모달 닫기
