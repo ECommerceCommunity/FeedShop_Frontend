@@ -3,6 +3,7 @@ import axiosInstance from "../../api/axios";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { EventStatus, EventType } from "../../types/types";
+import EventDetailModal from "./EventDetailModal";
 
 interface EventListItem {
   id: number; // event_id
@@ -19,6 +20,7 @@ interface EventListItem {
     imageUrl: string;
   };
   participantCount?: number;
+  deletedAt?: string; // 추가: 소프트 딜리트 필드
 }
 
 const PAGE_SIZE = 4;
@@ -42,6 +44,8 @@ const EventListPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<EventListItem | null>(null);
 
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -51,6 +55,11 @@ const EventListPage = () => {
   console.log('Current user:', user);
   console.log('User nickname:', nickname);
   console.log('User type:', user?.userType);
+
+  const handleEventClick = (event: EventListItem) => {
+    setSelectedEvent(event);
+    setModalOpen(true);
+  };
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -65,7 +74,7 @@ const EventListPage = () => {
         // 정렬 파라미터 설정
         switch (sortType) {
           case "latest":
-            params.sort = "createdAt,desc"; // 최신 생성순
+            params.sort = "createdAt,desc"; // 최신순
             break;
           case "participants":
             params.sort = "participantCount,desc"; // 참여자순
@@ -119,25 +128,26 @@ const EventListPage = () => {
           
           // 백엔드 필드명에 따라 매핑
           return {
-            id: event.id ?? event.eventId,
-            type: event.type ?? event.eventType,
-            status: event.status ?? event.eventStatus,
-            maxParticipants: event.maxParticipants ?? event.maxParticipantCount,
-            participantCount: event.participantCount ?? event.currentParticipantCount,
+            id: event.id || event.eventId,
+            type: event.type || event.eventType,
+            status: event.status || event.eventStatus,
+            maxParticipants: event.maxParticipants || event.maxParticipantCount,
+            participantCount: event.participantCount || event.currentParticipantCount,
+            deletedAt: event.deletedAt, // 추가: 소프트 딜리트 필드
             eventDetail: {
-              title: event.title ?? event.eventTitle ?? event.eventDetail?.title,
-              description: event.description ?? event.eventDescription ?? event.eventDetail?.description,
-              purchaseStartDate: event.purchaseStartDate ?? event.eventDetail?.purchaseStartDate,
-              purchaseEndDate: event.purchaseEndDate ?? event.eventDetail?.purchaseEndDate,
-              eventStartDate: event.eventStartDate ?? event.startDate ?? event.eventDetail?.eventStartDate,
-              eventEndDate: event.eventEndDate ?? event.endDate ?? event.eventDetail?.eventEndDate,
-              imageUrl: event.imageUrl ?? event.image ?? event.eventDetail?.imageUrl ?? '/img/products/3392006/main/3392006_1.jpg'
+              title: event.title || event.eventTitle || event.eventDetail?.title,
+              description: event.description || event.eventDescription || event.eventDetail?.description,
+              purchaseStartDate: event.purchaseStartDate || event.eventDetail?.purchaseStartDate,
+              purchaseEndDate: event.purchaseEndDate || event.eventDetail?.purchaseEndDate,
+              eventStartDate: event.eventStartDate || event.startDate || event.eventDetail?.eventStartDate,
+              eventEndDate: event.eventEndDate || event.endDate || event.eventDetail?.eventEndDate,
+              imageUrl: event.imageUrl || event.image || event.eventDetail?.imageUrl || '/img/products/3392006/main/3392006_1.jpg'
             }
           };
         });
-        
-        console.log('Transformed events:', transformedEvents);
-        setEvents(transformedEvents);
+        // 소프트 딜리트된 이벤트는 제외
+        const filteredEvents = transformedEvents.filter((e: any) => !e.deletedAt);
+        setEvents(filteredEvents);
       } catch (err) {
         console.error("이벤트 목록 조회 실패:", err);
         setError("이벤트 목록을 불러오지 못했습니다.");
@@ -258,7 +268,7 @@ const EventListPage = () => {
           onChange={e => setSortType(e.target.value)}
           className="border border-gray-300 rounded px-3 py-2 text-sm"
         >
-          <option value="latest">최신 생성순</option>
+          <option value="latest">최신순</option>
           <option value="participants">참여자순</option>
           <option value="ending">종료임박순</option>
         </select>
@@ -271,7 +281,7 @@ const EventListPage = () => {
           <div
             key={event.id}
             className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md relative"
-            onClick={() => navigate(`/events/${event.id}`)}
+            onClick={() => handleEventClick(event)}
           >
             <img 
               src={event.eventDetail?.imageUrl || '/placeholder-image.jpg'} 
@@ -295,6 +305,8 @@ const EventListPage = () => {
           </div>
         ))}
       </div>
+
+      <EventDetailModal open={modalOpen} onClose={() => setModalOpen(false)} event={selectedEvent} />
 
       <div className="flex justify-center mt-8 gap-2">
         {Array.from({ length: totalPages }, (_, i) => (
