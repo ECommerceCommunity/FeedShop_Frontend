@@ -10,7 +10,7 @@ const fadeInUp = keyframes`
 
 const Container = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -24,7 +24,7 @@ const Container = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.05)" points="0,1000 1000,0 1000,1000"/></svg>');
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(249,115,22,0.08)" points="0,1000 1000,0 1000,1000"/></svg>');
     background-size: cover;
   }
 `;
@@ -44,10 +44,19 @@ const Card = styled.div`
 
 const Title = styled.h1`
   text-align: center;
-  color: #2c3e50;
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 900;
   margin-bottom: 8px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: ${fadeInUp} 1s ease-out,
+    ${keyframes`
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  `} 3s ease-in-out infinite;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 `;
 
 const Subtitle = styled.p`
@@ -82,39 +91,38 @@ const Input = styled.input`
   font-size: 1rem;
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.9);
-  
+
   &:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     background: white;
   }
-  
+
   &::placeholder {
     color: #95a5a6;
   }
 `;
 
 const Button = styled.button`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f97316, #ea580c);
   color: white;
   border: none;
   padding: 16px 24px;
-  border-radius: 12px;
+  border-radius: 50px;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  
+  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 12px 35px rgba(249, 115, 22, 0.4);
   }
-  
   &:disabled {
     opacity: 0.7;
     cursor: not-allowed;
@@ -126,14 +134,13 @@ const BackLink = styled(Link)`
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #667eea;
+  color: #f97316;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   margin-top: 24px;
   transition: color 0.3s ease;
-  
   &:hover {
-    color: #764ba2;
+    color: #ea580c;
   }
 `;
 
@@ -167,20 +174,22 @@ export default function FindAccountPage() {
   // 휴대폰 번호 포맷팅 함수
   const formatPhoneNumber = (value: string) => {
     // 숫자만 추출
-    const numbers = value.replace(/[^\d]/g, '');
-    
+    const numbers = value.replace(/[^\d]/g, "");
+
     // 11자리 초과 시 자르기
     if (numbers.length > 11) {
       return phone; // 기존 값 유지
     }
-    
+
     // 010-XXXX-XXXX 형식으로 포맷팅
     if (numbers.length <= 3) {
       return numbers;
     } else if (numbers.length <= 7) {
       return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
     } else {
-      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(
+        7
+      )}`;
     }
   };
 
@@ -227,8 +236,8 @@ export default function FindAccountPage() {
       const response = await axios.get(`${baseURL}/api/auth/find-account`, {
         params: {
           username: name,
-          phoneNumber: phone 
-        }
+          phoneNumber: phone,
+        },
       });
       console.log(response);
 
@@ -236,16 +245,21 @@ export default function FindAccountPage() {
       setIsSuccess(true);
       const apiResponse = response.data;
       const userData = apiResponse.data;
-      
-      setMessage(`입력하신 정보로 가입된 이메일 주소는 '${userData.email || userData.maskedEmail}' 입니다.`);
-      
+
+      setMessage(
+        `입력하신 정보로 가입된 이메일 주소는 '${
+          userData.email || userData.maskedEmail
+        }' 입니다.`
+      );
     } catch (error: any) {
       setIsSuccess(false);
-      
+
       // axios 에러 처리
       if (error.response) {
         // 서버에서 응답을 받았지만 에러 상태코드
-        const errorMessage = error.response.data?.message || "입력하신 정보와 일치하는 계정을 찾을 수 없습니다.";
+        const errorMessage =
+          error.response.data?.message ||
+          "입력하신 정보와 일치하는 계정을 찾을 수 없습니다.";
         setMessage(errorMessage);
       } else if (error.request) {
         // 요청은 보냈지만 응답을 받지 못함
@@ -264,16 +278,15 @@ export default function FindAccountPage() {
       <Card>
         <Title>계정 찾기</Title>
         <Subtitle>가입 시 입력한 정보를 입력해주세요</Subtitle>
-        
+
         <Form onSubmit={handleSubmit}>
-          {message && (
-            isSuccess ? (
+          {message &&
+            (isSuccess ? (
               <SuccessMessage>{message}</SuccessMessage>
             ) : (
               <ErrorMessage>{message}</ErrorMessage>
-            )
-          )}
-          
+            ))}
+
           <FormGroup>
             <Label htmlFor="name">이름</Label>
             <Input
@@ -285,7 +298,7 @@ export default function FindAccountPage() {
               required
             />
           </FormGroup>
-          
+
           <FormGroup>
             <Label htmlFor="phone">휴대폰 번호</Label>
             <Input
@@ -298,7 +311,7 @@ export default function FindAccountPage() {
               required
             />
           </FormGroup>
-          
+
           <Button type="submit" disabled={loading}>
             {loading ? (
               <>
@@ -313,7 +326,7 @@ export default function FindAccountPage() {
             )}
           </Button>
         </Form>
-        
+
         <BackLink to="/login">
           <i className="fas fa-arrow-left"></i>
           로그인으로 돌아가기
