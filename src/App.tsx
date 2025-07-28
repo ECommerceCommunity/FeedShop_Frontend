@@ -55,7 +55,6 @@ const FeedEditPage = lazy(() => import("./pages/feed/FeedEditPage"));
 const MyFeedPage = lazy(() => import("./pages/feed/MyFeedPage"));
 const EventListPage = lazy(() => import("./pages/event/EventListPage"));
 const EventCreatePage = lazy(() => import("./pages/event/EventCreatePage"));
-const EventDetailPage = lazy(() => import("./pages/event/EventDetailPage"));
 const EventEditPage = lazy(() => import("./pages/event/EventEditPage"));
 const EventResultPage = lazy(() => import("./pages/event/EventResultPage"));
 const BecomeSellerPage = lazy(() => import("./pages/seller/BecomeSellerPage"));
@@ -121,7 +120,6 @@ const App: FC = () => {
               <Route path="/my-feed" element={<MyFeedPage />} />
               <Route path="/event-list" element={<EventListPage />} />
               <Route path="/events/create" element={<EventCreatePage />} />
-              <Route path="/events/:id" element={<EventDetailPage />} />
               <Route path="/events/edit/:id" element={<EventEditPage />} />
               <Route path="/events/result" element={<EventResultPage />} />
               <Route path="/become-seller" element={<BecomeSellerPage />} />
