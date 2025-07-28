@@ -36,14 +36,13 @@ const float = keyframes`
 
 const SignUpContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
   position: relative;
   overflow: hidden;
-
   &::before {
     content: "";
     position: absolute;
@@ -51,7 +50,7 @@ const SignUpContainer = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.05)" points="0,1000 1000,0 1000,1000"/></svg>');
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(249,115,22,0.08)" points="0,1000 1000,0 1000,1000"/></svg>');
     background-size: cover;
   }
 `;
@@ -83,12 +82,13 @@ const LogoSection = styled.div`
 const Logo = styled.div`
   font-size: 2.5rem;
   font-weight: 900;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #f97316, #ea580c);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 8px;
   animation: ${float} 3s ease-in-out infinite;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 `;
 
 const Subtitle = styled.p`
@@ -151,18 +151,17 @@ const InputIcon = styled.div`
 const SignUpButton = styled.button`
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #f97316, #ea580c);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 50px;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
   position: relative;
   overflow: hidden;
-
   &::before {
     content: "";
     position: absolute;
@@ -173,21 +172,18 @@ const SignUpButton = styled.button`
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(255, 255, 255, 0.4),
+      rgba(255, 255, 255, 0.2),
       transparent
     );
     transition: left 0.5s;
   }
-
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
-
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 12px 35px rgba(249, 115, 22, 0.4);
     &::before {
       left: 100%;
     }
   }
-
   &:disabled {
     opacity: 0.7;
     cursor: not-allowed;
@@ -199,13 +195,12 @@ const LoginLink = styled(Link)`
   display: block;
   text-align: center;
   margin-top: 24px;
-  color: #667eea;
+  color: #f97316;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.3s ease;
-
   &:hover {
-    color: #764ba2;
+    color: #ea580c;
     transform: translateY(-1px);
   }
 `;

@@ -20,7 +20,7 @@ const float = keyframes`
 
 const LoginContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,7 +34,7 @@ const LoginContainer = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.05)" points="0,1000 1000,0 1000,1000"/></svg>');
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(249,115,22,0.08)" points="0,1000 1000,0 1000,1000"/></svg>');
     background-size: cover;
   }
 `;
@@ -62,12 +62,13 @@ const LogoSection = styled.div`
 const Logo = styled.div`
   font-size: 2.5rem;
   font-weight: 900;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #f97316, #ea580c);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 8px;
   animation: ${float} 3s ease-in-out infinite;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 `;
 const Subtitle = styled.p`
   color: #6b7280;
@@ -120,15 +121,15 @@ const InputIcon = styled.div`
 const LoginButton = styled.button`
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #f97316, #ea580c);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 50px;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
   position: relative;
   overflow: hidden;
   &::before {
@@ -141,14 +142,14 @@ const LoginButton = styled.button`
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(255, 255, 255, 0.4),
+      rgba(255, 255, 255, 0.2),
       transparent
     );
     transition: left 0.5s;
   }
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 12px 35px rgba(249, 115, 22, 0.4);
     &::before {
       left: 100%;
     }
@@ -205,12 +206,12 @@ const SignUpLink = styled(Link)`
   display: block;
   text-align: center;
   margin-top: 24px;
-  color: #667eea;
+  color: #f97316;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.3s ease;
   &:hover {
-    color: #764ba2;
+    color: #ea580c;
     transform: translateY(-1px);
   }
 `;
@@ -236,27 +237,35 @@ export default function LoginPage() {
     setLoading(true);
     try {
       if (!isEmailValid) throw new Error("올바른 이메일 형식을 입력해주세요.");
-  
+
       const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
-      const response = await axios.post(`${baseURL}/api/auth/login`, { email, password });
-  
+      const response = await axios.post(`${baseURL}/api/auth/login`, {
+        email,
+        password,
+      });
+
       console.log("API Response:", response); // 서버 응답 전체를 먼저 확인
-  
+
       const apiResponseData = response.data; // { success: true, message: "...", data: { ... } }
-  
+
       if (apiResponseData && apiResponseData.success && apiResponseData.data) {
         const userData = apiResponseData.data; // { loginId, role, email, userId, username, phone, createdAt, token }
-  
-        authLogin(userData.nickname , userData.role, userData.token); // authLogin 함수에 맞게 필드 이름 수정
+
+        authLogin(userData.nickname, userData.role, userData.token); // authLogin 함수에 맞게 필드 이름 수정
         navigate("/");
       } else {
         // 서버에서 성공은 아니지만 응답은 있는 경우 (예: success: false)
-        setError(apiResponseData.message || "로그인에 실패했습니다. 다시 시도해 주세요.");
+        setError(
+          apiResponseData.message ||
+            "로그인에 실패했습니다. 다시 시도해 주세요."
+        );
       }
     } catch (err: any) {
       // Axios 에러 처리 (네트워크 오류, 4xx/5xx 응답 등)
       if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data?.message || "로그인에 실패했습니다. 서버 응답 오류.");
+        setError(
+          err.response.data?.message || "로그인에 실패했습니다. 서버 응답 오류."
+        );
         console.error("Login Error Response:", err.response); // 에러 응답 디버깅
       } else {
         setError(err.message || "알 수 없는 오류가 발생했습니다.");
@@ -348,11 +357,31 @@ export default function LoginPage() {
             카카오로 로그인
           </SocialLoginButton>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <Link to="/find-account" style={{ color: '#667eea', textDecoration: 'none', fontSize: '0.9rem' }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "16px",
+            }}
+          >
+            <Link
+              to="/find-account"
+              style={{
+                color: "#667eea",
+                textDecoration: "none",
+                fontSize: "0.9rem",
+              }}
+            >
               계정 찾기
             </Link>
-            <Link to="/find-password" style={{ color: '#667eea', textDecoration: 'none', fontSize: '0.9rem' }}>
+            <Link
+              to="/find-password"
+              style={{
+                color: "#667eea",
+                textDecoration: "none",
+                fontSize: "0.9rem",
+              }}
+            >
               비밀번호 찾기
             </Link>
           </div>

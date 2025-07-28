@@ -49,12 +49,12 @@ const ProfileSettingsPage = lazy(
   () => import("./pages/auth/ProfileSettingsPage")
 );
 const FeedListPage = lazy(() => import("./pages/feed/FeedListPage"));
+const FeedDetailPage = lazy(() => import("./pages/feed/FeedDetailPage"));
 const FeedCreatePage = lazy(() => import("./pages/feed/FeedCreatePage"));
 const FeedEditPage = lazy(() => import("./pages/feed/FeedEditPage"));
 const MyFeedPage = lazy(() => import("./pages/feed/MyFeedPage"));
 const EventListPage = lazy(() => import("./pages/event/EventListPage"));
 const EventCreatePage = lazy(() => import("./pages/event/EventCreatePage"));
-const EventDetailPage = lazy(() => import("./pages/event/EventDetailPage"));
 const EventEditPage = lazy(() => import("./pages/event/EventEditPage"));
 const EventResultPage = lazy(() => import("./pages/event/EventResultPage"));
 const BecomeSellerPage = lazy(() => import("./pages/seller/BecomeSellerPage"));
@@ -114,12 +114,12 @@ const App: FC = () => {
                 element={<ProfileSettingsPage />}
               />
               <Route path="/feed-list" element={<FeedListPage />} />
+              <Route path="/feed/:id" element={<FeedDetailPage />} />
               <Route path="/feed-create" element={<FeedCreatePage />} />
               <Route path="/feed-edit" element={<FeedEditPage />} />
               <Route path="/my-feed" element={<MyFeedPage />} />
               <Route path="/event-list" element={<EventListPage />} />
               <Route path="/events/create" element={<EventCreatePage />} />
-              <Route path="/events/:id" element={<EventDetailPage />} />
               <Route path="/events/edit/:id" element={<EventEditPage />} />
               <Route path="/events/result" element={<EventResultPage />} />
               <Route path="/become-seller" element={<BecomeSellerPage />} />
