@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import FeedService from '../../api/feedService';
+import EventService, { FeedEventDto } from '../../api/eventService';
 import { CreateFeedRequest, FeedPost } from '../../types/feed';
 import { 
   uploadBase64Images, 

@@ -3,6 +3,11 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../api/axios";
 import { EventType } from "../../types/types";
 
+interface EventRewardRequestDto {
+  conditionValue: number;
+  rewardValue: string;
+}
+
 interface EventForm {
   title: string;
   type: EventType;
@@ -13,7 +18,7 @@ interface EventForm {
   announcement: string;
   description: string;
   participationMethod: string;
-  rewards: string; // 추가: 보상 정보
+  rewards: EventRewardRequestDto[]; // 구조화된 보상 정보
   selectionCriteria: string;
   precautions: string;
   maxParticipants: number;
@@ -34,7 +39,11 @@ const EventCreatePage = () => {
     announcement: "",
     description: "",
     participationMethod: "",
-    rewards: "",
+    rewards: [
+      { conditionValue: 1, rewardValue: "프리미엄 스니커즈 (가치 30만원)" },
+      { conditionValue: 2, rewardValue: "트렌디한 운동화 (가치 15만원)" },
+      { conditionValue: 3, rewardValue: "스타일리시한 슈즈 (가치 8만원)" }
+    ],
     selectionCriteria: "",
     precautions: "",
     maxParticipants: 100,
@@ -103,6 +112,55 @@ const EventCreatePage = () => {
     }
   };
 
+  const handleRewardChange = (index: number, field: keyof EventRewardRequestDto, value: string | number) => {
+    setEventForm(prev => {
+      const newRewards = prev.rewards.map((reward, i) => 
+        i === index ? { ...reward, [field]: field === 'conditionValue' ? Number(value) : value } : reward
+      );
+      
+      // conditionValue가 변경된 경우 순서 재조정
+      if (field === 'conditionValue') {
+        return {
+          ...prev,
+          rewards: newRewards.map((reward, i) => ({
+            ...reward,
+            conditionValue: i + 1
+          }))
+        };
+      }
+      
+      return {
+        ...prev,
+        rewards: newRewards
+      };
+    });
+  };
+
+  const addReward = () => {
+    if (eventForm.rewards.length >= 5) {
+      alert("보상은 최대 5개까지 추가할 수 있습니다.");
+      return;
+    }
+    setEventForm(prev => ({
+      ...prev,
+      rewards: [...prev.rewards, { conditionValue: prev.rewards.length + 1, rewardValue: "" }]
+    }));
+  };
+
+  const removeReward = (index: number) => {
+    setEventForm(prev => {
+      const newRewards = prev.rewards.filter((_, i) => i !== index);
+      // 순서 재조정
+      return {
+        ...prev,
+        rewards: newRewards.map((reward, i) => ({
+          ...reward,
+          conditionValue: i + 1
+        }))
+      };
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -122,7 +180,11 @@ const EventCreatePage = () => {
       formData.append("announcement", eventForm.announcement);
       formData.append("description", eventForm.description);
       formData.append("participationMethod", eventForm.participationMethod);
-      formData.append("rewards", eventForm.rewards);
+      // rewards를 개별 파라미터로 전송 (백엔드가 List<EventRewardRequestDto>를 기대함)
+      eventForm.rewards.forEach((reward, index) => {
+        formData.append(`rewards[${index}].conditionValue`, reward.conditionValue.toString());
+        formData.append(`rewards[${index}].rewardValue`, reward.rewardValue);
+      });
       formData.append("selectionCriteria", eventForm.selectionCriteria);
       formData.append("precautions", eventForm.precautions);
       formData.append("maxParticipants", eventForm.maxParticipants.toString());
@@ -324,15 +386,43 @@ const EventCreatePage = () => {
 
         <div>
           <label className="block text-sm font-medium mb-2">상품 정보 *</label>
-          <textarea
-            name="rewards"
-            value={eventForm.rewards}
-            onChange={handleChange}
-            rows={4}
-            className="w-full border border-gray-300 rounded px-3 py-2"
-            placeholder="신발 이벤트에서 제공할 혜택을 자세히 입력하세요. 예시: 🥇 1등: 프리미엄 스니커즈 (가치 30만원) - 브랜드: Nike, 상품: Air Jordan 1, 색상: Chicago, 사이즈: 선택가능 🥈 2등: 트렌디한 운동화 (가치 15만원) - 브랜드: Adidas, 상품: Stan Smith, 색상: 화이트, 사이즈: 선택가능 🥉 3등: 스타일리시한 슈즈 (가치 8만원) - 브랜드: Converse, 상품: Chuck Taylor, 색상: 선택가능, 사이즈: 선택가능"
-            required
-          />
+          <div className="space-y-3">
+            {eventForm.rewards.map((reward, index) => (
+              <div key={index} className="flex gap-3 items-start p-3 border border-gray-200 rounded">
+                <div className="flex-1">
+                  <div className="flex gap-2 mb-2">
+                    <div className="flex items-center">
+                      <span className="text-gray-500 mr-2">{index + 1}등</span>
+                    </div>
+                  </div>
+                  <textarea
+                    value={reward.rewardValue}
+                    onChange={(e) => handleRewardChange(index, 'rewardValue', e.target.value)}
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    placeholder="보상 내용을 입력하세요 (예: 프리미엄 스니커즈 (가치 30만원) - 브랜드: Nike, 상품: Air Jordan 1)"
+                    rows={2}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeReward(index)}
+                  className="text-red-500 hover:text-red-700 mt-2"
+                  disabled={eventForm.rewards.length <= 1}
+                >
+                  <i className="fas fa-trash"></i>
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addReward}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              disabled={eventForm.rewards.length >= 5}
+            >
+              <i className="fas fa-plus mr-2"></i>
+              보상 추가 ({eventForm.rewards.length}/5)
+            </button>
+          </div>
         </div>
 
         <div>
