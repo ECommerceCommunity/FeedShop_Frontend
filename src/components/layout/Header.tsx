@@ -539,30 +539,33 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
             </UserInfo>
             {showUserMenu && (
               <DropdownMenu>
-                <DropdownItem
-                  to={
-                    user && user.userType === "seller"
-                      ? "/seller-mypage"
-                      : "/mypage"
-                  }
-                >
-                  <i className="fas fa-user"></i>
-                  마이페이지
-                </DropdownItem>
-                <DropdownItem to="/profile-settings">
-                  <i className="fas fa-cog"></i>
-                  프로필 설정
-                </DropdownItem>
+                {user && user.userType === "admin" ? (
+                  <DropdownItem to="/admin-dashboard">
+                    <i className="fas fa-chart-line"></i>
+                    관리자 대시보드
+                  </DropdownItem>
+                ) : (
+                  <DropdownItem
+                    to={
+                      user && user.userType === "seller"
+                        ? "/seller-mypage"
+                        : "/mypage"
+                    }
+                  >
+                    <i className="fas fa-user"></i>
+                    마이페이지
+                  </DropdownItem>
+                )}
+                {user && user.userType !== "admin" && (
+                  <DropdownItem to="/profile-settings">
+                    <i className="fas fa-cog"></i>
+                    프로필 설정
+                  </DropdownItem>
+                )}
                 {user && user.userType === "user" && (
                   <DropdownItem to="/become-seller">
                     <i className="fas fa-store"></i>
                     판매자 전환
-                  </DropdownItem>
-                )}
-                {user && user.userType === "admin" && (
-                  <DropdownItem to="/admin-dashboard">
-                    <i className="fas fa-chart-line"></i>
-                    관리자 대시보드
                   </DropdownItem>
                 )}
                 <DropdownDivider />
