@@ -52,6 +52,13 @@ const EventCreatePage = () => {
     imagePreview: ""
   });
 
+  // 도움말 표시 상태
+  const [showHelp, setShowHelp] = useState({
+    participationMethod: false,
+    selectionCriteria: false,
+    precautions: false
+  });
+
   // 현재 날짜를 기본값으로 설정 (날짜만)
   useEffect(() => {
     const now = new Date();
@@ -458,13 +465,43 @@ const EventCreatePage = () => {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-3">참여 방법 *</label>
+              
+              {/* 도움말 버튼 */}
+              <div className="mb-3">
+                <button 
+                  type="button" 
+                  onClick={() => setShowHelp(prev => ({ ...prev, participationMethod: !prev.participationMethod }))}
+                  className="flex items-center gap-1 text-blue-600 text-sm hover:text-blue-700 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  작성 팁 보기
+                </button>
+              </div>
+              
+              {/* 도움말 표시 */}
+              {showHelp.participationMethod && (
+                <div className="mb-3 p-4 bg-blue-50 rounded-xl text-sm text-blue-800 border border-blue-200">
+                  <p className="font-medium mb-2">📝 참여 방법 작성 팁:</p>
+                  <ul className="space-y-1 text-xs">
+                    <li>• 각 항목을 새로운 줄에 작성하세요</li>
+                    <li>• 구체적이고 명확하게 작성하세요</li>
+                    <li>• 단계별로 순서를 정해서 작성하세요</li>
+                    <li>• 참여자가 쉽게 따라할 수 있도록 설명하세요</li>
+                  </ul>
+                </div>
+              )}
+              
               <textarea
                 name="participationMethod"
                 value={eventForm.participationMethod}
                 onChange={handleChange}
                 rows={4}
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="• '이번 주의 아이템' (예: 아디다스 슈퍼스타)을 착용한 코디 업로드&#10;• 다양한 스타일로 개성 표현&#10;• 유저 투표 및 좋아요로 우승자 선정"
+                placeholder="• 이벤트 페이지에서 신발을 선택하고 구매
+• 구매한 신발을 착용하고 스타일링한 모습 촬영
+• 피드에 업로드하고 해시태그 추가"
                 required
               />
             </div>
@@ -547,26 +584,87 @@ const EventCreatePage = () => {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-3">선정 기준 *</label>
+              
+              {/* 도움말 버튼 */}
+              <div className="mb-3">
+                <button 
+                  type="button" 
+                  onClick={() => setShowHelp(prev => ({ ...prev, selectionCriteria: !prev.selectionCriteria }))}
+                  className="flex items-center gap-1 text-blue-600 text-sm hover:text-blue-700 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  작성 팁 보기
+                </button>
+              </div>
+              
+              {/* 도움말 표시 */}
+              {showHelp.selectionCriteria && (
+                <div className="mb-3 p-4 bg-blue-50 rounded-xl text-sm text-blue-800 border border-blue-200">
+                  <p className="font-medium mb-2">📝 선정 기준 작성 팁:</p>
+                  <ul className="space-y-1 text-xs">
+                    <li>• 각 기준을 새로운 줄에 작성하세요</li>
+                    <li>• 구체적인 평가 항목을 명시하세요</li>
+                    <li>• 비율이나 가중치를 포함할 수 있습니다</li>
+                    <li>• 공정하고 객관적인 기준으로 작성하세요</li>
+                  </ul>
+                </div>
+              )}
+              
               <textarea
                 name="selectionCriteria"
                 value={eventForm.selectionCriteria}
                 onChange={handleChange}
                 rows={4}
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="• 스타일 창의성&#10;• 유저 투표&#10;• 운영진 평가"
+                placeholder="• 스타일링 퀄리티 (40%)
+• 사진 퀄리티 (30%)
+• 창의성 (20%)
+• 참여도 (10%)"
                 required
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-3">주의사항 *</label>
+              
+              {/* 도움말 버튼 */}
+              <div className="mb-3">
+                <button 
+                  type="button" 
+                  onClick={() => setShowHelp(prev => ({ ...prev, precautions: !prev.precautions }))}
+                  className="flex items-center gap-1 text-blue-600 text-sm hover:text-blue-700 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  작성 팁 보기
+                </button>
+              </div>
+              
+              {/* 도움말 표시 */}
+              {showHelp.precautions && (
+                <div className="mb-3 p-4 bg-blue-50 rounded-xl text-sm text-blue-800 border border-blue-200">
+                  <p className="font-medium mb-2">📝 주의사항 작성 팁:</p>
+                  <ul className="space-y-1 text-xs">
+                    <li>• 각 주의사항을 새로운 줄에 작성하세요</li>
+                    <li>• 명확하고 구체적으로 작성하세요</li>
+                    <li>• 참여자가 알아야 할 중요한 정보를 포함하세요</li>
+                    <li>• 부정한 방법이나 제외 사항을 명시하세요</li>
+                  </ul>
+                </div>
+              )}
+              
               <textarea
                 name="precautions"
                 value={eventForm.precautions}
                 onChange={handleChange}
                 rows={4}
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="• 동일한 아이템이 명확히 확인되지 않으면 제외될 수 있음"
+                placeholder="• 동일한 아이템이 명확히 확인되지 않으면 제외
+• 타인의 저작권을 침해하는 콘텐츠는 제외
+• 부정한 방법으로 참여한 경우 당첨 취소"
                 required
               />
             </div>

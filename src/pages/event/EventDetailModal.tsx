@@ -210,7 +210,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             {/* 설명 */}
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-2">이벤트 설명</h3>
-              <p className="text-gray-700 leading-relaxed">{detail.description}</p>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line">{detail.description}</p>
             </div>
 
             {/* 날짜 정보 */}
@@ -236,13 +236,13 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             {/* 참여 방법 */}
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-2">참여 방법</h3>
-              <p className="text-gray-700 leading-relaxed">{detail.participationMethod}</p>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line">{detail.participationMethod}</p>
             </div>
 
             {/* 선정 기준 */}
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-2">선정 기준</h3>
-              <p className="text-gray-700 leading-relaxed">{detail.selectionCriteria}</p>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line">{detail.selectionCriteria}</p>
             </div>
 
             {/* 보상 정보 */}
@@ -263,7 +263,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             {/* 주의사항 */}
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-2">주의사항</h3>
-              <p className="text-gray-700 leading-relaxed">{detail.precautions}</p>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line">{detail.precautions}</p>
             </div>
           </div>
         </div>
