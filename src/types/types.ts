@@ -133,7 +133,7 @@ export type RecentViewItem = {
 }
 
 // Event 관련 타입들 추가
-export type EventStatus = "UPCOMING" | "ONGOING" | "COMPLETED" | "CANCELLED";
+export type EventStatus = "UPCOMING" | "ONGOING" | "ENDED" | "CANCELLED";
 export type EventType = "BATTLE" | "MISSION" | "MULTIPLE";
 export type ParticipationStatus = "PARTICIPATING" | "COMPLETED" | "ELIMINATED";
 export type MatchStatus = "PENDING" | "ONGOING" | "COMPLETED";

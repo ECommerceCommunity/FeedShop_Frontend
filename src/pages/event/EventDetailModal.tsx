@@ -176,6 +176,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             <div className="absolute top-6 right-20 flex gap-3">
               <button
                 onClick={() => {
+                  console.log('Edit button clicked for event ID:', detail.id);
+                  console.log('Navigating to:', `/events/edit/${detail.id}`);
                   onClose();
                   navigate(`/events/edit/${detail.id}`);
                 }}
@@ -236,7 +238,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               </div>
               <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl border border-purple-200/50">
                 <h3 className="text-sm font-semibold text-purple-600 mb-2">발표일</h3>
-                <p className="text-gray-900 font-medium">{formatDate(detail.announcement)}</p>
+                <p className="text-gray-900 font-medium">{formatDate(detail.announcementDate)}</p>
               </div>
             </div>
 

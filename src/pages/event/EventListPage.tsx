@@ -119,7 +119,7 @@ const EventListPage = () => {
             purchaseEndDate: purchaseEndDate,
             eventStartDate: eventStartDate,
             eventEndDate: eventEndDate,
-            announcement: event.announcementDate || '',
+            announcementDate: event.announcementDate || '',
             participationMethod: event.participationMethod || '',
             selectionCriteria: event.selectionCriteria || '',
             precautions: event.precautions || '',
@@ -132,7 +132,7 @@ const EventListPage = () => {
             updatedAt: event.updatedAt || ''
           };
         });
-
+        
         setEvents(transformedEvents);
         setTotalPages(responseData.totalPages || 1);
       } catch (error: any) {
@@ -153,7 +153,7 @@ const EventListPage = () => {
             purchaseEndDate: '2025-08-07',
             eventStartDate: '2025-07-20',
             eventEndDate: '2025-08-07',
-            announcement: '2025-08-10',
+            announcementDate: '2025-08-10',
             participationMethod: '인스타그램에 해시태그와 함께 업로드',
             selectionCriteria: '좋아요 수와 댓글 참여도',
             precautions: '부적절한 콘텐츠는 제외됩니다.',
@@ -492,7 +492,7 @@ const EventListPage = () => {
                         <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200/50">
                           <div className="text-sm font-semibold text-purple-600 mb-2">발표일</div>
                           <div className="text-sm font-medium text-gray-900">
-                            {event.announcement ? new Date(event.announcement).toLocaleDateString() : '발표일 미정'}
+                            {event.announcementDate ? new Date(event.announcementDate).toLocaleDateString() : '발표일 미정'}
                           </div>
                         </div>
                       </div>

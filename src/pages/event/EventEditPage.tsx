@@ -77,7 +77,10 @@ const EventEditPage = () => {
       if (!id) return;
       try {
         setLoading(true);
+        console.log('Fetching event with ID:', id);
         const event = await EventService.getEventById(parseInt(id));
+        
+        console.log('Fetched event:', event);
         
         if (!event) {
           setError("이벤트를 찾을 수 없습니다.");
@@ -87,12 +90,12 @@ const EventEditPage = () => {
         // EventDto를 EventForm으로 변환
         setEventForm({
           title: event.title || '',
-          type: event.type || 'BATTLE',
+          type: (event.type?.toUpperCase() as EventType) || 'BATTLE',
           purchaseStartDate: toDateString(event.purchaseStartDate),
           purchaseEndDate: toDateString(event.purchaseEndDate),
           eventStartDate: toDateString(event.eventStartDate),
           eventEndDate: toDateString(event.eventEndDate),
-          announcement: toDateString(event.announcement),
+          announcement: toDateString(event.announcementDate),
           description: event.description || '',
           participationMethod: event.participationMethod || '',
           rewards: event.rewards ? event.rewards.map((reward: any) => ({
@@ -159,17 +162,6 @@ const EventEditPage = () => {
         i === index ? { ...reward, [field]: value } : reward
       );
       
-      // conditionValue가 변경된 경우 순서 재조정
-      if (field === 'conditionValue') {
-        return {
-          ...prev,
-          rewards: newRewards.map((reward, i) => ({
-            ...reward,
-            conditionValue: String(i + 1)
-          }))
-        };
-      }
-      
       return {
         ...prev,
         rewards: newRewards
@@ -184,20 +176,16 @@ const EventEditPage = () => {
     }
     setEventForm(prev => ({
       ...prev,
-      rewards: [...prev.rewards, { conditionValue: String(prev.rewards.length + 1), rewardValue: "" }]
+      rewards: [...prev.rewards, { conditionValue: "1", rewardValue: "" }]
     }));
   };
 
   const removeReward = (index: number) => {
     setEventForm(prev => {
       const newRewards = prev.rewards.filter((_, i) => i !== index);
-      // 순서 재조정
       return {
         ...prev,
-        rewards: newRewards.map((reward, i) => ({
-          ...reward,
-          conditionValue: String(i + 1)
-        }))
+        rewards: newRewards
       };
     });
   };
@@ -277,42 +265,73 @@ const EventEditPage = () => {
     try {
       setLoading(true);
       
-      const formData = new FormData();
-      
-      // 기본 필드들 추가
-      formData.append("type", eventForm.type);
-      formData.append("title", eventForm.title);
-      formData.append("description", eventForm.description);
-      formData.append("participationMethod", eventForm.participationMethod);
-      formData.append("selectionCriteria", eventForm.selectionCriteria);
-      formData.append("precautions", eventForm.precautions);
-      formData.append("purchaseStartDate", eventForm.purchaseStartDate);
-      formData.append("purchaseEndDate", eventForm.purchaseEndDate);
-      formData.append("eventStartDate", eventForm.eventStartDate);
-      formData.append("eventEndDate", eventForm.eventEndDate);
-      formData.append("announcement", eventForm.announcement);
-      formData.append("maxParticipants", eventForm.maxParticipants.toString());
-      
-      // 보상 정보를 JSON 문자열로 전송
-      const rewardsJson = JSON.stringify(eventForm.rewards);
-      formData.append("rewards", rewardsJson);
-      
-      // 이미지 파일 추가
+      // 이미지 파일이 있는 경우와 없는 경우를 구분
       if (eventForm.imageFile) {
+        // 이미지 파일이 있는 경우: multipart/form-data 사용
+        const formData = new FormData();
+        
+        // 기본 필드들 추가
+        formData.append("type", eventForm.type);
+        formData.append("title", eventForm.title);
+        formData.append("description", eventForm.description);
+        formData.append("participationMethod", eventForm.participationMethod);
+        formData.append("selectionCriteria", eventForm.selectionCriteria);
+        formData.append("precautions", eventForm.precautions);
+        formData.append("purchaseStartDate", eventForm.purchaseStartDate);
+        formData.append("purchaseEndDate", eventForm.purchaseEndDate);
+        formData.append("eventStartDate", eventForm.eventStartDate);
+        formData.append("eventEndDate", eventForm.eventEndDate);
+        formData.append("announcement", eventForm.announcement);
+        formData.append("maxParticipants", eventForm.maxParticipants.toString());
+        
+        // 보상 정보를 JSON 문자열로 전송
+        const rewardsJson = JSON.stringify(eventForm.rewards);
+        formData.append("rewards", rewardsJson);
+        
+        // 이미지 파일 추가
         formData.append("image", eventForm.imageFile);
+
+        console.log('Sending multipart update request to:', `/api/events/${id}/multipart`);
+        
+        const response = await axiosInstance.put(`/api/events/${id}/multipart`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        console.log('API Response:', response.data);
+        alert("이벤트가 성공적으로 수정되었습니다.");
+        navigate("/event-list");
+      } else {
+        // 이미지 파일이 없는 경우: JSON 사용
+        const eventData = {
+          type: eventForm.type,
+          title: eventForm.title,
+          description: eventForm.description,
+          participationMethod: eventForm.participationMethod,
+          selectionCriteria: eventForm.selectionCriteria,
+          precautions: eventForm.precautions,
+          purchaseStartDate: eventForm.purchaseStartDate,
+          purchaseEndDate: eventForm.purchaseEndDate,
+          eventStartDate: eventForm.eventStartDate,
+          eventEndDate: eventForm.eventEndDate,
+          announcement: eventForm.announcement,
+          maxParticipants: eventForm.maxParticipants,
+          rewards: JSON.stringify(eventForm.rewards)  // 배열을 JSON 문자열로 직렬화
+        };
+
+        console.log('Sending JSON update request to:', `/api/events/${id}`);
+        
+        const response = await axiosInstance.put(`/api/events/${id}`, eventData, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        console.log('API Response:', response.data);
+        alert("이벤트가 성공적으로 수정되었습니다.");
+        navigate("/event-list");
       }
-
-      console.log('Sending update request to:', `/api/events/${id}`);
-      
-      const response = await axiosInstance.put(`/api/events/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      console.log('API Response:', response.data);
-      alert("이벤트가 성공적으로 수정되었습니다.");
-      navigate("/event-list");
     } catch (error: any) {
       console.error("이벤트 수정 실패:", error);
       
@@ -331,14 +350,7 @@ const EventEditPage = () => {
     }
   };
 
-  const getTypeText = (type: EventType) => {
-    switch (type) {
-      case "BATTLE": return "배틀 (스타일 경쟁)";
-      case "MISSION": return "미션 (착용 미션)";
-      case "MULTIPLE": return "랭킹 (일반 참여)";
-      default: return "";
-    }
-  };
+
 
   if (loading) {
     return (

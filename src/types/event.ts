@@ -23,7 +23,7 @@ export interface EventDetailDto {
 export interface EventDto {
   id: number;
   type: 'BATTLE' | 'MISSION' | 'MULTIPLE';
-  status: 'UPCOMING' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
+  status: 'UPCOMING' | 'ONGOING' | 'ENDED' | 'CANCELLED';
   maxParticipants: number;
   participantCount?: number;
   createdBy?: string;
@@ -39,7 +39,7 @@ export interface EventDto {
   purchaseEndDate: string;
   eventStartDate: string;
   eventEndDate: string;
-  announcement: string;
+  announcementDate: string; 
   participationMethod: string;
   selectionCriteria: string;
   precautions: string;

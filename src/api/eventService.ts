@@ -45,10 +45,19 @@ class EventService {
    */
   async getEventById(eventId: number): Promise<EventDto | null> {
     try {
+      console.log('Calling API:', `/api/events/${eventId}`);
       const response = await axiosInstance.get(`/api/events/${eventId}`);
-      return response.data.data || null;
-    } catch (error) {
+      console.log('API Response:', response.data);
+      console.log('Response data structure:', JSON.stringify(response.data, null, 2));
+      
+      // 백엔드 응답 구조에 따라 데이터 추출
+      const eventData = response.data.data || response.data || null;
+      console.log('Extracted event data:', eventData);
+      
+      return eventData;
+    } catch (error: any) {
       console.error('이벤트 상세 조회 실패:', error);
+      console.error('Error details:', error.response?.data);
       return null;
     }
   }
