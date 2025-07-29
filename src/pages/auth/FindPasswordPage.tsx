@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 const fadeInUp = keyframes`
   from { opacity: 0; transform: translateY(30px); }
@@ -205,20 +206,31 @@ export default function FindPasswordPage() {
     setMessage("");
 
     try {
-      // TODO: API 연동 필요
-      // const response = await sendPasswordResetEmail({ email });
+      const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+      const response = await axios.post(`${baseURL}/api/auth/forgot-password`, {
+        email: email,
+      });
 
-      // 임시 처리 - 실제로는 API 호출 결과에 따라 처리
-      setTimeout(() => {
+      if (response.status === 200) {
         setIsSuccess(true);
         setMessage(
           "비밀번호 재설정 링크가 이메일로 전송되었습니다. 이메일을 확인해주세요."
         );
-        setLoading(false);
-      }, 1500);
-    } catch (error) {
+      }
+    } catch (error: any) {
+      console.error("Password reset error:", error);
       setIsSuccess(false);
-      setMessage("입력하신 이메일로 가입된 계정을 찾을 수 없습니다.");
+
+      if (error.response?.data?.message) {
+        setMessage(error.response.data.message);
+      } else if (error.response?.status === 404) {
+        setMessage("입력하신 이메일로 가입된 계정을 찾을 수 없습니다.");
+      } else if (error.response?.status === 429) {
+        setMessage("너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.");
+      } else {
+        setMessage("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      }
+    } finally {
       setLoading(false);
     }
   };
