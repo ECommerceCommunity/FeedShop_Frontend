@@ -18,7 +18,7 @@ interface EventForm {
   announcement: string;
   description: string;
   participationMethod: string;
-  rewards: EventRewardRequestDto[]; // 구조화된 보상 정보
+  rewards: EventRewardRequestDto[];
   selectionCriteria: string;
   precautions: string;
   maxParticipants: number;
@@ -161,34 +161,100 @@ const EventCreatePage = () => {
     });
   };
 
+  // 필수 필드 검증 함수
+  const validateForm = () => {
+    const errors: string[] = [];
+
+    if (!eventForm.title.trim()) errors.push("이벤트 제목을 입력해주세요.");
+    if (!eventForm.description.trim()) errors.push("이벤트 설명을 입력해주세요.");
+    if (!eventForm.participationMethod.trim()) errors.push("참여 방법을 입력해주세요.");
+    if (!eventForm.selectionCriteria.trim()) errors.push("선정 기준을 입력해주세요.");
+    if (!eventForm.precautions.trim()) errors.push("주의사항을 입력해주세요.");
+    if (!eventForm.purchaseStartDate) errors.push("구매 시작일을 입력해주세요.");
+    if (!eventForm.purchaseEndDate) errors.push("구매 종료일을 입력해주세요.");
+    if (!eventForm.eventStartDate) errors.push("이벤트 시작일을 입력해주세요.");
+    if (!eventForm.eventEndDate) errors.push("이벤트 종료일을 입력해주세요.");
+    if (!eventForm.announcement) errors.push("발표일을 입력해주세요.");
+    if (eventForm.maxParticipants < 1) errors.push("최대 참여자 수는 1명 이상이어야 합니다.");
+    
+    // 보상 검증
+    if (eventForm.rewards.length === 0) {
+      errors.push("최소 1개의 보상을 입력해주세요.");
+    } else {
+      eventForm.rewards.forEach((reward, index) => {
+        if (!reward.rewardValue.trim()) {
+          errors.push(`${index + 1}등 보상 내용을 입력해주세요.`);
+        }
+      });
+    }
+
+    // 날짜 순서 검증
+    if (eventForm.purchaseStartDate && eventForm.purchaseEndDate) {
+      if (new Date(eventForm.purchaseStartDate) >= new Date(eventForm.purchaseEndDate)) {
+        errors.push("구매 시작일은 종료일보다 이전이어야 합니다.");
+      }
+    }
+    
+    if (eventForm.eventStartDate && eventForm.eventEndDate) {
+      if (new Date(eventForm.eventStartDate) >= new Date(eventForm.eventEndDate)) {
+        errors.push("이벤트 시작일은 종료일보다 이전이어야 합니다.");
+      }
+    }
+
+    // 새로운 날짜 규칙 검증
+    if (eventForm.purchaseEndDate && eventForm.eventStartDate) {
+      if (new Date(eventForm.purchaseEndDate) < new Date(eventForm.eventStartDate)) {
+        errors.push("구매 종료일은 이벤트 시작일보다 이전이어야 합니다.");
+      }
+    }
+
+    if (eventForm.purchaseEndDate && eventForm.eventEndDate) {
+      if (new Date(eventForm.eventEndDate) <= new Date(eventForm.purchaseEndDate)) {
+        errors.push("이벤트 종료일은 구매 종료일 이후여야 합니다.");
+      }
+    }
+
+    if (eventForm.eventEndDate && eventForm.announcement) {
+      if (new Date(eventForm.eventEndDate) >= new Date(eventForm.announcement)) {
+        errors.push("결과 발표일은 이벤트 종료일 이후여야 합니다.");
+      }
+    }
+
+    return errors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!eventForm.title || !eventForm.description || !eventForm.purchaseStartDate || !eventForm.purchaseEndDate || !eventForm.eventStartDate || !eventForm.eventEndDate || !eventForm.announcement || !eventForm.participationMethod || !eventForm.rewards || !eventForm.selectionCriteria || !eventForm.precautions) {
-      alert("모든 필수 항목을 입력해주세요.");
+    // 폼 검증
+    const errors = validateForm();
+    if (errors.length > 0) {
+      alert(errors.join("\n"));
       return;
     }
 
     try {
       const formData = new FormData();
-      formData.append("title", eventForm.title);
+      
+      // 기본 필드들 추가 (백엔드 DTO 필드명과 정확히 일치)
       formData.append("type", eventForm.type);
+      formData.append("title", eventForm.title);
+      formData.append("description", eventForm.description);
+      formData.append("participationMethod", eventForm.participationMethod);
+      formData.append("selectionCriteria", eventForm.selectionCriteria);
+      formData.append("precautions", eventForm.precautions);
       formData.append("purchaseStartDate", eventForm.purchaseStartDate);
       formData.append("purchaseEndDate", eventForm.purchaseEndDate);
       formData.append("eventStartDate", eventForm.eventStartDate);
       formData.append("eventEndDate", eventForm.eventEndDate);
       formData.append("announcement", eventForm.announcement);
-      formData.append("description", eventForm.description);
-      formData.append("participationMethod", eventForm.participationMethod);
-      // rewards를 개별 파라미터로 전송 (백엔드가 List<EventRewardRequestDto>를 기대함)
-      eventForm.rewards.forEach((reward, index) => {
-        formData.append(`rewards[${index}].conditionValue`, reward.conditionValue.toString());
-        formData.append(`rewards[${index}].rewardValue`, reward.rewardValue);
-      });
-      formData.append("selectionCriteria", eventForm.selectionCriteria);
-      formData.append("precautions", eventForm.precautions);
       formData.append("maxParticipants", eventForm.maxParticipants.toString());
       
+      // 보상 정보를 JSON 문자열로 전송
+      const rewardsJson = JSON.stringify(eventForm.rewards);
+      formData.append("rewards", rewardsJson);
+      
+      // 이미지 파일 추가 (@RequestPart로 처리됨, required=false이므로 선택사항)
       if (eventForm.imageFile) {
         formData.append("image", eventForm.imageFile);
       }
@@ -217,7 +283,18 @@ const EventCreatePage = () => {
       console.error("이벤트 생성 실패:", error);
       console.error("Error details:", error.response?.data);
       console.error("Error status:", error.response?.status);
-      alert(`이벤트 생성에 실패했습니다. ${error.response?.data?.message || ''}`);
+      
+      // 에러 메시지 개선
+      let errorMessage = "이벤트 생성에 실패했습니다.";
+      if (error.response?.data?.message) {
+        errorMessage += `\n${error.response.data.message}`;
+      } else if (error.response?.data?.error) {
+        errorMessage += `\n${error.response.data.error}`;
+      } else if (error.response?.data?.data?.message) {
+        errorMessage += `\n${error.response.data.data.message}`;
+      }
+      
+      alert(errorMessage);
     }
   };
 
@@ -401,6 +478,7 @@ const EventCreatePage = () => {
                     className="w-full border border-gray-300 rounded px-3 py-2"
                     placeholder="보상 내용을 입력하세요 (예: 프리미엄 스니커즈 (가치 30만원) - 브랜드: Nike, 상품: Air Jordan 1)"
                     rows={2}
+                    required
                   />
                 </div>
                 <button

@@ -1,7 +1,9 @@
-import { useState, useEffect, ChangeEvent } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosInstance from "../../api/axios";
 import { EventType } from "../../types/types";
+import { EventDto, EventUpdateRequestDto, EventRewardDto } from "../../types/event";
+import EventService from "../../api/eventService";
 
 type FormState = {
   title: string;
@@ -10,29 +12,23 @@ type FormState = {
   purchaseEndDate: string;
   eventStartDate: string;
   eventEndDate: string;
-  announcement: string;
+  announcementDate: string;
   description: string;
   participationMethod: string;
-  rewards: string;
+  rewards: string; // UI에서는 문자열로 처리, API 호출 시 EventRewardDto[]로 변환
   selectionCriteria: string;
   precautions: string;
   maxParticipants: number;
-  image: string;
+  imageUrl: string;
   imageFile: File | null;
   imagePreview: string;
 };
 
-// Helper to format date string for input type="datetime-local"
-function toDatetimeLocal(str: string | undefined) {
+function toDateString(str: string | undefined) {
   if (!str) return '';
   const d = new Date(str);
   if (isNaN(d as any)) return '';
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
-  const min = String(d.getMinutes()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+  return d.toISOString().split('T')[0];
 }
 
 const EventEditPage = () => {
@@ -45,14 +41,14 @@ const EventEditPage = () => {
     purchaseEndDate: "",
     eventStartDate: "",
     eventEndDate: "",
-    announcement: "",
+    announcementDate: "",
     description: "",
     participationMethod: "",
     rewards: "",
     selectionCriteria: "",
     precautions: "",
     maxParticipants: 100,
-    image: "",
+    imageUrl: "",
     imageFile: null,
     imagePreview: ""
   });
@@ -64,27 +60,31 @@ const EventEditPage = () => {
       if (!id) return;
       try {
         setLoading(true);
-        const res = await axiosInstance.get(`/api/events/${id}`);
-        const event = res.data;
-        // Flexible mapping for both eventDetail and direct event fields
-        const detail = event.eventDetail || event;
+        const event = await EventService.getEventById(parseInt(id));
+        
+        if (!event) {
+          setError("이벤트를 찾을 수 없습니다.");
+          return;
+        }
+
+        // EventDto를 FormState로 변환
         setForm({
-          title: detail.title || event.title || '',
-          type: (detail.type || event.type || 'BATTLE').toUpperCase(),
-          purchaseStartDate: toDatetimeLocal(detail.purchaseStartDate),
-          purchaseEndDate: toDatetimeLocal(detail.purchaseEndDate),
-          eventStartDate: toDatetimeLocal(detail.eventStartDate),
-          eventEndDate: toDatetimeLocal(detail.eventEndDate),
-          announcement: toDatetimeLocal(detail.announcement || detail.announcementDate),
-          description: detail.description || '',
-          participationMethod: detail.participationMethod || '',
-          rewards: detail.rewards || '',
-          selectionCriteria: detail.selectionCriteria || '',
-          precautions: detail.precautions || '',
-          maxParticipants: event.maxParticipants || detail.maxParticipants || 100,
-          image: detail.imageUrl || '/placeholder-image.jpg',
+          title: event.title || '',
+          type: event.type || 'BATTLE',
+          purchaseStartDate: toDateString(event.purchaseStartDate),
+          purchaseEndDate: toDateString(event.purchaseEndDate),
+          eventStartDate: toDateString(event.eventStartDate),
+          eventEndDate: toDateString(event.eventEndDate),
+          announcementDate: toDateString(event.announcement),
+          description: event.description || '',
+          participationMethod: event.participationMethod || '',
+          rewards: EventService.stringifyRewards(event.rewards || []), // EventRewardDto[]를 문자열로 변환
+          selectionCriteria: event.selectionCriteria || '',
+          precautions: event.precautions || '',
+          maxParticipants: event.maxParticipants || 100,
+          imageUrl: event.imageUrl || '/placeholder-image.jpg',
           imageFile: null,
-          imagePreview: detail.imageUrl || '/placeholder-image.jpg',
+          imagePreview: event.imageUrl || '/placeholder-image.jpg',
         });
       } catch (err) {
         console.error("이벤트 정보 조회 실패:", err);
@@ -119,34 +119,70 @@ const EventEditPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!form.title || !form.description || !form.purchaseStartDate || !form.purchaseEndDate || !form.eventStartDate || !form.eventEndDate || !form.announcement || !form.participationMethod || !form.rewards || !form.selectionCriteria || !form.precautions) {
+    // 날짜 검증
+    const errors: string[] = [];
+    
+    if (!form.title || !form.description || !form.purchaseStartDate || !form.purchaseEndDate || !form.eventStartDate || !form.eventEndDate || !form.announcementDate || !form.participationMethod || !form.rewards || !form.selectionCriteria || !form.precautions) {
       alert("모든 필수 항목을 입력해주세요.");
+      return;
+    }
+
+    // 날짜 순서 검증
+    if (new Date(form.purchaseStartDate) >= new Date(form.purchaseEndDate)) {
+      errors.push("구매 시작일은 종료일보다 이전이어야 합니다.");
+    }
+    
+    if (new Date(form.eventStartDate) >= new Date(form.eventEndDate)) {
+      errors.push("이벤트 시작일은 종료일보다 이전이어야 합니다.");
+    }
+
+    // 새로운 날짜 규칙 검증
+    if (new Date(form.purchaseEndDate) < new Date(form.eventStartDate)) {
+      errors.push("구매 종료일은 이벤트 시작일보다 이전이어야 합니다.");
+    }
+
+    if (new Date(form.eventEndDate) <= new Date(form.purchaseEndDate)) {
+      errors.push("이벤트 종료일은 구매 종료일 이후여야 합니다.");
+    }
+
+    if (new Date(form.eventEndDate) >= new Date(form.announcementDate)) {
+      errors.push("결과 발표일은 이벤트 종료일 이후여야 합니다.");
+    }
+
+    if (errors.length > 0) {
+      alert(errors.join("\n"));
       return;
     }
 
     try {
       setLoading(true);
-      // 이미지 업로드 제외, 나머지 필드만 객체로 전송
-      const payload = {
+      
+      // rewards 문자열을 EventRewardDto[]로 변환
+      const rewardsArray = EventService.parseRewardsString(form.rewards);
+      
+      // EventUpdateRequestDto 형식으로 전송
+      const payload: EventUpdateRequestDto = {
         title: form.title,
         type: form.type,
         purchaseStartDate: form.purchaseStartDate,
         purchaseEndDate: form.purchaseEndDate,
         eventStartDate: form.eventStartDate,
         eventEndDate: form.eventEndDate,
-        announcement: form.announcement,
+        announcement: form.announcementDate,
         description: form.description,
         participationMethod: form.participationMethod,
-        rewards: Array.isArray(form.rewards) ? form.rewards.join(', ') : form.rewards,
+        rewards: rewardsArray,
         selectionCriteria: form.selectionCriteria,
         precautions: form.precautions,
         maxParticipants: form.maxParticipants,
-        // image: form.image, // 이미지 업로드는 별도 API 필요
+        imageUrl: form.imageUrl,
       };
-      await axiosInstance.put(`/api/events/${id}`, payload);
+      
+      console.log('Sending update payload:', payload);
+      await EventService.updateEvent(parseInt(id!), payload);
       alert("이벤트가 성공적으로 수정되었습니다.");
       navigate('/event-list');
-    } catch (error) {
+    } catch (error: any) {
       console.error("이벤트 수정 실패:", error);
       alert("이벤트 수정에 실패했습니다.");
     } finally {
@@ -156,224 +192,348 @@ const EventEditPage = () => {
 
   const getTypeText = (type: EventType) => {
     switch (type) {
-      case "BATTLE": return "배틀";
-      case "MISSION": return "미션";
-      case "MULTIPLE": return "다수";
-      default: return "";
+      case "BATTLE":
+        return "배틀 (스타일 경쟁)";
+      case "MISSION":
+        return "미션 (착용 미션)";
+      case "MULTIPLE":
+        return "다중 (일반 참여)";
+      default:
+        return "";
     }
   };
 
-  if (loading && !form.title) {
-    return <div className="p-5">로딩 중...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">이벤트 정보를 불러오는 중...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="p-5 text-red-500">{error}</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-lg font-semibold mb-4">{error}</div>
+          <button
+            onClick={() => navigate('/event-list')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            이벤트 목록으로 돌아가기
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-5 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">이벤트 수정</h1>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-2">이벤트 제목 *</label>
-            <input
-              type="text"
-              name="title"
-              value={form.title}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              required
-            />
+    <div className="min-h-screen bg-gray-50">
+      {/* 헤더 */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">이벤트 수정</h1>
+              <p className="mt-2 text-sm text-gray-600">
+                이벤트 정보를 수정하고 업데이트하세요
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/event-list')}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              목록으로 돌아가기
+            </button>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">이벤트 유형 *</label>
-            <div className="flex gap-2">
-              {(["BATTLE", "MISSION", "MULTIPLE"] as EventType[]).map(type => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => handleTypeSelect(type)}
-                  className={`px-4 py-2 rounded ${form.type === type ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-                >
-                  {getTypeText(type)}
-                </button>
-              ))}
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* 기본 정보 */}
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">기본 정보</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* 제목 */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  이벤트 제목 *
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  value={form.title}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="이벤트 제목을 입력하세요"
+                  required
+                />
+              </div>
+
+              {/* 이벤트 타입 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  이벤트 타입 *
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["BATTLE", "MISSION", "MULTIPLE"] as EventType[]).map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => handleTypeSelect(type)}
+                      className={`p-3 text-sm font-medium rounded-lg border transition-colors ${
+                        form.type === type
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {getTypeText(type)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 최대 참여자 수 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  최대 참여자 수 *
+                </label>
+                <input
+                  type="number"
+                  name="maxParticipants"
+                  value={form.maxParticipants}
+                  onChange={handleChange}
+                  min="1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-2">구매 시작일 *</label>
-            <input
-              type="datetime-local"
-              name="purchaseStartDate"
-              value={form.purchaseStartDate}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              required
-            />
+          {/* 날짜 정보 */}
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">날짜 정보</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  구매 시작일 *
+                </label>
+                <input
+                  type="date"
+                  name="purchaseStartDate"
+                  value={form.purchaseStartDate}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  구매 종료일 *
+                </label>
+                <input
+                  type="date"
+                  name="purchaseEndDate"
+                  value={form.purchaseEndDate}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  이벤트 시작일 *
+                </label>
+                <input
+                  type="date"
+                  name="eventStartDate"
+                  value={form.eventStartDate}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  이벤트 종료일 *
+                </label>
+                <input
+                  type="date"
+                  name="eventEndDate"
+                  value={form.eventEndDate}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  발표일 *
+                </label>
+                <input
+                  type="date"
+                  name="announcementDate"
+                  value={form.announcementDate}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+            </div>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">구매 종료일 *</label>
-            <input
-              type="datetime-local"
-              name="purchaseEndDate"
-              value={form.purchaseEndDate}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              required
-            />
+
+          {/* 상세 정보 */}
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">상세 정보</h2>
+            
+            <div className="space-y-6">
+              {/* 설명 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  이벤트 설명 *
+                </label>
+                <textarea
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="이벤트에 대한 상세한 설명을 입력하세요"
+                  required
+                />
+              </div>
+
+              {/* 참여 방법 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  참여 방법 *
+                </label>
+                <textarea
+                  name="participationMethod"
+                  value={form.participationMethod}
+                  onChange={handleChange}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="이벤트 참여 방법을 상세히 설명하세요"
+                  required
+                />
+              </div>
+
+              {/* 선정 기준 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  선정 기준 *
+                </label>
+                <textarea
+                  name="selectionCriteria"
+                  value={form.selectionCriteria}
+                  onChange={handleChange}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="당첨자 선정 기준을 입력하세요"
+                  required
+                />
+              </div>
+
+              {/* 주의사항 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  주의사항 *
+                </label>
+                <textarea
+                  name="precautions"
+                  value={form.precautions}
+                  onChange={handleChange}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="참여 시 주의사항을 입력하세요"
+                  required
+                />
+              </div>
+
+              {/* 보상 정보 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  보상 정보 *
+                </label>
+                <textarea
+                  name="rewards"
+                  value={form.rewards}
+                  onChange={handleChange}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="각 줄에 하나씩 보상 정보를 입력하세요&#10;예시:&#10;1등: 10만원 상품권&#10;2등: 5만원 상품권&#10;3등: 3만원 상품권"
+                  required
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  각 줄에 하나씩 보상 정보를 입력하세요. 줄바꿈으로 구분됩니다.
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-2">이벤트 시작일 *</label>
-            <input
-              type="datetime-local"
-              name="eventStartDate"
-              value={form.eventStartDate}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              required
-            />
+          {/* 이미지 업로드 */}
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">이미지</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  이벤트 이미지
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              {form.imagePreview && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    미리보기
+                  </label>
+                  <img
+                    src={form.imagePreview}
+                    alt="이벤트 이미지 미리보기"
+                    className="w-full max-w-md h-48 object-cover rounded-lg border border-gray-300"
+                  />
+                </div>
+              )}
+            </div>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">이벤트 종료일 *</label>
-            <input
-              type="datetime-local"
-              name="eventEndDate"
-              value={form.eventEndDate}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              required
-            />
+
+          {/* 제출 버튼 */}
+          <div className="flex justify-end space-x-4">
+            <button
+              type="button"
+              onClick={() => navigate('/event-list')}
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              취소
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "수정 중..." : "이벤트 수정"}
+            </button>
           </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">발표일 *</label>
-          <input
-            type="datetime-local"
-            name="announcement"
-            value={form.announcement}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded px-3 py-2"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">이벤트 설명 *</label>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            rows={4}
-            className="w-full border border-gray-300 rounded px-3 py-2"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">참여 방법 *</label>
-          <textarea
-            name="participationMethod"
-            value={form.participationMethod}
-            onChange={handleChange}
-            rows={3}
-            className="w-full border border-gray-300 rounded px-3 py-2"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">상품 정보 *</label>
-          <textarea
-            name="rewards"
-            value={form.rewards}
-            onChange={handleChange}
-            rows={3}
-            className="w-full border border-gray-300 rounded px-3 py-2"
-            placeholder="상품명, 브랜드, 가격 등을 입력하세요"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">선정 기준 *</label>
-          <textarea
-            name="selectionCriteria"
-            value={form.selectionCriteria}
-            onChange={handleChange}
-            rows={3}
-            className="w-full border border-gray-300 rounded px-3 py-2"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">주의사항 *</label>
-          <textarea
-            name="precautions"
-            value={form.precautions}
-            onChange={handleChange}
-            rows={3}
-            className="w-full border border-gray-300 rounded px-3 py-2"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">최대 참여자 수 *</label>
-          <input
-            type="number"
-            name="maxParticipants"
-            value={form.maxParticipants}
-            onChange={handleChange}
-            min="1"
-            className="w-full border border-gray-300 rounded px-3 py-2"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">이벤트 이미지</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="w-full border border-gray-300 rounded px-3 py-2"
-          />
-          {form.imagePreview && (
-            <img src={form.imagePreview || '/placeholder-image.jpg'} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded" />
-          )}
-        </div>
-
-        <div className="flex gap-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
-          >
-            {loading ? "수정 중..." : "이벤트 수정"}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/event-list')}
-            className="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600"
-          >
-            취소
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 };
