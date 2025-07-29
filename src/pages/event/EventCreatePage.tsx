@@ -512,6 +512,7 @@ const EventCreatePage = () => {
               />
             </div>
 
+
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-3">이벤트 혜택 *</label>
               <div className="space-y-3">
