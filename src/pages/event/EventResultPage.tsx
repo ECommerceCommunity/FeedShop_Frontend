@@ -84,7 +84,8 @@ const EventResultPage = () => {
     switch (status) {
       case "ONGOING": return "진행중";
       case "UPCOMING": return "예정";
-      case "ENDED": return "종료";
+      case "COMPLETED": return "완료";
+      case "CANCELLED": return "취소";
       default: return "";
     }
   };
@@ -232,7 +233,7 @@ const EventResultPage = () => {
       {/* 종료된 이벤트 카드 */}
       <h2 className="text-xl font-bold mb-4 mt-8">종료된 이벤트</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredEvents.filter(e => e.status === "ENDED").map((event) => (
+        {filteredEvents.filter(e => e.status === "COMPLETED").map((event) => (
           <div key={event.id} className="border border-gray-200 rounded-lg p-4 bg-white flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-4">
