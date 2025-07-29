@@ -289,17 +289,6 @@ const EventListPage = () => {
                 다양한 이벤트에 참여하고 특별한 혜택을 받아보세요
               </p>
             </div>
-            {user?.userType === 'admin' && (
-              <Link
-                to="/events/create"
-                className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-semibold rounded-xl shadow-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-105"
-              >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                이벤트 생성
-              </Link>
-            )}
           </div>
         </div>
       </div>
@@ -309,79 +298,113 @@ const EventListPage = () => {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row gap-6 justify-between">
             <div className="flex flex-col sm:flex-row gap-4">
-              {/* 검색 */}
-              <div className="w-72">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="검색"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white/70 backdrop-blur-sm shadow-sm transition-all duration-200"
-                  />
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+              {/* 검색 및 정렬 */}
+              <div className="flex gap-3">
+                <div className="w-72">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="검색"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white/70 backdrop-blur-sm shadow-sm transition-all duration-200"
+                    />
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* 필터 */}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => handleFilterChange("all")}
-                  className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
-                    activeFilter === "all"
-                      ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
-                      : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
-                  }`}
+                {/* 정렬 */}
+                <select
+                  value={sortType}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="px-6 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white/70 backdrop-blur-sm shadow-sm transition-all duration-200 min-w-[120px]"
                 >
-                  전체
-                </button>
-                <button
-                  onClick={() => handleFilterChange("upcoming")}
-                  className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
-                    activeFilter === "upcoming"
-                      ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
-                      : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
-                  }`}
-                >
-                  예정된 이벤트
-                </button>
-                <button
-                  onClick={() => handleFilterChange("ongoing")}
-                  className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
-                    activeFilter === "ongoing"
-                      ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
-                      : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
-                  }`}
-                >
-                  진행 중인 이벤트
-                </button>
-                <button
-                  onClick={() => handleFilterChange("completed")}
-                  className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
-                    activeFilter === "completed"
-                      ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
-                      : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
-                  }`}
-                >
-                  종료된 이벤트
-                </button>
+                  <option value="latest">최신순</option>
+                  <option value="upcoming">예정순</option>
+                  <option value="past">지난순</option>
+                </select>
+
+                {/* 이벤트 생성 버튼 */}
+                {user?.userType === 'admin' && (
+                  <Link
+                    to="/events/create"
+                    className="group inline-flex items-center px-6 py-3 border border-transparent text-sm font-bold rounded-xl shadow-lg text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
+                  >
+                    <svg className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span className="relative">
+                      이벤트 생성
+                      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300"></span>
+                    </span>
+                  </Link>
+                )}
+
+                {/* 결과 관리 버튼 */}
+                {user?.userType === 'admin' && (
+                  <Link
+                    to="/events/results"
+                    className="group inline-flex items-center px-6 py-3 border border-transparent text-sm font-bold rounded-xl shadow-lg text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
+                  >
+                    <svg className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span className="relative">
+                      결과 관리
+                      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300"></span>
+                    </span>
+                  </Link>
+                )}
               </div>
             </div>
 
-            {/* 정렬 */}
-            <select
-              value={sortType}
-              onChange={(e) => handleSortChange(e.target.value)}
-              className="px-6 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white/70 backdrop-blur-sm shadow-sm transition-all duration-200"
-            >
-              <option value="latest">최신순</option>
-              <option value="upcoming">예정순</option>
-              <option value="past">지난순</option>
-            </select>
+            {/* 필터 */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleFilterChange("all")}
+                className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
+                  activeFilter === "all"
+                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
+                    : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
+                }`}
+              >
+                전체
+              </button>
+              <button
+                onClick={() => handleFilterChange("upcoming")}
+                className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
+                  activeFilter === "upcoming"
+                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
+                    : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
+                }`}
+              >
+                예정
+              </button>
+              <button
+                onClick={() => handleFilterChange("ongoing")}
+                className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
+                  activeFilter === "ongoing"
+                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
+                    : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
+                }`}
+              >
+                진행중
+              </button>
+              <button
+                onClick={() => handleFilterChange("completed")}
+                className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
+                  activeFilter === "completed"
+                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
+                    : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
+                }`}
+              >
+                종료
+              </button>
+            </div>
           </div>
         </div>
 
