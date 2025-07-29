@@ -230,11 +230,11 @@ const EventListPage = () => {
 
   const getStatusColor = (status: EventStatus) => {
     switch (status) {
-      case 'UPCOMING': return 'bg-blue-100 text-blue-800';
-      case 'ONGOING': return 'bg-green-100 text-green-800';
-      case 'ENDED': return 'bg-gray-100 text-gray-800';
-      case 'CANCELLED': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'UPCOMING': return 'bg-blue-600 text-white';
+      case 'ONGOING': return 'bg-green-600 text-white';
+      case 'ENDED': return 'bg-gray-600 text-white';
+      case 'CANCELLED': return 'bg-red-600 text-white';
+      default: return 'bg-gray-600 text-white';
     }
   };
 
@@ -453,8 +453,8 @@ const EventListPage = () => {
                     />
                     {/* 상태 배지 - 이미지 왼쪽 상단 */}
                     <div className="absolute top-4 left-4">
-                      <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-semibold text-white bg-blue-600 shadow-lg backdrop-blur-sm">
-                        진행 예정
+                      <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-semibold shadow-lg backdrop-blur-sm ${getStatusColor(event.status || calculateEventStatus(event))}`}>
+                        {getStatusText(event.status || calculateEventStatus(event))}
                       </span>
                     </div>
                   </div>
