@@ -41,65 +41,100 @@ const SidebarContainer = styled.aside<{ open: boolean }>`
   top: 60px;
   bottom: 0;
   width: 280px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
+  box-shadow: 4px 0 20px rgba(249, 115, 22, 0.25);
   padding: 0;
   z-index: 100;
   transform: translateX(${({ open }) => (open ? "0" : "-100%")});
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   animation: ${slideIn} 0.4s ease-out;
   overflow-y: auto;
+  border-right: 1px solid rgba(249, 115, 22, 0.2);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 20%, rgba(249, 115, 22, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(239, 68, 68, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
 
   &::-webkit-scrollbar {
     width: 6px;
   }
 
   &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(249, 115, 22, 0.1);
     border-radius: 3px;
   }
 
+  &::-webkit-scrollbar-thumb {
+    background: rgba(249, 115, 22, 0.4);
+    border-radius: 3px;
+    transition: background 0.3s ease;
+  }
+
   &::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(249, 115, 22, 0.6);
   }
 `;
 
 const SidebarHeader = styled.div`
   padding: 30px 20px 20px;
   text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  }
 `;
 
 const SidebarLogo = styled.div`
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 26px;
+  font-weight: 800;
   color: white;
   margin-bottom: 8px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #ffffff, #fef3c7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 `;
 
 const SidebarSubtitle = styled.div`
   font-size: 12px;
   color: rgba(255, 255, 255, 0.8);
-  font-weight: 300;
+  font-weight: 400;
+  letter-spacing: 0.5px;
 `;
 
 const MenuSection = styled.div`
   margin-bottom: 30px;
   animation: ${fadeIn} 0.6s ease-out;
+  position: relative;
+  z-index: 2;
 `;
 
 const MenuTitle = styled.h3`
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.8);
   padding: 0 20px;
   margin-bottom: 15px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
   position: relative;
@@ -111,7 +146,7 @@ const MenuTitle = styled.h3`
     top: 50%;
     width: 20px;
     height: 2px;
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.5), transparent);
+    background: linear-gradient(90deg, rgba(249, 115, 22, 0.8), transparent);
     transform: translateY(-50%);
   }
 `;
@@ -123,26 +158,28 @@ const MenuList = styled.ul`
 `;
 
 const MenuItem = styled.li`
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   padding: 0 15px;
 `;
 
 const MenuLink = styled(Link)<{ active?: boolean }>`
   display: flex;
   align-items: center;
-  padding: 15px 20px;
-  color: ${(props) => (props.active ? "#ffffff" : "rgba(255, 255, 255, 0.8)")};
+  padding: 16px 20px;
+  color: ${(props) => (props.active ? "#ffffff" : "rgba(255, 255, 255, 0.85)")};
   text-decoration: none;
   font-size: 14px;
-  font-weight: ${(props) => (props.active ? "600" : "400")};
+  font-weight: ${(props) => (props.active ? "600" : "500")};
   background: ${(props) =>
     props.active
-      ? "linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))"
+      ? "linear-gradient(135deg, rgba(249, 115, 22, 0.25), rgba(239, 68, 68, 0.15))"
       : "transparent"};
-  border-radius: 12px;
+  border-radius: 14px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  border: 1px solid ${(props) => 
+    props.active ? "rgba(249, 115, 22, 0.3)" : "transparent"};
 
   &::before {
     content: "";
@@ -154,28 +191,53 @@ const MenuLink = styled(Link)<{ active?: boolean }>`
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(255, 255, 255, 0.1),
+      rgba(249, 115, 22, 0.2),
       transparent
     );
     transition: left 0.5s;
   }
 
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    background: linear-gradient(135deg, #f97316, #dc2626);
+    border-radius: 0 2px 2px 0;
+    transition: height 0.3s ease;
+  }
+
   &:hover {
     background: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.15),
-      rgba(255, 255, 255, 0.05)
+      rgba(249, 115, 22, 0.2),
+      rgba(239, 68, 68, 0.1)
     );
     color: #ffffff;
-    transform: translateX(5px);
+    transform: translateX(8px);
+    border-color: rgba(249, 115, 22, 0.4);
 
     &::before {
       left: 100%;
     }
+
+    &::after {
+      height: 60%;
+    }
   }
+
+  ${(props) => props.active && `
+    &::after {
+      height: 80%;
+    }
+  `}
 
   &:hover .menu-icon {
     animation: ${pulse} 0.6s ease-in-out;
+    transform: scale(1.1);
   }
 `;
 
@@ -183,7 +245,7 @@ const MenuIcon = styled.i<{ active?: boolean }>`
   width: 20px;
   margin-right: 15px;
   font-size: 16px;
-  color: ${(props) => (props.active ? "#ffffff" : "rgba(255, 255, 255, 0.7)")};
+  color: ${(props) => (props.active ? "#ffffff" : "rgba(255, 255, 255, 0.8)")};
   transition: all 0.3s ease;
 
   &.menu-icon {
@@ -194,6 +256,7 @@ const MenuIcon = styled.i<{ active?: boolean }>`
 const MenuText = styled.span`
   flex: 1;
   transition: all 0.3s ease;
+  font-weight: inherit;
 `;
 
 const ActiveIndicator = styled.div`
@@ -201,42 +264,72 @@ const ActiveIndicator = styled.div`
   right: 15px;
   top: 50%;
   transform: translateY(-50%);
-  width: 6px;
-  height: 6px;
-  background: #ffffff;
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, #f97316, #dc2626);
   border-radius: 50%;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.8);
+  animation: ${pulse} 2s infinite;
 `;
 
 const SidebarFooter = styled.div`
   padding: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
   margin-top: auto;
   text-align: center;
+  position: relative;
+  z-index: 2;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  }
 `;
 
 const SidebarFooterText = styled.div`
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
-  font-weight: 300;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+  line-height: 1.4;
 `;
 
 const QuickStats = styled.div`
   padding: 20px;
   margin: 20px 15px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+  border-radius: 16px;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  z-index: 2;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
 `;
 
 const QuickStatsTitle = styled.h4`
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.9);
   margin-bottom: 15px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
+  text-align: center;
 `;
 
 const QuickStatsGrid = styled.div`
@@ -247,19 +340,34 @@ const QuickStatsGrid = styled.div`
 
 const QuickStatItem = styled.div`
   text-align: center;
+  padding: 12px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+  }
 `;
 
-const QuickStatValue = styled.div`
+const QuickStatNumber = styled.div`
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 800;
   color: #ffffff;
   margin-bottom: 4px;
+  background: linear-gradient(135deg, #ffffff, #e0f2fe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 `;
 
 const QuickStatLabel = styled.div`
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 300;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 `;
 
 interface SidebarProps {
@@ -300,19 +408,19 @@ const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
             <QuickStatsTitle>판매 현황</QuickStatsTitle>
             <QuickStatsGrid>
               <QuickStatItem>
-                <QuickStatValue>23</QuickStatValue>
+                <QuickStatNumber>23</QuickStatNumber>
                 <QuickStatLabel>오늘 주문</QuickStatLabel>
               </QuickStatItem>
               <QuickStatItem>
-                <QuickStatValue>₩1.2M</QuickStatValue>
+                <QuickStatNumber>₩1.2M</QuickStatNumber>
                 <QuickStatLabel>오늘 매출</QuickStatLabel>
               </QuickStatItem>
               <QuickStatItem>
-                <QuickStatValue>5</QuickStatValue>
+                <QuickStatNumber>5</QuickStatNumber>
                 <QuickStatLabel>신규 리뷰</QuickStatLabel>
               </QuickStatItem>
               <QuickStatItem>
-                <QuickStatValue>4.7</QuickStatValue>
+                <QuickStatNumber>4.7</QuickStatNumber>
                 <QuickStatLabel>평점</QuickStatLabel>
               </QuickStatItem>
             </QuickStatsGrid>
@@ -410,7 +518,7 @@ const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
 
           <SidebarFooter>
             <SidebarFooterText>
-              © 2025 FeedShop
+              &copy; 2025 FeedShop
               <br />
               판매자 센터
             </SidebarFooterText>
@@ -434,19 +542,19 @@ const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
           <QuickStatsTitle>오늘의 현황</QuickStatsTitle>
           <QuickStatsGrid>
             <QuickStatItem>
-              <QuickStatValue>127</QuickStatValue>
+              <QuickStatNumber>127</QuickStatNumber>
               <QuickStatLabel>방문자</QuickStatLabel>
             </QuickStatItem>
             <QuickStatItem>
-              <QuickStatValue>23</QuickStatValue>
+              <QuickStatNumber>23</QuickStatNumber>
               <QuickStatLabel>주문</QuickStatLabel>
             </QuickStatItem>
             <QuickStatItem>
-              <QuickStatValue>₩890K</QuickStatValue>
+              <QuickStatNumber>₩890K</QuickStatNumber>
               <QuickStatLabel>매출</QuickStatLabel>
             </QuickStatItem>
             <QuickStatItem>
-              <QuickStatValue>4.8</QuickStatValue>
+              <QuickStatNumber>4.8</QuickStatNumber>
               <QuickStatLabel>평점</QuickStatLabel>
             </QuickStatItem>
           </QuickStatsGrid>
@@ -590,7 +698,7 @@ const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
 
         <SidebarFooter>
           <SidebarFooterText>
-            © 2025 FeedShop
+            &copy; 2025 FeedShop
             <br />
             모든 권리 보유
           </SidebarFooterText>
