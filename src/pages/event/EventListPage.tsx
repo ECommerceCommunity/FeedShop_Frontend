@@ -83,6 +83,12 @@ const EventListPage = () => {
         const responseData = response.data;
         const eventsData = responseData.content || [];
         
+        // 디버깅: 첫 번째 이벤트 데이터 로그
+        if (eventsData.length > 0) {
+          console.log('첫 번째 이벤트 데이터:', eventsData[0]);
+          console.log('announcementDate 필드:', eventsData[0].announcementDate);
+        }
+        
         // EventDto 형식으로 변환
         const transformedEvents = eventsData.map((event: any) => {
           // 구매 기간 파싱

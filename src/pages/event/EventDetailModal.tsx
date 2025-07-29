@@ -44,6 +44,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
       
       // 이미 event 객체가 있으면 그대로 사용, 없으면 API 호출
       if (event && Object.keys(event).length > 0) {
+        console.log('EventDetailModal - event 데이터:', event);
+        console.log('EventDetailModal - announcementDate:', event.announcementDate);
         setDetail(event);
         setLoading(false);
       } else {
@@ -238,7 +240,9 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               </div>
               <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl border border-purple-200/50">
                 <h3 className="text-sm font-semibold text-purple-600 mb-2">발표일</h3>
-                <p className="text-gray-900 font-medium">{formatDate(detail.announcementDate)}</p>
+                <p className="text-gray-900 font-medium">
+                  {detail.announcementDate ? formatDate(detail.announcementDate) : '발표일 미정'}
+                </p>
               </div>
             </div>
 
