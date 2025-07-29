@@ -59,26 +59,32 @@ const EventCreatePage = () => {
     precautions: false
   });
 
-  // 현재 날짜를 기본값으로 설정 (날짜만)
+  // 현재 날짜를 기본값으로 설정 (한국 시간대 적용)
   useEffect(() => {
+    // 한국 시간대 (UTC+9) 적용
     const now = new Date();
-    const tomorrow = new Date(now);
+    const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+    
+    const tomorrow = new Date(koreaTime);
     tomorrow.setDate(tomorrow.getDate() + 1);
     
-    const nextWeek = new Date(now);
+    const nextWeek = new Date(koreaTime);
     nextWeek.setDate(nextWeek.getDate() + 7);
     
-    const nextMonth = new Date(now);
+    const nextMonth = new Date(koreaTime);
     nextMonth.setDate(nextMonth.getDate() + 30);
     
-    // 날짜 형식을 YYYY-MM-DD로 변경
+    // 날짜 형식을 YYYY-MM-DD로 변경 (한국 시간 기준)
     const formatDate = (date: Date) => {
-      return date.toISOString().split('T')[0];
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     };
     
     setEventForm(prev => ({
       ...prev,
-      purchaseStartDate: formatDate(now),
+      purchaseStartDate: formatDate(koreaTime),
       purchaseEndDate: formatDate(nextWeek),
       eventStartDate: formatDate(tomorrow),
       eventEndDate: formatDate(nextMonth),
@@ -374,10 +380,10 @@ const EventCreatePage = () => {
                       )}
                       <div>
                         <div className="font-bold text-gray-900 text-lg">
-                          {type === "BATTLE" ? "배틀" : type === "MISSION" ? "미션" : "다수"}
+                          {type === "BATTLE" ? "배틀" : type === "MISSION" ? "미션" : "랭킹"}
                         </div>
                         <div className="text-sm text-gray-500 mt-1">
-                          {type === "BATTLE" ? "1:1 스타일 대결" : type === "MISSION" ? "주어진 미션 수행" : "다수 참여 이벤트"}
+                          {type === "BATTLE" ? "1:1 스타일 대결" : type === "MISSION" ? "주어진 미션 수행" : "최다 투표 랭킹 이벤트"}
                         </div>
                       </div>
                     </div>
