@@ -164,7 +164,34 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             </span>
           </div>
 
-          {/* 닫기 버튼 */}
+          {/* 관리자 아이콘 - 오른쪽 상단 */}
+          {isAdmin && (
+            <div className="absolute top-4 right-16 flex gap-2">
+              <button
+                onClick={() => {
+                  onClose();
+                  navigate(`/event-edit/${detail.id}`);
+                }}
+                className="p-2 text-white bg-black bg-opacity-50 rounded-full hover:bg-opacity-70 transition-all"
+                title="수정"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+              <button
+                onClick={handleDelete}
+                className="p-2 text-white bg-black bg-opacity-50 rounded-full hover:bg-opacity-70 transition-all"
+                title="삭제"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          {/* 닫기 버튼 - 오른쪽 상단 맨 끝 */}
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70 transition-all"
@@ -180,32 +207,6 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
           <h2 className="text-2xl font-bold text-gray-900 mb-4">{detail.title}</h2>
           
           <div className="space-y-6">
-            {/* 기본 정보 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">최대 참여자</h3>
-                <p className="text-lg font-semibold text-gray-900">{detail.maxParticipants}명</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">현재 참여자</h3>
-                <p className="text-lg font-semibold text-gray-900">{detail.participantCount || 0}명</p>
-              </div>
-            </div>
-
-            {/* 진행률 */}
-            <div>
-              <div className="flex justify-between text-sm text-gray-600 mb-2">
-                <span>참여율</span>
-                <span>{Math.round(((detail.participantCount || 0) / detail.maxParticipants) * 100)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${Math.min(((detail.participantCount || 0) / detail.maxParticipants) * 100, 100)}%` }}
-                ></div>
-              </div>
-            </div>
-
             {/* 설명 */}
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-2">이벤트 설명</h3>
@@ -266,29 +267,6 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             </div>
           </div>
         </div>
-
-        {/* 관리자 버튼 */}
-        {isAdmin && (
-          <div className="border-t border-gray-200 p-6 bg-gray-50">
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  if (setEditingEvent) setEditingEvent(detail);
-                  onClose();
-                }}
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                수정
-              </button>
-              <button
-                onClick={handleDelete}
-                className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors"
-              >
-                삭제
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -32,12 +32,6 @@ const EventListPage = () => {
 
   const navigate = useNavigate();
   const { user } = useAuth();
-  const nickname = user?.nickname;
-  
-  // 디버깅을 위한 사용자 정보 출력
-  console.log('Current user:', user);
-  console.log('User nickname:', nickname);
-  console.log('User type:', user?.userType);
 
   const handleEventClick = (event: EventDto) => {
     setSelectedEvent(event);
@@ -49,74 +43,98 @@ const EventListPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const params: any = {
-          page: page - 1, // 백엔드는 0-based pagination 사용
+        // API 경로 분기: 검색어 또는 필터가 있으면 /search, 아니면 /all
+        let url = "/api/events/all";
+        let params: any = {
+          page: page, // 백엔드는 1-based pagination 사용 (서비스에서 0-based로 변환)
           size: PAGE_SIZE,
         };
         
-        // 정렬 파라미터 설정
-        switch (sortType) {
-          case "latest":
-            params.sort = "createdAt,desc"; // 최신순
-            break;
-          case "participants":
-            params.sort = "participantCount,desc"; // 참여자순
-            break;
-          case "ending":
-            params.sort = "eventEndDate,asc"; // 종료임박순
-            break;
-          default:
-            params.sort = "createdAt,desc"; // 기본값
-        }
-        if (activeFilter !== "all") params.status = activeFilter.toUpperCase();
-        if (searchKeyword) params.keyword = searchKeyword;
-
-        // API 경로 분기: 검색어 또는 필터가 있으면 /search, 아니면 /all
-        let url = "/api/events/all";
         if (searchKeyword || activeFilter !== "all" || sortType !== "latest") {
           url = "/api/events/search";
+          
+          // 정렬 파라미터 설정
+          switch (sortType) {
+            case "latest":
+              params.sort = "latest"; // 최신순
+              break;
+            case "upcoming":
+              params.sort = "upcoming"; // 예정순
+              break;
+            case "past":
+              params.sort = "past"; // 지난순
+              break;
+            default:
+              params.sort = "latest"; // 기본값
+          }
+          
+          if (activeFilter !== "all") {
+            params.status = activeFilter;
+          }
+          
+          if (searchKeyword) {
+            params.keyword = searchKeyword;
+          }
         }
-        
-        console.log('정렬 타입:', sortType);
-        console.log('정렬 파라미터:', params.sort);
-        console.log('요청 URL:', url);
-        console.log('전체 파라미터:', params);
 
         const response = await axiosInstance.get(url, { params });
-        console.log('API 응답:', response.data);
         
-        // 응답 구조에 따라 데이터 추출
-        const responseData = response.data.data || response.data;
-        const eventsData = responseData.content || responseData || [];
+        // 백엔드 응답 구조에 맞게 데이터 추출
+        const responseData = response.data;
+        const eventsData = responseData.content || [];
         
         // EventDto 형식으로 변환
-        const transformedEvents = eventsData.map((event: any) => ({
-          id: event.id ?? event.eventId,
-          type: event.type ?? 'BATTLE',
-          status: event.status ?? 'UPCOMING',
-          maxParticipants: event.maxParticipants ?? event.maxParticipantCount ?? 0,
-          participantCount: event.participantCount ?? 0,
-          title: event.title ?? event.eventDetail?.title ?? '',
-          description: event.description ?? event.eventDetail?.description ?? '',
-          purchaseStartDate: event.purchaseStartDate ?? event.eventDetail?.purchaseStartDate ?? '',
-          purchaseEndDate: event.purchaseEndDate ?? event.eventDetail?.purchaseEndDate ?? '',
-          eventStartDate: event.eventStartDate ?? event.eventDetail?.eventStartDate ?? '',
-          eventEndDate: event.eventEndDate ?? event.eventDetail?.eventEndDate ?? '',
-          announcement: event.announcement ?? event.eventDetail?.announcement ?? '',
-          participationMethod: event.participationMethod ?? event.eventDetail?.participationMethod ?? '',
-          selectionCriteria: event.selectionCriteria ?? event.eventDetail?.selectionCriteria ?? '',
-          precautions: event.precautions ?? event.eventDetail?.precautions ?? '',
-          imageUrl: event.imageUrl ?? event.eventDetail?.imageUrl ?? '',
-          rewards: event.rewards ?? [],
-          deletedAt: event.deletedAt ?? null,
-          createdAt: event.createdAt ?? '',
-          updatedAt: event.updatedAt ?? ''
-        }));
+        const transformedEvents = eventsData.map((event: any) => {
+          // 구매 기간 파싱
+          let purchaseStartDate = '';
+          let purchaseEndDate = '';
+          if (event.purchasePeriod) {
+            const purchaseParts = event.purchasePeriod.split(' ~ ');
+            if (purchaseParts.length === 2) {
+              purchaseStartDate = purchaseParts[0].trim();
+              purchaseEndDate = purchaseParts[1].trim();
+            }
+          }
+
+          // 참여 기간 파싱
+          let eventStartDate = '';
+          let eventEndDate = '';
+          if (event.votePeriod) {
+            const voteParts = event.votePeriod.split(' ~ ');
+            if (voteParts.length === 2) {
+              eventStartDate = voteParts[0].trim();
+              eventEndDate = voteParts[1].trim();
+            }
+          }
+
+          return {
+            id: event.eventId,
+            type: event.type || 'BATTLE',
+            status: event.status || 'UPCOMING',
+            maxParticipants: event.maxParticipants || 0,
+
+            title: event.title || '',
+            description: event.description || '',
+            purchaseStartDate: purchaseStartDate,
+            purchaseEndDate: purchaseEndDate,
+            eventStartDate: eventStartDate,
+            eventEndDate: eventEndDate,
+            announcement: event.announcementDate || '',
+            participationMethod: event.participationMethod || '',
+            selectionCriteria: event.selectionCriteria || '',
+            precautions: event.precautions || '',
+            imageUrl: event.imageUrl || '/placeholder-image.jpg',
+            rewards: event.rewards ? event.rewards.map((reward: any) => ({
+              conditionValue: reward.rank || 1,
+              rewardValue: reward.reward || ''
+            })) : [],
+            createdAt: event.createdAt || '',
+            updatedAt: event.updatedAt || ''
+          };
+        });
 
         setEvents(transformedEvents);
-        setTotalPages(responseData.totalPages ?? 1);
-        
-        console.log('변환된 이벤트 데이터:', transformedEvents);
+        setTotalPages(responseData.totalPages || 1);
       } catch (error: any) {
         console.error('이벤트 목록 조회 실패:', error);
         setError('이벤트 목록을 불러오지 못했습니다.');
@@ -128,7 +146,7 @@ const EventListPage = () => {
             type: 'BATTLE',
             status: 'ONGOING',
             maxParticipants: 100,
-            participantCount: 25,
+
             title: '여름 스타일 챌린지',
             description: '여름에 어울리는 스타일을 공유해보세요!',
             purchaseStartDate: '2025-07-20',
@@ -145,7 +163,7 @@ const EventListPage = () => {
               { conditionValue: 2, rewardValue: '2등: 5만원 상품권' },
               { conditionValue: 3, rewardValue: '3등: 3만원 상품권' }
             ],
-            deletedAt: null,
+
             createdAt: '2025-07-15',
             updatedAt: '2025-07-15'
           }
@@ -159,6 +177,8 @@ const EventListPage = () => {
 
     fetchEvents();
   }, [page, sortType, activeFilter, searchKeyword]);
+
+
 
   // 검색어 변경 시 디바운스 처리
   useEffect(() => {
@@ -227,6 +247,25 @@ const EventListPage = () => {
     }
   };
 
+  // 이벤트 상태를 동적으로 계산하는 함수
+  const calculateEventStatus = (event: EventDto): EventStatus => {
+    const now = new Date();
+    const eventStart = event.eventStartDate ? new Date(event.eventStartDate) : null;
+    const eventEnd = event.eventEndDate ? new Date(event.eventEndDate) : null;
+
+    if (!eventStart || !eventEnd) {
+      return 'UPCOMING'; // 날짜 정보가 없으면 예정으로 처리
+    }
+
+    if (now < eventStart) {
+      return 'UPCOMING'; // 이벤트 시작일 이전
+    } else if (now >= eventStart && now <= eventEnd) {
+      return 'ONGOING'; // 이벤트 진행 중
+    } else {
+      return 'COMPLETED'; // 이벤트 종료
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -252,7 +291,7 @@ const EventListPage = () => {
             </div>
             {user?.userType === 'admin' && (
               <Link
-                to="/event-create"
+                to="/events/create"
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 이벤트 생성
@@ -304,7 +343,7 @@ const EventListPage = () => {
                     : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
                 }`}
               >
-                예정
+                예정된 이벤트
               </button>
               <button
                 onClick={() => handleFilterChange("ongoing")}
@@ -314,7 +353,7 @@ const EventListPage = () => {
                     : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
                 }`}
               >
-                진행중
+                진행 중인 이벤트
               </button>
               <button
                 onClick={() => handleFilterChange("completed")}
@@ -324,7 +363,7 @@ const EventListPage = () => {
                     : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
                 }`}
               >
-                완료
+                종료된 이벤트
               </button>
             </div>
 
@@ -335,8 +374,8 @@ const EventListPage = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="latest">최신순</option>
-              <option value="participants">참여자순</option>
-              <option value="ending">종료임박순</option>
+              <option value="upcoming">예정순</option>
+              <option value="past">지난순</option>
             </select>
           </div>
         </div>
@@ -369,69 +408,123 @@ const EventListPage = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="space-y-6">
             {events.map((event) => (
               <div
                 key={event.id}
                 onClick={() => handleEventClick(event)}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
+                className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
               >
-                {/* 이미지 */}
-                <div className="relative h-48 bg-gray-200">
-                  <img
-                    src={event.imageUrl || '/placeholder-image.jpg'}
-                    alt={event.title}
-                    className="w-full h-full object-cover"
-                  />
-                  {/* 상태 배지 */}
-                  <div className="absolute top-2 left-2">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(event.status)}`}>
-                      {getStatusText(event.status)}
-                    </span>
-                  </div>
-                  {/* 타입 배지 */}
-                  <div className="absolute top-2 right-2">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(event.type)}`}>
-                      {getTypeText(event.type)}
-                    </span>
-                  </div>
-                  {/* D-day */}
-                  {getDday(event.eventEndDate) && (
-                    <div className="absolute bottom-2 right-2">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                        {getDday(event.eventEndDate)}
+                <div className="flex">
+                  {/* 이미지 섹션 */}
+                  <div className="relative w-96 bg-gray-200 flex-shrink-0">
+                    <img
+                      src={event.imageUrl || '/placeholder-image.jpg'}
+                      alt={event.title}
+                      className="w-full h-full object-cover"
+                    />
+                    {/* 상태 배지 */}
+                    <div className="absolute top-4 left-4">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(event.status || calculateEventStatus(event))}`}>
+                        {getStatusText(event.status || calculateEventStatus(event))}
                       </span>
                     </div>
-                  )}
-                </div>
-
-                {/* 내용 */}
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-                    {event.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                    {event.description}
-                  </p>
-                  
-                  {/* 참여자 정보 */}
-                  <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                    <span>참여자: {event.participantCount || 0}/{event.maxParticipants}</span>
-                    <span>{Math.round(((event.participantCount || 0) / event.maxParticipants) * 100)}%</span>
-                  </div>
-                  
-                  {/* 진행률 바 */}
-                  <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min(((event.participantCount || 0) / event.maxParticipants) * 100, 100)}%` }}
-                    ></div>
                   </div>
 
-                  {/* 날짜 정보 */}
-                  <div className="text-xs text-gray-500">
-                    <div>시작: {new Date(event.eventStartDate).toLocaleDateString()}</div>
-                    <div>종료: {new Date(event.eventEndDate).toLocaleDateString()}</div>
+                  {/* 내용 섹션 */}
+                  <div className="flex-1 p-6 flex flex-col">
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                        {event.title}
+                      </h3>
+                      <p className="text-gray-600 mb-6 leading-relaxed">
+                        {event.description}
+                      </p>
+
+                      {/* 기간 정보 */}
+                      <div className="grid grid-cols-3 gap-4 mb-6">
+                        <div>
+                          <div className="text-sm font-medium text-gray-500 mb-1">구매 기간</div>
+                          <div className="text-sm text-gray-900">
+                            {event.purchaseStartDate && event.purchaseEndDate ? 
+                              `${new Date(event.purchaseStartDate).toLocaleDateString()} - ${new Date(event.purchaseEndDate).toLocaleDateString()}` : 
+                              '기간 정보 없음'
+                            }
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-500 mb-1">참여 기간</div>
+                          <div className="text-sm text-gray-900">
+                            {event.eventStartDate && event.eventEndDate ? 
+                              `${new Date(event.eventStartDate).toLocaleDateString()} - ${new Date(event.eventEndDate).toLocaleDateString()}` : 
+                              '기간 정보 없음'
+                            }
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-500 mb-1">발표일</div>
+                          <div className="text-sm text-gray-900">
+                            {event.announcement ? new Date(event.announcement).toLocaleDateString() : '발표일 미정'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 보상 정보 */}
+                      <div className="mb-6">
+                        <div className="text-sm font-medium text-gray-500 mb-2">🏆 보상</div>
+                        {event.rewards && event.rewards.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {event.rewards.slice(0, 3).map((reward, index) => (
+                              <div
+                                key={index}
+                                className="bg-blue-50 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium border border-blue-200"
+                              >
+                                <span className="font-bold">{reward.conditionValue}등</span>
+                                <span className="ml-1">{reward.rewardValue}</span>
+                              </div>
+                            ))}
+                            {event.rewards.length > 3 && (
+                              <div className="text-gray-500 text-sm px-2 py-2">
+                                +{event.rewards.length - 3}개 더
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-gray-400 text-sm">보상 정보가 없습니다.</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 하단 액션 영역 */}
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                      <div className="flex items-center gap-4">
+                        {/* 참여자 수 표시 제거 */}
+                      </div>
+                      <div className="flex gap-2">
+                        {(event.status || calculateEventStatus(event)) === 'ONGOING' ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // 참여하기 로직
+
+                            }}
+                            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                          >
+                            참여하기
+                          </button>
+                        ) : (event.status || calculateEventStatus(event)) === 'COMPLETED' ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEventClick(event);
+                            }}
+                            className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                          >
+                            결과 보기
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -440,12 +533,12 @@ const EventListPage = () => {
         )}
 
         {/* 페이지네이션 */}
-        {totalPages > 1 && (
+        {totalPages > 1 && totalPages > 0 && (
           <div className="mt-8 flex justify-center">
             <nav className="flex items-center space-x-2">
               <button
                 onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1}
+                disabled={page <= 1}
                 className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 이전
@@ -470,7 +563,7 @@ const EventListPage = () => {
               
               <button
                 onClick={() => handlePageChange(page + 1)}
-                disabled={page === totalPages}
+                disabled={page >= totalPages}
                 className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 다음
