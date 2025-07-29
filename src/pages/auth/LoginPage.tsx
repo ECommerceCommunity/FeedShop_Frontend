@@ -244,8 +244,6 @@ export default function LoginPage() {
         password,
       });
 
-      console.log("API Response:", response); // 서버 응답 전체를 먼저 확인
-
       const apiResponseData = response.data; // { success: true, message: "...", data: { ... } }
 
       if (apiResponseData && apiResponseData.success && apiResponseData.data) {
