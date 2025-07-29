@@ -52,19 +52,19 @@ const EventListPage = () => {
         
         if (searchKeyword || activeFilter !== "all" || sortType !== "latest") {
           url = "/api/events/search";
-          
-          // 정렬 파라미터 설정
-          switch (sortType) {
-            case "latest":
+        
+        // 정렬 파라미터 설정
+        switch (sortType) {
+          case "latest":
               params.sort = "latest"; // 최신순
-              break;
+            break;
             case "upcoming":
               params.sort = "upcoming"; // 예정순
-              break;
+            break;
             case "past":
               params.sort = "past"; // 지난순
-              break;
-            default:
+            break;
+          default:
               params.sort = "latest"; // 기본값
           }
           
@@ -110,7 +110,7 @@ const EventListPage = () => {
           return {
             id: event.eventId,
             type: event.type || 'BATTLE',
-            status: event.status || 'UPCOMING',
+            status: (event.status === 'ended' ? 'ENDED' : event.status) || 'UPCOMING',
             maxParticipants: event.maxParticipants || 0,
 
             title: event.title || '',
@@ -125,7 +125,7 @@ const EventListPage = () => {
             precautions: event.precautions || '',
             imageUrl: event.imageUrl || '/placeholder-image.jpg',
             rewards: event.rewards ? event.rewards.map((reward: any) => ({
-              conditionValue: reward.rank || 1,
+              conditionValue: reward.rank || reward.conditionType || 1,
               rewardValue: reward.reward || ''
             })) : [],
             createdAt: event.createdAt || '',
@@ -213,7 +213,7 @@ const EventListPage = () => {
     switch (status) {
       case 'UPCOMING': return '예정';
       case 'ONGOING': return '진행중';
-      case 'COMPLETED': return '완료';
+      case 'ENDED': return '완료';
       case 'CANCELLED': return '취소';
       default: return '알 수 없음';
     }
@@ -232,7 +232,7 @@ const EventListPage = () => {
     switch (status) {
       case 'UPCOMING': return 'bg-blue-100 text-blue-800';
       case 'ONGOING': return 'bg-green-100 text-green-800';
-      case 'COMPLETED': return 'bg-gray-100 text-gray-800';
+      case 'ENDED': return 'bg-gray-100 text-gray-800';
       case 'CANCELLED': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -262,7 +262,7 @@ const EventListPage = () => {
     } else if (now >= eventStart && now <= eventEnd) {
       return 'ONGOING'; // 이벤트 진행 중
     } else {
-      return 'COMPLETED'; // 이벤트 종료
+      return 'ENDED'; // 이벤트 종료 (백엔드와 일치)
     }
   };
 
@@ -338,7 +338,7 @@ const EventListPage = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                     <span className="relative">
-                      이벤트 생성
+              이벤트 생성
                       <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300"></span>
                     </span>
                   </Link>
@@ -358,23 +358,23 @@ const EventListPage = () => {
                       <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300"></span>
                     </span>
                   </Link>
-                )}
-              </div>
-            </div>
+          )}
+        </div>
+      </div>
 
             {/* 필터 */}
             <div className="flex gap-3">
-              <button
+        <button
                 onClick={() => handleFilterChange("all")}
                 className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
                   activeFilter === "all"
                     ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
                     : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
                 }`}
-              >
-                전체
-              </button>
-              <button
+        >
+          전체
+        </button>
+        <button
                 onClick={() => handleFilterChange("upcoming")}
                 className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
                   activeFilter === "upcoming"
@@ -391,20 +391,20 @@ const EventListPage = () => {
                     ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
                     : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
                 }`}
-              >
-                진행중
-              </button>
-              <button
-                onClick={() => handleFilterChange("completed")}
+        >
+          진행중
+        </button>
+        <button
+                onClick={() => handleFilterChange("ended")}
                 className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
-                  activeFilter === "completed"
+                  activeFilter === "ended"
                     ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
                     : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
                 }`}
-              >
-                종료
-              </button>
-            </div>
+        >
+          종료
+        </button>
+      </div>
           </div>
         </div>
 
@@ -421,7 +421,7 @@ const EventListPage = () => {
                 <p className="text-sm text-red-800">{error}</p>
               </div>
             </div>
-          </div>
+      </div>
         )}
 
         {/* 이벤트 목록 */}
@@ -437,10 +437,10 @@ const EventListPage = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {events.map((event) => (
-              <div
-                key={event.id}
-                onClick={() => handleEventClick(event)}
+        {events.map((event) => (
+          <div
+            key={event.id}
+            onClick={() => handleEventClick(event)}
                 className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer overflow-hidden group"
               >
                 <div className="flex">
@@ -451,10 +451,10 @@ const EventListPage = () => {
                       alt={event.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    {/* 상태 배지 */}
+                    {/* 상태 배지 - 이미지 왼쪽 상단 */}
                     <div className="absolute top-4 left-4">
-                      <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold shadow-lg backdrop-blur-sm ${getStatusColor(event.status || calculateEventStatus(event))}`}>
-                        {getStatusText(event.status || calculateEventStatus(event))}
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-semibold text-white bg-blue-600 shadow-lg backdrop-blur-sm">
+                        진행 예정
                       </span>
                     </div>
                   </div>
@@ -522,8 +522,8 @@ const EventListPage = () => {
                           </div>
                         ) : (
                           <div className="text-gray-400 text-sm bg-gray-50 px-4 py-3 rounded-xl border border-gray-200">보상 정보가 없습니다.</div>
-                        )}
-                      </div>
+              )}
+            </div>
                     </div>
 
                     {/* 하단 액션 영역 */}
@@ -543,7 +543,7 @@ const EventListPage = () => {
                           >
                             참여하기
                           </button>
-                        ) : (event.status || calculateEventStatus(event)) === 'COMPLETED' ? (
+                        ) : (event.status || calculateEventStatus(event)) === 'ENDED' ? (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -556,11 +556,11 @@ const EventListPage = () => {
                         ) : null}
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+            </div>
+            </div>
           </div>
+        ))}
+      </div>
         )}
 
         {/* 페이지네이션 */}
@@ -592,13 +592,13 @@ const EventListPage = () => {
                 );
               })}
               
-              <button
+          <button
                 onClick={() => handlePageChange(page + 1)}
                 disabled={page >= totalPages}
                 className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 다음
-              </button>
+          </button>
             </nav>
           </div>
         )}
