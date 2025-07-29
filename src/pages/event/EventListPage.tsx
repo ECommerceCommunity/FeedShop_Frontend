@@ -278,22 +278,25 @@ const EventListPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* 헤더 */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-200/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+          <div className="flex justify-between items-center py-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">이벤트</h1>
-              <p className="mt-2 text-sm text-gray-600">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">이벤트</h1>
+              <p className="mt-3 text-base text-gray-600">
                 다양한 이벤트에 참여하고 특별한 혜택을 받아보세요
               </p>
             </div>
             {user?.userType === 'admin' && (
               <Link
                 to="/events/create"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-semibold rounded-xl shadow-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-105"
               >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
                 이벤트 생성
               </Link>
             )}
@@ -304,74 +307,76 @@ const EventListPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 검색 및 필터 */}
         <div className="mb-8">
-          <div className="flex flex-col sm:flex-row gap-4">
-            {/* 검색 */}
-            <div className="flex-1">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="이벤트 제목으로 검색..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+          <div className="flex flex-col sm:flex-row gap-6 justify-between">
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* 검색 */}
+              <div className="w-72">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="검색"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white/70 backdrop-blur-sm shadow-sm transition-all duration-200"
+                  />
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* 필터 */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleFilterChange("all")}
-                className={`px-4 py-2 text-sm font-medium rounded-lg ${
-                  activeFilter === "all"
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                전체
-              </button>
-              <button
-                onClick={() => handleFilterChange("upcoming")}
-                className={`px-4 py-2 text-sm font-medium rounded-lg ${
-                  activeFilter === "upcoming"
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                예정된 이벤트
-              </button>
-              <button
-                onClick={() => handleFilterChange("ongoing")}
-                className={`px-4 py-2 text-sm font-medium rounded-lg ${
-                  activeFilter === "ongoing"
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                진행 중인 이벤트
-              </button>
-              <button
-                onClick={() => handleFilterChange("completed")}
-                className={`px-4 py-2 text-sm font-medium rounded-lg ${
-                  activeFilter === "completed"
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                종료된 이벤트
-              </button>
+              {/* 필터 */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleFilterChange("all")}
+                  className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
+                    activeFilter === "all"
+                      ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
+                      : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
+                  }`}
+                >
+                  전체
+                </button>
+                <button
+                  onClick={() => handleFilterChange("upcoming")}
+                  className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
+                    activeFilter === "upcoming"
+                      ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
+                      : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
+                  }`}
+                >
+                  예정된 이벤트
+                </button>
+                <button
+                  onClick={() => handleFilterChange("ongoing")}
+                  className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
+                    activeFilter === "ongoing"
+                      ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
+                      : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
+                  }`}
+                >
+                  진행 중인 이벤트
+                </button>
+                <button
+                  onClick={() => handleFilterChange("completed")}
+                  className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
+                    activeFilter === "completed"
+                      ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
+                      : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
+                  }`}
+                >
+                  종료된 이벤트
+                </button>
+              </div>
             </div>
 
             {/* 정렬 */}
             <select
               value={sortType}
               onChange={(e) => handleSortChange(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="px-6 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white/70 backdrop-blur-sm shadow-sm transition-all duration-200"
             >
               <option value="latest">최신순</option>
               <option value="upcoming">예정순</option>
@@ -413,7 +418,7 @@ const EventListPage = () => {
               <div
                 key={event.id}
                 onClick={() => handleEventClick(event)}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
+                className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer overflow-hidden group"
               >
                 <div className="flex">
                   {/* 이미지 섹션 */}
@@ -421,86 +426,89 @@ const EventListPage = () => {
                     <img
                       src={event.imageUrl || '/placeholder-image.jpg'}
                       alt={event.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     {/* 상태 배지 */}
                     <div className="absolute top-4 left-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(event.status || calculateEventStatus(event))}`}>
+                      <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold shadow-lg backdrop-blur-sm ${getStatusColor(event.status || calculateEventStatus(event))}`}>
                         {getStatusText(event.status || calculateEventStatus(event))}
                       </span>
                     </div>
                   </div>
 
                   {/* 내용 섹션 */}
-                  <div className="flex-1 p-6 flex flex-col">
+                  <div className="flex-1 p-8 flex flex-col">
                     <div className="flex-1">
-                      <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                      <h3 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-4">
                         {event.title}
                       </h3>
-                      <p className="text-gray-600 mb-6 leading-relaxed">
+                      <p className="text-gray-600 mb-8 leading-relaxed text-lg">
                         {event.description}
                       </p>
 
                       {/* 기간 정보 */}
-                      <div className="grid grid-cols-3 gap-4 mb-6">
-                        <div>
-                          <div className="text-sm font-medium text-gray-500 mb-1">구매 기간</div>
-                          <div className="text-sm text-gray-900">
+                      <div className="grid grid-cols-3 gap-6 mb-8">
+                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200/50">
+                          <div className="text-sm font-semibold text-blue-600 mb-2">구매 기간</div>
+                          <div className="text-sm font-medium text-gray-900">
                             {event.purchaseStartDate && event.purchaseEndDate ? 
                               `${new Date(event.purchaseStartDate).toLocaleDateString()} - ${new Date(event.purchaseEndDate).toLocaleDateString()}` : 
                               '기간 정보 없음'
                             }
                           </div>
                         </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-500 mb-1">참여 기간</div>
-                          <div className="text-sm text-gray-900">
+                        <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200/50">
+                          <div className="text-sm font-semibold text-green-600 mb-2">참여 기간</div>
+                          <div className="text-sm font-medium text-gray-900">
                             {event.eventStartDate && event.eventEndDate ? 
                               `${new Date(event.eventStartDate).toLocaleDateString()} - ${new Date(event.eventEndDate).toLocaleDateString()}` : 
                               '기간 정보 없음'
                             }
                           </div>
                         </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-500 mb-1">발표일</div>
-                          <div className="text-sm text-gray-900">
+                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200/50">
+                          <div className="text-sm font-semibold text-purple-600 mb-2">발표일</div>
+                          <div className="text-sm font-medium text-gray-900">
                             {event.announcement ? new Date(event.announcement).toLocaleDateString() : '발표일 미정'}
                           </div>
                         </div>
                       </div>
 
                       {/* 보상 정보 */}
-                      <div className="mb-6">
-                        <div className="text-sm font-medium text-gray-500 mb-2">🏆 보상</div>
+                      <div className="mb-8">
+                        <div className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                          <span className="text-2xl mr-2">🏆</span>
+                          보상
+                        </div>
                         {event.rewards && event.rewards.length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-3">
                             {event.rewards.slice(0, 3).map((reward, index) => (
                               <div
                                 key={index}
-                                className="bg-blue-50 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium border border-blue-200"
+                                className="bg-gradient-to-r from-yellow-50 to-orange-50 text-orange-700 px-4 py-3 rounded-xl text-sm font-semibold border border-orange-200 shadow-sm hover:shadow-md transition-all duration-200"
                               >
-                                <span className="font-bold">{reward.conditionValue}등</span>
-                                <span className="ml-1">{reward.rewardValue}</span>
+                                <span className="font-bold text-lg">{reward.conditionValue}등</span>
+                                <span className="ml-2">{reward.rewardValue}</span>
                               </div>
                             ))}
                             {event.rewards.length > 3 && (
-                              <div className="text-gray-500 text-sm px-2 py-2">
+                              <div className="text-gray-500 text-sm px-4 py-3 bg-gray-50 rounded-xl border border-gray-200">
                                 +{event.rewards.length - 3}개 더
                               </div>
                             )}
                           </div>
                         ) : (
-                          <div className="text-gray-400 text-sm">보상 정보가 없습니다.</div>
+                          <div className="text-gray-400 text-sm bg-gray-50 px-4 py-3 rounded-xl border border-gray-200">보상 정보가 없습니다.</div>
                         )}
                       </div>
                     </div>
 
                     {/* 하단 액션 영역 */}
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <div className="flex items-center justify-between pt-6 border-t border-gray-200/50">
                       <div className="flex items-center gap-4">
                         {/* 참여자 수 표시 제거 */}
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-3">
                         {(event.status || calculateEventStatus(event)) === 'ONGOING' ? (
                           <button
                             onClick={(e) => {
@@ -508,7 +516,7 @@ const EventListPage = () => {
                               // 참여하기 로직
 
                             }}
-                            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                           >
                             참여하기
                           </button>
@@ -518,7 +526,7 @@ const EventListPage = () => {
                               e.stopPropagation();
                               handleEventClick(event);
                             }}
-                            className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                            className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 px-8 py-3 rounded-xl font-semibold hover:from-gray-200 hover:to-gray-300 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                           >
                             결과 보기
                           </button>
