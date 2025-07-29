@@ -1,7 +1,7 @@
 import { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link } from "react-router-dom";
-import axios from "axios"; // axios import 추가
+import axios from "axios";
 
 const fadeInUp = keyframes`
   from { opacity: 0; transform: translateY(30px); }
@@ -10,7 +10,7 @@ const fadeInUp = keyframes`
 
 const Container = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
   display: flex;
   align-items: center;
   justify-content: center;
