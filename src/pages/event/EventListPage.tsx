@@ -347,7 +347,7 @@ const EventListPage = () => {
                 {/* 결과 관리 버튼 */}
                 {user?.userType === 'admin' && (
                   <Link
-                    to="/events/results"
+                    to="/events/result"
                     className="group inline-flex items-center px-6 py-3 border border-transparent text-sm font-bold rounded-xl shadow-lg text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
                   >
                     <svg className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
