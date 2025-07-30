@@ -5,7 +5,7 @@ import { CartService } from "../../api/cartService";
 import UserProtectedRoute from "../../components/UserProtectedRoute";
 import Fail from "../../components/modal/Fail";
 import { toUrl } from "../../utils/images";
-import { CartItem } from "types/cart";
+import { CartItem } from "../../types/cart";
 
 // 스타일드 컴포넌트들
 const Container = styled.div`
@@ -77,10 +77,10 @@ const CartItemCard = styled.div`
   }
 `;
 
-const ItemCheckbox = styled.input`
-  width: 20px;
-  height: 20px;
-  margin-top: 12px;
+const ItemCheckbox = styled.input.attrs({ type: "checkbox" })`
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
 `;
 
 const ItemImage = styled.img`
@@ -88,6 +88,7 @@ const ItemImage = styled.img`
   height: 80px;
   object-fit: cover;
   border-radius: 8px;
+  border: 1px solid #e5e7eb;
 `;
 
 const ItemInfo = styled.div`
@@ -97,61 +98,68 @@ const ItemInfo = styled.div`
   justify-content: space-between;
 `;
 
+const ItemDetails = styled.div``;
+
 const ItemName = styled.h3`
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #1f2937;
   margin-bottom: 4px;
 `;
 
-const ItemStore = styled.p`
+const ItemOption = styled.div`
   font-size: 0.875rem;
   color: #6b7280;
   margin-bottom: 8px;
 `;
 
-const ItemOption = styled.p`
-  font-size: 0.875rem;
-  color: #374151;
-  margin-bottom: 12px;
-`;
-
-const PriceInfo = styled.div`
+const ItemPrice = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 `;
 
-const CurrentPrice = styled.span`
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #ef4444;
+const DiscountPrice = styled.span`
+  font-size: 1rem;
+  font-weight: 700;
+  color: #3b82f6;
 `;
 
 const OriginalPrice = styled.span`
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: #9ca3af;
   text-decoration: line-through;
+`;
+
+const ItemControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
 `;
 
 const QuantityControls = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  overflow: hidden;
 `;
 
 const QuantityButton = styled.button`
   width: 32px;
   height: 32px;
-  border: 1px solid #d1d5db;
-  background: white;
-  border-radius: 4px;
+  border: none;
+  background: #f9fafb;
+  color: #374151;
   cursor: pointer;
-  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  transition: background 0.2s ease;
 
-  &:hover {
-    border-color: #3b82f6;
+  &:hover:not(:disabled) {
     background: #f3f4f6;
   }
 
@@ -164,33 +172,41 @@ const QuantityButton = styled.button`
 const QuantityInput = styled.input`
   width: 50px;
   height: 32px;
+  border: none;
   text-align: center;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  background: white;
+
+  &:focus {
+    outline: none;
+  }
 `;
 
 const RemoveButton = styled.button`
+  padding: 6px 12px;
   background: none;
-  border: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
   color: #ef4444;
-  cursor: pointer;
   font-size: 0.875rem;
-  padding: 4px 8px;
-  border-radius: 4px;
+  cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
+    border-color: #ef4444;
     background: #fef2f2;
   }
 `;
 
 const SummaryCard = styled(Card)`
+  position: sticky;
+  top: 20px;
   height: fit-content;
 `;
 
 const SummaryTitle = styled.h2`
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #1f2937;
   margin-bottom: 20px;
@@ -200,7 +216,6 @@ const SummaryRow = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 12px;
-  font-size: 1rem;
 `;
 
 const SummaryLabel = styled.span`
@@ -208,63 +223,63 @@ const SummaryLabel = styled.span`
 `;
 
 const SummaryValue = styled.span`
+  font-weight: 600;
   color: #374151;
-  font-weight: 500;
 `;
 
 const TotalRow = styled(SummaryRow)`
-  margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid #e5e7eb;
-  font-size: 1.1rem;
-  font-weight: 600;
+  margin-top: 16px;
+  margin-bottom: 20px;
 `;
 
-const TotalLabel = styled(SummaryLabel)`
+const TotalLabel = styled.span`
+  font-size: 1.125rem;
+  font-weight: 700;
   color: #1f2937;
-  font-weight: 600;
 `;
 
-const TotalValue = styled(SummaryValue)`
-  color: #ef4444;
-  font-size: 1.2rem;
+const TotalValue = styled.span`
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #3b82f6;
 `;
 
-const CheckoutButton = styled.button`
+const CheckoutButton = styled.button<{ disabled: boolean }>`
   width: 100%;
   padding: 16px;
-  background: #3b82f6;
+  background: ${(props) =>
+    props.disabled
+      ? "#9ca3af"
+      : "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"};
   color: white;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 20px;
+  font-weight: 700;
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
   transition: all 0.2s ease;
 
-  &:hover {
-    background: #2563eb;
-  }
-
-  &:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
   }
 `;
 
-const EmptyCart = styled.div`
+const EmptyContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 400px;
   text-align: center;
+  color: #6b7280;
 `;
 
 const EmptyIcon = styled.div`
   font-size: 4rem;
-  color: #d1d5db;
   margin-bottom: 16px;
 `;
 
@@ -322,12 +337,12 @@ const CartPageContent: React.FC = () => {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // 장바구니 데이터 로딩
+  // 장바구니 데이터 로딩 함수
   const loadCartData = async () => {
     try {
       setLoading(true);
       const data = await CartService.getCartItems();
-      console.log(data);
+      console.log("장바구니 데이터:", data);
       setCartData(data);
 
       // 기본적으로 모든 아이템 선택
@@ -344,6 +359,39 @@ const CartPageContent: React.FC = () => {
   useEffect(() => {
     loadCartData();
   }, []);
+
+  // 가격 포맷팅 함수
+  const formatPrice = (price: number): string => {
+    return new Intl.NumberFormat("ko-KR").format(price);
+  };
+
+  // 선택된 아이템들의 총합 계산 함수
+  const getSelectedTotals = () => {
+    if (!cartData)
+      return { totalPrice: 0, totalDiscount: 0, deliveryFee: 0, finalPrice: 0 };
+
+    const selectedCartItems = cartData.items.filter((item) =>
+      selectedItems.includes(item.cartItemId)
+    );
+
+    const totalPrice = selectedCartItems.reduce(
+      (sum, item) => sum + (item.productPrice || 0) * (item.quantity || 1),
+      0
+    );
+
+    const totalDiscount = selectedCartItems.reduce(
+      (sum, item) =>
+        sum +
+        ((item.productPrice || 0) - (item.discountPrice || 0)) *
+          (item.quantity || 1),
+      0
+    );
+
+    const finalPrice = totalPrice - totalDiscount;
+    const deliveryFee = finalPrice >= 50000 ? 0 : 3000;
+
+    return { totalPrice, totalDiscount, deliveryFee, finalPrice };
+  };
 
   // 수량 변경 함수
   const handleQuantityChange = async (
@@ -474,57 +522,27 @@ const CartPageContent: React.FC = () => {
     });
   };
 
-  // 가격 포맷팅 함수
-  const formatPrice = (price: number): string => {
-    return new Intl.NumberFormat("ko-KR").format(price);
-  };
-
-  // 선택된 아이템들의 총합 계산
-  const getSelectedTotals = () => {
-    if (!cartData) return { totalPrice: 0, totalDiscount: 0, deliveryFee: 0 };
-
-    const selectedCartItems = cartData.items.filter((item) =>
-      selectedItems.includes(item.cartItemId)
-    );
-
-    const totalPrice = selectedCartItems.reduce(
-      (sum, item) => sum + (item.productPrice || 0) * (item.quantity || 1),
-      0
-    );
-
-    const totalDiscount = selectedCartItems.reduce(
-      (sum, item) =>
-        sum +
-        ((item.productPrice || 0) - (item.discountPrice || 0)) *
-          (item.quantity || 1),
-      0
-    );
-
-    const finalPrice = totalPrice - totalDiscount;
-    const deliveryFee = finalPrice >= 50000 ? 0 : 3000;
-
-    return { totalPrice, totalDiscount, deliveryFee, finalPrice };
-  };
-
+  // 로딩 중일 때
   if (loading) {
     return (
       <Container>
-        <LoadingContainer>장바구니를 불러오는 중...</LoadingContainer>
+        <LoadingContainer>장바구니 정보를 불러오는 중...</LoadingContainer>
       </Container>
     );
   }
 
+  // 장바구니가 비어있을 때
   if (!cartData || cartData.items.length === 0) {
     return (
       <Container>
-        <EmptyCart>
+        <EmptyContainer>
           <EmptyIcon>🛒</EmptyIcon>
           <EmptyTitle>장바구니가 비어있습니다</EmptyTitle>
-          <EmptyMessage>원하는 상품을 장바구니에 담아보세요.</EmptyMessage>
+          <EmptyMessage>원하는 상품을 장바구니에 담아보세요!</EmptyMessage>
           <ShoppingButton onClick={() => navigate("/products")}>
             쇼핑 계속하기
           </ShoppingButton>
-        </EmptyCart>
+        </EmptyContainer>
       </Container>
     );
   }
@@ -537,17 +555,14 @@ const CartPageContent: React.FC = () => {
         {/* 장바구니 아이템 목록 */}
         <Card>
           <CartHeader>
-            <CartTitle>장바구니</CartTitle>
+            <CartTitle>장바구니 ({cartData.totalItemCount}개)</CartTitle>
             <SelectAllLabel>
               <input
                 type="checkbox"
-                checked={
-                  selectedItems.length === cartData.items.length &&
-                  cartData.items.length > 0
-                }
+                checked={selectedItems.length === cartData.items.length}
                 onChange={(e) => handleSelectAll(e.target.checked)}
               />
-              전체 선택 ({selectedItems.length}/{cartData.items.length})
+              전체 선택
             </SelectAllLabel>
           </CartHeader>
 
@@ -555,7 +570,6 @@ const CartPageContent: React.FC = () => {
             {cartData.items.map((item) => (
               <CartItemCard key={item.cartItemId}>
                 <ItemCheckbox
-                  type="checkbox"
                   checked={selectedItems.includes(item.cartItemId)}
                   onChange={(e) =>
                     handleSelectItem(item.cartItemId, e.target.checked)
@@ -566,41 +580,30 @@ const CartPageContent: React.FC = () => {
                   src={toUrl(item.imageUrl)}
                   alt={item.productName}
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = toUrl(
-                      "images/common/no-image.png"
-                    );
+                    e.currentTarget.src = "/placeholder-image.jpg";
                   }}
                 />
 
                 <ItemInfo>
-                  <div>
-                    <ItemName>{item.productName || "상품명 없음"}</ItemName>
+                  <ItemDetails>
+                    <ItemName>{item.productName}</ItemName>
                     <ItemOption>
-                      {item.optionDetails?.size?.replace("SIZE_", "") ||
-                        "사이즈 미지정"}
-                      mm | {item.optionDetails?.color || "색상 미지정"}
+                      사이즈: {item.optionDetails?.size?.replace("SIZE_", "")} |
+                      색상: {item.optionDetails?.color}
                     </ItemOption>
-
-                    <PriceInfo>
-                      <CurrentPrice>
-                        {formatPrice(item.discountPrice || 0)}원
-                      </CurrentPrice>
-                      {(item.productPrice || 0) !==
-                        (item.discountPrice || 0) && (
+                    <ItemPrice>
+                      <DiscountPrice>
+                        {formatPrice(item.discountPrice)}원
+                      </DiscountPrice>
+                      {item.productPrice !== item.discountPrice && (
                         <OriginalPrice>
-                          {formatPrice(item.productPrice || 0)}원
+                          {formatPrice(item.productPrice)}원
                         </OriginalPrice>
                       )}
-                    </PriceInfo>
-                  </div>
+                    </ItemPrice>
+                  </ItemDetails>
 
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
+                  <ItemControls>
                     <QuantityControls>
                       <QuantityButton
                         onClick={() =>
@@ -643,7 +646,7 @@ const CartPageContent: React.FC = () => {
                     >
                       삭제
                     </RemoveButton>
-                  </div>
+                  </ItemControls>
                 </ItemInfo>
               </CartItemCard>
             ))}
@@ -681,7 +684,7 @@ const CartPageContent: React.FC = () => {
             <TotalLabel>총 결제금액</TotalLabel>
             <TotalValue>
               {formatPrice(
-                (selectedTotals.finalPrice || 0) + selectedTotals.deliveryFee
+                selectedTotals.finalPrice + selectedTotals.deliveryFee
               )}
               원
             </TotalValue>
