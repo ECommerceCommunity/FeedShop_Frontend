@@ -76,7 +76,7 @@ export interface CreateFeedRequest {
   title: string;
   content: string;
   instagramId?: string;
-  feedType?: 'DAILY' | 'EVENT'; // RANKING 제거, 선택적 필드로 변경
+  feedType: 'DAILY' | 'EVENT' | 'RANKING';
   orderItemId: number;
   eventId?: number; // 이벤트 피드인 경우
   imageUrls: string[];

@@ -25,7 +25,8 @@ export class FeedService {
         '/api/feeds',
         { params }
       );
-      return response.data.data;
+      const apiResponse = response.data;
+      return apiResponse.data;
     } catch (error: any) {
       console.error('피드 목록 조회 실패:', error);
       throw error;
@@ -40,7 +41,8 @@ export class FeedService {
       const response = await axiosInstance.get<ApiResponse<FeedPost>>(
         `/api/feeds/${feedId}`
       );
-      return response.data.data;
+      const apiResponse = response.data;
+      return apiResponse.data;
     } catch (error: any) {
       console.error('피드 상세 조회 실패:', error);
       throw error;
@@ -56,7 +58,8 @@ export class FeedService {
         '/api/feeds',
         feedData
       );
-      return response.data.data;
+      const apiResponse = response.data;
+      return apiResponse.data;
     } catch (error: any) {
       console.error('피드 생성 실패:', error);
       throw error;
@@ -72,7 +75,8 @@ export class FeedService {
         `/api/feeds/${feedId}`,
         feedData
       );
-      return response.data.data;
+      const apiResponse = response.data;
+      return apiResponse.data;
     } catch (error: any) {
       console.error('피드 수정 실패:', error);
       throw error;
@@ -99,7 +103,8 @@ export class FeedService {
       const response = await axiosInstance.post<ApiResponse<LikeResponse>>(
         `/api/feeds/${feedId}/like`
       );
-      return response.data.data;
+      const apiResponse = response.data;
+      return apiResponse.data;
     } catch (error: any) {
       console.error('좋아요 실패:', error);
       throw error;
@@ -115,7 +120,8 @@ export class FeedService {
         `/api/feeds/${feedId}/vote`,
         voteData
       );
-      return response.data.data;
+      const apiResponse = response.data;
+      return apiResponse.data;
     } catch (error: any) {
       console.error('투표 실패:', error);
       throw error;
@@ -130,7 +136,8 @@ export class FeedService {
       const response = await axiosInstance.delete<ApiResponse<VoteResponse>>(
         `/api/feeds/${feedId}/vote`
       );
-      return response.data.data;
+      const apiResponse = response.data;
+      return apiResponse.data;
     } catch (error: any) {
       console.error('투표 취소 실패:', error);
       throw error;
@@ -146,7 +153,8 @@ export class FeedService {
         `/api/feeds/${feedId}/comments`,
         { params }
       );
-      return response.data.data;
+      const apiResponse = response.data;
+      return apiResponse.data;
     } catch (error: any) {
       console.error('댓글 목록 조회 실패:', error);
       throw error;
@@ -162,7 +170,8 @@ export class FeedService {
         `/api/feeds/${feedId}/comments`,
         commentData
       );
-      return response.data.data;
+      const apiResponse = response.data;
+      return apiResponse.data;
     } catch (error: any) {
       console.error('댓글 생성 실패:', error);
       throw error;
@@ -192,7 +201,8 @@ export class FeedService {
         `/api/users/${userId}/feeds`,
         { params }
       );
-      return response.data.data;
+      const apiResponse = response.data;
+      return apiResponse.data;
     } catch (error: any) {
       console.error('사용자 피드 목록 조회 실패:', error);
       throw error;
@@ -208,7 +218,8 @@ export class FeedService {
         '/api/feeds/my',
         { params }
       );
-      return response.data.data;
+      const apiResponse = response.data;
+      return apiResponse.data;
     } catch (error: any) {
       console.error('내 피드 목록 조회 실패:', error);
       throw error;
