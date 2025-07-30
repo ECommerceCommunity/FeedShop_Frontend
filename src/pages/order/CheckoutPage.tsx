@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { FC, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Order } from "types/types";
+import { Order } from "types/order";
 import Fail from "components/modal/Fail";
 
 const Container = styled.div`
@@ -129,8 +129,8 @@ const CheckoutPage: FC = () => {
           <ProductList>
             {orderInfo.items.map((item) => (
               <ProductItem key={item.id}>
-                {item.name} / {item.price.toLocaleString()}원 / {item.option} ×{" "}
-                {item.quantity}개
+                {item.productName} / {item.productPrice.toLocaleString()}원 /{" "}
+                {item.size} × {item.quantity}개
               </ProductItem>
             ))}
           </ProductList>

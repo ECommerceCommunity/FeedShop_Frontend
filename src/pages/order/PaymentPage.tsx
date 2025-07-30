@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
-import { CartItem } from "types/types";
-import { CartItem as CartApiItem } from "types/cart";
+import { PaymentItem } from "types/order";
 import Fail from "components/modal/Fail";
 import { toUrl } from "utils/images";
 
@@ -231,13 +230,12 @@ const ProductPreview = styled.div`
 const PaymentPage: React.FC = () => {
   const nav = useNavigate();
   const location = useLocation();
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<PaymentItem[]>([]);
   const [isAgree, setIsAgree] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState("카드");
   const [usePoint, setUsePoint] = useState(false);
   const [usedPoints, setUsedPoints] = useState(0);
-  // 실제로는 API에서 가져와야 한다.
-  const [availablePoints] = useState(5000);
+  const [availablePoints] = useState(5000); // 실제로는 API에서 가져와야 한다.
   const [shippingInfo, setShippingInfo] = useState({
     name: "",
     phone: "",
@@ -262,56 +260,70 @@ const PaymentPage: React.FC = () => {
       return;
     }
 
-    let cartItems: CartItem[] = [];
+    let items: PaymentItem[] = [];
 
-    // 장바구니에서 온 경우
-    if (state.cartItems) {
-      // CartApiItem을 CartItem으로 변환
-      cartItems = state.cartItems.map((item: CartApiItem) => ({
-        id: `${item.productId || 0}-${item.optionId || "default"}`,
-        name: item.productName || "상품명 없음",
-        option:
-          item.optionDetails?.size?.replace("SIZE_", "") || "사이즈 미지정",
-        price: item.discountPrice || 0,
-        originalPrice: item.productPrice || 0,
-        discount: (item.productPrice || 0) - (item.discountPrice || 0),
-        quantity: item.quantity || 1,
-        image: item.imageUrl || "",
-        selected: item.selected ?? true,
-      }));
-    }
-    // 바로 주문인 경우 (DetailPage에서 온 경우)
-    else if (state.directOrder && state.product) {
-      const product = state.product;
-      const selectedOption = state.selectedOption;
-      const quantity = state.quantity || 1;
+    try {
+      // 장바구니에서 온 경우
+      if (state.cartItems) {
+        items = state.cartItems
+          .filter((item: any) => item && item.productId)
+          .map((item: any) => {
+            return {
+              id: `${item.productId}-${item.optionId}`,
+              productName: item.productName,
+              size: item.optionDetails?.size?.replace("SIZE_", ""),
+              discountPrice: item.discountPrice,
+              productPrice: item.productPrice,
+              discount: item.productPrice - item.discountPrice,
+              quantity: item.quantity,
+              imageUrl: item.imageUrl,
+              selected: item.selected,
+            };
+          });
+      } else if (state.directOrder && state.product) {
+        // 바로 주문인 경우 (DetailPage에서 온 경우)
+        const { product, selectedOption, quantity = 1 } = state;
 
-      cartItems = [
-        {
-          id: `${product.productId}-${selectedOption?.size || "default"}`,
-          name: product.name,
-          option: selectedOption?.size?.replace("SIZE_", "") || "기본",
-          price: product.discountPrice,
-          originalPrice: product.price,
-          discount: product.price - product.discountPrice,
-          quantity: quantity,
-          image: product.images[0]?.url || "",
-          selected: true,
-        },
-      ];
-    }
+        items = [
+          {
+            id: `${product.productId}-${selectedOption?.optionId}`,
+            productName: product.name,
+            size: selectedOption?.size?.replace("SIZE_", ""),
+            discountPrice: product.discountPrice,
+            productPrice: product.price,
+            discount: product.price - product.discountPrice,
+            quantity: quantity,
+            imageUrl: product.images[0]?.url,
+            selected: true,
+          },
+        ];
+      } else {
+        throw new Error("지원하지 않는 주문 방식입니다.");
+      }
 
-    if (cartItems.length === 0) {
-      setErrorMessage("주문할 상품이 없습니다.");
+      if (items.length === 0) {
+        setErrorMessage("주문할 상품이 없습니다.");
+        setErrorModal(true);
+        return;
+      }
+
+      setItems(items);
+    } catch (error: any) {
+      setErrorMessage("주문 정보를 처리하는 중 오류가 발생했습니다.");
       setErrorModal(true);
-      return;
-    }
 
-    setItems(cartItems);
-  }, [location.state]);
+      setTimeout(() => {
+        if (window.history.length > 1) {
+          nav(-1);
+        } else {
+          nav("/products");
+        }
+      }, 3000);
+    }
+  }, [location.state, nav]);
 
   const handlePointsChange = (value: string) => {
-    const numValue = parseInt(value) || 0;
+    const numValue = parseInt(value);
 
     // 100 단위로만 사용 가능하다.
     if (numValue % 100 !== 0) {
@@ -379,14 +391,13 @@ const PaymentPage: React.FC = () => {
   };
 
   const totalOriginalPrice = items.reduce(
-    (sum, item) => sum + (item.originalPrice || 0) * (item.quantity || 1),
+    (sum, item) => sum + item.productPrice * item.quantity,
     0
   );
 
   const totalDiscount = items.reduce(
     (sum, item) =>
-      sum +
-      ((item.originalPrice || 0) - (item.price || 0)) * (item.quantity || 1),
+      sum + (item.productPrice - item.discountPrice * item.quantity),
     0
   );
 
@@ -614,8 +625,8 @@ const PaymentPage: React.FC = () => {
                   }}
                 >
                   <img
-                    src={toUrl(item.image)}
-                    alt={item.name}
+                    src={toUrl(item.imageUrl)}
+                    alt={item.productName}
                     style={{
                       width: "60px",
                       height: "60px",
@@ -630,7 +641,7 @@ const PaymentPage: React.FC = () => {
                   />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: "600", marginBottom: "4px" }}>
-                      {item.name}
+                      {item.productName}
                     </div>
                     <div
                       style={{
@@ -639,7 +650,7 @@ const PaymentPage: React.FC = () => {
                         marginBottom: "4px",
                       }}
                     >
-                      사이즈: {item.option}
+                      사이즈: {item.size}
                     </div>
                     <div
                       style={{
@@ -649,9 +660,9 @@ const PaymentPage: React.FC = () => {
                       }}
                     >
                       <span style={{ fontWeight: "600", color: "#ef4444" }}>
-                        {item.price.toLocaleString()}원
+                        {item.discountPrice.toLocaleString()}원
                       </span>
-                      {item.discount > 0 && (
+                      {item.discountPrice > 0 && (
                         <span
                           style={{
                             fontSize: "14px",
@@ -659,7 +670,7 @@ const PaymentPage: React.FC = () => {
                             textDecoration: "line-through",
                           }}
                         >
-                          {item.originalPrice.toLocaleString()}원
+                          {item.productPrice.toLocaleString()}원
                         </span>
                       )}
                       <span style={{ fontSize: "14px", color: "#6b7280" }}>

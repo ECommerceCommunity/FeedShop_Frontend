@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import UserProtectedRoute from "../../components/UserProtectedRoute";
-import { toUrl } from "../../utils/images";
-import { WishListItem } from "../../types/types";
+import UserProtectedRoute from "components/UserProtectedRoute";
+import { toUrl } from "utils/images";
+import { WishListItem } from "types/cart";
 
 // 스타일드 컴포넌트들
 const Container = styled.div`
@@ -193,13 +193,14 @@ const WishListPageContent: React.FC = () => {
         if (savedWishList) {
           const parsedWishList = JSON.parse(savedWishList);
           // 최근 추가순으로 정렬
-          const sortedWishList = parsedWishList.sort((a: WishListItem, b: WishListItem) => 
-            new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime()
+          const sortedWishList = parsedWishList.sort(
+            (a: WishListItem, b: WishListItem) =>
+              new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime()
           );
           setWishList(sortedWishList);
         }
       } catch (error) {
-        console.error('찜한 상품 목록 로딩 실패:', error);
+        console.error("찜한 상품 목록 로딩 실패:", error);
         setWishList([]);
       }
     };
@@ -210,30 +211,30 @@ const WishListPageContent: React.FC = () => {
   // 찜한 상품 제거 함수
   const handleRemoveFromWishList = (productId: number) => {
     try {
-      const updatedWishList = wishList.filter(item => item.id !== productId);
+      const updatedWishList = wishList.filter((item) => item.id !== productId);
       setWishList(updatedWishList);
       localStorage.setItem("wishlist", JSON.stringify(updatedWishList));
     } catch (error) {
-      console.error('찜한 상품 제거 실패:', error);
+      console.error("찜한 상품 제거 실패:", error);
     }
   };
 
   // 가격 포맷팅 함수
   const formatPrice = (price: number): string => {
-    return new Intl.NumberFormat('ko-KR').format(price);
+    return new Intl.NumberFormat("ko-KR").format(price);
   };
 
   // 날짜 포맷팅 함수
   const formatDate = (dateString: string): string => {
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('ko-KR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+      return date.toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       });
     } catch (error) {
-      return '';
+      return "";
     }
   };
 
@@ -266,45 +267,54 @@ const WishListPageContent: React.FC = () => {
             {wishList.map((item) => (
               <WishCard key={item.id}>
                 <ProductLink to={`/products/${item.id}`}>
-                  <ProductImage 
-                    src={toUrl(item.image)} 
+                  <ProductImage
+                    src={toUrl(item.image)}
                     alt={item.name}
                     onError={(e) => {
                       // 이미지 로드 실패시 기본 이미지로 대체
-                      (e.target as HTMLImageElement).src = toUrl('images/common/no-image.png');
+                      (e.target as HTMLImageElement).src = toUrl(
+                        "images/common/no-image.png"
+                      );
                     }}
                   />
                 </ProductLink>
-                
+
                 {/* 제거 버튼 */}
-                <RemoveButton 
+                <RemoveButton
                   onClick={() => handleRemoveFromWishList(item.id)}
                   title="찜 해제"
                 >
                   ×
                 </RemoveButton>
-                
+
                 <ProductInfo>
                   <ProductLink to={`/products/${item.id}`}>
                     <ProductName>{item.name}</ProductName>
                     <ProductCategory>{item.category}</ProductCategory>
-                    
+
                     <PriceSection>
-                      <DiscountPrice>{formatPrice(item.discountPrice)}원</DiscountPrice>
+                      <DiscountPrice>
+                        {formatPrice(item.discountPrice)}원
+                      </DiscountPrice>
                       {item.originalPrice !== item.discountPrice && (
                         <>
-                          <OriginalPrice>{formatPrice(item.originalPrice)}원</OriginalPrice>
+                          <OriginalPrice>
+                            {formatPrice(item.originalPrice)}원
+                          </OriginalPrice>
                           {item.discountValue > 0 && (
-                            <DiscountBadge>{item.discountValue}{ item.discountType==='RATE_DISCOUNT' ? '%':'원' }</DiscountBadge>
+                            <DiscountBadge>
+                              {item.discountValue}
+                              {item.discountType === "RATE_DISCOUNT"
+                                ? "%"
+                                : "원"}
+                            </DiscountBadge>
                           )}
                         </>
                       )}
                     </PriceSection>
                   </ProductLink>
-                  
-                  <AddedDate>
-                    {formatDate(item.addedAt)} 추가
-                  </AddedDate>
+
+                  <AddedDate>{formatDate(item.addedAt)} 추가</AddedDate>
                 </ProductInfo>
               </WishCard>
             ))}

@@ -1,5 +1,5 @@
 import { CSSProperties, useEffect, useState } from "react";
-import { Order } from "types/types";
+import { Order } from "types/order";
 
 const orderStatusList = [
   { key: "ALL", label: "전체" },
@@ -71,7 +71,7 @@ export default function OrdersPage() {
       search === "" ||
       String(order.orderId).includes(search) ||
       order.shippingInfo.recipientName.includes(search) ||
-      order.items.some((item) => item.name.includes(search));
+      order.items.some((item) => item.productName.includes(search));
     return matchStatus && matchSearch;
   });
 
@@ -288,8 +288,8 @@ export default function OrdersPage() {
                           }}
                         >
                           <img
-                            src={item.image}
-                            alt={item.name}
+                            src={item.imageUrl}
+                            alt={item.productName}
                             style={{
                               width: 38,
                               height: 38,
@@ -299,14 +299,16 @@ export default function OrdersPage() {
                             }}
                           />
                           <div>
-                            <div style={{ fontWeight: 500 }}>{item.name}</div>
+                            <div style={{ fontWeight: 500 }}>
+                              {item.productName}
+                            </div>
                             <div style={{ color: "#64748b", fontSize: 14 }}>
-                              {item.option} / {item.quantity}개
+                              {item.size} / {item.quantity}개
                             </div>
                             {item.discount > 0 && (
                               <div style={{ fontSize: 12, color: "#ef4444" }}>
-                                {item.originalPrice.toLocaleString()}원 →{" "}
-                                {item.price.toLocaleString()}원 (-
+                                {item.productPrice.toLocaleString()}원 →{" "}
+                                {item.discountPrice.toLocaleString()}원 (-
                                 {item.discount.toLocaleString()}원)
                               </div>
                             )}

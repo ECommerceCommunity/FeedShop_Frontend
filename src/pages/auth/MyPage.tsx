@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
-import { Order } from "types/types";
+import { Order } from "types/order";
 
 const MyPageContainer = styled.div`
   max-width: 1200px;
@@ -210,7 +210,9 @@ const MyPage: FC = () => {
                 <div>
                   <OrderContent>
                     {order.items.map((item, index) => (
-                      <div key={`${order.orderId}-${index}`}>{item.name}</div>
+                      <div key={`${order.orderId}-${index}`}>
+                        {item.productName}
+                      </div>
                     ))}
                   </OrderContent>
                   <OrderStatus status={convertStatus(order.status)}>

@@ -1,4 +1,4 @@
-import { WishListItem } from "types/types";
+import { WishListItem } from "types/cart";
 import { getCartData } from "./cart";
 import { toUrl } from "./images";
 
@@ -10,14 +10,15 @@ export const addToWishList = (id: number) => {
     return;
   }
 
-  const { productData, originalPrice, discountPrice, discountRate } = getCartData(id);
+  const { productData, originalPrice, discountPrice, discountRate } =
+    getCartData(id);
 
   const item = {
     id: productData.id,
     name: productData.name,
     originalPrice,
     discountPrice,
-    discountType: '',
+    discountType: "",
     discountValue: discountRate,
     category: productData.shoes_type,
     image: productData.main_image_urls?.map((url) => toUrl(url))[0],

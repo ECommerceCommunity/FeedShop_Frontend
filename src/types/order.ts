@@ -1,3 +1,15 @@
+export interface PaymentItem {
+  id: string;
+  productName: string;
+  size: string;
+  discountPrice: number;
+  productPrice: number;
+  discount: number;
+  quantity: number;
+  imageUrl: string;
+  selected: boolean;
+}
+
 export interface CreateOrderRequest {
   deliveryAddress: string;
   deliveryDetailAddress: string;
@@ -89,3 +101,42 @@ export interface PurchasedProduct {
   imageUrl: string;
   purchaseDate: string;
 }
+
+// 할인 정보
+export type DiscountType = "정률" | "정액";
+
+export type Discount = {
+  product_id: number;
+  discount_type: DiscountType;
+  discount_value: number;
+  discount_start: string; // ISO date (e.g., "2025-06-01T00:00:00Z")
+  discount_end: string;
+};
+
+export type Order = {
+  orderId: number;
+  status: string;
+  deliveryFee: number;
+  totalPrice: number;
+  totalDiscountPrice: number;
+  currency: string;
+  usedPoints: number;
+  earnedPoints: number;
+  paymentInfo: {
+    paymentMethod: string;
+    cardNumber?: string;
+    cardExpiry?: string;
+    cardCvc?: string;
+  };
+  shippingInfo: {
+    deliveryAddress: string;
+    detailDeliveryAddress: string;
+    postalCode: string;
+    recipientName: string;
+    recipientPhone: string;
+    deliveryMessage: string;
+  };
+  orderedAt: string;
+  deletedAt: string | null;
+  items: PaymentItem[];
+};
