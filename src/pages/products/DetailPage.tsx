@@ -152,47 +152,6 @@ const SizeButton = styled.button<{
   }
 `;
 
-const QuantitySection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
-`;
-
-const QuantityControl = styled.div`
-  display: flex;
-  align-items: center;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  overflow: hidden;
-`;
-
-const QuantityButton = styled.button`
-  padding: 8px 12px;
-  border: none;
-  background: #f9fafb;
-  color: #374151;
-  cursor: pointer;
-  transition: background 0.2s ease;
-
-  &:hover {
-    background: #f3f4f6;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
-
-const QuantityInput = styled.input`
-  width: 60px;
-  padding: 8px;
-  border: none;
-  text-align: center;
-  font-size: 1rem;
-`;
-
 const ActionButtons = styled.div`
   display: flex;
   gap: 12px;
@@ -275,23 +234,162 @@ const ErrorContainer = styled.div`
   color: #ef4444;
 `;
 
+const SelectedOptionsContainer = styled.div`
+  margin: 24px 0;
+  padding: 20px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f9fafb;
+`;
+
+const SelectedOptionsTitle = styled.h4`
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 16px;
+`;
+
+const SelectedOptionItem = styled.div`
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const OptionInfo = styled.div`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const SizeText = styled.span`
+  font-weight: 600;
+  color: #374151;
+  min-width: 60px;
+`;
+
+const StockInfo = styled.span<{ $lowStock?: boolean }>`
+  font-size: 0.875rem;
+  color: ${(props) => (props.$lowStock ? "#ea580c" : "#6b7280")};
+`;
+
+const QuantityControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const QuantityButton = styled.button`
+  width: 32px;
+  height: 32px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  border-radius: 6px;
+  color: #374151;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const QuantityDisplay = styled.span`
+  min-width: 40px;
+  text-align: center;
+  font-weight: 600;
+  color: #374151;
+`;
+
+const RemoveButton = styled.button`
+  color: #ef4444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: #fef2f2;
+  }
+`;
+
+const TotalSummary = styled.div`
+  margin-top: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-radius: 8px;
+  border: 1px solid #3b82f6;
+`;
+
+const TotalRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #1e40af;
+  }
+`;
+
+interface SelectedOptions {
+  optionId: number;
+  size: string;
+  quantity: number;
+  price: number;
+  stock: number;
+}
+
 const DetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { updateCartItemCount } = useCart();
 
   // 상태 관리
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [quantity, setQuantity] = useState(1);
+
+  // 옵션 선택 상태
+  const [selectedOptions, setSelectedOptions] = useState<SelectedOptions[]>([]);
 
   // 모달
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
+
+  if (loading) {
+    return (
+      <Container>
+        <LoadingContainer>상품 정보를 불러오는 중...</LoadingContainer>
+      </Container>
+    );
+  }
 
   // 상품 상세 정보 로딩
   useEffect(() => {
@@ -304,13 +402,14 @@ const DetailPage: React.FC = () => {
 
       try {
         setLoading(true);
+
+        // 데이터를 가지고 온다.
         const productData = await ProductService.getProduct(Number(id));
         setProduct(productData);
 
         // 최근 본 상품에 추가
         addToRecentView(productData);
       } catch (err: any) {
-        console.error("상품 상세 조회 실패:", err);
         setError("상품 정보를 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
@@ -320,7 +419,88 @@ const DetailPage: React.FC = () => {
     loadProduct();
   }, [id]);
 
-  // 장바구니 추가 함수
+  // 사이즈 선택시 선택된 옵션 목록에 추가한다.
+  const handleSizeSelect = (optionId: number) => {
+    if (!product) {
+      return;
+    }
+
+    const option = product.options.find((opt) => opt.optionId === optionId);
+    if (!option) {
+      return;
+    }
+
+    // 중복 선택 방지
+    const existingOption = selectedOptions.find(
+      (opt) => opt.optionId === optionId
+    );
+    if (existingOption) {
+      setModalMessage("이미 선택된 사이즈입니다.");
+      setShowErrorModal(true);
+      return;
+    }
+
+    // 재고 확인
+    if (option.stock === 0) {
+      setModalMessage(
+        `${option.size.replace("SIZE_", "")} 사이즈는 현재 품절입니다.`
+      );
+      setShowErrorModal(true);
+      return;
+    }
+
+    const newOption: SelectedOptions = {
+      optionId: option.optionId,
+      size: option.size.replace("SIZE_", ""),
+      quantity: 1,
+      price: product.discountPrice,
+      stock: option.stock,
+    };
+
+    setSelectedOptions((prev) => [...prev, newOption]);
+  };
+
+  // 선택된 옵션의 수량을 변경한다.
+  const handleQuantityChange = (optionId: number, newQuantity: number) => {
+    // 0개는 불가
+    if (newQuantity < 1) {
+      return;
+    }
+
+    const option = selectedOptions.find((opt) => opt.optionId === optionId);
+    if (!option) {
+      return;
+    }
+
+    // 추가할 수량이 옵션의 재고보다는 작아야 한다.
+    if (newQuantity > option.stock) {
+      setModalMessage(`사이즈 ${option.size}의 재고가 부족합니다.`);
+      setShowErrorModal(true);
+      return;
+    }
+
+    // 최대 5개까지 구매 가능하다.
+    if (newQuantity > 5) {
+      setModalMessage("한 번에 최대 5개까지만 구매할 수 있습니다.");
+      setShowErrorModal(true);
+      return;
+    }
+
+    setSelectedOptions((prev) =>
+      prev.map((opt) =>
+        opt.optionId === optionId ? { ...opt, quantity: newQuantity } : opt
+      )
+    );
+  };
+
+  // 선택된 옵션을 제거한다.
+  const handleRemoveOption = (optionId: number) => {
+    setSelectedOptions((prev) =>
+      prev.filter((opt) => opt.optionId !== optionId)
+    );
+  };
+
+  // 장바구니에 추가한다.
   const handleAddToCart = async () => {
     if (!user) {
       setModalMessage("로그인이 필요한 서비스입니다.");
@@ -334,33 +514,36 @@ const DetailPage: React.FC = () => {
       return;
     }
 
-    if (!selectedOption) {
+    if (selectedOptions.length === 0) {
       setModalMessage("사이즈를 선택해주세요.");
       setShowErrorModal(true);
       return;
     }
 
-    // 재고 체크
-    if (!checkStock(selectedOption, quantity)) {
-      return;
-    }
-
     try {
-      await CartService.addCartItem({
-        optionId: selectedOption,
-        imageId: product?.images[0]?.imageId || 1,
-        quantity,
-      });
+      for (const option of selectedOptions) {
+        await CartService.addCartItem({
+          optionId: option.optionId,
+          imageId: product?.images[0].imageId || 1,
+          quantity: option.quantity,
+        });
+      }
+
+      // 장바구니 개수 업데이트
+      await updateCartItemCount();
 
       setModalMessage("장바구니에 상품이 추가되었습니다.");
       setShowSuccessModal(true);
+
+      // 선택된 옵션은 초기화
+      setSelectedOptions([]);
     } catch (err: any) {
       setModalMessage("장바구니 추가에 실패했습니다. 다시 시도해주세요.");
       setShowErrorModal(true);
     }
   };
 
-  // 바로 주문 함수
+  // 바로 주문을 한다.
   const handleDirectOrder = () => {
     if (!user) {
       setModalMessage("로그인이 필요한 서비스입니다.");
@@ -374,63 +557,42 @@ const DetailPage: React.FC = () => {
       return;
     }
 
-    if (!selectedOption) {
+    if (!selectedOptions) {
       setModalMessage("사이즈를 선택해주세요.");
       setShowErrorModal(true);
       return;
     }
 
     // 바로 주문 페이지로 이동 (선택된 옵션 정보 전달)
+    // directOrder : true, 상품정보, 옵션정보
     navigate("/payment", {
       state: {
         directOrder: true,
-        product: product,
-        selectedOption: product?.options.find(
-          (opt) => opt.optionId === selectedOption
-        ),
-        quantity: quantity,
+        product,
+        selectedOptions,
       },
     });
   };
 
-  // 수량 변경 함수
-  const handleQuantityChange = (newQuantity: number) => {
-    // 0개는 불가
-    if (newQuantity < 1) {
-      return;
-    }
-
-    // 최대 5개까지 구매 가능하다.
-    if (newQuantity > 5) {
-      setModalMessage("한 번에 최대 5개까지만 구매할 수 있습니다.");
-      setShowErrorModal(true);
-      return;
-    }
-
-    // 재고 체크
-    if (selectedOption) {
-      const selectedOptionData = product?.options.find(
-        (opt) => opt.optionId === selectedOption
-      );
-      if (selectedOptionData && newQuantity > selectedOptionData.stock) {
-        const sizeText = selectedOptionData.size.replace("SIZE_", "");
-        setModalMessage(
-          `${sizeText} 사이즈의 재고가 부족합니다. (재고: ${selectedOptionData.stock}개)`
-        );
-        setShowErrorModal(true);
-        return;
-      }
-    }
-
-    setQuantity(newQuantity);
+  // 총 계산 함수들
+  const getTotalQuantity = () => {
+    return selectedOptions.reduce(
+      (total, option) => total + option.quantity,
+      0
+    );
   };
 
-  // 가격 포맷팅 함수
+  const getTotalPrice = () => {
+    return selectedOptions.reduce(
+      (total, option) => total + option.price * option.quantity,
+      0
+    );
+  };
+
   const formatPrice = (price: number): string => {
     return new Intl.NumberFormat("ko-KR").format(price);
   };
 
-  // 할인율 계산 함수
   const getDiscountRate = (): number => {
     if (!product || product.price === product.discountPrice) return 0;
     return Math.round(
@@ -438,63 +600,13 @@ const DetailPage: React.FC = () => {
     );
   };
 
-  const checkStock = (optionId: number, requestQuantity: number): boolean => {
-    const selectedOptionData = product?.options.find(
-      (opt) => opt.optionId === optionId
-    );
-
-    // 옵션 유무 확인
-    if (!selectedOptionData) {
-      setModalMessage("선택된 옵션을 찾을 수 없습니다.");
-      setShowErrorModal(true);
-      return false;
-    }
-
-    // 재고 수량 확인
-    if (selectedOptionData.stock < requestQuantity) {
-      const sizeTxt = selectedOptionData.size.replace("SIZE_", "");
-      setModalMessage(`${sizeTxt} 사이즈의 재고가 부족합니다.`);
-      setShowErrorModal(true);
-      return false;
-    }
-
-    // 재고가 0인 경우
-    if (selectedOptionData.stock === 0) {
-      const sizeTxt = selectedOptionData.size.replace("SIZE_", "");
-      setModalMessage(`${sizeTxt} 사이즈는 현재 품절입니다.`);
-      setShowErrorModal(true);
-      return false;
-    }
-
-    return true;
-  };
-
-  if (loading) {
-    return (
-      <Container>
-        <LoadingContainer>상품 정보를 불러오는 중...</LoadingContainer>
-      </Container>
-    );
-  }
-
   if (error || !product) {
     return (
       <Container>
         <ErrorContainer>
           <h3>오류가 발생했습니다</h3>
           <p>{error}</p>
-          <button
-            onClick={() => navigate("/products")}
-            style={{
-              marginTop: "16px",
-              padding: "8px 16px",
-              background: "#3b82f6",
-              color: "white",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={() => navigate("/products")}>
             상품 목록으로 돌아가기
           </button>
         </ErrorContainer>
@@ -503,7 +615,6 @@ const DetailPage: React.FC = () => {
   }
 
   const discountRate = getDiscountRate();
-  const availableOptions = product.options.filter((option) => option.stock > 0);
 
   return (
     <Container>
@@ -558,43 +669,85 @@ const DetailPage: React.FC = () => {
               {product.options.map((option) => (
                 <SizeButton
                   key={option.optionId}
-                  $selected={selectedOption === option.optionId}
+                  $selected={selectedOptions.some(
+                    (opt) => opt.optionId === option.optionId
+                  )}
                   $outOfStock={option.stock === 0}
                   disabled={option.stock === 0}
-                  onClick={() => setSelectedOption(option.optionId)}
+                  onClick={() => handleSizeSelect(option.optionId)}
                 >
                   {option.size.replace("SIZE_", "")}
+                  {option.stock === 0 && (
+                    <div style={{ fontSize: "10px", color: "#ef4444" }}>
+                      품절
+                    </div>
+                  )}
                 </SizeButton>
               ))}
             </SizeGrid>
           </OptionSection>
 
-          {/* 수량 선택 */}
-          {selectedOption && (
-            <QuantitySection>
-              <OptionTitle>수량</OptionTitle>
-              <QuantityControl>
-                <QuantityButton
-                  onClick={() => handleQuantityChange(quantity - 1)}
-                  disabled={quantity <= 1}
-                >
-                  -
-                </QuantityButton>
-                <QuantityInput
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => handleQuantityChange(Number(e.target.value))}
-                  min="1"
-                  max="5"
-                />
-                <QuantityButton
-                  onClick={() => handleQuantityChange(quantity + 1)}
-                  disabled={quantity >= 5}
-                >
-                  +
-                </QuantityButton>
-              </QuantityControl>
-            </QuantitySection>
+          {/* 선택된 옵션들 표시 */}
+          {selectedOptions.length > 0 && (
+            <SelectedOptionsContainer>
+              <SelectedOptionsTitle>선택된 옵션</SelectedOptionsTitle>
+
+              {selectedOptions.map((option) => (
+                <SelectedOptionItem key={option.optionId}>
+                  <OptionInfo>
+                    <SizeText>사이즈 {option.size}</SizeText>
+                    <StockInfo $lowStock={option.stock < 5}>
+                      재고 {option.stock}개
+                    </StockInfo>
+                  </OptionInfo>
+
+                  <QuantityControls>
+                    <QuantityButton
+                      onClick={() =>
+                        handleQuantityChange(
+                          option.optionId,
+                          option.quantity - 1
+                        )
+                      }
+                      disabled={option.quantity <= 1}
+                    >
+                      -
+                    </QuantityButton>
+                    <QuantityDisplay>{option.quantity}</QuantityDisplay>
+                    <QuantityButton
+                      onClick={() =>
+                        handleQuantityChange(
+                          option.optionId,
+                          option.quantity + 1
+                        )
+                      }
+                      disabled={
+                        option.quantity >= 5 || option.quantity >= option.stock
+                      }
+                    >
+                      +
+                    </QuantityButton>
+                    <RemoveButton
+                      onClick={() => handleRemoveOption(option.optionId)}
+                    >
+                      ✕
+                    </RemoveButton>
+                  </QuantityControls>
+                </SelectedOptionItem>
+              ))}
+
+              {/* 총 계산 요약 */}
+              <TotalSummary>
+                <TotalRow>
+                  <span>총 수량</span>
+                  <span>{getTotalQuantity()}개</span>
+                </TotalRow>
+                <TotalRow>
+                  <span>총 금액</span>
+                  <span>{formatPrice(getTotalPrice())}원</span>
+                </TotalRow>
+              </TotalSummary>
+            </SelectedOptionsContainer>
           )}
 
           {/* 액션 버튼들 */}
@@ -602,16 +755,19 @@ const DetailPage: React.FC = () => {
             <ActionButton
               $variant="secondary"
               onClick={handleAddToCart}
-              disabled={!selectedOption || availableOptions.length === 0}
+              disabled={selectedOptions.length === 0}
             >
-              장바구니 담기
+              장바구니 담기{" "}
+              {selectedOptions.length > 0 && `(${getTotalQuantity()}개)`}
             </ActionButton>
             <ActionButton
               $variant="primary"
               onClick={handleDirectOrder}
-              disabled={!selectedOption || availableOptions.length === 0}
+              disabled={selectedOptions.length === 0}
             >
-              바로 주문하기
+              바로 주문하기{" "}
+              {selectedOptions.length > 0 &&
+                `(${formatPrice(getTotalPrice())}원)`}
             </ActionButton>
           </ActionButtons>
         </InfoSection>

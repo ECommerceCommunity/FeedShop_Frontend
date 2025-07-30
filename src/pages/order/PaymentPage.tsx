@@ -282,17 +282,17 @@ const PaymentPage: React.FC = () => {
           });
       } else if (state.directOrder && state.product) {
         // 바로 주문인 경우 (DetailPage에서 온 경우)
-        const { product, selectedOption, quantity = 1 } = state;
+        const { product, selectedOptions } = state;
 
         items = [
           {
-            id: `${product.productId}-${selectedOption?.optionId}`,
+            id: `${product.productId}-${selectedOptions?.optionId}`,
             productName: product.name,
-            size: selectedOption?.size?.replace("SIZE_", ""),
+            size: selectedOptions?.size?.replace("SIZE_", ""),
             discountPrice: product.discountPrice,
             productPrice: product.price,
             discount: product.price - product.discountPrice,
-            quantity: quantity,
+            quantity: selectedOptions.quantity,
             imageUrl: product.images[0]?.url,
             selected: true,
           },
