@@ -38,3 +38,4 @@ pnpm-debug.log*
 .sonarlint/
 
 FETCH_HEAD
+.vercel

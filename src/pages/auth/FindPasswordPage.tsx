@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 const fadeInUp = keyframes`
   from { opacity: 0; transform: translateY(30px); }
@@ -9,13 +10,14 @@ const fadeInUp = keyframes`
 
 const Container = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
   position: relative;
   overflow: hidden;
+
   &::before {
     content: "";
     position: absolute;
@@ -23,8 +25,27 @@ const Container = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.05)" points="0,1000 1000,0 1000,1000"/></svg>');
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(249,115,22,0.1)" points="0,1000 1000,0 1000,1000"/></svg>');
     background-size: cover;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(
+        circle at 30% 20%,
+        rgba(249, 115, 22, 0.2) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 70% 80%,
+        rgba(239, 68, 68, 0.2) 0%,
+        transparent 50%
+      );
   }
 `;
 
@@ -43,10 +64,19 @@ const Card = styled.div`
 
 const Title = styled.h1`
   text-align: center;
-  color: #2c3e50;
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 900;
   margin-bottom: 8px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: ${fadeInUp} 1s ease-out,
+    ${keyframes`
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  `} 3s ease-in-out infinite;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 `;
 
 const Subtitle = styled.p`
@@ -81,39 +111,38 @@ const Input = styled.input`
   font-size: 1rem;
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.9);
-  
+
   &:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     background: white;
   }
-  
+
   &::placeholder {
     color: #95a5a6;
   }
 `;
 
 const Button = styled.button`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f97316, #ea580c);
   color: white;
   border: none;
   padding: 16px 24px;
-  border-radius: 12px;
+  border-radius: 50px;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  
+  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 12px 35px rgba(249, 115, 22, 0.4);
   }
-  
   &:disabled {
     opacity: 0.7;
     cursor: not-allowed;
@@ -125,14 +154,13 @@ const BackLink = styled(Link)`
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #667eea;
+  color: #f97316;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   margin-top: 24px;
   transition: color 0.3s ease;
-  
   &:hover {
-    color: #764ba2;
+    color: #ea580c;
   }
 `;
 
@@ -178,19 +206,31 @@ export default function FindPasswordPage() {
     setMessage("");
 
     try {
-      // TODO: API 연동 필요
-      // const response = await sendPasswordResetEmail({ email });
-      
-      // 임시 처리 - 실제로는 API 호출 결과에 따라 처리
-      setTimeout(() => {
+      const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+      const response = await axios.post(`${baseURL}/api/auth/forgot-password`, {
+        email: email,
+      });
+
+      if (response.status === 200) {
         setIsSuccess(true);
-        setMessage("비밀번호 재설정 링크가 이메일로 전송되었습니다. 이메일을 확인해주세요.");
-        setLoading(false);
-      }, 1500);
-      
-    } catch (error) {
+        setMessage(
+          "비밀번호 재설정 링크가 이메일로 전송되었습니다. 이메일을 확인해주세요."
+        );
+      }
+    } catch (error: any) {
+      console.error("Password reset error:", error);
       setIsSuccess(false);
-      setMessage("입력하신 이메일로 가입된 계정을 찾을 수 없습니다.");
+
+      if (error.response?.data?.message) {
+        setMessage(error.response.data.message);
+      } else if (error.response?.status === 404) {
+        setMessage("입력하신 이메일로 가입된 계정을 찾을 수 없습니다.");
+      } else if (error.response?.status === 429) {
+        setMessage("너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.");
+      } else {
+        setMessage("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -200,21 +240,20 @@ export default function FindPasswordPage() {
       <Card>
         <Title>비밀번호 찾기</Title>
         <Subtitle>가입하신 이메일 주소를 입력해주세요</Subtitle>
-        
+
         <InfoMessage>
           <i className="fas fa-info-circle" style={{ marginRight: "8px" }}></i>
           입력하신 이메일로 비밀번호 재설정 링크를 보내드립니다.
         </InfoMessage>
-        
+
         <Form onSubmit={handleSubmit}>
-          {message && (
-            isSuccess ? (
+          {message &&
+            (isSuccess ? (
               <SuccessMessage>{message}</SuccessMessage>
             ) : (
               <ErrorMessage>{message}</ErrorMessage>
-            )
-          )}
-          
+            ))}
+
           <FormGroup>
             <Label htmlFor="email">이메일 주소</Label>
             <Input
@@ -226,7 +265,7 @@ export default function FindPasswordPage() {
               required
             />
           </FormGroup>
-          
+
           <Button type="submit" disabled={loading}>
             {loading ? (
               <>
@@ -241,7 +280,7 @@ export default function FindPasswordPage() {
             )}
           </Button>
         </Form>
-        
+
         <BackLink to="/login">
           <i className="fas fa-arrow-left"></i>
           로그인으로 돌아가기
