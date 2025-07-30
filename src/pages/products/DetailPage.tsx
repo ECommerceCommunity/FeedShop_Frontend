@@ -1,924 +1,589 @@
-"use client";
-
-import { Fragment, useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import ReactMarkdown from "react-markdown";
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { StarIcon } from "@heroicons/react/20/solid";
-import {
-  HeartIcon as OutlineHeartIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  XMarkIcon,
-  ShoppingBagIcon,
-  WalletIcon,
-} from "@heroicons/react/24/outline";
-import { HeartIcon as SolidHeartIcon } from "@heroicons/react/24/solid";
-import reviews from "../data/reviews/reviews.json";
-import products from "../data/products/products.json";
-import discounts from "../data/products/discounts.json";
-import brands from "../data/products/brands.json";
-import SelectSize from "pages/products/SelectSize";
+import styled from "styled-components";
+import { ProductService } from "../../api/productService";
+import { CartService } from "../../api/cartService";
+import { useAuth } from "../../contexts/AuthContext";
+import { toUrl } from "../../utils/images";
+import { addToRecentView } from "../../utils/recentview";
 import Fail from "../../components/modal/Fail";
-import Warning from "../../components/modal/Warning";
-import BackToTop from "components/rollback/BackToTop";
-import EditProductsModal from "./editProduct/EditProductsModal";
-import { isDiscountValid } from "utils/discount";
-import { getDiscountPrice } from "utils/price";
-import { useLocalLike } from "hooks/useLocalLike";
-import { addToRecentView } from "utils/recentview";
-import { toUrl } from "utils/images";
+import { ProductDetail } from "types/products";
+import SuccessModal from "../../components/modal/SuccessModal";
 
-type SelectedItem = {
-  size: string;
-  stock: number;
-  quantity: number;
-};
+// 스타일드 컴포넌트들
+const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+`;
 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
-}
+const ProductSection = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
 
-export default function ProductDetailPage() {
-  const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  const thumbnailsPerPage = 6;
-  const [startIndex, setStartIndex] = useState(0);
-  const [showFailModal, setShowFailModal] = useState(false);
-  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
-  const [showEmptySelectionModal, setShowEmptySelectionModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showWarning, setShowWarning] = useState(false);
-  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+`;
 
-  const productData = products.find((p) => String(p.id) === id);
-  const brandData = brands.find(
-    (b) => String(b.store_id) === String(productData?.store_id)
-  );
+const ImageSection = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
 
-  // 최근 본 상품에 추가
-  useEffect(() => {
-    if (productData) {
-      addToRecentView(productData.id);
-    }
-  }, [productData]);
+const MainImage = styled.img`
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 16px;
+`;
 
-  const productReviews = useMemo(() => {
-    return reviews.filter((r) => r.product_id === productData?.id);
-  }, [productData?.id]);
+const ThumbnailContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 0;
+`;
 
-  const averageRating = useMemo(() => {
-    if (productReviews.length === 0) return 0;
-    const total = productReviews.reduce(
-      (sum, review) => sum + review.rating,
-      0
-    );
-    return total / productReviews.length;
-  }, [productReviews]);
+const ThumbnailImage = styled.img<{ $active?: boolean }>`
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid ${props => props.$active ? '#3b82f6' : '#e5e7eb'};
+  cursor: pointer;
+  transition: all 0.2s ease;
 
-  const originalPrice = Number(
-    typeof productData?.price === "number" ? productData.price : 0
-  );
-  const discountDataRaw = discounts.find((d) => d.product_id === Number(id));
-  const discountDataTyped = discountDataRaw
-    ? {
-        ...discountDataRaw,
-        discount_type: (discountDataRaw.discount_type ?? "정률") as
-          | "정률"
-          | "정액",
-      }
-    : undefined;
-  const safeDiscount = isDiscountValid(discountDataTyped)
-    ? discountDataTyped
-    : undefined;
-  const discountPrice = getDiscountPrice(originalPrice, safeDiscount);
+  &:hover {
+    border-color: #3b82f6;
+  }
+`;
 
-  const isDiscounted = discountPrice < originalPrice;
+const InfoSection = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
 
-  const itemsPerSlide = 6;
-  const [colorStartIndex, setColorStartIndex] = useState(0);
+const StoreName = styled.div`
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+`;
 
-  const sizeOptions =
-    productData?.size_stock_list?.map((item: any) => ({
-      size: item.size,
-      stock: item.stock_quantity,
-      disabled: item.stock_quantity === 0, // 품절 여부
-    })) ?? [];
+const ProductName = styled.h1`
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 16px;
+  line-height: 1.3;
+`;
 
-  const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
+const PriceSection = styled.div`
+  margin-bottom: 24px;
+`;
 
-  const handleRemove = (size: string) => {
-    setSelectedItems((prev) => prev.filter((item) => item.size !== size));
-  };
+const DiscountInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+`;
 
-  const maxQuantity = 5;
+const DiscountBadge = styled.span`
+  background: #ef4444;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+`;
 
-  const handleQuantityChange = (size: string, delta: number) => {
-    setSelectedItems((prev) =>
-      prev.map((item) => {
-        if (item.size === size) {
-          const newQuantity = item.quantity + delta;
-          if (newQuantity > maxQuantity) {
-            setShowFailModal(true);
-            return item;
-          }
-          return {
-            ...item,
-            quantity: Math.max(1, Math.min(newQuantity, item.stock)),
-          };
-        }
-        return item;
-      })
-    );
-  };
+const OriginalPrice = styled.span`
+  color: #9ca3af;
+  text-decoration: line-through;
+  font-size: 1.1rem;
+`;
 
-  const localStorageKey = productData ? `liked_product_${productData.id}` : "";
-  const { likes, toggleLike, hasLiked } = useLocalLike(localStorageKey);
-  const liked = productData ? hasLiked(productData.id) : false;
-  const likesCount = likes.size;
+const CurrentPrice = styled.div`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ef4444;
+`;
 
-  // 후기 영역에 대한 ref 생성 (must be unconditional)
-  const reviewRef = useRef<HTMLDivElement>(null);
-  const descriptionRef = useRef<HTMLDivElement>(null);
-  const detailImageRef = useRef<HTMLDivElement>(null);
+const OptionSection = styled.div`
+  margin-bottom: 24px;
+`;
 
-  if (!productData) {
-    return (
-      <div className="p-10 text-red-600">해당 상품을 찾을 수 없습니다.</div>
-    );
+const OptionTitle = styled.h3`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+`;
+
+const SizeGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+`;
+
+const SizeButton = styled.button<{ $selected?: boolean; $outOfStock?: boolean }>`
+  padding: 12px 8px;
+  border: 1px solid ${props => props.$selected ? '#3b82f6' : '#d1d5db'};
+  background: ${props => props.$outOfStock ? '#f3f4f6' : props.$selected ? '#3b82f6' : 'white'};
+  color: ${props => props.$outOfStock ? '#9ca3af' : props.$selected ? 'white' : '#374151'};
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: ${props => props.$outOfStock ? 'not-allowed' : 'pointer'};
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: #3b82f6;
+  }
+`;
+
+const QuantitySection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+`;
+
+const QuantityControl = styled.div`
+  display: flex;
+  align-items: center;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  overflow: hidden;
+`;
+
+const QuantityButton = styled.button`
+  padding: 8px 12px;
+  border: none;
+  background: #f9fafb;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: #f3f4f6;
   }
 
-  // 스크롤을 후기 영역으로 이동하는 함수
-  const handleScrollToReview = () => {
-    if (reviewRef.current) {
-      reviewRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  };
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
 
-  const scrollToDescription = () => {
-    descriptionRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+const QuantityInput = styled.input`
+  width: 60px;
+  padding: 8px;
+  border: none;
+  text-align: center;
+  font-size: 1rem;
+`;
 
-  const scrollToDetailImage = () => {
-    detailImageRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+`;
 
-  const product = {
-    id: productData.id, // number
-    name: productData.name, // string
-    price: originalPrice,
-    rating: 4,
-    likes: productData.product_likes ?? 0,
-    images: Array.isArray(productData.main_image_urls?.map((url) => toUrl(url)))
-      ? productData.main_image_urls?.map((url) => toUrl(url)).map((url: string, idx: number) => ({
-          id: idx,
-          name: `${productData.name} 이미지 ${idx + 1}`,
-          src: toUrl(url),
-          alt: productData.name,
-        }))
-      : [],
-    description: productData.description || "",
-    detail_image_urls: productData.detail_image_urls?.map((url) => toUrl(url)) || [],
-  };
+const ActionButton = styled.button<{ $variant?: 'primary' | 'secondary' }>`
+  flex: 1;
+  padding: 16px;
+  border: 1px solid ${props => props.$variant === 'primary' ? '#3b82f6' : '#d1d5db'};
+  background: ${props => props.$variant === 'primary' ? '#3b82f6' : 'white'};
+  color: ${props => props.$variant === 'primary' ? 'white' : '#374151'};
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 
-  const handlePrev = () => {
-    if (colorStartIndex > 0)
-      setColorStartIndex(colorStartIndex - itemsPerSlide);
-  };
+  &:hover {
+    background: ${props => props.$variant === 'primary' ? '#2563eb' : '#f3f4f6'};
+  }
 
-  const handleNext = () => {
-    if (
-      productData?.color_info?.other_color_products &&
-      colorStartIndex + itemsPerSlide <
-        productData.color_info.other_color_products.length
-    ) {
-      setColorStartIndex(colorStartIndex + itemsPerSlide);
-    }
-  };
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
 
-  const handleUp = () => {
-    if (startIndex > 0) setStartIndex(startIndex - 1);
-  };
+const DescriptionSection = styled.div`
+  margin-top: 40px;
+  padding-top: 40px;
+  border-top: 1px solid #e5e7eb;
+`;
 
-  const handleDown = () => {
-    if (startIndex + thumbnailsPerPage < product.images.length) {
-      setStartIndex(startIndex + 1);
-    }
-  };
+const DescriptionTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 20px;
+`;
 
-  const handleCart = () => {
-    if (selectedItems.length === 0) {
-      setShowEmptySelectionModal(true);
+const DescriptionText = styled.div`
+  color: #374151;
+  line-height: 1.6;
+  margin-bottom: 24px;
+`;
+
+const DetailImages = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const DetailImage = styled.img`
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  border-radius: 8px;
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  font-size: 1.1rem;
+  color: #6b7280;
+`;
+
+const ErrorContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  color: #ef4444;
+`;
+
+const DetailPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // 상태 관리
+  const [product, setProduct] = useState<ProductDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  // 상품 상세 정보 로딩
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (!id) {
+        setError("유효하지 않은 상품 ID입니다.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const productData = await ProductService.getProduct(Number(id));
+        setProduct(productData);
+        
+        // 최근 본 상품에 추가
+        addToRecentView(productData);
+        
+      } catch (err: any) {
+        console.error('상품 상세 조회 실패:', err);
+        setError('상품 정보를 불러오는데 실패했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProduct();
+  }, [id]);
+
+  // 장바구니 추가 함수
+  const handleAddToCart = async () => {
+    if (!user) {
+      setModalMessage("로그인이 필요한 서비스입니다.");
+      setShowErrorModal(true);
       return;
     }
 
-    addCart();
-
-    // 여기서 navigate('/cart') 대신 Warning 모달 열기
-    setShowWarning(true);
-  };
-
-  const addCart = () => {
-    // 장바구니 추가 로직
-    const currentCart = JSON.parse(localStorage.getItem("cart") ?? "[]");
-    const newItems = selectedItems.map((item) => ({
-      id: `${product.id}-${item.size}`,
-      name: product.name,
-      option: item.size,
-      price: Math.floor(discountPrice),
-      originalPrice: product.price,
-      discount: isDiscounted
-        ? Math.round(((product.price - discountPrice) / product.price) * 100)
-        : 0,
-      quantity: item.quantity,
-      image: product.images?.[0]?.src || "",
-      selected: true,
-    }));
-
-    const updatedCart = [...currentCart, ...newItems];
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-  };
-
-  const handleOrder = () => {
-    if (selectedItems.length === 0) {
-      setShowEmptySelectionModal(true);
+    if (user.userType !== "user") {
+      setModalMessage("일반 사용자만 이용할 수 있는 서비스입니다.");
+      setShowErrorModal(true);
       return;
     }
 
-    const newItems = selectedItems.map((item) => ({
-      id: `${product.id}-${item.size}`,
-      name: product.name,
-      option: item.size,
-      price: Math.floor(discountPrice),
-      originalPrice: product.price,
-      discount: isDiscounted
-        ? Math.round(((product.price - discountPrice) / product.price) * 100)
-        : 0,
-      quantity: item.quantity,
-      image: product.images[0]?.src || "",
-      selected: true,
-    }));
+    if (!selectedOption) {
+      setModalMessage("사이즈를 선택해주세요.");
+      setShowErrorModal(true);
+      return;
+    }
 
+    try {
+      await CartService.addCartItem({
+        optionId: selectedOption,
+        imageId: product?.images[0]?.imageId || 1,
+        quantity
+      });
+
+      setModalMessage("장바구니에 상품이 추가되었습니다.");
+      setShowSuccessModal(true);
+      
+    } catch (err: any) {
+      console.error('장바구니 추가 실패:', err);
+      setModalMessage("장바구니 추가에 실패했습니다. 다시 시도해주세요.");
+      setShowErrorModal(true);
+    }
+  };
+
+  // 바로 주문 함수
+  const handleDirectOrder = () => {
+    if (!user) {
+      setModalMessage("로그인이 필요한 서비스입니다.");
+      setShowErrorModal(true);
+      return;
+    }
+
+    if (user.userType !== "user") {
+      setModalMessage("일반 사용자만 이용할 수 있는 서비스입니다.");
+      setShowErrorModal(true);
+      return;
+    }
+
+    if (!selectedOption) {
+      setModalMessage("사이즈를 선택해주세요.");
+      setShowErrorModal(true);
+      return;
+    }
+
+    // 바로 주문 페이지로 이동 (선택된 옵션 정보 전달)
     navigate("/payment", {
       state: {
-        products: newItems,
-      },
+        directOrder: true,
+        product: product,
+        selectedOption: product?.options.find(opt => opt.optionId === selectedOption),
+        quantity: quantity
+      }
     });
   };
 
-  const handleReviewEdit = () => {
-    navigate("/reviews/edit");
+  // 수량 변경 함수
+  const handleQuantityChange = (newQuantity: number) => {
+    if (newQuantity >= 1 && newQuantity <= 5) {
+      setQuantity(newQuantity);
+    }
   };
 
+  // 가격 포맷팅 함수
+  const formatPrice = (price: number): string => {
+    return new Intl.NumberFormat('ko-KR').format(price);
+  };
+
+  // 할인율 계산 함수
+  const getDiscountRate = (): number => {
+    if (!product || product.price === product.discountPrice) return 0;
+    return Math.round(((product.price - product.discountPrice) / product.price) * 100);
+  };
+
+  if (loading) {
+    return (
+      <Container>
+        <LoadingContainer>상품 정보를 불러오는 중...</LoadingContainer>
+      </Container>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <Container>
+        <ErrorContainer>
+          <h3>오류가 발생했습니다</h3>
+          <p>{error}</p>
+          <button 
+            onClick={() => navigate("/products")}
+            style={{
+              marginTop: '16px',
+              padding: '8px 16px',
+              background: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            상품 목록으로 돌아가기
+          </button>
+        </ErrorContainer>
+      </Container>
+    );
+  }
+
+  const discountRate = getDiscountRate();
+  const availableOptions = product.options.filter(option => option.stock > 0);
+
   return (
-    <>
-      {showFailModal && (
-        <Fail
-          title="갯수 한정 초과"
-          message="한 사이즈당 최대 5개까지만 선택할 수 있습니다."
-          onClose={() => setShowFailModal(false)}
-        />
-      )}
-      {showDuplicateModal && (
-        <Fail
-          title="중복 선택"
-          message="이미 선택한 사이즈입니다."
-          onClose={() => setShowDuplicateModal(false)}
-        />
-      )}
-      {showEmptySelectionModal && (
-        <Fail
-          title="옵션 선택 필요"
-          message="사이즈를 선택해주세요."
-          onClose={() => setShowEmptySelectionModal(false)}
-        />
-      )}
-      {showWarning && (
-        <Warning
-          open={showWarning}
-          title="장바구니 담기 완료"
-          message="장바구니로 이동하시겠습니까?"
-          onConfirm={() => {
-            setShowWarning(false);
-            navigate("/cart");
-          }}
-          onCancel={() => {
-            setShowWarning(false);
-          }}
-        />
-      )}
-      {showEditModal && (
-        <EditProductsModal
-          product={productData}
-          onClose={() => setShowEditModal(false)}
-        />
-      )}
-      {showDeleteWarning && (
-        <Warning
-          open={showDeleteWarning}
-          title="상품 삭제"
-          message="정말로 이 상품을 삭제하시겠습니까?"
-          onConfirm={() => {
-            setShowDeleteWarning(false);
-            console.log("Deleting product:", productData.id);
-            navigate("/products");
-          }}
-          onCancel={() => {
-            setShowDeleteWarning(false);
-          }}
-        />
-      )}
-      <div className="bg-white mx-auto">
-        <div className="lg:grid lg:grid-cols-[1.7fr_1px_1fr] lg:items-start gap-4">
-          <div className="col-span-1 p-5">
-            <TabGroup as={Fragment}>
-              <>
-                <div className="lg:flex gap-4">
-                  <div className="pl-5 pr-1 flex flex-col items-center">
-                    <button
-                      onClick={handleUp}
-                      disabled={startIndex === 0}
-                      className="mb-2 text-gray-900 hover:text-indigo-500 disabled:opacity-50"
-                      title="위로 이동"
-                    >
-                      <ChevronUpIcon className="size-6" />
-                    </button>
-
-                    <TabList className="flex flex-col space-y-4">
-                      {product.images.map((image, idx) => {
-                        const isVisible =
-                          idx >= startIndex &&
-                          idx < startIndex + thumbnailsPerPage;
-                        return (
-                          <Tab
-                            key={image.id}
-                            className={classNames(
-                              "group relative h-24 w-24 cursor-pointer rounded-md bg-white text-sm font-medium text-gray-900 ring-2 ring-transparent data-[selected]:ring-indigo-500 ring-offset-2 box-border hover:bg-gray-50 transition",
-                              isVisible ? "" : "hidden"
-                            )}
-                          >
-                            <img
-                              src={toUrl(image.src)}
-                              alt={image.alt}
-                              className="h-full w-full object-cover rounded-md"
-                            />
-                          </Tab>
-                        );
-                      })}
-                    </TabList>
-
-                    <button
-                      onClick={handleDown}
-                      disabled={
-                        startIndex + thumbnailsPerPage >= product.images.length
-                      }
-                      className="mt-2 text-gray-900 hover:text-indigo-500 disabled:opacity-50"
-                      title="아래로 이동"
-                    >
-                      <ChevronDownIcon className="size-6" />
-                    </button>
-                  </div>
-
-                  <TabPanels className="flex-1 flex justify-center items-center">
-                    {product.images.map((image) => (
-                      <TabPanel key={image.id}>
-                        <img
-                          src={toUrl(image.src)}
-                          alt={image.alt}
-                          className="w-[720px] h-[720px] object-cover rounded-lg"
-                        />
-                      </TabPanel>
-                    ))}
-                  </TabPanels>
-                </div>
-
-                <div className="mt-6 border border-gray-200 rounded-md overflow-hidden">
-                  <div className="flex bg-gray-100 text-gray-500 text-sm font-medium border-b border-gray-200">
-                    {product.description &&
-                      product.description.trim() !== "" &&
-                      product.description.trim() !== "N/A" && (
-                        <button
-                          className="flex-1 py-3 text-black font-semibold border-r border-gray-300"
-                          onClick={scrollToDescription}
-                        >
-                          상세 정보
-                        </button>
-                      )}
-                    {Array.isArray(product.detail_image_urls) &&
-                      product.detail_image_urls.length > 0 && (
-                        <button
-                          className="flex-1 py-3 text-black font-semibold border-r border-gray-300"
-                          onClick={scrollToDetailImage}
-                        >
-                          자세한 이미지
-                        </button>
-                      )}
-                    {productReviews.length > 0 && (
-                      <button
-                        className="flex-1 py-3 text-black font-semibold"
-                        onClick={handleScrollToReview}
-                      >
-                        리뷰·후기{" "}
-                        <span className="ml-1 text-indigo-600">
-                          {productReviews.length}
-                        </span>
-                      </button>
-                    )}
-                  </div>
-                  <div className="p-4 bg-gray-500">
-                    {product.description &&
-                      product.description.trim() !== "" &&
-                      product.description.trim() !== "N/A" && (
-                        <div
-                          ref={descriptionRef}
-                          className="px-4 mx-auto bg-white border border-gray-300 rounded-md p-5 shadow-sm"
-                        >
-                          <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                            상세 설명
-                          </h3>
-                          <div className="-mx-4 border-t border-gray-300 my-4" />
-
-                          <div className="text-base text-gray-700 space-y-4 prose prose-sm">
-                            <ReactMarkdown>{product.description}</ReactMarkdown>
-                          </div>
-                        </div>
-                      )}
-
-                    {Array.isArray(product.detail_image_urls) &&
-                      product.detail_image_urls.length > 0 && (
-                        <div
-                          ref={detailImageRef}
-                          className="mt-6 px-4 mx-auto bg-white border border-gray-300 rounded-md p-5 shadow-sm"
-                        >
-                          <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                            자세한 이미지
-                          </h3>
-
-                          {/* ✅ 가로선: 좌우 여백 제거 (-mx-5), 박스와 붙게 */}
-                          <div className="-mx-4 border-t border-gray-300 my-4" />
-
-                          <div className="grid gap-0 sm:grid-cols-2">
-                            {product.detail_image_urls.map(
-                              (url: string, idx: number) => {
-                                const isLeft = idx % 2 === 0;
-                                const roundedClass = isLeft
-                                  ? "rounded-tl-md rounded-bl-md"
-                                  : "rounded-tr-md rounded-br-md";
-                                return (
-                                  <img
-                                    key={url}
-                                    src={toUrl(url)}
-                                    alt={`자세한 이미지 ${idx + 1}`}
-                                    className={`w-full object-cover block ${roundedClass}`}
-                                  />
-                                );
-                              }
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    <div ref={reviewRef}>
-                      {productReviews.length > 0 && (
-                        <div className="mt-6 px-4 mx-auto bg-white border border-gray-300 rounded-md p-5 shadow-sm">
-                          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                            리뷰
-                          </h2>
-                          <button
-                            onClick={handleReviewEdit}
-                            type="button"
-                            className="bg-[#87CEEB] text-white px-4 py-2 rounded-lg hover:bg-blue-400 transition-colors"
-                          >
-                            리뷰 작성
-                          </button>
-                          {/* ✅ 제목 아래 가로선, 좌우 여백 제거 */}
-                          <div className="-mx-4 border-t border-gray-300 my-4" />
-
-                          <ul className="space-y-6 -mx-4">
-                            {productReviews.map((review) => (
-                              <li
-                                key={review.id}
-                                className="border-b last:border-b-0 pb-4 px-5"
-                              >
-                                <div className="flex items-center space-x-3">
-                                  <img
-                                    src={toUrl(review.userImage)}
-                                    alt={`${review.userName} 프로필`}
-                                    className="w-10 h-10 rounded-full object-cover"
-                                  />
-                                  <div>
-                                    <p className="text-sm font-medium text-gray-900">
-                                      {review.userName}
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                      {review.date}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="mt-2">
-                                  <div className="flex items-center">
-                                    {[...Array(5)].map((_, idx) => (
-                                      <StarIcon
-                                        key={`review-${review.id}-star-${idx}`}
-                                        className={`w-4 h-4 ${
-                                          idx < review.rating
-                                            ? "text-yellow-400"
-                                            : "text-gray-300"
-                                        }`}
-                                      />
-                                    ))}
-                                  </div>
-                                  <p className="mt-2 text-gray-700 text-sm">
-                                    {review.content}
-                                  </p>
-                                  {review.images &&
-                                    review.images.length > 0 && (
-                                      <div className="mt-3 flex flex-wrap gap-2">
-                                        {review.images.map((img, idx) => (
-                                          <img
-                                            key={`review-${review.id}-image-${idx}`}
-                                            src={toUrl(img)}
-                                            alt={`리뷰 이미지 ${idx + 1}`}
-                                            className="w-24 h-24 object-cover rounded"
-                                          />
-                                        ))}
-                                      </div>
-                                    )}
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </>
-            </TabGroup>
-          </div>
-
-          <div className="hidden lg:block h-full w-px bg-gray-300" />
-
-          <div className="mt-10 sm:mt-16 sm:px-0 lg:mt-0 lg:col-span-1 p-5">
-            <div className="mb-4 flex items-center justify-between">
-              {/* 뒤로가기 버튼 */}
-              <button
-                onClick={() => {
-                  navigate("/products", {
-                    state: {
-                      selectedStoreId: brandData?.store_id,
-                    },
-                  });
-                }}
-                className="flex items-center text-gray-600 hover:text-indigo-600"
-              >
-                <ChevronLeftIcon className="w-5 h-5 mr-1" />
-                <span className="text-sm font-medium">뒤로가기</span>
-              </button>
-
-              {/* 상품 수정 버튼 */}
-              {productData && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowDeleteWarning(true)}
-                    className="inline-block text-sm px-3 py-1 border border-red-300 rounded hover:bg-red-100 text-red-600"
-                  >
-                    상품 삭제
-                  </button>
-
-                  <button
-                    onClick={() => setShowEditModal(true)}
-                    className="inline-block text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-gray-700"
-                  >
-                    상품 수정
-                  </button>
-                </div>
-              )}
-            </div>
-            {brandData && (
-              <button
-                type="button"
-                className="mb-2 flex items-center space-x-2 cursor-pointer bg-transparent border-none p-0"
-                onClick={() =>
-                  navigate("/products", {
-                    state: {
-                      selectedStoreId: brandData.store_id,
-                    },
-                  })
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    navigate("/products", {
-                      state: {
-                        selectedStoreId: brandData.store_id,
-                      },
-                    });
-                  }
-                }}
-                title={`${brandData.store_name} 상품 목록으로 이동`}
-                tabIndex={0}
-              >
-                <img
-                  src={toUrl(
-                    toUrl(brandData.brand_logo_url)?.startsWith("//")
-                      ? `https:${toUrl(brandData.brand_logo_url)}`
-                      : toUrl(brandData.brand_logo_url)
-            )}
-                  alt={`${brandData.store_name} 로고`}
-                  className="w-6 h-6 object-contain bg-black rounded-full"
+    <Container>
+      {/* 상품 정보 섹션 */}
+      <ProductSection>
+        {/* 이미지 섹션 */}
+        <ImageSection>
+          <MainImage 
+            src={toUrl(product.images[selectedImageIndex]?.url)} 
+            alt={product.name}
+          />
+          {product.images.filter(img => img.type === "MAIN").length > 1 && (
+            <ThumbnailContainer>
+              {product.images.filter(img => img.type === "MAIN")
+                .map((image, index) => (
+                <ThumbnailImage
+                  key={image.imageId}
+                  src={toUrl(image.url)}
+                  alt={`${product.name} ${index + 1}`}
+                  $active={selectedImageIndex === index}
+                  onClick={() => setSelectedImageIndex(index)}
+                  onError={e => { e.currentTarget.style.visibility = 'hidden'; }}
                 />
-                <span className="text-sm font-medium text-gray-700 underline hover:text-indigo-600">
-                  {brandData.store_name}
-                </span>
-              </button>
+              ))}
+            </ThumbnailContainer>
+          )}
+        </ImageSection>
+
+        {/* 상품 정보 섹션 */}
+        <InfoSection>
+          <StoreName>{product.storeName}</StoreName>
+          <ProductName>{product.name}</ProductName>
+          
+          {/* 가격 정보 */}
+          <PriceSection>
+            {discountRate > 0 && (
+              <DiscountInfo>
+                <DiscountBadge>{discountRate}%</DiscountBadge>
+                <OriginalPrice>{formatPrice(product.price)}원</OriginalPrice>
+              </DiscountInfo>
             )}
-            <h1 className="text-xl font-semibold tracking-tight text-gray-900">
-              {product.name}
-            </h1>
-            <div className="space-y-1 mt-1">
-              {isDiscounted ? (
-                <>
-                  <p className="text-xs text-gray-500 line-through">
-                    {product.price.toLocaleString()}원
-                  </p>
-                  <p className="text-xl font-semibold text-red-600">
-                    {Math.floor(discountPrice).toLocaleString()}원
-                  </p>
-                </>
-              ) : (
-                <p className="text-xl tracking-tight text-gray-900">
-                  {product.price.toLocaleString()}원
-                </p>
-              )}
-            </div>
+            <CurrentPrice>{formatPrice(product.discountPrice)}원</CurrentPrice>
+          </PriceSection>
 
-            <div className="mt-3">
-              <div className="flex items-center gap-2">
-                {/* 별점 아이콘 */}
-                <div className="flex items-center">
-                  {[0, 1, 2, 3, 4].map((i) => {
-                    const diff = averageRating - i;
-                    const isFull = diff >= 1;
-                    const isHalf = diff > 0 && diff < 1;
-
-                    let starIcon;
-                    if (isFull) {
-                      starIcon = (
-                        <StarIcon className="w-5 h-5 text-indigo-500" />
-                      );
-                    } else if (isHalf) {
-                      starIcon = (
-                        <StarIcon
-                          className="w-5 h-5 text-indigo-500"
-                          style={{ clipPath: "inset(0 50% 0 0)" }}
-                        />
-                      );
-                    } else {
-                      starIcon = <StarIcon className="w-5 h-5 text-gray-300" />;
-                    }
-                    return <span key={i}>{starIcon}</span>;
-                  })}
-                </div>
-
-                {/* 후기 개수 클릭 시 스크롤 이동 */}
-                <button
-                  type="button"
-                  className="text-sm text-gray-600 cursor-pointer hover:underline bg-transparent border-none p-0"
-                  onClick={handleScrollToReview}
+          {/* 옵션 선택 */}
+          <OptionSection>
+            <OptionTitle>사이즈 선택</OptionTitle>
+            <SizeGrid>
+              {product.options.map((option) => (
+                <SizeButton
+                  key={option.optionId}
+                  $selected={selectedOption === option.optionId}
+                  $outOfStock={option.stock === 0}
+                  disabled={option.stock === 0}
+                  onClick={() => setSelectedOption(option.optionId)}
                 >
-                  후기 {productReviews.length}개
-                </button>
-              </div>
-            </div>
+                  {option.size.replace('SIZE_', '')}
+                </SizeButton>
+              ))}
+            </SizeGrid>
+          </OptionSection>
 
-            {productData.color_info?.other_color_products?.length > 0 && (
-              <div className="mt-6">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">색상</h4>
-                <div className="flex items-center gap-2">
-                  {/* 왼쪽 화살표 */}
-                  {productData.color_info.other_color_products.length >
-                    itemsPerSlide && (
-                    <button
-                      onClick={handlePrev}
-                      disabled={colorStartIndex === 0}
-                      className="p-1 text-gray-500 disabled:opacity-30 hover:text-indigo-500"
-                      title="이전"
-                    >
-                      <ChevronLeftIcon className="w-6 h-6" />
-                    </button>
-                  )}
-
-                  {/* 썸네일 슬라이드 */}
-                  <div className="flex gap-2 overflow-hidden">
-                    {productData.color_info.other_color_products
-                      .slice(colorStartIndex, colorStartIndex + itemsPerSlide)
-                      .map((item: any, idx: number) => (
-                        <a
-                          key={item.product_id}
-                          href={`/products/${item.product_id}`}
-                          className="w-16 h-16 border rounded overflow-hidden transition flex-shrink-0"
-                          title={`상품 ID: ${item.product_id}`}
-                        >
-                          <img
-                            src={item.thumbnail_url.startsWith("//")
-                                ? toUrl(`https:${item.thumbnail_url}`)
-                                : toUrl(item.thumbnail_url)
-                            }
-                            alt={`다른 색상 ${item.product_id}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </a>
-                      ))}
-                  </div>
-
-                  {/* 오른쪽 화살표 */}
-                  {productData.color_info.other_color_products.length >
-                    itemsPerSlide && (
-                    <button
-                      onClick={handleNext}
-                      disabled={
-                        colorStartIndex + itemsPerSlide >=
-                        productData.color_info.other_color_products.length
-                      }
-                      className="p-1 text-gray-500 disabled:opacity-30 hover:text-indigo-500"
-                      title="다음"
-                    >
-                      <ChevronRightIcon className="w-6 h-6" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* 사이즈 선택 영역 */}
-            {sizeOptions.length > 0 && (
-              <div className="mt-6">
-                <SelectSize
-                  options={sizeOptions}
-                  onChange={(option) => {
-                    if (!option) return;
-
-                    const exists = selectedItems.find(
-                      (item) => item.size === option.size
-                    );
-
-                    if (exists) {
-                      // 중복 사이즈 선택 시 모달 열기
-                      setShowDuplicateModal(true);
-                    } else {
-                      setSelectedItems([
-                        ...selectedItems,
-                        { ...option, quantity: 1 },
-                      ]);
-                    }
-                  }}
+          {/* 수량 선택 */}
+          {selectedOption && (
+            <QuantitySection>
+              <OptionTitle>수량</OptionTitle>
+              <QuantityControl>
+                <QuantityButton 
+                  onClick={() => handleQuantityChange(quantity - 1)}
+                  disabled={quantity <= 1}
+                >
+                  -
+                </QuantityButton>
+                <QuantityInput 
+                  type="number" 
+                  value={quantity}
+                  onChange={(e) => handleQuantityChange(Number(e.target.value))}
+                  min="1"
+                  max="5"
                 />
-              </div>
-            )}
-
-            {selectedItems.map((item) => (
-              <div
-                key={item.size}
-                className="mt-4 border border-gray-200 bg-gray-50 rounded-md p-4 flex justify-between items-center"
-              >
-                <div>
-                  {/* 사이즈 라벨 + 삭제 버튼 */}
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-base">{item.size}</span>
-                    <button
-                      onClick={() => handleRemove(item.size)}
-                      className="text-gray-400 hover:text-red-400"
-                      title="사이즈 선택 제거"
-                      aria-label="사이즈 선택 제거"
-                    >
-                      <XMarkIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* 수량 조절 버튼 + 최대 수량 한 줄 정렬 */}
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
-                      <button
-                        onClick={() => handleQuantityChange(item.size, -1)}
-                        disabled={item.quantity <= 1}
-                        className="px-3 py-1 text-black bg-white font-bold disabled:text-gray-500 disabled:bg-gray-100 border-r border-gray-300"
-                      >
-                        –
-                      </button>
-
-                      <span className="px-4 text-center border-gray-300">
-                        {item.quantity}
-                      </span>
-
-                      <button
-                        onClick={() => handleQuantityChange(item.size, 1)}
-                        disabled={item.quantity >= item.stock}
-                        className="px-3 py-1 text-black bg-white font-bold disabled:text-gray-500 disabled:bg-gray-100 border-l border-gray-300"
-                      >
-                        +
-                      </button>
-                    </div>
-
-                    <span className="ml-4 text-sm text-gray-400 whitespace-nowrap">
-                      최대 {maxQuantity}개
-                    </span>
-                  </div>
-                </div>
-
-                <p className="text-lg font-semibold">
-                  {Math.floor(discountPrice * item.quantity).toLocaleString()}원
-                </p>
-              </div>
-            ))}
-
-            <div className="mt-6 p-4 bg-white border border-gray-300 rounded-md space-y-2">
-              {/* 총 수량 */}
-              <div className="flex justify-between items-center">
-                <span className="text-base font-medium text-gray-700">
-                  총 수량
-                </span>
-                <span className="text-base text-gray-800">
-                  {selectedItems.reduce((sum, item) => sum + item.quantity, 0)}
-                  개
-                </span>
-              </div>
-
-              {/* 가로선 - 양 옆 여백 제거 */}
-              <div className="-mx-4 border-t border-gray-200 my-2" />
-
-              {/* 총 합계 */}
-              <div className="flex justify-between items-center">
-                <span className="text-base font-medium text-gray-700">
-                  총 합계
-                </span>
-                <span className="text-xl font-semibold text-indigo-600">
-                  {selectedItems
-                    .reduce(
-                      (total, item) =>
-                        total + Math.floor(discountPrice * item.quantity),
-                      0
-                    )
-                    .toLocaleString()}
-                  원
-                </span>
-              </div>
-            </div>
-
-            <form className="mt-6">
-              <div className="mt-10 flex items-center gap-4 overflow-hidden">
-                <button
-                  type="button"
-                  onClick={handleCart}
-                  className="flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-900 hover:bg-gray-100"
+                <QuantityButton 
+                  onClick={() => handleQuantityChange(quantity + 1)}
+                  disabled={quantity >= 5}
                 >
-                  <ShoppingBagIcon
-                    className="w-5 h-5 mr-2"
-                    aria-hidden="true"
-                  />
-                  장바구니
-                </button>
+                  +
+                </QuantityButton>
+              </QuantityControl>
+            </QuantitySection>
+          )}
 
-                {/* 구매하기 버튼 */}
-                <button
-                  type="button"
-                  onClick={handleOrder}
-                  className="flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-900 hover:bg-gray-100"
-                >
-                  <WalletIcon className="w-5 h-5 mr-2" aria-hidden="true" />
-                  구매하기
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggleLike(productData.id)}
-                  className={`ml-4 flex items-center justify-center rounded-md px-3 py-3 transition-transform duration-200 ease-in-out ${
-                    liked
-                      ? "scale-110 text-red-500"
-                      : "text-gray-400 hover:text-red-400 hover:scale-105"
-                  }`}
-                >
-                  {liked ? (
-                    <SolidHeartIcon
-                      aria-hidden="true"
-                      className="size-6 shrink-0"
-                    />
-                  ) : (
-                    <OutlineHeartIcon
-                      aria-hidden="true"
-                      className="size-6 shrink-0"
-                    />
-                  )}
-                  <span className="ml-1 text-sm text-gray-700">
-                    {likesCount}
-                  </span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-      <BackToTop />
-    </>
+          {/* 액션 버튼들 */}
+          <ActionButtons>
+            <ActionButton 
+              $variant="secondary" 
+              onClick={handleAddToCart}
+              disabled={!selectedOption || availableOptions.length === 0}
+            >
+              장바구니 담기
+            </ActionButton>
+            <ActionButton 
+              $variant="primary" 
+              onClick={handleDirectOrder}
+              disabled={!selectedOption || availableOptions.length === 0}
+            >
+              바로 주문하기
+            </ActionButton>
+          </ActionButtons>
+        </InfoSection>
+      </ProductSection>
+
+      {/* 상품 설명 섹션 */}
+      <DescriptionSection>
+        <DescriptionTitle>상품 설명</DescriptionTitle>
+        <DescriptionText>
+          {product.description || "상품 설명이 없습니다."}
+        </DescriptionText>
+        
+        {/* 상세 이미지들 */}
+        {product.images.filter(img => img.type === "DETAIL").length > 0 && (
+          <DetailImages>
+            {product.images
+              .filter(img => img.type === "DETAIL")
+              .map((image) => (
+                <DetailImage
+                  key={image.imageId}
+                  src={toUrl(image.url)}
+                  alt={`${product.name} 상세 이미지`}
+                  onError={e => { e.currentTarget.style.visibility = 'hidden'; }}
+                />
+              ))}
+          </DetailImages>
+        )}
+      </DescriptionSection>
+
+      {/* 성공 모달 */}
+      <SuccessModal
+          open={showSuccessModal}
+          title="성공"
+          message={modalMessage}
+          onClose={() => setShowSuccessModal(false)}
+      />
+
+      {/* 에러 모달 */}
+      {showErrorModal && (
+        <Fail
+          title="알림"
+          message={modalMessage}
+          onClose={() => setShowErrorModal(false)}
+        />
+      )}
+    </Container>
   );
-}
+};
+
+export default DetailPage;

@@ -1,23 +1,21 @@
 import { RecentViewItem } from "types/types";
-import { getCartData } from "./cart";
-import { toUrl } from "./images";
+import { ProductDetail } from "types/products";
 
-export const addToRecentView = (id: number) => {
+export const addToRecentView = (productData: ProductDetail) => {
     const existing = localStorage.getItem("recentview");
     let recentView: RecentViewItem[] = existing ? JSON.parse(existing) : [];
 
-    recentView = recentView.filter((item) => item.id !== id);
-
-    const { productData, originalPrice, discountPrice, discountRate } = getCartData(id);
+    recentView = recentView.filter((item) => item.id !== productData.productId);
 
     const item: RecentViewItem = {
-        id: productData.id,
+        id: productData.productId,
         name: productData.name,
-        originalPrice,
-        discountPrice,
-        discountRate,
-        category: productData.shoes_type || "",
-        image: productData.main_image_urls?.map((url) => toUrl(url))[0],
+        originalPrice: productData.price,
+        discountPrice: productData.discountPrice,
+        discountType: productData.discountType,
+        discountValue: productData.discountValue,
+        category: productData.categoryType,
+        image: productData.images[0].url,
         viewedAt: new Date().toISOString(),
     };
 

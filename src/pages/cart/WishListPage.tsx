@@ -1,375 +1,326 @@
-import Warning from "components/modal/Warning";
-import { useState, useEffect, FC } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { WishListItem } from "types/types";
+import UserProtectedRoute from "../../components/UserProtectedRoute";
+import { toUrl } from "../../utils/images";
+import { WishListItem } from "../../types/types";
 
-// ✅ styled-components
-const PageWrapper = styled.div`
-  min-height: 100vh;
-  background-color: #f9fafb;
-  padding: 24px;
-`;
-
+// 스타일드 컴포넌트들
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
+  padding: 20px;
 `;
 
-const TitleBox = styled.div`
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 32px;
 `;
 
 const Title = styled.h1`
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 1.8rem;
+  font-weight: 700;
   color: #1f2937;
 `;
 
-const SubTitle = styled.p`
-  margin-top: 8px;
-  color: #4b5563;
+const ItemCount = styled.span`
+  font-size: 1rem;
+  color: #6b7280;
 `;
 
-const FilterBar = styled.div`
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  padding: 16px;
-  margin-bottom: 24px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-`;
-
-const SelectBox = styled.select`
-  width: 180px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  font-size: 14px;
-  color: #374151;
-  &:focus {
-    border-color: #6366f1;
-    outline: none;
-  }
-`;
-
-const Grid = styled.div`
+const WishGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
+  margin-bottom: 40px;
 `;
 
-const Card = styled.div`
+const WishCard = styled.div`
   background: white;
   border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  transition: 0.3s;
+  transition: all 0.3s ease;
+  position: relative;
+
   &:hover {
-    transform: scale(1.02);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   }
 `;
 
-const ImageWrapper = styled.div`
-  position: relative;
-  height: 240px;
+const ProductLink = styled(Link)`
+  display: block;
+  text-decoration: none;
+  color: inherit;
 `;
 
 const ProductImage = styled.img`
   width: 100%;
-  height: 100%;
+  height: 200px;
   object-fit: cover;
 `;
 
-const DiscountBadge = styled.div`
+const RemoveButton = styled.button`
   position: absolute;
   top: 12px;
-  left: 12px;
-  background-color: #ef4444;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.5);
   color: white;
-  font-size: 12px;
-  font-weight: bold;
-  padding: 4px 8px;
-  border-radius: 4px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: scale(1.1);
+  }
 `;
 
-const CardContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 180px;
+const ProductInfo = styled.div`
   padding: 16px;
 `;
 
 const ProductName = styled.h3`
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 1.1rem;
+  font-weight: 600;
   color: #1f2937;
-  height: 44px;
-  overflow: hidden;
+  margin-bottom: 8px;
+  line-height: 1.4;
+`;
+
+const ProductCategory = styled.p`
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 12px;
+`;
+
+const PriceSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 8px;
 `;
 
-const OriginalPrice = styled.p`
-  font-size: 14px;
+const DiscountPrice = styled.span`
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ef4444;
+`;
+
+const OriginalPrice = styled.span`
+  font-size: 1rem;
+  color: #9ca3af;
   text-decoration: line-through;
+`;
+
+const DiscountBadge = styled.span`
+  background: #ef4444;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+`;
+
+const AddedDate = styled.div`
+  font-size: 0.875rem;
   color: #9ca3af;
 `;
 
-const DiscountedPrice = styled.p`
-  font-size: 18px;
-  font-weight: bold;
-  color: #dc2626;
-`;
-
-const ButtonRow = styled.div`
+const EmptyWishlist = styled.div`
   display: flex;
-  gap: 8px;
-  margin-top: auto;
-`;
-
-const CartButton = styled.button`
-  flex: 1;
-  background-color: #6366f1;
-  color: white;
-  padding: 8px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  &:hover {
-    background-color: #4f46e5;
-  }
-`;
-
-const RemoveButton = styled.button`
-  width: 40px;
-  background-color: #f3f4f6;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  &:hover {
-    background-color: #e5e7eb;
-  }
-`;
-
-const PaginationWrapper = styled.div`
-  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-top: 32px;
+  min-height: 400px;
+  text-align: center;
 `;
 
-const PaginationButton = styled.button<{
-  active?: boolean;
-  disabled?: boolean;
-}>`
-  padding: 8px 12px;
-  border-radius: 6px;
+const EmptyIcon = styled.div`
+  font-size: 4rem;
+  color: #d1d5db;
+  margin-bottom: 16px;
+`;
+
+const EmptyTitle = styled.h3`
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+`;
+
+const EmptyMessage = styled.p`
+  font-size: 1rem;
+  color: #6b7280;
+  margin-bottom: 24px;
+`;
+
+const ShoppingButton = styled.button`
+  padding: 12px 24px;
+  background: #3b82f6;
+  color: white;
   border: none;
-  background-color: ${({ active }) => (active ? "#6366f1" : "#e5e7eb")};
-  color: ${({ active }) => (active ? "#fff" : "#1f2937")};
-  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
-  opacity: ${({ disabled }) => (disabled ? 0.4 : 1)};
-  font-weight: 500;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
   &:hover {
-    background-color: ${({ active, disabled }) =>
-      disabled ? "" : active ? "#4f46e5" : "#d1d5db"};
+    background: #2563eb;
   }
 `;
 
-// ✅ 본문 컴포넌트
-const WishListPage: FC = () => {
-  const [sortOption, setSortOption] = useState("최신순");
-  const [priceFilter, setPriceFilter] = useState("전체");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [showRemoveModal, setShowRemoveModal] = useState(false);
-  const [removeItemId, setRemoveItemId] = useState<number | null>(null);
-  const [wishlistItems, setWishlistItems] = useState<WishListItem[]>([]);
+const WishListPageContent: React.FC = () => {
   const navigate = useNavigate();
+  const [wishList, setWishList] = useState<WishListItem[]>([]);
 
-  const itemsPerPage = 8;
-
-  const priceRanges = [
-    "전체",
-    "10만원 이하",
-    "10만원-50만원",
-    "50만원-100만원",
-    "100만원 이상",
-  ];
-
+  // localStorage에서 찜한 상품 목록 로딩
   useEffect(() => {
-    const stored = localStorage.getItem("wishlist");
-    const parsed: WishListItem[] = stored ? JSON.parse(stored) : [];
-    setWishlistItems(parsed);
+    const loadWishList = () => {
+      try {
+        const savedWishList = localStorage.getItem("wishlist");
+        if (savedWishList) {
+          const parsedWishList = JSON.parse(savedWishList);
+          // 최근 추가순으로 정렬
+          const sortedWishList = parsedWishList.sort((a: WishListItem, b: WishListItem) => 
+            new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime()
+          );
+          setWishList(sortedWishList);
+        }
+      } catch (error) {
+        console.error('찜한 상품 목록 로딩 실패:', error);
+        setWishList([]);
+      }
+    };
+
+    loadWishList();
   }, []);
 
-  const filteredItems = wishlistItems.filter((item) => {
-    const price = item.discountPrice;
-    if (priceFilter === "10만원 이하" && price > 100000) return false;
-    if (priceFilter === "10만원-50만원" && (price <= 100000 || price > 500000))
-      return false;
-    if (
-      priceFilter === "50만원-100만원" &&
-      (price <= 500000 || price > 1000000)
-    )
-      return false;
-    if (priceFilter === "100만원 이상" && price <= 1000000) return false;
-    return true;
-  });
-
-  const sortedItems = [...filteredItems].sort((a, b) => {
-    if (sortOption === "가격 높은순") return b.discountPrice - a.discountPrice;
-    if (sortOption === "가격 낮은순") return a.discountPrice - b.discountPrice;
-    return b.id - a.id;
-  });
-
-  const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
-  const currentItems = sortedItems.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const formatPrice = (price?: number) => {
-    if (typeof price !== "number") return "가격 정보 없음";
-    return price.toLocaleString() + "원";
-  };
-
-  const onClickProduct = (id: number) => {
-    const item = wishlistItems.find((item) => item.id === id);
-    if (item) {
-      navigate(`/products/${item.id}`);
+  // 찜한 상품 제거 함수
+  const handleRemoveFromWishList = (productId: number) => {
+    try {
+      const updatedWishList = wishList.filter(item => item.id !== productId);
+      setWishList(updatedWishList);
+      localStorage.setItem("wishlist", JSON.stringify(updatedWishList));
+    } catch (error) {
+      console.error('찜한 상품 제거 실패:', error);
     }
   };
 
-  const onClickRemove = (id: number) => {
-    setRemoveItemId(id);
-    setShowRemoveModal(true);
+  // 가격 포맷팅 함수
+  const formatPrice = (price: number): string => {
+    return new Intl.NumberFormat('ko-KR').format(price);
   };
 
-  const removeFromWishlist = () => {
-    if (removeItemId !== null) {
-      const updated = wishlistItems.filter((item) => item.id !== removeItemId);
-      setWishlistItems(updated);
-      localStorage.setItem("wishlist", JSON.stringify(updated));
-      setShowRemoveModal(false);
-      setRemoveItemId(null);
+  // 날짜 포맷팅 함수
+  const formatDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return '';
     }
   };
 
   return (
-    <>
-      {showRemoveModal && (
-        <Warning
-          open={showRemoveModal}
-          title="찜한 상품 삭제"
-          message="찜한 상품에서 삭제하시겠어요?"
-          onConfirm={() => {
-            setShowRemoveModal(false);
-            removeFromWishlist();
-          }}
-          onCancel={() => setShowRemoveModal(false)}
-        />
+    <Container>
+      {/* 헤더 */}
+      <Header>
+        <Title>찜한 상품</Title>
+        <ItemCount>총 {wishList.length}개</ItemCount>
+      </Header>
+
+      {/* 찜한 상품이 없는 경우 */}
+      {wishList.length === 0 ? (
+        <EmptyWishlist>
+          <EmptyIcon>❤️</EmptyIcon>
+          <EmptyTitle>찜한 상품이 없습니다</EmptyTitle>
+          <EmptyMessage>
+            마음에 드는 상품을 찜해보세요.
+            <br />
+            나중에 쉽게 찾아볼 수 있습니다.
+          </EmptyMessage>
+          <ShoppingButton onClick={() => navigate("/products")}>
+            상품 보러가기
+          </ShoppingButton>
+        </EmptyWishlist>
+      ) : (
+        <>
+          {/* 찜한 상품 그리드 */}
+          <WishGrid>
+            {wishList.map((item) => (
+              <WishCard key={item.id}>
+                <ProductLink to={`/products/${item.id}`}>
+                  <ProductImage 
+                    src={toUrl(item.image)} 
+                    alt={item.name}
+                    onError={(e) => {
+                      // 이미지 로드 실패시 기본 이미지로 대체
+                      (e.target as HTMLImageElement).src = toUrl('images/common/no-image.png');
+                    }}
+                  />
+                </ProductLink>
+                
+                {/* 제거 버튼 */}
+                <RemoveButton 
+                  onClick={() => handleRemoveFromWishList(item.id)}
+                  title="찜 해제"
+                >
+                  ×
+                </RemoveButton>
+                
+                <ProductInfo>
+                  <ProductLink to={`/products/${item.id}`}>
+                    <ProductName>{item.name}</ProductName>
+                    <ProductCategory>{item.category}</ProductCategory>
+                    
+                    <PriceSection>
+                      <DiscountPrice>{formatPrice(item.discountPrice)}원</DiscountPrice>
+                      {item.originalPrice !== item.discountPrice && (
+                        <>
+                          <OriginalPrice>{formatPrice(item.originalPrice)}원</OriginalPrice>
+                          {item.discountValue > 0 && (
+                            <DiscountBadge>{item.discountValue}{ item.discountType==='RATE_DISCOUNT' ? '%':'원' }</DiscountBadge>
+                          )}
+                        </>
+                      )}
+                    </PriceSection>
+                  </ProductLink>
+                  
+                  <AddedDate>
+                    {formatDate(item.addedAt)} 추가
+                  </AddedDate>
+                </ProductInfo>
+              </WishCard>
+            ))}
+          </WishGrid>
+        </>
       )}
+    </Container>
+  );
+};
 
-      <PageWrapper>
-        <Container>
-          <TitleBox>
-            <Title>찜한 상품</Title>
-            <SubTitle>
-              찜한 상품을 확인하고 관리하세요. 총 {filteredItems.length}개
-            </SubTitle>
-          </TitleBox>
-
-          <FilterBar>
-            <SelectBox
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value)}
-            >
-              <option>최신순</option>
-              <option>가격 높은순</option>
-              <option>가격 낮은순</option>
-            </SelectBox>
-            <SelectBox
-              value={priceFilter}
-              onChange={(e) => setPriceFilter(e.target.value)}
-            >
-              {priceRanges.map((range) => (
-                <option key={range}>{range}</option>
-              ))}
-            </SelectBox>
-          </FilterBar>
-
-          <Grid>
-            {currentItems.map((item) => (
-              <Card key={item.id}>
-                <ImageWrapper>
-                  <ProductImage src={item.image} alt={item.name} />
-                  {item.discountRate > 0 && (
-                    <DiscountBadge>{item.discountRate}% 할인</DiscountBadge>
-                  )}
-                </ImageWrapper>
-                <CardContent>
-                  <ProductName>{item.name}</ProductName>
-                  {item.discountRate > 0 ? (
-                    <>
-                      <OriginalPrice>
-                        {formatPrice(item.originalPrice)}
-                      </OriginalPrice>
-                      <DiscountedPrice>
-                        {formatPrice(item.discountPrice)}
-                      </DiscountedPrice>
-                    </>
-                  ) : (
-                    <DiscountedPrice>
-                      {formatPrice(item.originalPrice)}
-                    </DiscountedPrice>
-                  )}
-                  <ButtonRow>
-                    <CartButton onClick={() => onClickProduct(item.id)}>
-                      상품 보기
-                    </CartButton>
-                    <RemoveButton onClick={() => onClickRemove(item.id)}>
-                      <i className="fa-solid fa-trash"></i>{" "}
-                    </RemoveButton>
-                  </ButtonRow>
-                </CardContent>
-              </Card>
-            ))}
-          </Grid>
-        </Container>
-
-        {totalPages > 1 && (
-          <PaginationWrapper>
-            <PaginationButton
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              이전
-            </PaginationButton>
-
-            {[...Array(totalPages)].map((_, idx) => (
-              <PaginationButton
-                key={idx}
-                onClick={() => setCurrentPage(idx + 1)}
-                active={currentPage === idx + 1}
-              >
-                {idx + 1}
-              </PaginationButton>
-            ))}
-
-            <PaginationButton
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              disabled={currentPage === totalPages}
-            >
-              다음
-            </PaginationButton>
-          </PaginationWrapper>
-        )}
-      </PageWrapper>
-    </>
+// 권한 확인이 포함된 메인 컴포넌트
+const WishListPage: React.FC = () => {
+  return (
+    <UserProtectedRoute requireUserRole={true} showNotice={true}>
+      <WishListPageContent />
+    </UserProtectedRoute>
   );
 };
 

@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { getRecentViewItems } from "utils/recentview";
 import Warning from "components/modal/Warning";
 import { useNavigate } from "react-router-dom";
+import { toUrl } from "utils/images";
 
 const PageWrapper = styled.div`
   min-height: 100vh;
@@ -248,7 +249,8 @@ const RecentViewPage: React.FC = () => {
         name: item.name,
         originalPrice: item.originalPrice,
         discountPrice: item.discountPrice,
-        discountRate: item.discountRate,
+        discountType: item.discountType,
+        discountValue: item.discountValue,
         category: item.category,
         image: item.image,
         addedAt: new Date().toISOString(),
@@ -336,9 +338,9 @@ const RecentViewPage: React.FC = () => {
               {recentViewItems.map((item) => (
                 <Card key={item.id}>
                   <ImageWrapper>
-                    <ProductImage src={item.image} alt={item.name} />
-                    {item.discountRate > 0 && (
-                      <Badge>{item.discountRate}% 할인</Badge>
+                    <ProductImage src={toUrl(item.image)} alt={item.name} />
+                    {item.discountValue > 0 && (
+                      <Badge>{item.discountValue}{item.discountType === 'RATE_DISCOUNT' ? '%' : '원'} 할인</Badge>
                     )}
                     <DeleteIcon onClick={() => onClickRemove(item.id)}>
                       <i className="fa-solid fa-xmark"></i>
@@ -351,7 +353,7 @@ const RecentViewPage: React.FC = () => {
                       <FinalPrice>
                         {item.discountPrice.toLocaleString()}원
                       </FinalPrice>
-                      {item.discountRate > 0 && (
+                      {item.discountValue > 0 && (
                         <OriginalPrice>
                           {item.originalPrice.toLocaleString()}원
                         </OriginalPrice>

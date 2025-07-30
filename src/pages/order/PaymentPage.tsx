@@ -1,30 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CartItem } from "types/types";
+import { CartItem as CartApiItem } from "types/cart";
 import Fail from "components/modal/Fail";
+import { toUrl } from "utils/images";
 
 const Container = styled.div`
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 40px auto;
   display: flex;
   gap: 32px;
+  padding: 0 20px;
+  min-height: calc(100vh - 120px);
 
   @media (max-width: 768px) {
     flex-direction: column;
     padding: 16px;
+    margin: 20px auto;
   }
 `;
 
 const FormSection = styled.div`
   flex: 2;
-  background: #fff;
-  padding: 32px;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
 
   @media (max-width: 768px) {
-    padding: 20px;
+    padding: 24px;
+    border-radius: 16px;
   }
 `;
 
@@ -37,7 +45,29 @@ const SummarySection = styled.div`
 `;
 
 const SectionTitle = styled.h3`
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  margin-top: 32px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e5e7eb;
+  position: relative;
+
+  &:first-child {
+    margin-top: 0;
+  }
+
+  &:after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    border-radius: 1px;
+  }
 `;
 
 const InputRow = styled.div`
@@ -54,10 +84,24 @@ const InputRow = styled.div`
 
 const Input = styled.input`
   flex: 1;
-  padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 14px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
   min-width: 200px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.8);
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background: #ffffff;
+  }
+
+  &::placeholder {
+    color: #9ca3af;
+  }
 `;
 
 const Select = styled.select`
@@ -168,23 +212,32 @@ const ProductHeader = styled.div`
 `;
 
 const ProductPreview = styled.div`
-  border: 1px solid #f1f5f9;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 24px;
+  border: 2px solid #f1f5f9;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 28px;
   font-size: 14px;
   color: #374151;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
 `;
 
 const PaymentPage: React.FC = () => {
   const nav = useNavigate();
   const location = useLocation();
-  const items: CartItem[] = location.state?.items ?? [];
+  const [items, setItems] = useState<CartItem[]>([]);
   const [isAgree, setIsAgree] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState("카드");
   const [usePoint, setUsePoint] = useState(false);
   const [usedPoints, setUsedPoints] = useState(0);
-  const maxPoints = 5000;
+  // 실제로는 API에서 가져와야 한다.
+  const [availablePoints] = useState(5000);
   const [shippingInfo, setShippingInfo] = useState({
     name: "",
     phone: "",
@@ -196,9 +249,127 @@ const PaymentPage: React.FC = () => {
     cardExpiry: "",
     cardCvv: "",
   });
-  const [showAgreeModal, setShowAgreeModal] = useState(false);
-  const [showAddressModal, setShowAddressModal] = useState(false);
-  const [showCardInfoModal, setShowCardInfoModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showErrorModal, setErrorModal] = useState(false);
+
+  // 페이지 로드 시 주문 아이템 설정
+  useEffect(() => {
+    const state = location.state;
+
+    if (!state) {
+      setErrorMessage("잘못된 접근입니다.");
+      setErrorModal(true);
+      return;
+    }
+
+    let cartItems: CartItem[] = [];
+
+    // 장바구니에서 온 경우
+    if (state.cartItems) {
+      // CartApiItem을 CartItem으로 변환
+      cartItems = state.cartItems.map((item: CartApiItem) => ({
+        id: `${item.productId || 0}-${item.optionId || "default"}`,
+        name: item.productName || "상품명 없음",
+        option:
+          item.optionDetails?.size?.replace("SIZE_", "") || "사이즈 미지정",
+        price: item.discountPrice || 0,
+        originalPrice: item.productPrice || 0,
+        discount: (item.productPrice || 0) - (item.discountPrice || 0),
+        quantity: item.quantity || 1,
+        image: item.imageUrl || "",
+        selected: item.selected ?? true,
+      }));
+    }
+    // 바로 주문인 경우 (DetailPage에서 온 경우)
+    else if (state.directOrder && state.product) {
+      const product = state.product;
+      const selectedOption = state.selectedOption;
+      const quantity = state.quantity || 1;
+
+      cartItems = [
+        {
+          id: `${product.productId}-${selectedOption?.size || "default"}`,
+          name: product.name,
+          option: selectedOption?.size?.replace("SIZE_", "") || "기본",
+          price: product.discountPrice,
+          originalPrice: product.price,
+          discount: product.price - product.discountPrice,
+          quantity: quantity,
+          image: product.images[0]?.url || "",
+          selected: true,
+        },
+      ];
+    }
+
+    if (cartItems.length === 0) {
+      setErrorMessage("주문할 상품이 없습니다.");
+      setErrorModal(true);
+      return;
+    }
+
+    setItems(cartItems);
+  }, [location.state]);
+
+  const handlePointsChange = (value: string) => {
+    const numValue = parseInt(value) || 0;
+
+    // 100 단위로만 사용 가능하다.
+    if (numValue % 100 !== 0) {
+      setErrorMessage("포인트는 100원 단위로만 사용 가능합니다.");
+      setErrorModal(true);
+      return;
+    }
+
+    const totals = calculateTotals();
+
+    // 최대 사용 가능 포인트 체크 (구매금액의 10%)
+    const maxUsablePoints = Math.floor(totals.finalAmount * 0.1);
+    if (numValue > maxUsablePoints) {
+      setErrorMessage(
+        `포인트는 구매금액의 10%인 ${maxUsablePoints.toLocaleString()}원까지만 사용 가능합니다.`
+      );
+      setErrorModal(true);
+      return;
+    }
+
+    // 보유 포인트를 체크한다.
+    if (numValue > availablePoints) {
+      setErrorMessage(
+        `보유 포인트가 부족합니다. (보유: ${availablePoints.toLocaleString()}원)`
+      );
+      setErrorModal(true);
+      return;
+    }
+
+    setUsedPoints(numValue);
+  };
+
+  const calculateTotals = () => {
+    const subtotal = totalOriginalPrice;
+    const discount = totalDiscount;
+    const finalAmount = subtotal - discount;
+    const deliveryFee = shipping;
+
+    // 사용 가능한 포인트는 구매금액의 10%까지
+    const maxUsablePoints = Math.floor(finalAmount * 0.1);
+    const actualUsedPoints = Math.min(
+      usedPoints,
+      maxUsablePoints,
+      availablePoints
+    );
+
+    const totalAmount = finalAmount - actualUsedPoints + deliveryFee;
+
+    return {
+      subtotal,
+      discount,
+      finalAmount,
+      deliveryFee,
+      totalAmount,
+      actualUsedPoints,
+      maxUsablePoints,
+    };
+  };
 
   const handleDeliveryChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -208,43 +379,115 @@ const PaymentPage: React.FC = () => {
   };
 
   const totalOriginalPrice = items.reduce(
-    (sum, item) => sum + item.originalPrice * item.quantity,
+    (sum, item) => sum + (item.originalPrice || 0) * (item.quantity || 1),
     0
   );
 
   const totalDiscount = items.reduce(
-    (sum, item) => sum + (item.originalPrice - item.price) * item.quantity,
+    (sum, item) =>
+      sum +
+      ((item.originalPrice || 0) - (item.price || 0)) * (item.quantity || 1),
     0
   );
 
-  const shipping = totalOriginalPrice - totalDiscount > 50000 ? 0 : 3000;
-  const tempTotal = totalOriginalPrice - totalDiscount + shipping;
-  const finalPaidAmount = Math.max(tempTotal - usedPoints, 0);
-  const earnedPoints = Math.floor(finalPaidAmount * 0.1);
+  // 배송비 계산 (50,000원 이상 무료배송)
+  const shipping = totalOriginalPrice - totalDiscount >= 50000 ? 0 : 3000;
+
+  const totals = calculateTotals();
+  const finalPaidAmount = totals.totalAmount;
+  const earnedPoints = Math.floor(finalPaidAmount / 10000) * 50;
 
   const onClickPayment = () => {
     if (!isAgree) {
-      setShowAgreeModal(true);
+      setErrorMessage("결제 동의에 체크해 주세요.");
+      setErrorModal(true);
       return;
     }
 
-    if (
-      !shippingInfo.name ||
-      !shippingInfo.phone ||
-      !shippingInfo.address ||
-      !shippingInfo.detailAddress
-    ) {
-      setShowAddressModal(true);
+    // 배송 정보 검증
+    if (!shippingInfo.name?.trim()) {
+      setErrorMessage("받는 분 이름을 입력해주세요.");
+      setErrorModal(true);
       return;
     }
-    if (
-      selectedMethod === "카드" &&
-      (!shippingInfo.cardNumber ||
-        !shippingInfo.cardExpiry ||
-        !shippingInfo.cardCvv)
-    ) {
-      setShowCardInfoModal(true);
+
+    if (shippingInfo.name.length < 2) {
+      setErrorMessage("받는 분 이름은 2자 이상 입력해주세요.");
+      setErrorModal(true);
       return;
+    }
+
+    if (!shippingInfo.phone?.trim()) {
+      setErrorMessage("전화번호를 입력해주세요.");
+      setErrorModal(true);
+      return;
+    }
+
+    if (!validatePhoneNumber(shippingInfo.phone)) {
+      setErrorMessage(
+        "올바른 전화번호 형식을 입력해주세요. (예: 010-1234-5678)"
+      );
+      setErrorModal(true);
+      return;
+    }
+
+    if (!shippingInfo.zipcode?.trim()) {
+      setErrorMessage("우편번호를 입력해주세요.");
+      setErrorModal(true);
+      return;
+    }
+
+    if (!validatePostalCode(shippingInfo.zipcode)) {
+      setErrorMessage("올바른 우편번호 형식을 입력해주세요. (5자리 숫자)");
+      setErrorModal(true);
+      return;
+    }
+
+    if (!shippingInfo.address?.trim() || !shippingInfo.detailAddress?.trim()) {
+      setErrorMessage("배송지를 입력해주세요.");
+      setErrorModal(true);
+      return;
+    }
+
+    // 카드 결제시 카드 정보 검증
+    if (selectedMethod === "카드") {
+      if (!shippingInfo.cardNumber?.trim()) {
+        setErrorMessage("카드번호를 입력해주세요.");
+        setErrorModal(true);
+        return;
+      }
+
+      if (!validateCardNumber(shippingInfo.cardNumber)) {
+        setErrorMessage("올바른 카드번호를 입력해주세요. (16자리 숫자)");
+        setErrorModal(true);
+        return;
+      }
+
+      if (!shippingInfo.cardExpiry?.trim()) {
+        setErrorMessage("카드 유효기간을 입력해주세요.");
+        setErrorModal(true);
+        return;
+      }
+
+      if (!validateCardExpiry(shippingInfo.cardExpiry)) {
+        setErrorMessage(
+          "올바른 유효기간을 입력해주세요. (MM/YY 형식, 만료되지 않은 카드)"
+        );
+        setErrorModal(true);
+        return;
+      }
+
+      if (!shippingInfo.cardCvv?.trim()) {
+        setErrorMessage("카드 CVC를 입력해주세요.");
+        setErrorModal(true);
+        return;
+      }
+
+      if (!validateCVC(shippingInfo.cardCvv)) {
+        setErrorMessage("올바른 CVC를 입력해주세요. (3자리 숫자)");
+        setErrorModal(true);
+        return;
+      }
     }
 
     const orderId = generateRandomOrderId();
@@ -292,44 +535,168 @@ const PaymentPage: React.FC = () => {
     return 1000000 + (array[0] % 9000000); // 1000000 ~ 9999999
   };
 
+  // 전화번호 유효성 검사
+  const validatePhoneNumber = (phone: string): boolean => {
+    const phoneRegex = /^01[0-9]-[0-9]{3,4}-[0-9]{4}$/;
+    return phoneRegex.test(phone);
+  };
+
+  // 우편번호 유효성 검사
+  const validatePostalCode = (postalCode: string): boolean => {
+    const postalRegex = /^[0-9]{5}$/;
+    return postalRegex.test(postalCode);
+  };
+
+  // 카드번호 유효성 검사
+  const validateCardNumber = (cardNumber: string): boolean => {
+    const cardRegex = /^[0-9]{16}$/;
+    return cardRegex.test(cardNumber);
+  };
+
+  // 유효기간 유효성 검사
+  const validateCardExpiry = (expiry: string): boolean => {
+    const expiryRegex = /^(0[1-9]|1[0-2])\/([0-9]{2})$/;
+    if (!expiryRegex.test(expiry)) return false;
+
+    const [month, year] = expiry.split("/");
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear() % 100;
+    const currentMonth = currentDate.getMonth() + 1;
+
+    const cardYear = parseInt(year);
+    const cardMonth = parseInt(month);
+
+    if (
+      cardYear < currentYear ||
+      (cardYear === currentYear && cardMonth < currentMonth)
+    ) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // CVC 유효성 검사
+  const validateCVC = (cvc: string): boolean => {
+    const cvcRegex = /^[0-9]{3}$/;
+    return cvcRegex.test(cvc);
+  };
+
   return (
     <>
-      {showAgreeModal && (
+      {showErrorModal && (
         <Fail
-          title="결제 동의 필요"
-          message="결제 동의에 체크해 주세요."
-          onClose={() => setShowAgreeModal(false)}
+          title="확인 필요"
+          message={errorMessage}
+          onClose={() => setErrorModal(false)}
         />
       )}
 
-      {showAddressModal && (
-        <Fail
-          title="배송 정보 필요"
-          message="배송 정보를 입력해 주세요."
-          onClose={() => setShowAddressModal(false)}
-        />
-      )}
-
-      {showCardInfoModal && (
-        <Fail
-          title="카드 정보 필요"
-          message="카드 정보를 모두 입력해 주세요."
-          onClose={() => setShowCardInfoModal(false)}
-        />
-      )}
       <Container>
         <FormSection>
           <ProductHeader>구매 상품 정보</ProductHeader>
-          <ProductPreview>
-            {items.map((product) => (
-              <div key={product.id}>
-                {product.name} / {product.price.toLocaleString()}원 /{" "}
-                {product.option} × {product.quantity}개
+          {items.length === 0 ? (
+            <ProductPreview>
+              <div style={{ textAlign: "center", color: "#6b7280" }}>
+                상품 정보를 불러오는 중...
               </div>
-            ))}
-          </ProductPreview>
+            </ProductPreview>
+          ) : (
+            <ProductPreview>
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  style={{
+                    display: "flex",
+                    gap: "12px",
+                    alignItems: "center",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <img
+                    src={toUrl(item.image)}
+                    alt={item.name}
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      objectFit: "cover",
+                      borderRadius: "6px",
+                    }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = toUrl(
+                        "images/common/no-image.png"
+                      );
+                    }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: "600", marginBottom: "4px" }}>
+                      {item.name}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "14px",
+                        color: "#6b7280",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      사이즈: {item.option}
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <span style={{ fontWeight: "600", color: "#ef4444" }}>
+                        {item.price.toLocaleString()}원
+                      </span>
+                      {item.discount > 0 && (
+                        <span
+                          style={{
+                            fontSize: "14px",
+                            color: "#9ca3af",
+                            textDecoration: "line-through",
+                          }}
+                        >
+                          {item.originalPrice.toLocaleString()}원
+                        </span>
+                      )}
+                      <span style={{ fontSize: "14px", color: "#6b7280" }}>
+                        × {item.quantity}개
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </ProductPreview>
+          )}
 
           <SectionTitle>포인트 사용</SectionTitle>
+          <div
+            style={{
+              background: "#f8fafc",
+              padding: "12px",
+              borderRadius: "6px",
+              marginBottom: "16px",
+              border: "1px solid #e2e8f0",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "14px",
+                color: "#64748b",
+                marginBottom: "4px",
+              }}
+            >
+              보유 포인트
+            </div>
+            <div
+              style={{ fontSize: "18px", fontWeight: "600", color: "#1e293b" }}
+            >
+              {availablePoints.toLocaleString()}P
+            </div>
+          </div>
           <CheckLabel>
             <input
               type="checkbox"
@@ -340,21 +707,38 @@ const PaymentPage: React.FC = () => {
             포인트 사용하기
           </CheckLabel>
           {usePoint && (
-            <InputRow>
-              <Input
-                type="text"
-                min={0}
-                max={maxPoints}
-                value={usedPoints}
-                onChange={(e) =>
-                  setUsedPoints(Math.min(Number(e.target.value), maxPoints))
-                }
-                placeholder="사용할 포인트를 입력하세요"
-              />
-              <span style={{ fontSize: 14, color: "#6b7280" }}>
-                보유 포인트: {maxPoints.toLocaleString()}P
-              </span>
-            </InputRow>
+            <>
+              <InputRow>
+                <Input
+                  type="number"
+                  min={0}
+                  max={availablePoints}
+                  value={usedPoints}
+                  onChange={(e) => handlePointsChange(e.target.value)}
+                  placeholder="사용할 포인트를 입력하세요 (100원 단위)"
+                  step="100"
+                />
+              </InputRow>
+
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: "#64748b",
+                  marginTop: "8px",
+                  lineHeight: "1.4",
+                }}
+              >
+                • 포인트는 100원 단위로 사용 가능합니다
+                <br />
+                • 구매금액의 10%까지만 사용 가능합니다
+                <br />• 사용 가능 포인트:{" "}
+                {Math.min(
+                  Math.floor((totalOriginalPrice - totalDiscount) * 0.1),
+                  availablePoints
+                ).toLocaleString()}
+                원
+              </div>
+            </>
           )}
           <SectionTitle>배송 정보</SectionTitle>
           <InputRow>
@@ -367,8 +751,23 @@ const PaymentPage: React.FC = () => {
             <Input
               name="phone"
               value={shippingInfo.phone}
-              onChange={handleDeliveryChange}
-              placeholder="연락처를 입력하세요"
+              onChange={(e) => {
+                // 전화번호 입력 시 자동 하이픈 삽입
+                let value = e.target.value.replace(/[^0-9]/g, "");
+                if (value.length >= 3) {
+                  if (value.length <= 7) {
+                    value = value.replace(/^(\d{3})(\d{1,4})/, "$1-$2");
+                  } else {
+                    value = value.replace(
+                      /^(\d{3})(\d{4})(\d{1,4})/,
+                      "$1-$2-$3"
+                    );
+                  }
+                }
+                setShippingInfo((prev) => ({ ...prev, phone: value }));
+              }}
+              placeholder="전화번호 (예: 010-1234-5678)"
+              maxLength={13}
             />
           </InputRow>
           <InputRow>
@@ -378,7 +777,37 @@ const PaymentPage: React.FC = () => {
               onChange={handleDeliveryChange}
               placeholder="우편번호"
             />
-            <Button style={{ maxWidth: 120 }}>우편번호 검색</Button>
+            <Button
+              style={{
+                maxWidth: 140,
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "12px",
+                padding: "14px 20px",
+                fontSize: "14px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                boxShadow: "0 4px 15px rgba(102, 126, 234, 0.2)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.boxShadow =
+                  "0 6px 20px rgba(102, 126, 234, 0.3)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow =
+                  "0 4px 15px rgba(102, 126, 234, 0.2)";
+              }}
+            >
+              우편번호 검색
+            </Button>
           </InputRow>
           <InputRow>
             <Input
@@ -421,23 +850,41 @@ const PaymentPage: React.FC = () => {
 
           {selectedMethod === "카드" && (
             <>
-              <Input
-                style={{ marginBottom: 14 }}
-                name="cardNumber"
-                placeholder="카드 번호"
-                onChange={handleDeliveryChange}
-              />
+              <InputRow>
+                <Input
+                  name="cardNumber"
+                  value={shippingInfo.cardNumber}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, "");
+                    setShippingInfo((prev) => ({ ...prev, cardNumber: value }));
+                  }}
+                  placeholder="카드번호 16자리"
+                  maxLength={16}
+                />
+              </InputRow>
               <InputRow>
                 <Input
                   name="cardExpiry"
+                  value={shippingInfo.cardExpiry}
+                  onChange={(e) => {
+                    let value = e.target.value.replace(/[^0-9]/g, "");
+                    if (value.length >= 2) {
+                      value = value.replace(/^(\d{2})(\d{1,2})/, "$1/$2");
+                    }
+                    setShippingInfo((prev) => ({ ...prev, cardExpiry: value }));
+                  }}
                   placeholder="MM/YY"
-                  onChange={handleDeliveryChange}
+                  maxLength={5}
                 />
                 <Input
                   name="cardCvv"
-                  placeholder="CVV"
+                  value={shippingInfo.cardCvv}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, "");
+                    setShippingInfo((prev) => ({ ...prev, cardCvv: value }));
+                  }}
+                  placeholder="CVC 3자리"
                   maxLength={3}
-                  onChange={handleDeliveryChange}
                 />
               </InputRow>
             </>
@@ -459,7 +906,9 @@ const PaymentPage: React.FC = () => {
             </SummaryRow>
             <SummaryRow>
               <span>포인트 사용</span>
-              <span>-{usePoint ? usedPoints.toLocaleString() : 0}원</span>
+              <span style={{ color: "#ef4444" }}>
+                -{usePoint ? usedPoints.toLocaleString() : 0}원
+              </span>
             </SummaryRow>
             <SummaryRow>
               <span>배송비</span>
@@ -478,8 +927,11 @@ const PaymentPage: React.FC = () => {
                 {earnedPoints.toLocaleString()}P
               </span>
             </SummaryRow>
-            <PrimaryButton onClick={onClickPayment} disabled={!isAgree}>
-              결제하기
+            <PrimaryButton
+              onClick={onClickPayment}
+              disabled={!isAgree || items.length === 0}
+            >
+              {items.length === 0 ? "상품 정보 로딩 중..." : "결제하기"}
             </PrimaryButton>
             <SecondaryButton onClick={() => nav("/products")}>
               계속 쇼핑하기

@@ -559,16 +559,6 @@ const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
                 {location.pathname === "/cart" && <ActiveIndicator />}
               </MenuLink>
             </MenuItem>
-            <MenuItem>
-              <MenuLink to="/orders" active={location.pathname === "/orders"}>
-                <MenuIcon
-                  className="fas fa-box menu-icon"
-                  active={location.pathname === "/orders"}
-                />
-                <MenuText>주문 내역</MenuText>
-                {location.pathname === "/orders" && <ActiveIndicator />}
-              </MenuLink>
-            </MenuItem>
           </MenuList>
         </MenuSection>
 

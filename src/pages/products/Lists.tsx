@@ -1,517 +1,440 @@
-'use client'
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import styled from "styled-components";
+import { ProductService } from "../../api/productService";
+import PreparationNotice from "../../components/PreparationNotice";
+import { toUrl } from "../../utils/images";
+import { ProductListItem } from "types/products";
 
-import { useEffect, useState } from 'react'
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
-import { ChevronDownIcon, PlusIcon, HeartIcon as OutlineHeartIcon } from '@heroicons/react/24/outline'
-import { HeartIcon as SolidHeartIcon } from '@heroicons/react/24/solid'
-import { Link, useLocation } from 'react-router-dom'
-import productsData from '../data/products/products.json'
-import brands from '../data/products/brands.json'
-import filtersRaw from '../data/products/filters.json'
-import discounts from '../data/products/discounts.json'
-import colors from '../data/products/musinsa_colors.json'
-import BackToTop from 'components/rollback/BackToTop'
-import RegisterProductModal from './registerProduct/RegisterProductModal'
-import { isDiscountValid } from 'utils/discount';
-import { getDiscountPrice } from 'utils/price';
-import { useLocalLike } from 'hooks/useLocalLike'
-import { toUrl } from 'utils/images'
+// 스타일드 컴포넌트들
+const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+`;
 
-type Product = typeof productsData[number]
-type Brand = typeof brands[number]
-type Filter = {
-  id: string
-  name: string
-  options: any[]
-}
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+`;
 
-export default function ProductPage() {
-  const location = useLocation()
-  const selectedStoreId = location.state?.selectedStoreId
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
-  const [openFilters, setOpenFilters] = useState<Record<string, boolean>>({})
-  const [selectedFilters, setSelectedFilters] = useState<Record<string, Set<string>>>({})
-  const [selectedBrandId, setSelectedBrandId] = useState<number>(1001)
-  const [showRegisterModal, setShowRegisterModal] = useState(false)
-  const { toggleLike, hasLiked } = useLocalLike('likedBrands')
+const Title = styled.h1`
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+`;
 
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 12
-  useEffect(() => {
-    if (selectedStoreId) {
-      setSelectedBrandId(Number(selectedStoreId))
+const FilterSection = styled.div`
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+`;
+
+const FilterButton = styled.button<{ $active?: boolean }>`
+  padding: 8px 16px;
+  border: 1px solid ${(props) => (props.$active ? "#3b82f6" : "#d1d5db")};
+  background: ${(props) => (props.$active ? "#3b82f6" : "white")};
+  color: ${(props) => (props.$active ? "white" : "#374151")};
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #3b82f6;
+    background: ${(props) => (props.$active ? "#2563eb" : "#f3f4f6")};
+  }
+`;
+
+const ProductGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+`;
+
+const ProductCard = styled(Link)`
+  display: block;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+`;
+
+const ProductImage = styled.img`
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+`;
+
+const ProductInfo = styled.div`
+  padding: 16px;
+`;
+
+const ProductName = styled.h3`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 8px;
+  line-height: 1.4;
+`;
+
+const ProductStore = styled.p`
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 12px;
+`;
+
+const PriceSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+`;
+
+const DiscountPrice = styled.span`
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ef4444;
+`;
+
+const OriginalPrice = styled.span`
+  font-size: 1rem;
+  color: #9ca3af;
+  text-decoration: line-through;
+`;
+
+const WishCount = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.875rem;
+  color: #6b7280;
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  font-size: 1.1rem;
+  color: #6b7280;
+`;
+
+const ErrorContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  color: #ef4444;
+`;
+
+const Pagination = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 40px;
+`;
+
+const PaginationButton = styled.button<{
+  $active?: boolean;
+  $disabled?: boolean;
+}>`
+  padding: 8px 12px;
+  border: 1px solid ${(props) => (props.$active ? "#3b82f6" : "#d1d5db")};
+  background: ${(props) => (props.$active ? "#3b82f6" : "white")};
+  color: ${(props) => (props.$active ? "white" : "#374151")};
+  border-radius: 6px;
+  cursor: ${(props) => (props.$disabled ? "not-allowed" : "pointer")};
+  opacity: ${(props) => (props.$disabled ? 0.5 : 1)};
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: #3b82f6;
+    background: ${(props) => (props.$active ? "#2563eb" : "#f3f4f6")};
+  }
+`;
+
+const EmptyContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+`;
+
+const EmptyIcon = styled.div`
+  font-size: 4rem;
+  color: #d1d5db;
+  margin-bottom: 16px;
+`;
+
+const EmptyTitle = styled.h3`
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+`;
+
+const EmptyMessage = styled.p`
+  font-size: 1rem;
+  color: #6b7280;
+`;
+
+const Lists: React.FC = () => {
+  // 상태 관리
+  const [products, setProducts] = useState<ProductListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [showPreparation, setShowPreparation] = useState(false);
+
+  const pageSize = 9;
+
+  // 상품 데이터 로딩 함수
+  const loadProducts = async (page: number = 0) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // API 호출
+      const response = await ProductService.getProducts(page, pageSize);
+
+      setProducts(response.content || []);
+      setTotalPages(response.totalPages || 0);
+      setCurrentPage(page);
+    } catch (err: any) {
+      console.error("상품 목록 로딩 실패:", err);
+      setError("상품 목록을 불러오는데 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setLoading(false);
     }
-  }, [selectedStoreId])
+  };
 
+  // 컴포넌트 마운트 시 데이터 로딩
   useEffect(() => {
-    setCurrentPage(1);
-    setSelectedFilters({});
-  }, [selectedBrandId]);
+    loadProducts(0);
+  }, []);
 
-  const toggleFilter = (id: string) => {
-    setOpenFilters(prev => ({ ...prev, [id]: !prev[id] }))
-  }
-
-  const handleFilterChange = (filterId: string, value: string) => {
-    setSelectedFilters(prev => {
-      const current = new Set(prev[filterId] || [])
-      if (current.has(value)) current.delete(value)
-      else current.add(value)
-      return { ...prev, [filterId]: current }
-    })
-  }
-
-  const toggleBrandLike = (storeId: number) => {
-    toggleLike(storeId)
-  }
-
-  const getStoreName = (storeId: number): string =>
-    brands.find((b) => b.store_id === storeId)?.store_name ?? 'Unknown'
-
-  // 영어 컬러명을 한글로 매핑하는 객체 생성
-  const colorNameMap: Record<string, string> = colors.reduce((acc, cur) => {
-    const key = cur.color_name.toUpperCase() // 예: "아이보리"
-    if (cur.color_image_url && cur.color_name_en) {
-      acc[cur.color_name_en.toUpperCase()] = key
+  // 필터 변경 핸들러 (아직 API가 없어서 준비중 표시)
+  const handleFilterChange = (filter: string) => {
+    if (filter !== "all") {
+      setShowPreparation(true);
+      return;
     }
-    return acc
-  }, {} as Record<string, string>)
+    setActiveFilter(filter);
+    setShowPreparation(false);
+    loadProducts(0);
+  };
 
-  // 중복 제거된 productsData 생성 (id 기준)
-  const uniqueProducts = Object.values(
-    productsData.reduce((acc, item) => {
-      acc[item.id] = item
-      return acc
-    }, {} as Record<number, Product>)
-  )
+  // 페이지 변경 핸들러
+  const handlePageChange = (page: number) => {
+    if (page >= 0 && page < totalPages) {
+      loadProducts(page);
+    }
+  };
 
-  const normalize = (val: string) => {
-    const isEnglish = /^[A-Za-z\s]+$/.test(val)
-    return isEnglish ? val.toUpperCase() : val
+  // 가격 포맷팅 함수
+  const formatPrice = (price: number): string => {
+    return new Intl.NumberFormat("ko-KR").format(price);
+  };
+
+  // 준비중 페이지 표시
+  if (showPreparation) {
+    return (
+      <Container>
+        <PreparationNotice
+          title="필터 기능 준비중입니다"
+          message="카테고리별 필터링 및 정렬 기능을 준비 중입니다."
+          subMessage="현재는 전체 상품만 조회 가능합니다."
+        />
+      </Container>
+    );
   }
 
-  const filteredProducts: Product[] = uniqueProducts.filter(product => {
-    if (selectedBrandId !== null && product.store_id !== selectedBrandId) return false
-
-    return Object.entries(selectedFilters).every(([filterId, values]) => {
-      if (values.size === 0) return true
-
-      if (filterId === 'color') {
-        return product.color_info?.current_colors?.some((color: any) => {
-          if (typeof color === 'string') {
-            // 영어 컬러명을 한글 컬러명으로 변환
-            const mapped = colorNameMap[color.toUpperCase()]
-            return mapped && values.has(mapped)
-          } else if (color && typeof color === 'object' && 'color_name' in color) {
-            return values.has(normalize(color.color_name))
-          }
-          return false
-        })
-      }
-
-      // 기본 필터 비교
-      return values.has(String(product[filterId as keyof Product]))
-    })
-  })
-
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
-
-  const filterBaseProducts = productsData.filter(product =>
-    selectedBrandId === null || product.store_id === selectedBrandId
-  )
-
-  const availableColorOptions = colors.filter(color => {
-    const targetName = color.color_name.toUpperCase()
-
-    return filterBaseProducts.some(product =>
-      product.color_info?.current_colors?.some((colorItem: any) => {
-        if (typeof colorItem === 'string') {
-          const mapped = colorNameMap[colorItem.toUpperCase()]
-          return mapped === targetName
-        } else if (colorItem && typeof colorItem === 'object' && 'color_name' in colorItem) {
-          return colorItem.color_name.toUpperCase() === targetName
-        }
-        return false
-      })
-    )
-  })
-
-  const colorFilter = {
-    id: 'color',
-    name: '색상',
-    options: availableColorOptions.map(color => ({
-      name: color.color_name,
-      color_image_url: toUrl(color.color_image_url)
-    }))
+  // 로딩 중
+  if (loading) {
+    return (
+      <Container>
+        <LoadingContainer>
+          <div>상품을 불러오는 중...</div>
+        </LoadingContainer>
+      </Container>
+    );
   }
 
-  const filters = [...filtersRaw, colorFilter]
-  const filtersWithoutBrand = filters.filter(f => f.id !== 'brand' && f.options.length > 0)
-
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [selectedFilters, selectedBrandId])
+  // 에러 발생
+  if (error) {
+    return (
+      <Container>
+        <ErrorContainer>
+          <h3>오류가 발생했습니다</h3>
+          <p>{error}</p>
+          <button
+            onClick={() => loadProducts(currentPage)}
+            style={{
+              marginTop: "16px",
+              padding: "8px 16px",
+              background: "#3b82f6",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+            }}
+          >
+            다시 시도
+          </button>
+        </ErrorContainer>
+      </Container>
+    );
+  }
 
   return (
-    <>
-      {showRegisterModal && (
-        <RegisterProductModal onClose={() => setShowRegisterModal(false)} />
-      )}
-      <div className="bg-white">
-        <main className="mx-auto pb-4 pl-4 pr-4">
-          <div className="flex flex-col gap-4 my-6">
-            {/* 브랜드 선택 버튼 */}
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap gap-2">
-                {brands.map((brand: Brand) => (
-                  <button
-                    key={brand.store_id}
-                    onClick={() => setSelectedBrandId(brand.store_id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium ${selectedBrandId === brand.store_id
-                      ? 'bg-black text-white'
-                      : 'text-gray-700 border-gray-300'
-                      }`}
-                  >
-                    <img
-                      src={toUrl(brand.brand_logo_url)}
-                      alt={brand.store_name}
-                      className="w-5 h-5 bg-black p-1 rounded"
-                    />
-                    {brand.store_name}
-                  </button>
-                ))}
-              </div>
+    <Container>
+      {/* 헤더 */}
+      <Header>
+        <Title>전체 상품</Title>
+      </Header>
 
-              {/* 🔧 수정 버튼: 관리자만 보이게 할 수도 있음 */}
-              <div className="flex gap-2 ml-auto">
-                <button
-                  onClick={() => setShowRegisterModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium text-gray-700 border-gray-300"
-                >
-                  상품 등록
-                </button>
-              </div>
-            </div>
+      {/* 필터 섹션 */}
+      <FilterSection>
+        <FilterButton
+          $active={activeFilter === "all"}
+          onClick={() => handleFilterChange("all")}
+        >
+          전체
+        </FilterButton>
+        <FilterButton
+          $active={activeFilter === "category"}
+          onClick={() => handleFilterChange("category")}
+        >
+          신상품
+        </FilterButton>
+        <FilterButton
+          $active={activeFilter === "popular"}
+          onClick={() => handleFilterChange("popular")}
+        >
+          인기상품
+        </FilterButton>
+      </FilterSection>
 
-            {/* 모바일 필터 토글 버튼 (브랜드 아래 위치) */}
-            <div className="lg:hidden">
-              <button
-                onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
-                className="mt-4 text-sm font-medium text-gray-700"
+      {/* 상품이 없는 경우 */}
+      {products.length === 0 ? (
+        <EmptyContainer>
+          <EmptyIcon>📦</EmptyIcon>
+          <EmptyTitle>등록된 상품이 없습니다</EmptyTitle>
+          <EmptyMessage>
+            아직 등록된 상품이 없습니다. 곧 다양한 상품을 만나보실 수 있습니다.
+          </EmptyMessage>
+        </EmptyContainer>
+      ) : (
+        <>
+          {/* 상품 그리드 */}
+          <ProductGrid>
+            {products.map((product) => (
+              <ProductCard
+                key={product.productId}
+                to={`/products/${product.productId}`}
               >
-                필터 <PlusIcon className="inline-block h-4 w-4 ml-1" />
-              </button>
-            </div>
-
-            {/* 모바일 필터 목록 */}
-            {mobileFiltersOpen && (
-              <div className="lg:hidden mt-4 border-t pt-4">
-                {filtersWithoutBrand.map((filter: Filter) => (
-                  <div key={filter.id} className="mb-4">
-                    <button
-                      onClick={() => toggleFilter(filter.id)}
-                      className="flex justify-between w-full text-left text-gray-900 font-medium"
-                    >
-                      {filter.name}
-                      <ChevronDownIcon
-                        className={`h-5 w-5 transition-transform ${openFilters[filter.id] ? 'rotate-180' : ''}`}
-                      />
-                    </button>
-                    {openFilters[filter.id] && (
-                      <ul className="mt-2 space-y-1">
-                        {filter.options.map((option: any) => {
-                          const value = typeof option === 'string' ? option : String(option.id ?? option.name)
-                          const label = typeof option === 'string' ? option : option.name
-                          const imageUrl = toUrl(option.color_image_url) // 색상 이미지가 있을 경우
-
-                          const isChecked = selectedFilters[filter.id]?.has(value) || false
-
-                          return (
-                            <li key={value}>
-                              <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-                                <input
-                                  type="checkbox"
-                                  className="rounded border-gray-300"
-                                  checked={isChecked}
-                                  onChange={() => handleFilterChange(filter.id, value)}
-                                />
-                                {/* 색상 이미지가 있다면 렌더링 */}
-                                <img
-                                  src={toUrl(imageUrl)}
-                                  alt={label}
-                                  className="w-4 h-4 rounded border border-gray-300"
-                                />
-                                {label}
-                              </label>
-                            </li>
-                          )
-                        })}
-                      </ul>
+                <ProductImage
+                  src={toUrl(product.mainImageUrl)}
+                  alt={product.name}
+                  onError={(e) => {
+                    // 이미지 로드 실패시 기본 이미지로 대체
+                    (e.target as HTMLImageElement).src = toUrl(
+                      "images/common/no-image.png"
+                    );
+                  }}
+                />
+                <ProductInfo>
+                  <ProductName>{product.name}</ProductName>
+                  <ProductStore>{product.storeName}</ProductStore>
+                  <PriceSection>
+                    <DiscountPrice>
+                      {formatPrice(product.discountPrice)}원
+                    </DiscountPrice>
+                    {product.price !== product.discountPrice && (
+                      <OriginalPrice>
+                        {formatPrice(product.price)}원
+                      </OriginalPrice>
                     )}
-                  </div>
-                ))}
-              </div>
-            )}
+                  </PriceSection>
+                  <WishCount>
+                    <span>❤️</span>
+                    <span>{product.wishNumber}</span>
+                  </WishCount>
+                </ProductInfo>
+              </ProductCard>
+            ))}
+          </ProductGrid>
 
-            {/* 브랜드 정보 박스 */}
-            {selectedBrandId !== null && (
-              <div className="p-4 border rounded-md bg-gray-50">
-                {brands.filter(b => b.store_id === selectedBrandId).map(brand => (
-                  <div key={brand.store_id}>
-                    <div className="flex items-center gap-4 mb-2">
-                      <img
-                        src={toUrl(brand.brand_logo_url)}
-                        alt={brand.store_name}
-                        className="w-10 h-10 bg-black p-1 rounded"
-                      />
-                      <div>
-                        <h3 className="text-lg font-bold">{brand.store_name}</h3>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <button
-                            type="button"
-                            onClick={() => toggleBrandLike(brand.store_id)}
-                            className={`flex items-center justify-center rounded-md px-2 py-1 transition-transform duration-200 ease-in-out 
-    ${hasLiked(brand.store_id)
-                                ? 'scale-110 text-red-500'
-                                : 'text-gray-400 hover:text-red-400 hover:scale-105'}`}
-                          >
-                            {hasLiked(brand.store_id) ? (
-                              <SolidHeartIcon className="w-5 h-5 shrink-0" aria-hidden="true" />
-                            ) : (
-                              <OutlineHeartIcon className="w-5 h-5 shrink-0" aria-hidden="true" />
-                            )}
-                            <span className="ml-1 text-sm text-gray-700">
-                              {(brand.brand_likes + (hasLiked(brand.store_id) ? 1 : 0)).toLocaleString()}
-                            </span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{brand.brand_info}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* 페이지네이션 */}
+          {totalPages > 1 && (
+            <Pagination>
+              <PaginationButton
+                $disabled={currentPage === 0}
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                이전
+              </PaginationButton>
 
-          {/* 데스크탑 뷰: 필터 + 상품 */}
-          <div className="lg:grid lg:grid-cols-4 gap-8">
-            {/* 데스크탑 전용 필터 사이드바 */}
-            <aside className={`hidden lg:block pr-4 border-r border-gray-300`}>
-              {filtersWithoutBrand.map((filter: Filter) => (
-                <div key={filter.id} className="mb-4">
-                  <button
-                    onClick={() => toggleFilter(filter.id)}
-                    className="flex justify-between w-full text-left text-gray-900 font-medium"
-                  >
-                    {filter.name}
-                    <ChevronDownIcon
-                      className={`h-5 w-5 transition-transform ${openFilters[filter.id] ? 'rotate-180' : ''}`}
-                    />
-                  </button>
-                  {openFilters[filter.id] && (
-                    <ul className="mt-2 space-y-1">
-                      {filter.options.map((option: any) => {
-                        const value = typeof option === 'string' ? option : String(option.id ?? option.name)
-                        const label = typeof option === 'string' ? option : option.name
-                        const imageUrl = toUrl(option.color_image_url) // 색상 이미지가 있을 경우
+              {/* 동적 페이지 버튼 */}
+              {(() => {
+                const maxPageCount = 5;
+                let startPage = Math.max(
+                  0,
+                  currentPage - Math.floor(maxPageCount / 2)
+                );
+                let endPage = startPage + maxPageCount;
 
-                        const isChecked = selectedFilters[filter.id]?.has(value) || false
+                if (endPage > totalPages) {
+                  endPage = totalPages;
+                  startPage = Math.max(0, endPage - maxPageCount);
+                }
 
-                        return (
-                          <li key={value}>
-                            <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-                              <input
-                                type="checkbox"
-                                className="rounded border-gray-300"
-                                checked={isChecked}
-                                onChange={() => handleFilterChange(filter.id, value)}
-                              />
-                              {/* 이미지가 있으면 이미지와 함께 텍스트 표시, 없으면 텍스트만 */}
-                              {imageUrl ? (
-                                <>
-                                  <img
-                                    src={toUrl(imageUrl)}
-                                    alt={label}
-                                    className="w-4 h-4 rounded border border-gray-300"
-                                  />
-                                  <span>{label}</span>
-                                </>
-                              ) : (
-                                <span>{label}</span>
-                              )}
-                            </label>
-                          </li>
-                        )
-                      })}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </aside>
-
-            {/* 상품 목록 */}
-            <section className="lg:col-span-3 pl-4">
-              <div className="mb-4 text-sm text-gray-600">
-                총 <span className="font-semibold">{filteredProducts.length}</span>개의 상품이 있습니다.
-              </div>
-
-              {currentProducts.length === 0 ? (
-                <p className="text-gray-500">조건에 맞는 상품이 없습니다.</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {currentProducts.map(product => (
-                    <Link to={`/products/${product.id}`} key={product.id}>
-                      <div className="border p-4 rounded-lg hover:shadow cursor-pointer h-full flex flex-col justify-between">
-                        <div>
-                          <div className="aspect-[3/4] overflow-hidden rounded-md">
-                            <img
-                              src={toUrl(product.main_image_urls[0])}
-                              alt={product.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <h3 className="mt-4 font-medium text-gray-900 line-clamp-2">{product.name}</h3>
-
-                          {/* 가격 표시 */}
-                          {(() => {
-                            const discountRaw = discounts.find(d => d.product_id === product.id)
-                            // Convert discount_type to the correct type if needed
-                            const discount = discountRaw
-                              ? {
-                                ...discountRaw,
-                                discount_type: discountRaw.discount_type as '정률' | '정액'
-                              }
-                              : undefined
-                            const discountPrice = getDiscountPrice(product.price, discount)
-                            const originalPrice = Number(product.price || 0)
-                            const isValid = discount ? isDiscountValid(discount) : false
-
-                            const isDiscounted = isValid && discountPrice < originalPrice
-
-                            if (isDiscounted) {
-                              let discountLabel = ''
-                              if (discount?.discount_type === '정률') {
-                                const discountRate = Math.round(((originalPrice - discountPrice) / originalPrice) * 100)
-                                discountLabel = `${discountRate}% 할인`
-                              } else if (discount?.discount_type === '정액') {
-                                const discountAmount = originalPrice - discountPrice
-                                discountLabel = `${discountAmount.toLocaleString()}원 할인`
-                              }
-
-                              return (
-                                <>
-                                  <p className="text-gray-500 line-through">{originalPrice.toLocaleString()}원</p>
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-red-600 font-semibold">{discountPrice.toLocaleString()}원</p>
-                                    <span className="text-xs text-red-500 font-bold bg-red-100 px-2 py-0.5 rounded-full">
-                                      {discountLabel}
-                                    </span>
-                                  </div>
-                                </>
-                              )
-                            } else {
-                              return (
-                                <p className="text-gray-900 font-semibold">{originalPrice.toLocaleString()}원</p>
-                              )
-                            }
-                          })()}
-                        </div>
-
-                        {/* 좋아요 + 매장 이름 + 성별 정보 */}
-                        <div className="mt-2 space-y-1">
-                          {/* 좋아요 */}
-                          <div className="flex items-center gap-1 text-sm text-gray-500">
-                            <OutlineHeartIcon className="w-4 h-4" />
-                            <span>{product.product_likes.toLocaleString()}</span>
-                          </div>
-
-                          {/* 매장 + 성별 */}
-                          <div className="flex justify-between items-center text-sm text-gray-600">
-                            <span>{getStoreName(product.store_id)}</span>
-                            <span>{product.gender}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-
-              {/* 페이지네이션 */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-6">
-                  {/* 모바일 이전/다음 */}
-                  <div className="flex flex-1 justify-between sm:hidden">
-                    <button
-                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                      className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:text-gray-300 disabled:cursor-not-allowed"
+                return Array.from({ length: endPage - startPage }, (_, i) => {
+                  const pageNum = startPage + i;
+                  return (
+                    <PaginationButton
+                      key={pageNum}
+                      $active={pageNum === currentPage}
+                      onClick={() => handlePageChange(pageNum)}
                     >
-                      Previous
-                    </button>
-                    <button
-                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                      disabled={currentPage === totalPages}
-                      className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:text-gray-300 disabled:cursor-not-allowed"
-                    >
-                      Next
-                    </button>
-                  </div>
+                      {pageNum + 1}
+                    </PaginationButton>
+                  );
+                });
+              })()}
 
-                  {/* 데스크탑 페이지네이션 */}
-                  <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-center">
-                    <div>
-                      <nav
-                        className="isolate inline-flex -space-x-px rounded-md shadow-sm"
-                        aria-label="Pagination"
-                      >
-                        {/* 이전 버튼 */}
-                        <button
-                          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                          disabled={currentPage === 1}
-                          className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed"
-                        >
-                          <span className="sr-only">Previous</span>
-                          <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
-                        </button>
+              <PaginationButton
+                $disabled={currentPage === totalPages - 1}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                다음
+              </PaginationButton>
+            </Pagination>
+          )}
+        </>
+      )}
+    </Container>
+  );
+};
 
-                        {/* 페이지 번호들 */}
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                          <button
-                            key={page}
-                            onClick={() => setCurrentPage(page)}
-                            className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0
-            ${currentPage === page
-                                ? 'z-10 bg-indigo-600 text-white'
-                                : 'text-gray-900 hover:bg-gray-50'}`}
-                          >
-                            {page}
-                          </button>
-                        ))}
-
-                        {/* 다음 버튼 */}
-                        <button
-                          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                          disabled={currentPage === totalPages}
-                          className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed"
-                        >
-                          <span className="sr-only">Next</span>
-                          <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
-                        </button>
-                      </nav>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </section>
-          </div>
-        </main>
-        <BackToTop />
-      </div>
-    </>
-  )
-}
+export default Lists;

@@ -115,7 +115,8 @@ export type WishListItem = {
   name: string;
   originalPrice: number;
   discountPrice: number;
-  discountRate: number;
+  discountType: string;
+  discountValue: number;
   category: string;
   image: string;
   addedAt: string;
@@ -126,7 +127,8 @@ export type RecentViewItem = {
   name: string;
   originalPrice: number;
   discountPrice: number;
-  discountRate: number;
+  discountType: string;
+  discountValue: number;
   category: string;
   image: string;
   viewedAt: string;
