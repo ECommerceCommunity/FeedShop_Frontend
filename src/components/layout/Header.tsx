@@ -869,7 +869,7 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
                 {user && user.userType !== "admin" && (
                   <DropdownItem to="/profile-settings">
                     <i className="fas fa-cog"></i>
-                    프로필 설정
+                    프로필 관리
                   </DropdownItem>
                 )}
                 {user && user.userType === "user" && (

@@ -1,246 +1,249 @@
-import { FC, useEffect, useState } from "react";
-import styled from "styled-components";
-import { Link } from "react-router-dom";
-import { Order } from "types/types";
+import React from 'react';
+import styled from 'styled-components';
 
-const MyPageContainer = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-`;
+// 예시 데이터
+const user = {
+  name: '홍길동',
+  profileImg: '/assets/profile.jpg',
+  recentOrders: [
+    { id: 1, thumbnail: '/assets/item1.jpg', name: '트렌디 셔츠', date: '2025-07-28', status: '배송 완료' },
+    { id: 2, thumbnail: '/assets/item2.jpg', name: '여름 팬츠', date: '2025-07-25', status: '처리 중' },
+    { id: 3, thumbnail: '/assets/item3.jpg', name: '스니커즈', date: '2025-07-20', status: '배송 완료' },
+  ],
+  feedCount: 12,
+  wishlistCount: 5,
+  couponCount: 3,
+};
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-`;
+const feeds = [
+  { id: 1, image: '/assets/feed1.jpg', title: 'OOTD #1' },
+  { id: 2, image: '/assets/feed2.jpg', title: 'OOTD #2' },
+  { id: 3, image: '/assets/feed3.jpg', title: 'OOTD #3' },
+];
 
-const Title = styled.h1`
-  margin: 0;
-  color: #333;
-`;
-
-const UserInfo = styled.div`
-  background-color: white;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-`;
-
-const UserName = styled.h2`
-  margin: 0 0 10px 0;
-  color: #333;
-`;
-
-const UserEmail = styled.p`
-  margin: 0;
-  color: #666;
-`;
-
-const MenuGrid = styled.div`
+const Container = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  font-family: 'Pretendard', 'sans-serif';
+  background: #f7f8fa;
 `;
 
-const MenuCard = styled(Link)`
-  background-color: white;
-  border-radius: 8px;
-  padding: 20px;
-  text-decoration: none;
-  color: inherit;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
-
-  &:hover {
-    transform: translateY(-5px);
-  }
-`;
-
-const MenuTitle = styled.h3`
-  margin: 0 0 10px 0;
-  color: #333;
-`;
-
-const MenuDescription = styled.p`
-  margin: 0;
-  color: #666;
-  font-size: 0.9rem;
-`;
-
-const RecentOrders = styled.div`
-  margin-top: 30px;
-`;
-
-const SectionTitle = styled.h2`
-  margin: 0 0 20px 0;
-  color: #333;
-`;
-
-const OrderList = styled.div`
+const Sidebar = styled.nav`
+  background: #fff;
+  border-right: 1px solid #eee;
+  padding: 32px 0;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  align-items: center;
+  gap: 32px;
 `;
 
-const OrderItem = styled.div`
-  background-color: white;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-`;
-
-const OrderHeader = styled.div`
+const NavItem = styled.div`
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.1rem;
+  color: #333;
+  cursor: pointer;
+  padding: 12px 24px;
+  border-radius: 24px;
+  transition: background 0.2s;
+  &:hover {
+    background: #f0f2f5;
+  }
 `;
 
-const OrderContent = styled.div`
-  margin-bottom: 12px;
+const Main = styled.main`
+  padding: 48px 48px 32px 48px;
 `;
 
-const OrderNumber = styled.span`
-  font-weight: bold;
+const ProfileSection = styled.section`
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-bottom: 32px;
+`;
+
+const ProfileImg = styled.img`
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #e0e4ea;
+`;
+
+const Welcome = styled.div`
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #222;
+`;
+
+const EditBtn = styled.button`
+  margin-left: 24px;
+  padding: 8px 20px;
+  border-radius: 24px;
+  border: none;
+  background: #222;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover {
+    background: #444;
+  }
+`;
+
+const DashboardGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 40px;
+`;
+
+const Card = styled.div`
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 32px 24px;
+  text-align: center;
+  font-size: 1.1rem;
   color: #333;
 `;
 
-const OrderDate = styled.span`
-  color: #666;
+const CardTitle = styled.div`
+  font-size: 1rem;
+  color: #888;
+  margin-bottom: 8px;
 `;
 
-const OrderStatus = styled.span<{ status: string }>`
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  background-color: ${(props) => {
-    switch (props.status) {
-      case "배송중":
-        return "#e3f2fd";
-      case "배송완료":
-        return "#e8f5e9";
-      default:
-        return "#f5f5f5";
-    }
-  }};
-  color: ${(props) => {
-    switch (props.status) {
-      case "배송중":
-        return "#1976d2";
-      case "배송완료":
-        return "#2e7d32";
-      default:
-        return "#666";
-    }
-  }};
+const CardValue = styled.div`
+  font-size: 2rem;
+  font-weight: 700;
 `;
 
-const MyPage: FC = () => {
-  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
-  // 임시 사용자 데이터
-  const user = {
-    name: "홍길동",
-    email: "hong@example.com",
-  };
+const SectionTitle = styled.h3`
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #222;
+`;
 
-  useEffect(() => {
-    try {
-      const ordersData = localStorage.getItem("orders");
-      if (!ordersData) {
-        setRecentOrders([]);
-        return;
-      }
+const OrdersTable = styled.table`
+  width: 100%;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-bottom: 32px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+`;
 
-      const orders: Order[] = JSON.parse(ordersData);
-      const userOrders = orders
-        .sort(
-          (a: Order, b: Order) =>
-            new Date(b.orderedAt).getTime() - new Date(a.orderedAt).getTime()
-        )
-        .slice(0, 5);
-      setRecentOrders(userOrders);
-    } catch (error) {
-      console.error("Failed to load orders from localStorage:", error);
-      setRecentOrders([]);
-    }
-  }, []);
+const OrdersRow = styled.tr`
+  border-bottom: 1px solid #eee;
+`;
+
+const OrdersCell = styled.td`
+  padding: 16px;
+  font-size: 1rem;
+  color: #444;
+  vertical-align: middle;
+`;
+
+const FeedCarousel = styled.div`
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+`;
+
+const FeedCard = styled.div`
+  min-width: 160px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  overflow: hidden;
+  text-align: center;
+`;
+
+const FeedImg = styled.img`
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+`;
+
+const FeedTitle = styled.div`
+  padding: 12px 0;
+  font-size: 1rem;
+  color: #333;
+`;
+
+function MyPage() {
   return (
-    <MyPageContainer>
-      <Header>
-        <Title>마이페이지</Title>
-      </Header>
-      <UserInfo>
-        <UserName>{user.name}님</UserName>
-        <UserEmail>{user.email}</UserEmail>
-      </UserInfo>
-      <MenuGrid>
-        <MenuCard to="/recentview">
-          <MenuTitle>최근 본 상품</MenuTitle>
-          <MenuDescription>최근 본 상품을 확인하세요.</MenuDescription>
-        </MenuCard>
-        <MenuCard to="/wishlist">
-          <MenuTitle>찜한 상품</MenuTitle>
-          <MenuDescription>관심 있는 상품을 모아보세요.</MenuDescription>
-        </MenuCard>
-        <MenuCard to="/reviews">
-          <MenuTitle>리뷰 관리</MenuTitle>
-          <MenuDescription>작성한 리뷰를 관리하세요.</MenuDescription>
-        </MenuCard>
-        <MenuCard to="/profile">
-          <MenuTitle>프로필 설정</MenuTitle>
-          <MenuDescription>개인정보를 수정하세요.</MenuDescription>
-        </MenuCard>
-      </MenuGrid>
-      <RecentOrders>
-        <SectionTitle>최근 주문</SectionTitle>
-        <OrderList>
-          {recentOrders.length === 0 ? (
-            <p>최근 주문 내역이 없습니다.</p>
-          ) : (
-            recentOrders.map((order) => (
-              <OrderItem key={order.orderId}>
-                <OrderHeader>
-                  <OrderNumber>주문번호: {order.orderId}</OrderNumber>
-                  <OrderDate>
-                    {new Date(order.orderedAt).toLocaleDateString()}
-                  </OrderDate>
-                </OrderHeader>
-                <div>
-                  <OrderContent>
-                    {order.items.map((item, index) => (
-                      <div key={`${order.orderId}-${index}`}>{item.name}</div>
-                    ))}
-                  </OrderContent>
-                  <OrderStatus status={convertStatus(order.status)}>
-                    {convertStatus(order.status)}
-                  </OrderStatus>
-                </div>
-              </OrderItem>
-            ))
-          )}
-        </OrderList>
-      </RecentOrders>
-    </MyPageContainer>
-  );
-};
+    <Container>
+      <Sidebar>
+        <NavItem>👤 프로필</NavItem>
+        <NavItem>📦 주문내역</NavItem>
+        <NavItem>📰 내 피드</NavItem>
+        <NavItem>💖 위시리스트</NavItem>
+        <NavItem>🎟️ 쿠폰/포인트</NavItem>
+        <NavItem>⚙️ 설정</NavItem>
+      </Sidebar>
+      <Main>
+        <ProfileSection>
+          <ProfileImg src={user.profileImg} alt="프로필" />
+          <Welcome>안녕하세요, {user.name}님!</Welcome>
+          <EditBtn>프로필 관리</EditBtn>
+        </ProfileSection>
 
-const convertStatus = (status: string) => {
-  switch (status) {
-    case "ORDERED":
-      return "주문완료";
-    case "SHIPPED":
-      return "배송중";
-    case "DELIVERED":
-      return "배송완료";
-    case "CANCELLED":
-      return "취소됨";
-    case "RETURNED":
-      return "반품됨";
-    default:
-      return "처리중";
-  }
-};
+        <DashboardGrid>
+          <Card>
+            <CardTitle>최근 주문</CardTitle>
+            <CardValue>{user.recentOrders.length}건</CardValue>
+          </Card>
+          <Card>
+            <CardTitle>내 피드 수</CardTitle>
+            <CardValue>{user.feedCount}</CardValue>
+          </Card>
+          <Card>
+            <CardTitle>위시리스트 상품</CardTitle>
+            <CardValue>{user.wishlistCount}</CardValue>
+          </Card>
+          <Card>
+            <CardTitle>사용 가능 쿠폰</CardTitle>
+            <CardValue>{user.couponCount}</CardValue>
+          </Card>
+        </DashboardGrid>
+
+        <SectionTitle>최근 주문</SectionTitle>
+        <OrdersTable>
+          <tbody>
+            {user.recentOrders.map(order => (
+              <OrdersRow key={order.id}>
+                <OrdersCell>
+                  <img src={order.thumbnail} alt={order.name} style={{ width: 48, borderRadius: 12 }} />
+                </OrdersCell>
+                <OrdersCell>{order.name}</OrdersCell>
+                <OrdersCell>{order.date}</OrdersCell>
+                <OrdersCell>{order.status}</OrdersCell>
+              </OrdersRow>
+            ))}
+          </tbody>
+        </OrdersTable>
+
+        <SectionTitle>내 피드</SectionTitle>
+        <FeedCarousel>
+          {feeds.map(feed => (
+            <FeedCard key={feed.id}>
+              <FeedImg src={feed.image} alt={feed.title} />
+              <FeedTitle>{feed.title}</FeedTitle>
+            </FeedCard>
+          ))}
+        </FeedCarousel>
+      </Main>
+    </Container>
+  );
+}
 
 export default MyPage;
