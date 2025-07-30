@@ -1,14 +1,27 @@
-import React from 'react';
-import styled from 'styled-components';
+import React from "react";
+import { Routes, Route, Link, useNavigate } from "react-router-dom";
+import styled, { keyframes } from "styled-components";
+import AddressManagementPage from "./AddressManagementPage";
 
-// 예시 데이터
+// 예시 데이터 (향후 API 연동 필요)
 const user = {
-  name: '홍길동',
-  profileImg: '/assets/profile.jpg',
+  name: "홍길동",
+  profileImg: "https://i.pravatar.cc/150?img=32",
   recentOrders: [
-    { id: 1, thumbnail: '/assets/item1.jpg', name: '트렌디 셔츠', date: '2025-07-28', status: '배송 완료' },
-    { id: 2, thumbnail: '/assets/item2.jpg', name: '여름 팬츠', date: '2025-07-25', status: '처리 중' },
-    { id: 3, thumbnail: '/assets/item3.jpg', name: '스니커즈', date: '2025-07-20', status: '배송 완료' },
+    {
+      id: 1,
+      thumbnail: "https://picsum.photos/seed/picsum/200/300",
+      name: "트렌디 셔츠",
+      date: "2025-07-28",
+      status: "배송 완료",
+    },
+    {
+      id: 2,
+      thumbnail: "https://picsum.photos/seed/picsum/200/300",
+      name: "여름 팬츠",
+      date: "2025-07-25",
+      status: "처리 중",
+    },
   ],
   feedCount: 12,
   wishlistCount: 5,
@@ -16,232 +29,332 @@ const user = {
 };
 
 const feeds = [
-  { id: 1, image: '/assets/feed1.jpg', title: 'OOTD #1' },
-  { id: 2, image: '/assets/feed2.jpg', title: 'OOTD #2' },
-  { id: 3, image: '/assets/feed3.jpg', title: 'OOTD #3' },
+  { id: 1, image: "https://picsum.photos/seed/feed1/300/200", title: "OOTD #1" },
+  { id: 2, image: "https://picsum.photos/seed/feed2/300/200", title: "OOTD #2" },
+  { id: 3, image: "https://picsum.photos/seed/feed3/300/200", title: "OOTD #3" },
 ];
 
-const Container = styled.div`
-  display: grid;
-  grid-template-columns: 240px 1fr;
-  min-height: 100vh;
-  font-family: 'Pretendard', 'sans-serif';
-  background: #f7f8fa;
-`;
-
-const Sidebar = styled.nav`
-  background: #fff;
-  border-right: 1px solid #eee;
-  padding: 32px 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 32px;
-`;
-
-const NavItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 1.1rem;
-  color: #333;
-  cursor: pointer;
-  padding: 12px 24px;
-  border-radius: 24px;
-  transition: background 0.2s;
-  &:hover {
-    background: #f0f2f5;
+// 애니메이션
+const fadeInUp = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 `;
 
-const Main = styled.main`
-  padding: 48px 48px 32px 48px;
+const Container = styled.div`
+  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+  color: white;
+  padding: 2rem;
+  min-height: 100vh;
+  font-family: "Pretendard", sans-serif;
 `;
 
-const ProfileSection = styled.section`
-  display: flex;
-  align-items: center;
-  gap: 32px;
-  margin-bottom: 32px;
+const MainLayout = styled.div`
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const Sidebar = styled.aside`
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 2rem;
+  animation: ${fadeInUp} 0.5s ease-out;
+  height: fit-content;
+`;
+
+const ProfileCard = styled.div`
+  text-align: center;
+  margin-bottom: 2.5rem;
 `;
 
 const ProfileImg = styled.img`
-  width: 96px;
-  height: 96px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #e0e4ea;
+  border: 4px solid #f97316;
+  margin-bottom: 1rem;
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
 `;
 
-const Welcome = styled.div`
-  font-size: 1.6rem;
+const WelcomeMessage = styled.h2`
+  font-size: 1.5rem;
   font-weight: 700;
-  color: #222;
+  margin-bottom: 0.5rem;
 `;
 
-const EditBtn = styled.button`
-  margin-left: 24px;
-  padding: 8px 20px;
-  border-radius: 24px;
-  border: none;
-  background: #222;
-  color: #fff;
+const EditProfileLink = styled(Link)`
+  color: #f97316;
+  text-decoration: none;
   font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
   &:hover {
-    background: #444;
+    text-decoration: underline;
   }
+`;
+
+const NavMenu = styled.nav`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const NavItem = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 12px;
+  color: white;
+  text-decoration: none;
+  font-size: 1.1rem;
+  transition: background 0.3s, color 0.3s;
+
+  &:hover,
+  &.active {
+    background: #f97316;
+    color: white;
+  }
+
+  i {
+    width: 24px;
+    text-align: center;
+  }
+`;
+
+const MainContent = styled.main`
+  animation: ${fadeInUp} 0.5s ease-out 0.2s both;
 `;
 
 const DashboardGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-  margin-bottom: 40px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
 `;
 
 const Card = styled.div`
-  background: #fff;
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  padding: 32px 24px;
+  padding: 2rem;
   text-align: center;
-  font-size: 1.1rem;
-  color: #333;
+  transition: transform 0.3s, box-shadow 0.3s;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+  }
 `;
 
 const CardTitle = styled.div`
   font-size: 1rem;
-  color: #888;
-  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.5rem;
 `;
 
 const CardValue = styled.div`
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
 `;
 
+const Section = styled.section`
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 2rem;
+  margin-bottom: 2.5rem;
+`;
+
 const SectionTitle = styled.h3`
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 16px;
-  color: #222;
+  margin-bottom: 1.5rem;
 `;
 
-const OrdersTable = styled.table`
-  width: 100%;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  margin-bottom: 32px;
-  border-collapse: separate;
-  border-spacing: 0;
-  overflow: hidden;
+const OrdersList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 `;
 
-const OrdersRow = styled.tr`
-  border-bottom: 1px solid #eee;
+const OrderItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  border-radius: 12px;
 `;
 
-const OrdersCell = styled.td`
-  padding: 16px;
-  font-size: 1rem;
-  color: #444;
-  vertical-align: middle;
+const OrderThumbnail = styled.img`
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: cover;
+`;
+
+const OrderInfo = styled.div`
+  flex: 1;
+`;
+
+const OrderName = styled.p`
+  font-weight: 600;
+  margin: 0;
+`;
+
+const OrderDate = styled.p`
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+`;
+
+const OrderStatus = styled.span`
+  background: #f97316;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
 `;
 
 const FeedCarousel = styled.div`
-  display: flex;
-  gap: 18px;
-  overflow-x: auto;
-  padding-bottom: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
 `;
 
 const FeedCard = styled.div`
-  min-width: 160px;
-  background: #fff;
   border-radius: 18px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   overflow: hidden;
-  text-align: center;
+  position: relative;
+  transition: transform 0.3s;
+
+  &:hover {
+    transform: scale(1.05);
+  }
 `;
 
 const FeedImg = styled.img`
   width: 100%;
-  height: 120px;
+  height: 150px;
   object-fit: cover;
 `;
 
 const FeedTitle = styled.div`
-  padding: 12px 0;
-  font-size: 1rem;
-  color: #333;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  color: white;
+  padding: 1rem;
+  font-weight: 500;
 `;
 
+const MyPageDashboard = () => (
+  <>
+    <DashboardGrid>
+      <Card>
+        <CardTitle>최근 주문</CardTitle>
+        <CardValue>{user.recentOrders.length}</CardValue>
+      </Card>
+      <Card>
+        <CardTitle>내 피드</CardTitle>
+        <CardValue>{user.feedCount}</CardValue>
+      </Card>
+      <Card>
+        <CardTitle>위시리스트</CardTitle>
+        <CardValue>{user.wishlistCount}</CardValue>
+      </Card>
+      <Card>
+        <CardTitle>쿠폰</CardTitle>
+        <CardValue>{user.couponCount}</CardValue>
+      </Card>
+    </DashboardGrid>
+
+    <Section>
+      <SectionTitle>최근 주문 내역</SectionTitle>
+      <OrdersList>
+        {user.recentOrders.map((order) => (
+          <OrderItem key={order.id}>
+            <OrderThumbnail src={order.thumbnail} alt={order.name} />
+            <OrderInfo>
+              <OrderName>{order.name}</OrderName>
+              <OrderDate>{order.date}</OrderDate>
+            </OrderInfo>
+            <OrderStatus>{order.status}</OrderStatus>
+          </OrderItem>
+        ))}
+      </OrdersList>
+    </Section>
+
+    <Section>
+      <SectionTitle>내 피드</SectionTitle>
+      <FeedCarousel>
+        {feeds.map((feed) => (
+          <FeedCard key={feed.id}>
+            <FeedImg src={feed.image} alt={feed.title} />
+            <FeedTitle>{feed.title}</FeedTitle>
+          </FeedCard>
+        ))}
+      </FeedCarousel>
+    </Section>
+  </>
+);
+
 function MyPage() {
+  const navigate = useNavigate();
+
   return (
     <Container>
-      <Sidebar>
-        <NavItem>👤 프로필</NavItem>
-        <NavItem>📦 주문내역</NavItem>
-        <NavItem>📰 내 피드</NavItem>
-        <NavItem>💖 위시리스트</NavItem>
-        <NavItem>🎟️ 쿠폰/포인트</NavItem>
-        <NavItem>⚙️ 설정</NavItem>
-      </Sidebar>
-      <Main>
-        <ProfileSection>
-          <ProfileImg src={user.profileImg} alt="프로필" />
-          <Welcome>안녕하세요, {user.name}님!</Welcome>
-          <EditBtn>프로필 관리</EditBtn>
-        </ProfileSection>
-
-        <DashboardGrid>
-          <Card>
-            <CardTitle>최근 주문</CardTitle>
-            <CardValue>{user.recentOrders.length}건</CardValue>
-          </Card>
-          <Card>
-            <CardTitle>내 피드 수</CardTitle>
-            <CardValue>{user.feedCount}</CardValue>
-          </Card>
-          <Card>
-            <CardTitle>위시리스트 상품</CardTitle>
-            <CardValue>{user.wishlistCount}</CardValue>
-          </Card>
-          <Card>
-            <CardTitle>사용 가능 쿠폰</CardTitle>
-            <CardValue>{user.couponCount}</CardValue>
-          </Card>
-        </DashboardGrid>
-
-        <SectionTitle>최근 주문</SectionTitle>
-        <OrdersTable>
-          <tbody>
-            {user.recentOrders.map(order => (
-              <OrdersRow key={order.id}>
-                <OrdersCell>
-                  <img src={order.thumbnail} alt={order.name} style={{ width: 48, borderRadius: 12 }} />
-                </OrdersCell>
-                <OrdersCell>{order.name}</OrdersCell>
-                <OrdersCell>{order.date}</OrdersCell>
-                <OrdersCell>{order.status}</OrdersCell>
-              </OrdersRow>
-            ))}
-          </tbody>
-        </OrdersTable>
-
-        <SectionTitle>내 피드</SectionTitle>
-        <FeedCarousel>
-          {feeds.map(feed => (
-            <FeedCard key={feed.id}>
-              <FeedImg src={feed.image} alt={feed.title} />
-              <FeedTitle>{feed.title}</FeedTitle>
-            </FeedCard>
-          ))}
-        </FeedCarousel>
-      </Main>
+      <MainLayout>
+        <Sidebar>
+          <ProfileCard>
+            <ProfileImg src={user.profileImg} alt="프로필" />
+            <WelcomeMessage>안녕하세요, {user.name}님!</WelcomeMessage>
+            <EditProfileLink to="/profile-settings">
+              프로필 관리
+            </EditProfileLink>
+          </ProfileCard>
+          <NavMenu>
+            <NavItem to="/mypage">
+              <i className="fas fa-tachometer-alt"></i> 대시보드
+            </NavItem>
+            <NavItem to="/orders">
+              <i className="fas fa-box"></i> 주문내역
+            </NavItem>
+            <NavItem to="/my-feed">
+              <i className="fas fa-rss"></i> 내 피드
+            </NavItem>
+            <NavItem to="/wishlist">
+              <i className="fas fa-heart"></i> 위시리스트
+            </NavItem>
+            <NavItem to="/coupons">
+              <i className="fas fa-ticket-alt"></i> 쿠폰/포인트
+            </NavItem>
+            <NavItem to="settings">
+              <i className="fas fa-cog"></i> 설정
+            </NavItem>
+          </NavMenu>
+        </Sidebar>
+        <MainContent>
+          <Routes>
+            <Route index element={<MyPageDashboard />} />
+            <Route path="settings" element={<AddressManagementPage />} />
+            {/* 다른 서브 페이지 라우트 추가 */}
+          </Routes>
+        </MainContent>
+      </MainLayout>
     </Container>
   );
 }
