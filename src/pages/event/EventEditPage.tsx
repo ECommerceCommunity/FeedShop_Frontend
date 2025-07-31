@@ -5,11 +5,8 @@ import { EventType } from "../../types/types";
 import EventService from "../../api/eventService";
 
 interface EventRewardRequestDto {
-  rank: number;
-  reward: string;
-  conditionType: string;
-  conditionDescription: string;
-  maxRecipients: number;
+  conditionValue: string;  // 백엔드와 호환되도록 변경
+  rewardValue: string;     // 백엔드와 호환되도록 변경
 }
 
 interface EventForm {
@@ -43,6 +40,13 @@ function toDatetimeLocal(str: string | undefined) {
   return date.toISOString().slice(0, 16);
 }
 
+// 날짜를 LocalDate 형식으로 변환 (YYYY-MM-DD)
+function toLocalDateString(dateTimeStr: string): string {
+  if (!dateTimeStr) return '';
+  const date = new Date(dateTimeStr);
+  return date.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+}
+
 const EventEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -59,9 +63,9 @@ const EventEditPage = () => {
     description: "",
     participationMethod: "",
     rewards: [
-      { rank: 1, reward: "프리미엄 스니커즈", conditionType: "RANK", conditionDescription: "1등", maxRecipients: 1 },
-      { rank: 2, reward: "트렌디한 운동화", conditionType: "RANK", conditionDescription: "2등", maxRecipients: 1 },
-      { rank: 3, reward: "스타일리시한 슈즈", conditionType: "RANK", conditionDescription: "3등", maxRecipients: 1 }
+      { conditionValue: "1", rewardValue: "프리미엄 스니커즈" },
+      { conditionValue: "2", rewardValue: "트렌디한 운동화" },
+      { conditionValue: "3", rewardValue: "스타일리시한 슈즈" }
     ],
     selectionCriteria: "",
     precautions: "",
@@ -81,6 +85,23 @@ const EventEditPage = () => {
         const event = res.data;
         // Flexible mapping for both eventDetail and direct event fields
         const detail = event.eventDetail || event;
+        
+        // rewards 데이터 매핑 수정
+        let mappedRewards: EventRewardRequestDto[] = [];
+        if (detail.rewards && Array.isArray(detail.rewards)) {
+          mappedRewards = detail.rewards.map((reward: any) => ({
+            conditionValue: reward.rank ? reward.rank.toString() : "1",
+            rewardValue: reward.reward || ''
+          }));
+        } else {
+          // 기본 보상 설정
+          mappedRewards = [
+            { conditionValue: "1", rewardValue: "프리미엄 스니커즈" },
+            { conditionValue: "2", rewardValue: "트렌디한 운동화" },
+            { conditionValue: "3", rewardValue: "스타일리시한 슈즈" }
+          ];
+        }
+        
         setEventForm({
           title: detail.title || event.title || '',
           type: (detail.type || event.type || 'BATTLE').toUpperCase() as EventType,
@@ -91,14 +112,7 @@ const EventEditPage = () => {
           announcement: toDatetimeLocal(detail.announcement || detail.announcementDate),
           description: detail.description || '',
           participationMethod: detail.participationMethod || '',
-          rewards: detail.rewards ? detail.rewards.map((reward: any) => ({
-            conditionValue: reward.rank || reward.conditionType || "1",
-            rewardValue: reward.reward || ''
-          })) : [
-            { conditionValue: "1", rewardValue: "프리미엄 스니커즈" },
-            { conditionValue: "2", rewardValue: "트렌디한 운동화" },
-            { conditionValue: "3", rewardValue: "스타일리시한 슈즈" }
-          ],
+          rewards: mappedRewards,
           selectionCriteria: detail.selectionCriteria || '',
           precautions: detail.precautions || '',
           maxParticipants: detail.maxParticipants || event.maxParticipants || 100,
@@ -162,11 +176,8 @@ const EventEditPage = () => {
     setEventForm(prev => ({
       ...prev,
       rewards: [...prev.rewards, { 
-        rank: prev.rewards.length + 1, 
-        reward: "", 
-        conditionType: "RANK", 
-        conditionDescription: `${prev.rewards.length + 1}등`, 
-        maxRecipients: 1 
+        conditionValue: (prev.rewards.length + 1).toString(), 
+        rewardValue: ""
       }]
     }));
   };
@@ -179,8 +190,7 @@ const EventEditPage = () => {
         ...prev,
         rewards: newRewards.map((reward, i) => ({
           ...reward,
-          rank: i + 1,
-          conditionDescription: `${i + 1}등`
+          conditionValue: (i + 1).toString()
         }))
       };
     });
@@ -206,7 +216,7 @@ const EventEditPage = () => {
       errors.push("최소 1개의 보상을 입력해주세요.");
     } else {
       eventForm.rewards.forEach((reward, index) => {
-        if (!reward.reward.trim()) {
+        if (!reward.rewardValue.trim()) {
           errors.push(`${index + 1}등 보상 내용을 입력해주세요.`);
         }
       });
@@ -259,26 +269,31 @@ const EventEditPage = () => {
     try {
       setLoading(true);
 
-      // JSON 데이터로 전송
-      const eventData = {
-        title: eventForm.title,
-        type: eventForm.type,
-        purchaseStartDate: eventForm.purchaseStartDate,
-        purchaseEndDate: eventForm.purchaseEndDate,
-        eventStartDate: eventForm.eventStartDate,
-        eventEndDate: eventForm.eventEndDate,
-        announcement: eventForm.announcement,
-        description: eventForm.description,
-        participationMethod: eventForm.participationMethod,
-        selectionCriteria: eventForm.selectionCriteria,
-        precautions: eventForm.precautions,
-        maxParticipants: eventForm.maxParticipants,
-        rewards: eventForm.rewards
-      };
+      // FormData로 전송 (백엔드가 multipart/form-data를 지원하므로)
+      const formData = new FormData();
+      formData.append("title", eventForm.title);
+      formData.append("type", eventForm.type);
+      formData.append("purchaseStartDate", toLocalDateString(eventForm.purchaseStartDate));
+      formData.append("purchaseEndDate", toLocalDateString(eventForm.purchaseEndDate));
+      formData.append("eventStartDate", toLocalDateString(eventForm.eventStartDate));
+      formData.append("eventEndDate", toLocalDateString(eventForm.eventEndDate));
+      formData.append("announcement", toLocalDateString(eventForm.announcement));
+      formData.append("description", eventForm.description);
+      formData.append("participationMethod", eventForm.participationMethod);
+      formData.append("selectionCriteria", eventForm.selectionCriteria);
+      formData.append("precautions", eventForm.precautions);
+      formData.append("maxParticipants", eventForm.maxParticipants.toString());
+      
+      // rewards를 JSON 문자열로 변환
+      formData.append("rewards", JSON.stringify(eventForm.rewards));
+      
+      if (eventForm.imageFile) {
+        formData.append("image", eventForm.imageFile);
+      }
 
-      const response = await axiosInstance.put(`/api/events/${id}`, eventData, {
+      const response = await axiosInstance.put(`/api/events/${id}`, formData, {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "multipart/form-data",
         },
       });
 
@@ -579,9 +594,9 @@ const EventEditPage = () => {
                     </label>
                     <input
                       type="text"
-                      value={reward.conditionDescription}
-                      onChange={(e) => handleRewardChange(index, 'conditionDescription', e.target.value)}
-                      placeholder="예: 1등, 최우수상"
+                      value={reward.conditionValue}
+                      onChange={(e) => handleRewardChange(index, 'conditionValue', e.target.value)}
+                      placeholder="예: 1, 2, 3"
                       className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -592,8 +607,8 @@ const EventEditPage = () => {
                     </label>
                     <input
                       type="text"
-                      value={reward.reward}
-                      onChange={(e) => handleRewardChange(index, 'reward', e.target.value)}
+                      value={reward.rewardValue}
+                      onChange={(e) => handleRewardChange(index, 'rewardValue', e.target.value)}
                       placeholder="예: 프리미엄 스니커즈"
                       className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
