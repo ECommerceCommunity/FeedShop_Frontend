@@ -5,8 +5,11 @@ import { EventType } from "../../types/types";
 import EventService from "../../api/eventService";
 
 interface EventRewardRequestDto {
-  conditionValue: string;
-  rewardValue: string;
+  rank: number;
+  reward: string;
+  conditionType: string;
+  conditionDescription: string;
+  maxRecipients: number;
 }
 
 interface EventForm {
@@ -56,9 +59,9 @@ const EventEditPage = () => {
     description: "",
     participationMethod: "",
     rewards: [
-      { conditionValue: "1", rewardValue: "프리미엄 스니커즈" },
-      { conditionValue: "2", rewardValue: "트렌디한 운동화" },
-      { conditionValue: "3", rewardValue: "스타일리시한 슈즈" }
+      { rank: 1, reward: "프리미엄 스니커즈", conditionType: "RANK", conditionDescription: "1등", maxRecipients: 1 },
+      { rank: 2, reward: "트렌디한 운동화", conditionType: "RANK", conditionDescription: "2등", maxRecipients: 1 },
+      { rank: 3, reward: "스타일리시한 슈즈", conditionType: "RANK", conditionDescription: "3등", maxRecipients: 1 }
     ],
     selectionCriteria: "",
     precautions: "",
@@ -158,7 +161,13 @@ const EventEditPage = () => {
     }
     setEventForm(prev => ({
       ...prev,
-      rewards: [...prev.rewards, { conditionValue: String(prev.rewards.length + 1), rewardValue: "" }]
+      rewards: [...prev.rewards, { 
+        rank: prev.rewards.length + 1, 
+        reward: "", 
+        conditionType: "RANK", 
+        conditionDescription: `${prev.rewards.length + 1}등`, 
+        maxRecipients: 1 
+      }]
     }));
   };
 
@@ -170,7 +179,8 @@ const EventEditPage = () => {
         ...prev,
         rewards: newRewards.map((reward, i) => ({
           ...reward,
-          conditionValue: String(i + 1)
+          rank: i + 1,
+          conditionDescription: `${i + 1}등`
         }))
       };
     });
@@ -196,7 +206,7 @@ const EventEditPage = () => {
       errors.push("최소 1개의 보상을 입력해주세요.");
     } else {
       eventForm.rewards.forEach((reward, index) => {
-        if (!reward.rewardValue.trim()) {
+        if (!reward.reward.trim()) {
           errors.push(`${index + 1}등 보상 내용을 입력해주세요.`);
         }
       });
@@ -569,8 +579,8 @@ const EventEditPage = () => {
                     </label>
                     <input
                       type="text"
-                      value={reward.conditionValue}
-                      onChange={(e) => handleRewardChange(index, 'conditionValue', e.target.value)}
+                      value={reward.conditionDescription}
+                      onChange={(e) => handleRewardChange(index, 'conditionDescription', e.target.value)}
                       placeholder="예: 1등, 최우수상"
                       className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
@@ -582,8 +592,8 @@ const EventEditPage = () => {
                     </label>
                     <input
                       type="text"
-                      value={reward.rewardValue}
-                      onChange={(e) => handleRewardChange(index, 'rewardValue', e.target.value)}
+                      value={reward.reward}
+                      onChange={(e) => handleRewardChange(index, 'reward', e.target.value)}
                       placeholder="예: 프리미엄 스니커즈"
                       className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
