@@ -371,7 +371,7 @@ const EventListPage = () => {
           <div className="space-y-6">
         {events.map((event) => (
           <div
-            key={event.id}
+                            key={event.eventId}
             onClick={() => handleEventClick(event)}
                 className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer overflow-hidden group"
               >
@@ -406,25 +406,19 @@ const EventListPage = () => {
                         <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200/50">
                           <div className="text-sm font-semibold text-blue-600 mb-2">구매 기간</div>
                           <div className="text-sm font-medium text-gray-900">
-                            {event.purchaseStartDate && event.purchaseEndDate ? 
-                              `${new Date(event.purchaseStartDate).toLocaleDateString()} - ${new Date(event.purchaseEndDate).toLocaleDateString()}` : 
-                              '기간 정보 없음'
-                            }
+                            {event.purchasePeriod || '기간 정보 없음'}
                           </div>
                         </div>
                         <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200/50">
                           <div className="text-sm font-semibold text-green-600 mb-2">참여 기간</div>
                           <div className="text-sm font-medium text-gray-900">
-                            {event.eventStartDate && event.eventEndDate ? 
-                              `${new Date(event.eventStartDate).toLocaleDateString()} - ${new Date(event.eventEndDate).toLocaleDateString()}` : 
-                              '기간 정보 없음'
-                            }
+                            {event.votePeriod || '기간 정보 없음'}
                           </div>
                         </div>
                         <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200/50">
                           <div className="text-sm font-semibold text-purple-600 mb-2">발표일</div>
                           <div className="text-sm font-medium text-gray-900">
-                            {event.announcement ? new Date(event.announcement).toLocaleDateString() : '발표일 미정'}
+                            {event.announcementDate ? new Date(event.announcementDate).toLocaleDateString() : '발표일 미정'}
                           </div>
                         </div>
                       </div>

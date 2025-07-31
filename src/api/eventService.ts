@@ -24,16 +24,16 @@ export interface EventReward {
 }
 
 export interface EventDto {
-  id: number;
+  eventId: number;
   title: string;
   description: string;
   type: string;
   status: string;
   eventStartDate: string;
   eventEndDate: string;
-  purchaseStartDate: string;
-  purchaseEndDate: string;
-  announcement: string;
+  purchasePeriod: string;
+  votePeriod: string;
+  announcementDate: string;
   participationMethod: string;
   rewards: EventReward[];
   selectionCriteria: string;
@@ -41,9 +41,7 @@ export interface EventDto {
   maxParticipants: number;
   imageUrl?: string;
   createdBy?: string;
-  updatedBy?: string;
   createdAt?: string;
-  updatedAt?: string;
 }
 
 export interface EventCreateRequestDto {

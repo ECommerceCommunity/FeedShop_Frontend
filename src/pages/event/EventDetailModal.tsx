@@ -38,18 +38,18 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (open && event?.id) {
+    if (open && event?.eventId) {
       setLoading(true);
       setError(null);
       
       // 이미 event 객체가 있으면 그대로 사용, 없으면 API 호출
       if (event && Object.keys(event).length > 0) {
         console.log('EventDetailModal - event 데이터:', event);
-        console.log('EventDetailModal - announcement:', event.announcement);
+        console.log('EventDetailModal - announcementDate:', event.announcementDate);
         setDetail(event);
         setLoading(false);
       } else {
-        EventService.getEventById(event.id)
+        EventService.getEventById(event.eventId)
           .then(eventData => {
             setDetail(eventData);
           })
@@ -101,7 +101,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   const isAdmin = user?.userType === 'admin';
 
   const handleDelete = async () => {
-    const eventId = detail?.id;
+    const eventId = detail?.eventId;
     if (!eventId) return;
     if (!window.confirm('정말로 이 이벤트를 삭제하시겠습니까?')) return;
     try {
@@ -178,10 +178,10 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             <div className="absolute top-6 right-20 flex gap-3">
               <button
                 onClick={() => {
-                  console.log('Edit button clicked for event ID:', detail.id);
-                  console.log('Navigating to:', `/events/edit/${detail.id}`);
+                  console.log('Edit button clicked for event ID:', detail.eventId);
+                  console.log('Navigating to:', `/events/edit/${detail.eventId}`);
                   onClose();
-                  navigate(`/events/edit/${detail.id}`);
+                  navigate(`/events/edit/${detail.eventId}`);
                 }}
                 className="p-3 text-white bg-black/50 backdrop-blur-sm rounded-xl hover:bg-black/70 transition-all duration-200 shadow-lg"
                 title="수정"
@@ -229,19 +229,19 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border border-blue-200/50">
                 <h3 className="text-sm font-semibold text-blue-600 mb-2">구매 기간</h3>
                 <p className="text-gray-900 font-medium">
-                  {formatDate(detail.purchaseStartDate)} ~ {formatDate(detail.purchaseEndDate)}
+                  {detail.purchasePeriod || '기간 정보 없음'}
                 </p>
               </div>
               <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl border border-green-200/50">
                 <h3 className="text-sm font-semibold text-green-600 mb-2">이벤트 기간</h3>
                 <p className="text-gray-900 font-medium">
-                  {formatDate(detail.eventStartDate)} ~ {formatDate(detail.eventEndDate)}
+                  {detail.votePeriod || '기간 정보 없음'}
                 </p>
               </div>
               <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl border border-purple-200/50">
                 <h3 className="text-sm font-semibold text-purple-600 mb-2">발표일</h3>
                 <p className="text-gray-900 font-medium">
-                  {detail.announcement ? formatDate(detail.announcement) : '발표일 미정'}
+                  {detail.announcementDate ? formatDate(detail.announcementDate) : '발표일 미정'}
                 </p>
               </div>
             </div>
