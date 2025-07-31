@@ -85,59 +85,13 @@ const EventListPage = () => {
           params.search = searchKeyword.trim();
         }
         
-        try {
-          const response = await axiosInstance.get("/api/v1/events", { params });
-          const data = response.data;
-          
-          console.log('이벤트 목록 응답:', data);
-          
-          setEvents(data.content || []);
-          setTotalPages(data.totalPages || 1);
-        } catch (error) {
-          console.log('백엔드 연결 실패, fallback 데이터 사용');
-          // Fallback 데이터 사용
-          const fallbackEvents = [
-            {
-              id: 1,
-              title: "여름 스타일 챌린지",
-              description: "여름에 어울리는 스타일링을 공유해보세요!",
-              type: "BATTLE",
-              status: "ONGOING",
-              eventStartDate: "2025-07-01T00:00:00",
-              eventEndDate: "2025-08-31T23:59:59",
-              purchaseStartDate: "2025-06-15T00:00:00",
-              purchaseEndDate: "2025-07-31T23:59:59",
-              announcement: "2025-09-15T00:00:00",
-              participationMethod: "1. 이벤트 상품 구매\n2. 스타일링 후 사진 촬영\n3. 피드에 업로드",
-              rewards: "1등: 프리미엄 스니커즈\n2등: 트렌디한 운동화\n3등: 스타일리시한 슈즈",
-              selectionCriteria: "스타일링 퀄리티 40%\n사진 퀄리티 30%\n창의성 20%\n참여도 10%",
-              precautions: "동일한 아이템이 명확히 확인되지 않으면 제외\n타인의 저작권을 침해하는 콘텐츠는 제외",
-              maxParticipants: 100,
-              imageUrl: "https://via.placeholder.com/400x200?text=Summer+Style+Challenge"
-            },
-            {
-              id: 2,
-              title: "신상품 리뷰 이벤트",
-              description: "새로 출시된 상품들의 리뷰를 작성해보세요!",
-              type: "MISSION",
-              status: "UPCOMING",
-              eventStartDate: "2025-08-01T00:00:00",
-              eventEndDate: "2025-09-30T23:59:59",
-              purchaseStartDate: "2025-07-15T00:00:00",
-              purchaseEndDate: "2025-08-31T23:59:59",
-              announcement: "2025-10-15T00:00:00",
-              participationMethod: "1. 신상품 구매\n2. 상세한 리뷰 작성\n3. 피드에 업로드",
-              rewards: "1등: 상품권 10만원\n2등: 상품권 5만원\n3등: 상품권 3만원",
-              selectionCriteria: "리뷰 퀄리티 50%\n사진 퀄리티 30%\n창의성 20%",
-              precautions: "부정한 방법으로 참여한 경우 당첨 취소\n타인의 저작권을 침해하는 콘텐츠는 제외",
-              maxParticipants: 50,
-              imageUrl: "https://via.placeholder.com/400x200?text=New+Product+Review"
-            }
-          ];
-          
-          setEvents(fallbackEvents);
-          setTotalPages(1);
-        }
+        const response = await axiosInstance.get("/api/event", { params });
+        const data = response.data;
+        
+        console.log('이벤트 목록 응답:', data);
+        
+        setEvents(data.content || []);
+        setTotalPages(data.totalPages || 1);
       } catch (error: any) {
         console.error("이벤트 목록 조회 실패:", error);
         setError("이벤트 목록을 불러오는데 실패했습니다.");
@@ -316,7 +270,7 @@ const EventListPage = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                     <span className="relative">
-                      이벤트 생성
+              이벤트 생성
                       <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300"></span>
                     </span>
                   </Link>
@@ -337,21 +291,21 @@ const EventListPage = () => {
                     </span>
                   </Link>
                 )}
-              </div>
+      </div>
 
               {/* 필터 */}
               <div className="flex gap-3">
-                <button
+        <button
                   onClick={() => handleFilterChange("all")}
                   className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
                     activeFilter === "all"
                       ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
                       : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
                   }`}
-                >
-                  전체
-                </button>
-                <button
+        >
+          전체
+        </button>
+        <button
                   onClick={() => handleFilterChange("RECRUITING")}
                   className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
                     activeFilter === "RECRUITING"
@@ -368,10 +322,10 @@ const EventListPage = () => {
                       ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
                       : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
                   }`}
-                >
-                  진행중
-                </button>
-                <button
+        >
+          진행중
+        </button>
+        <button
                   onClick={() => handleFilterChange("COMPLETED")}
                   className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
                     activeFilter === "COMPLETED"
@@ -380,8 +334,8 @@ const EventListPage = () => {
                   }`}
                 >
                   완료
-                </button>
-              </div>
+        </button>
+      </div>
             </div>
           </div>
         </div>
@@ -399,7 +353,7 @@ const EventListPage = () => {
                 <p className="text-sm text-red-800">{error}</p>
               </div>
             </div>
-          </div>
+      </div>
         )}
 
         {/* 이벤트 목록 */}
@@ -415,10 +369,10 @@ const EventListPage = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {events.map((event) => (
-              <div
-                key={event.id}
-                onClick={() => handleEventClick(event)}
+        {events.map((event) => (
+          <div
+            key={event.id}
+            onClick={() => handleEventClick(event)}
                 className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer overflow-hidden group"
               >
                 <div className="flex">
@@ -500,8 +454,8 @@ const EventListPage = () => {
                           </div>
                         ) : (
                           <div className="text-gray-400 text-sm bg-gray-50 px-4 py-3 rounded-xl border border-gray-200">보상 정보가 없습니다.</div>
-                        )}
-                      </div>
+              )}
+            </div>
                     </div>
 
                     {/* 하단 액션 영역 */}
@@ -533,11 +487,11 @@ const EventListPage = () => {
                         ) : null}
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+            </div>
+            </div>
           </div>
+        ))}
+      </div>
         )}
 
         {/* 페이지네이션 */}
@@ -583,12 +537,12 @@ const EventListPage = () => {
         {/* 관리자용 이벤트 생성 버튼 */}
         {user?.userType === "admin" && (
           <div className="mt-8 text-center">
-            <button
+          <button
               onClick={() => navigate("/events/create")}
               className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
-            >
+          >
               새 이벤트 생성
-            </button>
+          </button>
           </div>
         )}
       </div>
