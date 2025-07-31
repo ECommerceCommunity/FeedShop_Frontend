@@ -77,24 +77,24 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5143232/main/1.jpg",
-      "/img/products/5143232/main/2.jpg",
-      "/img/products/5143232/main/3.jpg",
-      "/img/products/5143232/main/4.jpg",
-      "/img/products/5143232/main/5.jpg",
-      "/img/products/5143232/main/6.jpg",
-      "/img/products/5143232/main/7.jpg",
-      "/img/products/5143232/main/8.jpg"
+      "images/mock/products/5143232/main/1.jpg",
+      "images/mock/products/5143232/main/2.jpg",
+      "images/mock/products/5143232/main/3.jpg",
+      "images/mock/products/5143232/main/4.jpg",
+      "images/mock/products/5143232/main/5.jpg",
+      "images/mock/products/5143232/main/6.jpg",
+      "images/mock/products/5143232/main/7.jpg",
+      "images/mock/products/5143232/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5143232/detail/1.jpg",
-      "/img/products/5143232/detail/2.jpg",
-      "/img/products/5143232/detail/3.jpg",
-      "/img/products/5143232/detail/4.jpg",
-      "/img/products/5143232/detail/5.jpg",
-      "/img/products/5143232/detail/6.jpg",
-      "/img/products/5143232/detail/7.jpg",
-      "/img/products/5143232/detail/8.jpg"
+      "images/mock/products/5143232/detail/1.jpg",
+      "images/mock/products/5143232/detail/2.jpg",
+      "images/mock/products/5143232/detail/3.jpg",
+      "images/mock/products/5143232/detail/4.jpg",
+      "images/mock/products/5143232/detail/5.jpg",
+      "images/mock/products/5143232/detail/6.jpg",
+      "images/mock/products/5143232/detail/7.jpg",
+      "images/mock/products/5143232/detail/8.jpg"
     ],
     "store_id": 1001,
     "product_likes": 2186,
@@ -162,26 +162,26 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5143218/main/1.jpg",
-      "/img/products/5143218/main/2.jpg",
-      "/img/products/5143218/main/3.jpg",
-      "/img/products/5143218/main/4.jpg",
-      "/img/products/5143218/main/5.jpg",
-      "/img/products/5143218/main/6.jpg",
-      "/img/products/5143218/main/7.jpg",
-      "/img/products/5143218/main/8.jpg",
-      "/img/products/5143218/main/9.jpg"
+      "images/mock/products/5143218/main/1.jpg",
+      "images/mock/products/5143218/main/2.jpg",
+      "images/mock/products/5143218/main/3.jpg",
+      "images/mock/products/5143218/main/4.jpg",
+      "images/mock/products/5143218/main/5.jpg",
+      "images/mock/products/5143218/main/6.jpg",
+      "images/mock/products/5143218/main/7.jpg",
+      "images/mock/products/5143218/main/8.jpg",
+      "images/mock/products/5143218/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5143218/detail/1.jpg",
-      "/img/products/5143218/detail/2.jpg",
-      "/img/products/5143218/detail/3.jpg",
-      "/img/products/5143218/detail/4.jpg",
-      "/img/products/5143218/detail/5.jpg",
-      "/img/products/5143218/detail/6.jpg",
-      "/img/products/5143218/detail/7.jpg",
-      "/img/products/5143218/detail/8.jpg",
-      "/img/products/5143218/detail/9.jpg"
+      "images/mock/products/5143218/detail/1.jpg",
+      "images/mock/products/5143218/detail/2.jpg",
+      "images/mock/products/5143218/detail/3.jpg",
+      "images/mock/products/5143218/detail/4.jpg",
+      "images/mock/products/5143218/detail/5.jpg",
+      "images/mock/products/5143218/detail/6.jpg",
+      "images/mock/products/5143218/detail/7.jpg",
+      "images/mock/products/5143218/detail/8.jpg",
+      "images/mock/products/5143218/detail/9.jpg"
     ],
     "store_id": 1001,
     "product_likes": 1143,
@@ -199,11 +199,11 @@
       "other_color_products": [
         {
           "product_id": 5143217,
-          "thumbnail_url": "/img/products/5143217/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5143217/main/1.jpg"
         },
         {
           "product_id": 5143218,
-          "thumbnail_url": "/img/products/5143218/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5143218/main/1.jpg"
         }
       ]
     }
@@ -254,30 +254,30 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5037021/main/1.jpg",
-      "/img/products/5037021/main/10.jpg",
-      "/img/products/5037021/main/11.jpg",
-      "/img/products/5037021/main/2.jpg",
-      "/img/products/5037021/main/3.jpg",
-      "/img/products/5037021/main/4.jpg",
-      "/img/products/5037021/main/5.jpg",
-      "/img/products/5037021/main/6.jpg",
-      "/img/products/5037021/main/7.jpg",
-      "/img/products/5037021/main/8.jpg",
-      "/img/products/5037021/main/9.jpg"
+      "images/mock/products/5037021/main/1.jpg",
+      "images/mock/products/5037021/main/10.jpg",
+      "images/mock/products/5037021/main/11.jpg",
+      "images/mock/products/5037021/main/2.jpg",
+      "images/mock/products/5037021/main/3.jpg",
+      "images/mock/products/5037021/main/4.jpg",
+      "images/mock/products/5037021/main/5.jpg",
+      "images/mock/products/5037021/main/6.jpg",
+      "images/mock/products/5037021/main/7.jpg",
+      "images/mock/products/5037021/main/8.jpg",
+      "images/mock/products/5037021/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5037021/detail/1.jpg",
-      "/img/products/5037021/detail/10.jpg",
-      "/img/products/5037021/detail/11.jpg",
-      "/img/products/5037021/detail/2.jpg",
-      "/img/products/5037021/detail/3.jpg",
-      "/img/products/5037021/detail/4.jpg",
-      "/img/products/5037021/detail/5.jpg",
-      "/img/products/5037021/detail/6.jpg",
-      "/img/products/5037021/detail/7.jpg",
-      "/img/products/5037021/detail/8.jpg",
-      "/img/products/5037021/detail/9.jpg"
+      "images/mock/products/5037021/detail/1.jpg",
+      "images/mock/products/5037021/detail/10.jpg",
+      "images/mock/products/5037021/detail/11.jpg",
+      "images/mock/products/5037021/detail/2.jpg",
+      "images/mock/products/5037021/detail/3.jpg",
+      "images/mock/products/5037021/detail/4.jpg",
+      "images/mock/products/5037021/detail/5.jpg",
+      "images/mock/products/5037021/detail/6.jpg",
+      "images/mock/products/5037021/detail/7.jpg",
+      "images/mock/products/5037021/detail/8.jpg",
+      "images/mock/products/5037021/detail/9.jpg"
     ],
     "store_id": 1001,
     "product_likes": 7976,
@@ -337,24 +337,24 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5053897/main/1.jpg",
-      "/img/products/5053897/main/2.jpg",
-      "/img/products/5053897/main/3.jpg",
-      "/img/products/5053897/main/4.jpg",
-      "/img/products/5053897/main/5.jpg",
-      "/img/products/5053897/main/6.jpg",
-      "/img/products/5053897/main/7.jpg",
-      "/img/products/5053897/main/8.jpg"
+      "images/mock/products/5053897/main/1.jpg",
+      "images/mock/products/5053897/main/2.jpg",
+      "images/mock/products/5053897/main/3.jpg",
+      "images/mock/products/5053897/main/4.jpg",
+      "images/mock/products/5053897/main/5.jpg",
+      "images/mock/products/5053897/main/6.jpg",
+      "images/mock/products/5053897/main/7.jpg",
+      "images/mock/products/5053897/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5053897/detail/1.jpg",
-      "/img/products/5053897/detail/2.jpg",
-      "/img/products/5053897/detail/3.jpg",
-      "/img/products/5053897/detail/4.jpg",
-      "/img/products/5053897/detail/5.jpg",
-      "/img/products/5053897/detail/6.jpg",
-      "/img/products/5053897/detail/7.jpg",
-      "/img/products/5053897/detail/8.jpg"
+      "images/mock/products/5053897/detail/1.jpg",
+      "images/mock/products/5053897/detail/2.jpg",
+      "images/mock/products/5053897/detail/3.jpg",
+      "images/mock/products/5053897/detail/4.jpg",
+      "images/mock/products/5053897/detail/5.jpg",
+      "images/mock/products/5053897/detail/6.jpg",
+      "images/mock/products/5053897/detail/7.jpg",
+      "images/mock/products/5053897/detail/8.jpg"
     ],
     "store_id": 1001,
     "product_likes": 4870,
@@ -410,24 +410,24 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4723320/main/1.jpg",
-      "/img/products/4723320/main/2.jpg",
-      "/img/products/4723320/main/3.jpg",
-      "/img/products/4723320/main/4.jpg",
-      "/img/products/4723320/main/5.jpg",
-      "/img/products/4723320/main/6.jpg",
-      "/img/products/4723320/main/7.jpg",
-      "/img/products/4723320/main/8.jpg"
+      "images/mock/products/4723320/main/1.jpg",
+      "images/mock/products/4723320/main/2.jpg",
+      "images/mock/products/4723320/main/3.jpg",
+      "images/mock/products/4723320/main/4.jpg",
+      "images/mock/products/4723320/main/5.jpg",
+      "images/mock/products/4723320/main/6.jpg",
+      "images/mock/products/4723320/main/7.jpg",
+      "images/mock/products/4723320/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4723320/detail/1.jpg",
-      "/img/products/4723320/detail/2.jpg",
-      "/img/products/4723320/detail/3.jpg",
-      "/img/products/4723320/detail/4.jpg",
-      "/img/products/4723320/detail/5.jpg",
-      "/img/products/4723320/detail/6.jpg",
-      "/img/products/4723320/detail/7.jpg",
-      "/img/products/4723320/detail/8.jpg"
+      "images/mock/products/4723320/detail/1.jpg",
+      "images/mock/products/4723320/detail/2.jpg",
+      "images/mock/products/4723320/detail/3.jpg",
+      "images/mock/products/4723320/detail/4.jpg",
+      "images/mock/products/4723320/detail/5.jpg",
+      "images/mock/products/4723320/detail/6.jpg",
+      "images/mock/products/4723320/detail/7.jpg",
+      "images/mock/products/4723320/detail/8.jpg"
     ],
     "store_id": 1001,
     "product_likes": 3510,
@@ -483,32 +483,32 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5143217/main/1.jpg",
-      "/img/products/5143217/main/10.jpg",
-      "/img/products/5143217/main/11.jpg",
-      "/img/products/5143217/main/12.jpg",
-      "/img/products/5143217/main/2.jpg",
-      "/img/products/5143217/main/3.jpg",
-      "/img/products/5143217/main/4.jpg",
-      "/img/products/5143217/main/5.jpg",
-      "/img/products/5143217/main/6.jpg",
-      "/img/products/5143217/main/7.jpg",
-      "/img/products/5143217/main/8.jpg",
-      "/img/products/5143217/main/9.jpg"
+      "images/mock/products/5143217/main/1.jpg",
+      "images/mock/products/5143217/main/10.jpg",
+      "images/mock/products/5143217/main/11.jpg",
+      "images/mock/products/5143217/main/12.jpg",
+      "images/mock/products/5143217/main/2.jpg",
+      "images/mock/products/5143217/main/3.jpg",
+      "images/mock/products/5143217/main/4.jpg",
+      "images/mock/products/5143217/main/5.jpg",
+      "images/mock/products/5143217/main/6.jpg",
+      "images/mock/products/5143217/main/7.jpg",
+      "images/mock/products/5143217/main/8.jpg",
+      "images/mock/products/5143217/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5143217/detail/1.jpg",
-      "/img/products/5143217/detail/10.jpg",
-      "/img/products/5143217/detail/11.jpg",
-      "/img/products/5143217/detail/12.jpg",
-      "/img/products/5143217/detail/2.jpg",
-      "/img/products/5143217/detail/3.jpg",
-      "/img/products/5143217/detail/4.jpg",
-      "/img/products/5143217/detail/5.jpg",
-      "/img/products/5143217/detail/6.jpg",
-      "/img/products/5143217/detail/7.jpg",
-      "/img/products/5143217/detail/8.jpg",
-      "/img/products/5143217/detail/9.jpg"
+      "images/mock/products/5143217/detail/1.jpg",
+      "images/mock/products/5143217/detail/10.jpg",
+      "images/mock/products/5143217/detail/11.jpg",
+      "images/mock/products/5143217/detail/12.jpg",
+      "images/mock/products/5143217/detail/2.jpg",
+      "images/mock/products/5143217/detail/3.jpg",
+      "images/mock/products/5143217/detail/4.jpg",
+      "images/mock/products/5143217/detail/5.jpg",
+      "images/mock/products/5143217/detail/6.jpg",
+      "images/mock/products/5143217/detail/7.jpg",
+      "images/mock/products/5143217/detail/8.jpg",
+      "images/mock/products/5143217/detail/9.jpg"
     ],
     "store_id": 1001,
     "product_likes": 1413,
@@ -526,11 +526,11 @@
       "other_color_products": [
         {
           "product_id": 5143218,
-          "thumbnail_url": "/img/products/5143218/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5143218/main/1.jpg"
         },
         {
           "product_id": 5143217,
-          "thumbnail_url": "/img/products/5143217/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5143217/main/1.jpg"
         }
       ]
     }
@@ -581,21 +581,21 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5059188/main/1.jpg",
-      "/img/products/5059188/main/10.jpg",
-      "/img/products/5059188/main/11.jpg",
-      "/img/products/5059188/main/2.jpg",
-      "/img/products/5059188/main/3.jpg",
-      "/img/products/5059188/main/4.jpg",
-      "/img/products/5059188/main/5.jpg",
-      "/img/products/5059188/main/6.jpg",
-      "/img/products/5059188/main/7.jpg",
-      "/img/products/5059188/main/8.jpg",
-      "/img/products/5059188/main/9.jpg"
+      "images/mock/products/5059188/main/1.jpg",
+      "images/mock/products/5059188/main/10.jpg",
+      "images/mock/products/5059188/main/11.jpg",
+      "images/mock/products/5059188/main/2.jpg",
+      "images/mock/products/5059188/main/3.jpg",
+      "images/mock/products/5059188/main/4.jpg",
+      "images/mock/products/5059188/main/5.jpg",
+      "images/mock/products/5059188/main/6.jpg",
+      "images/mock/products/5059188/main/7.jpg",
+      "images/mock/products/5059188/main/8.jpg",
+      "images/mock/products/5059188/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5059188/detail/1.jpg",
-      "/img/products/5059188/detail/2.jpg"
+      "images/mock/products/5059188/detail/1.jpg",
+      "images/mock/products/5059188/detail/2.jpg"
     ],
     "store_id": 1001,
     "product_likes": 3207,
@@ -655,18 +655,18 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5059393/main/1.jpg",
-      "/img/products/5059393/main/2.jpg",
-      "/img/products/5059393/main/3.jpg",
-      "/img/products/5059393/main/4.jpg",
-      "/img/products/5059393/main/5.jpg",
-      "/img/products/5059393/main/6.jpg",
-      "/img/products/5059393/main/7.jpg"
+      "images/mock/products/5059393/main/1.jpg",
+      "images/mock/products/5059393/main/2.jpg",
+      "images/mock/products/5059393/main/3.jpg",
+      "images/mock/products/5059393/main/4.jpg",
+      "images/mock/products/5059393/main/5.jpg",
+      "images/mock/products/5059393/main/6.jpg",
+      "images/mock/products/5059393/main/7.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5059393/detail/1.jpg",
-      "/img/products/5059393/detail/2.jpg",
-      "/img/products/5059393/detail/3.jpg"
+      "images/mock/products/5059393/detail/1.jpg",
+      "images/mock/products/5059393/detail/2.jpg",
+      "images/mock/products/5059393/detail/3.jpg"
     ],
     "store_id": 1001,
     "product_likes": 1523,
@@ -726,24 +726,24 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5143249/main/1.jpg",
-      "/img/products/5143249/main/2.jpg",
-      "/img/products/5143249/main/3.jpg",
-      "/img/products/5143249/main/4.jpg",
-      "/img/products/5143249/main/5.jpg",
-      "/img/products/5143249/main/6.jpg",
-      "/img/products/5143249/main/7.jpg",
-      "/img/products/5143249/main/8.jpg"
+      "images/mock/products/5143249/main/1.jpg",
+      "images/mock/products/5143249/main/2.jpg",
+      "images/mock/products/5143249/main/3.jpg",
+      "images/mock/products/5143249/main/4.jpg",
+      "images/mock/products/5143249/main/5.jpg",
+      "images/mock/products/5143249/main/6.jpg",
+      "images/mock/products/5143249/main/7.jpg",
+      "images/mock/products/5143249/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5143249/detail/1.jpg",
-      "/img/products/5143249/detail/2.jpg",
-      "/img/products/5143249/detail/3.jpg",
-      "/img/products/5143249/detail/4.jpg",
-      "/img/products/5143249/detail/5.jpg",
-      "/img/products/5143249/detail/6.jpg",
-      "/img/products/5143249/detail/7.jpg",
-      "/img/products/5143249/detail/8.jpg"
+      "images/mock/products/5143249/detail/1.jpg",
+      "images/mock/products/5143249/detail/2.jpg",
+      "images/mock/products/5143249/detail/3.jpg",
+      "images/mock/products/5143249/detail/4.jpg",
+      "images/mock/products/5143249/detail/5.jpg",
+      "images/mock/products/5143249/detail/6.jpg",
+      "images/mock/products/5143249/detail/7.jpg",
+      "images/mock/products/5143249/detail/8.jpg"
     ],
     "store_id": 1001,
     "product_likes": 142,
@@ -831,24 +831,24 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5143345/main/1.jpg",
-      "/img/products/5143345/main/2.jpg",
-      "/img/products/5143345/main/3.jpg",
-      "/img/products/5143345/main/4.jpg",
-      "/img/products/5143345/main/5.jpg",
-      "/img/products/5143345/main/6.jpg",
-      "/img/products/5143345/main/7.jpg",
-      "/img/products/5143345/main/8.jpg"
+      "images/mock/products/5143345/main/1.jpg",
+      "images/mock/products/5143345/main/2.jpg",
+      "images/mock/products/5143345/main/3.jpg",
+      "images/mock/products/5143345/main/4.jpg",
+      "images/mock/products/5143345/main/5.jpg",
+      "images/mock/products/5143345/main/6.jpg",
+      "images/mock/products/5143345/main/7.jpg",
+      "images/mock/products/5143345/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5143345/detail/1.jpg",
-      "/img/products/5143345/detail/2.jpg",
-      "/img/products/5143345/detail/3.jpg",
-      "/img/products/5143345/detail/4.jpg",
-      "/img/products/5143345/detail/5.jpg",
-      "/img/products/5143345/detail/6.jpg",
-      "/img/products/5143345/detail/7.jpg",
-      "/img/products/5143345/detail/8.jpg"
+      "images/mock/products/5143345/detail/1.jpg",
+      "images/mock/products/5143345/detail/2.jpg",
+      "images/mock/products/5143345/detail/3.jpg",
+      "images/mock/products/5143345/detail/4.jpg",
+      "images/mock/products/5143345/detail/5.jpg",
+      "images/mock/products/5143345/detail/6.jpg",
+      "images/mock/products/5143345/detail/7.jpg",
+      "images/mock/products/5143345/detail/8.jpg"
     ],
     "store_id": 1001,
     "product_likes": 7607,
@@ -908,20 +908,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5053900/main/1.jpg",
-      "/img/products/5053900/main/2.jpg",
-      "/img/products/5053900/main/3.jpg",
-      "/img/products/5053900/main/4.jpg",
-      "/img/products/5053900/main/5.jpg",
-      "/img/products/5053900/main/6.jpg"
+      "images/mock/products/5053900/main/1.jpg",
+      "images/mock/products/5053900/main/2.jpg",
+      "images/mock/products/5053900/main/3.jpg",
+      "images/mock/products/5053900/main/4.jpg",
+      "images/mock/products/5053900/main/5.jpg",
+      "images/mock/products/5053900/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5053900/detail/1.jpg",
-      "/img/products/5053900/detail/2.jpg",
-      "/img/products/5053900/detail/3.jpg",
-      "/img/products/5053900/detail/4.jpg",
-      "/img/products/5053900/detail/5.jpg",
-      "/img/products/5053900/detail/6.jpg"
+      "images/mock/products/5053900/detail/1.jpg",
+      "images/mock/products/5053900/detail/2.jpg",
+      "images/mock/products/5053900/detail/3.jpg",
+      "images/mock/products/5053900/detail/4.jpg",
+      "images/mock/products/5053900/detail/5.jpg",
+      "images/mock/products/5053900/detail/6.jpg"
     ],
     "store_id": 1001,
     "product_likes": 8588,
@@ -1021,15 +1021,15 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4525646/main/1.jpg",
-      "/img/products/4525646/main/2.jpg",
-      "/img/products/4525646/main/3.jpg",
-      "/img/products/4525646/main/4.jpg",
-      "/img/products/4525646/main/5.jpg",
-      "/img/products/4525646/main/6.jpg",
-      "/img/products/4525646/main/7.jpg",
-      "/img/products/4525646/main/8.jpg",
-      "/img/products/4525646/main/9.jpg"
+      "images/mock/products/4525646/main/1.jpg",
+      "images/mock/products/4525646/main/2.jpg",
+      "images/mock/products/4525646/main/3.jpg",
+      "images/mock/products/4525646/main/4.jpg",
+      "images/mock/products/4525646/main/5.jpg",
+      "images/mock/products/4525646/main/6.jpg",
+      "images/mock/products/4525646/main/7.jpg",
+      "images/mock/products/4525646/main/8.jpg",
+      "images/mock/products/4525646/main/9.jpg"
     ],
     "detail_image_urls": [],
     "store_id": 1001,
@@ -1094,26 +1094,26 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5065467/main/1.jpg",
-      "/img/products/5065467/main/2.jpg",
-      "/img/products/5065467/main/3.jpg",
-      "/img/products/5065467/main/4.jpg",
-      "/img/products/5065467/main/5.jpg",
-      "/img/products/5065467/main/6.jpg",
-      "/img/products/5065467/main/7.jpg",
-      "/img/products/5065467/main/8.jpg",
-      "/img/products/5065467/main/9.jpg"
+      "images/mock/products/5065467/main/1.jpg",
+      "images/mock/products/5065467/main/2.jpg",
+      "images/mock/products/5065467/main/3.jpg",
+      "images/mock/products/5065467/main/4.jpg",
+      "images/mock/products/5065467/main/5.jpg",
+      "images/mock/products/5065467/main/6.jpg",
+      "images/mock/products/5065467/main/7.jpg",
+      "images/mock/products/5065467/main/8.jpg",
+      "images/mock/products/5065467/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5065467/detail/1.jpg",
-      "/img/products/5065467/detail/2.jpg",
-      "/img/products/5065467/detail/3.jpg",
-      "/img/products/5065467/detail/4.jpg",
-      "/img/products/5065467/detail/5.jpg",
-      "/img/products/5065467/detail/6.jpg",
-      "/img/products/5065467/detail/7.jpg",
-      "/img/products/5065467/detail/8.jpg",
-      "/img/products/5065467/detail/9.jpg"
+      "images/mock/products/5065467/detail/1.jpg",
+      "images/mock/products/5065467/detail/2.jpg",
+      "images/mock/products/5065467/detail/3.jpg",
+      "images/mock/products/5065467/detail/4.jpg",
+      "images/mock/products/5065467/detail/5.jpg",
+      "images/mock/products/5065467/detail/6.jpg",
+      "images/mock/products/5065467/detail/7.jpg",
+      "images/mock/products/5065467/detail/8.jpg",
+      "images/mock/products/5065467/detail/9.jpg"
     ],
     "store_id": 1001,
     "product_likes": 8627,
@@ -1173,28 +1173,28 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5059171/main/1.jpg",
-      "/img/products/5059171/main/10.jpg",
-      "/img/products/5059171/main/11.jpg",
-      "/img/products/5059171/main/2.jpg",
-      "/img/products/5059171/main/3.jpg",
-      "/img/products/5059171/main/4.jpg",
-      "/img/products/5059171/main/5.jpg",
-      "/img/products/5059171/main/6.jpg",
-      "/img/products/5059171/main/7.jpg",
-      "/img/products/5059171/main/8.jpg",
-      "/img/products/5059171/main/9.jpg"
+      "images/mock/products/5059171/main/1.jpg",
+      "images/mock/products/5059171/main/10.jpg",
+      "images/mock/products/5059171/main/11.jpg",
+      "images/mock/products/5059171/main/2.jpg",
+      "images/mock/products/5059171/main/3.jpg",
+      "images/mock/products/5059171/main/4.jpg",
+      "images/mock/products/5059171/main/5.jpg",
+      "images/mock/products/5059171/main/6.jpg",
+      "images/mock/products/5059171/main/7.jpg",
+      "images/mock/products/5059171/main/8.jpg",
+      "images/mock/products/5059171/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5059171/detail/1.jpg",
-      "/img/products/5059171/detail/2.jpg",
-      "/img/products/5059171/detail/3.jpg",
-      "/img/products/5059171/detail/4.jpg",
-      "/img/products/5059171/detail/5.jpg",
-      "/img/products/5059171/detail/6.jpg",
-      "/img/products/5059171/detail/7.jpg",
-      "/img/products/5059171/detail/8.jpg",
-      "/img/products/5059171/detail/9.jpg"
+      "images/mock/products/5059171/detail/1.jpg",
+      "images/mock/products/5059171/detail/2.jpg",
+      "images/mock/products/5059171/detail/3.jpg",
+      "images/mock/products/5059171/detail/4.jpg",
+      "images/mock/products/5059171/detail/5.jpg",
+      "images/mock/products/5059171/detail/6.jpg",
+      "images/mock/products/5059171/detail/7.jpg",
+      "images/mock/products/5059171/detail/8.jpg",
+      "images/mock/products/5059171/detail/9.jpg"
     ],
     "store_id": 1001,
     "product_likes": 7077,
@@ -1262,32 +1262,32 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5059182/main/1.jpg",
-      "/img/products/5059182/main/10.jpg",
-      "/img/products/5059182/main/11.jpg",
-      "/img/products/5059182/main/12.jpg",
-      "/img/products/5059182/main/2.jpg",
-      "/img/products/5059182/main/3.jpg",
-      "/img/products/5059182/main/4.jpg",
-      "/img/products/5059182/main/5.jpg",
-      "/img/products/5059182/main/6.jpg",
-      "/img/products/5059182/main/7.jpg",
-      "/img/products/5059182/main/8.jpg",
-      "/img/products/5059182/main/9.jpg"
+      "images/mock/products/5059182/main/1.jpg",
+      "images/mock/products/5059182/main/10.jpg",
+      "images/mock/products/5059182/main/11.jpg",
+      "images/mock/products/5059182/main/12.jpg",
+      "images/mock/products/5059182/main/2.jpg",
+      "images/mock/products/5059182/main/3.jpg",
+      "images/mock/products/5059182/main/4.jpg",
+      "images/mock/products/5059182/main/5.jpg",
+      "images/mock/products/5059182/main/6.jpg",
+      "images/mock/products/5059182/main/7.jpg",
+      "images/mock/products/5059182/main/8.jpg",
+      "images/mock/products/5059182/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5059182/detail/1.jpg",
-      "/img/products/5059182/detail/10.jpg",
-      "/img/products/5059182/detail/11.jpg",
-      "/img/products/5059182/detail/12.jpg",
-      "/img/products/5059182/detail/2.jpg",
-      "/img/products/5059182/detail/3.jpg",
-      "/img/products/5059182/detail/4.jpg",
-      "/img/products/5059182/detail/5.jpg",
-      "/img/products/5059182/detail/6.jpg",
-      "/img/products/5059182/detail/7.jpg",
-      "/img/products/5059182/detail/8.jpg",
-      "/img/products/5059182/detail/9.jpg"
+      "images/mock/products/5059182/detail/1.jpg",
+      "images/mock/products/5059182/detail/10.jpg",
+      "images/mock/products/5059182/detail/11.jpg",
+      "images/mock/products/5059182/detail/12.jpg",
+      "images/mock/products/5059182/detail/2.jpg",
+      "images/mock/products/5059182/detail/3.jpg",
+      "images/mock/products/5059182/detail/4.jpg",
+      "images/mock/products/5059182/detail/5.jpg",
+      "images/mock/products/5059182/detail/6.jpg",
+      "images/mock/products/5059182/detail/7.jpg",
+      "images/mock/products/5059182/detail/8.jpg",
+      "images/mock/products/5059182/detail/9.jpg"
     ],
     "store_id": 1001,
     "product_likes": 3099,
@@ -1355,26 +1355,26 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5131088/main/1.jpg",
-      "/img/products/5131088/main/2.jpg",
-      "/img/products/5131088/main/3.jpg",
-      "/img/products/5131088/main/4.jpg",
-      "/img/products/5131088/main/5.jpg",
-      "/img/products/5131088/main/6.jpg",
-      "/img/products/5131088/main/7.jpg",
-      "/img/products/5131088/main/8.jpg",
-      "/img/products/5131088/main/9.jpg"
+      "images/mock/products/5131088/main/1.jpg",
+      "images/mock/products/5131088/main/2.jpg",
+      "images/mock/products/5131088/main/3.jpg",
+      "images/mock/products/5131088/main/4.jpg",
+      "images/mock/products/5131088/main/5.jpg",
+      "images/mock/products/5131088/main/6.jpg",
+      "images/mock/products/5131088/main/7.jpg",
+      "images/mock/products/5131088/main/8.jpg",
+      "images/mock/products/5131088/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5131088/detail/1.jpg",
-      "/img/products/5131088/detail/2.jpg",
-      "/img/products/5131088/detail/3.jpg",
-      "/img/products/5131088/detail/4.jpg",
-      "/img/products/5131088/detail/5.jpg",
-      "/img/products/5131088/detail/6.jpg",
-      "/img/products/5131088/detail/7.jpg",
-      "/img/products/5131088/detail/8.jpg",
-      "/img/products/5131088/detail/9.jpg"
+      "images/mock/products/5131088/detail/1.jpg",
+      "images/mock/products/5131088/detail/2.jpg",
+      "images/mock/products/5131088/detail/3.jpg",
+      "images/mock/products/5131088/detail/4.jpg",
+      "images/mock/products/5131088/detail/5.jpg",
+      "images/mock/products/5131088/detail/6.jpg",
+      "images/mock/products/5131088/detail/7.jpg",
+      "images/mock/products/5131088/detail/8.jpg",
+      "images/mock/products/5131088/detail/9.jpg"
     ],
     "store_id": 1001,
     "product_likes": 1434,
@@ -1442,23 +1442,23 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4963520/main/1.jpg",
-      "/img/products/4963520/main/10.jpg",
-      "/img/products/4963520/main/11.jpg",
-      "/img/products/4963520/main/12.jpg",
-      "/img/products/4963520/main/2.jpg",
-      "/img/products/4963520/main/3.jpg",
-      "/img/products/4963520/main/4.jpg",
-      "/img/products/4963520/main/5.jpg",
-      "/img/products/4963520/main/6.jpg",
-      "/img/products/4963520/main/7.jpg",
-      "/img/products/4963520/main/8.jpg",
-      "/img/products/4963520/main/9.jpg"
+      "images/mock/products/4963520/main/1.jpg",
+      "images/mock/products/4963520/main/10.jpg",
+      "images/mock/products/4963520/main/11.jpg",
+      "images/mock/products/4963520/main/12.jpg",
+      "images/mock/products/4963520/main/2.jpg",
+      "images/mock/products/4963520/main/3.jpg",
+      "images/mock/products/4963520/main/4.jpg",
+      "images/mock/products/4963520/main/5.jpg",
+      "images/mock/products/4963520/main/6.jpg",
+      "images/mock/products/4963520/main/7.jpg",
+      "images/mock/products/4963520/main/8.jpg",
+      "images/mock/products/4963520/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4963520/detail/1.jpg",
-      "/img/products/4963520/detail/2.jpg",
-      "/img/products/4963520/detail/3.jpg"
+      "images/mock/products/4963520/detail/1.jpg",
+      "images/mock/products/4963520/detail/2.jpg",
+      "images/mock/products/4963520/detail/3.jpg"
     ],
     "store_id": 1001,
     "product_likes": 6900,
@@ -1530,24 +1530,24 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5131085/main/1.jpg",
-      "/img/products/5131085/main/2.jpg",
-      "/img/products/5131085/main/3.jpg",
-      "/img/products/5131085/main/4.jpg",
-      "/img/products/5131085/main/5.jpg",
-      "/img/products/5131085/main/6.jpg",
-      "/img/products/5131085/main/7.jpg",
-      "/img/products/5131085/main/8.jpg"
+      "images/mock/products/5131085/main/1.jpg",
+      "images/mock/products/5131085/main/2.jpg",
+      "images/mock/products/5131085/main/3.jpg",
+      "images/mock/products/5131085/main/4.jpg",
+      "images/mock/products/5131085/main/5.jpg",
+      "images/mock/products/5131085/main/6.jpg",
+      "images/mock/products/5131085/main/7.jpg",
+      "images/mock/products/5131085/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5131085/detail/1.jpg",
-      "/img/products/5131085/detail/2.jpg",
-      "/img/products/5131085/detail/3.jpg",
-      "/img/products/5131085/detail/4.jpg",
-      "/img/products/5131085/detail/5.jpg",
-      "/img/products/5131085/detail/6.jpg",
-      "/img/products/5131085/detail/7.jpg",
-      "/img/products/5131085/detail/8.jpg"
+      "images/mock/products/5131085/detail/1.jpg",
+      "images/mock/products/5131085/detail/2.jpg",
+      "images/mock/products/5131085/detail/3.jpg",
+      "images/mock/products/5131085/detail/4.jpg",
+      "images/mock/products/5131085/detail/5.jpg",
+      "images/mock/products/5131085/detail/6.jpg",
+      "images/mock/products/5131085/detail/7.jpg",
+      "images/mock/products/5131085/detail/8.jpg"
     ],
     "store_id": 1001,
     "product_likes": 2782,
@@ -1603,24 +1603,24 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5143227/main/1.jpg",
-      "/img/products/5143227/main/2.jpg",
-      "/img/products/5143227/main/3.jpg",
-      "/img/products/5143227/main/4.jpg",
-      "/img/products/5143227/main/5.jpg",
-      "/img/products/5143227/main/6.jpg",
-      "/img/products/5143227/main/7.jpg",
-      "/img/products/5143227/main/8.jpg"
+      "images/mock/products/5143227/main/1.jpg",
+      "images/mock/products/5143227/main/2.jpg",
+      "images/mock/products/5143227/main/3.jpg",
+      "images/mock/products/5143227/main/4.jpg",
+      "images/mock/products/5143227/main/5.jpg",
+      "images/mock/products/5143227/main/6.jpg",
+      "images/mock/products/5143227/main/7.jpg",
+      "images/mock/products/5143227/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5143227/detail/1.jpg",
-      "/img/products/5143227/detail/2.jpg",
-      "/img/products/5143227/detail/3.jpg",
-      "/img/products/5143227/detail/4.jpg",
-      "/img/products/5143227/detail/5.jpg",
-      "/img/products/5143227/detail/6.jpg",
-      "/img/products/5143227/detail/7.jpg",
-      "/img/products/5143227/detail/8.jpg"
+      "images/mock/products/5143227/detail/1.jpg",
+      "images/mock/products/5143227/detail/2.jpg",
+      "images/mock/products/5143227/detail/3.jpg",
+      "images/mock/products/5143227/detail/4.jpg",
+      "images/mock/products/5143227/detail/5.jpg",
+      "images/mock/products/5143227/detail/6.jpg",
+      "images/mock/products/5143227/detail/7.jpg",
+      "images/mock/products/5143227/detail/8.jpg"
     ],
     "store_id": 1001,
     "product_likes": 2867,
@@ -1704,18 +1704,18 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4798797/main/1.jpg",
-      "/img/products/4798797/main/2.jpg",
-      "/img/products/4798797/main/3.jpg",
-      "/img/products/4798797/main/4.jpg",
-      "/img/products/4798797/main/5.jpg",
-      "/img/products/4798797/main/6.jpg",
-      "/img/products/4798797/main/7.jpg",
-      "/img/products/4798797/main/8.jpg"
+      "images/mock/products/4798797/main/1.jpg",
+      "images/mock/products/4798797/main/2.jpg",
+      "images/mock/products/4798797/main/3.jpg",
+      "images/mock/products/4798797/main/4.jpg",
+      "images/mock/products/4798797/main/5.jpg",
+      "images/mock/products/4798797/main/6.jpg",
+      "images/mock/products/4798797/main/7.jpg",
+      "images/mock/products/4798797/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4798797/detail/1.jpg",
-      "/img/products/4798797/detail/2.jpg"
+      "images/mock/products/4798797/detail/1.jpg",
+      "images/mock/products/4798797/detail/2.jpg"
     ],
     "store_id": 1001,
     "product_likes": 8309,
@@ -1775,30 +1775,30 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5132367/main/1.jpg",
-      "/img/products/5132367/main/2.jpg",
-      "/img/products/5132367/main/3.jpg",
-      "/img/products/5132367/main/4.jpg",
-      "/img/products/5132367/main/5.jpg",
-      "/img/products/5132367/main/6.jpg"
+      "images/mock/products/5132367/main/1.jpg",
+      "images/mock/products/5132367/main/2.jpg",
+      "images/mock/products/5132367/main/3.jpg",
+      "images/mock/products/5132367/main/4.jpg",
+      "images/mock/products/5132367/main/5.jpg",
+      "images/mock/products/5132367/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5132367/detail/1.jpg",
-      "/img/products/5132367/detail/10.jpg",
-      "/img/products/5132367/detail/11.jpg",
-      "/img/products/5132367/detail/12.jpg",
-      "/img/products/5132367/detail/13.jpg",
-      "/img/products/5132367/detail/14.jpg",
-      "/img/products/5132367/detail/15.jpg",
-      "/img/products/5132367/detail/16.jpg",
-      "/img/products/5132367/detail/2.jpg",
-      "/img/products/5132367/detail/3.jpg",
-      "/img/products/5132367/detail/4.jpg",
-      "/img/products/5132367/detail/5.jpg",
-      "/img/products/5132367/detail/6.jpg",
-      "/img/products/5132367/detail/7.jpg",
-      "/img/products/5132367/detail/8.jpg",
-      "/img/products/5132367/detail/9.jpg"
+      "images/mock/products/5132367/detail/1.jpg",
+      "images/mock/products/5132367/detail/10.jpg",
+      "images/mock/products/5132367/detail/11.jpg",
+      "images/mock/products/5132367/detail/12.jpg",
+      "images/mock/products/5132367/detail/13.jpg",
+      "images/mock/products/5132367/detail/14.jpg",
+      "images/mock/products/5132367/detail/15.jpg",
+      "images/mock/products/5132367/detail/16.jpg",
+      "images/mock/products/5132367/detail/2.jpg",
+      "images/mock/products/5132367/detail/3.jpg",
+      "images/mock/products/5132367/detail/4.jpg",
+      "images/mock/products/5132367/detail/5.jpg",
+      "images/mock/products/5132367/detail/6.jpg",
+      "images/mock/products/5132367/detail/7.jpg",
+      "images/mock/products/5132367/detail/8.jpg",
+      "images/mock/products/5132367/detail/9.jpg"
     ],
     "store_id": 1002,
     "product_likes": 67,
@@ -1874,30 +1874,30 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5147159/main/1.jpg",
-      "/img/products/5147159/main/2.jpg",
-      "/img/products/5147159/main/3.jpg",
-      "/img/products/5147159/main/4.jpg",
-      "/img/products/5147159/main/5.jpg",
-      "/img/products/5147159/main/6.jpg"
+      "images/mock/products/5147159/main/1.jpg",
+      "images/mock/products/5147159/main/2.jpg",
+      "images/mock/products/5147159/main/3.jpg",
+      "images/mock/products/5147159/main/4.jpg",
+      "images/mock/products/5147159/main/5.jpg",
+      "images/mock/products/5147159/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5147159/detail/1.jpg",
-      "/img/products/5147159/detail/10.jpg",
-      "/img/products/5147159/detail/11.jpg",
-      "/img/products/5147159/detail/12.jpg",
-      "/img/products/5147159/detail/13.jpg",
-      "/img/products/5147159/detail/14.jpg",
-      "/img/products/5147159/detail/15.jpg",
-      "/img/products/5147159/detail/16.jpg",
-      "/img/products/5147159/detail/2.jpg",
-      "/img/products/5147159/detail/3.jpg",
-      "/img/products/5147159/detail/4.jpg",
-      "/img/products/5147159/detail/5.jpg",
-      "/img/products/5147159/detail/6.jpg",
-      "/img/products/5147159/detail/7.jpg",
-      "/img/products/5147159/detail/8.jpg",
-      "/img/products/5147159/detail/9.jpg"
+      "images/mock/products/5147159/detail/1.jpg",
+      "images/mock/products/5147159/detail/10.jpg",
+      "images/mock/products/5147159/detail/11.jpg",
+      "images/mock/products/5147159/detail/12.jpg",
+      "images/mock/products/5147159/detail/13.jpg",
+      "images/mock/products/5147159/detail/14.jpg",
+      "images/mock/products/5147159/detail/15.jpg",
+      "images/mock/products/5147159/detail/16.jpg",
+      "images/mock/products/5147159/detail/2.jpg",
+      "images/mock/products/5147159/detail/3.jpg",
+      "images/mock/products/5147159/detail/4.jpg",
+      "images/mock/products/5147159/detail/5.jpg",
+      "images/mock/products/5147159/detail/6.jpg",
+      "images/mock/products/5147159/detail/7.jpg",
+      "images/mock/products/5147159/detail/8.jpg",
+      "images/mock/products/5147159/detail/9.jpg"
     ],
     "store_id": 1002,
     "product_likes": 9710,
@@ -1953,24 +1953,24 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5167852/main/1.jpg",
-      "/img/products/5167852/main/2.jpg",
-      "/img/products/5167852/main/3.jpg",
-      "/img/products/5167852/main/4.jpg",
-      "/img/products/5167852/main/5.jpg",
-      "/img/products/5167852/main/6.jpg",
-      "/img/products/5167852/main/7.jpg",
-      "/img/products/5167852/main/8.jpg"
+      "images/mock/products/5167852/main/1.jpg",
+      "images/mock/products/5167852/main/2.jpg",
+      "images/mock/products/5167852/main/3.jpg",
+      "images/mock/products/5167852/main/4.jpg",
+      "images/mock/products/5167852/main/5.jpg",
+      "images/mock/products/5167852/main/6.jpg",
+      "images/mock/products/5167852/main/7.jpg",
+      "images/mock/products/5167852/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5167852/detail/1.jpg",
-      "/img/products/5167852/detail/2.jpg",
-      "/img/products/5167852/detail/3.jpg",
-      "/img/products/5167852/detail/4.jpg",
-      "/img/products/5167852/detail/5.jpg",
-      "/img/products/5167852/detail/6.jpg",
-      "/img/products/5167852/detail/7.jpg",
-      "/img/products/5167852/detail/8.jpg"
+      "images/mock/products/5167852/detail/1.jpg",
+      "images/mock/products/5167852/detail/2.jpg",
+      "images/mock/products/5167852/detail/3.jpg",
+      "images/mock/products/5167852/detail/4.jpg",
+      "images/mock/products/5167852/detail/5.jpg",
+      "images/mock/products/5167852/detail/6.jpg",
+      "images/mock/products/5167852/detail/7.jpg",
+      "images/mock/products/5167852/detail/8.jpg"
     ],
     "store_id": 1002,
     "product_likes": 5016,
@@ -2050,30 +2050,30 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5081074/main/1.jpg",
-      "/img/products/5081074/main/2.jpg",
-      "/img/products/5081074/main/3.jpg",
-      "/img/products/5081074/main/4.jpg",
-      "/img/products/5081074/main/5.jpg",
-      "/img/products/5081074/main/6.jpg"
+      "images/mock/products/5081074/main/1.jpg",
+      "images/mock/products/5081074/main/2.jpg",
+      "images/mock/products/5081074/main/3.jpg",
+      "images/mock/products/5081074/main/4.jpg",
+      "images/mock/products/5081074/main/5.jpg",
+      "images/mock/products/5081074/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5081074/detail/1.jpg",
-      "/img/products/5081074/detail/10.jpg",
-      "/img/products/5081074/detail/11.jpg",
-      "/img/products/5081074/detail/12.jpg",
-      "/img/products/5081074/detail/13.jpg",
-      "/img/products/5081074/detail/14.jpg",
-      "/img/products/5081074/detail/15.jpg",
-      "/img/products/5081074/detail/16.jpg",
-      "/img/products/5081074/detail/2.jpg",
-      "/img/products/5081074/detail/3.jpg",
-      "/img/products/5081074/detail/4.jpg",
-      "/img/products/5081074/detail/5.jpg",
-      "/img/products/5081074/detail/6.jpg",
-      "/img/products/5081074/detail/7.jpg",
-      "/img/products/5081074/detail/8.jpg",
-      "/img/products/5081074/detail/9.jpg"
+      "images/mock/products/5081074/detail/1.jpg",
+      "images/mock/products/5081074/detail/10.jpg",
+      "images/mock/products/5081074/detail/11.jpg",
+      "images/mock/products/5081074/detail/12.jpg",
+      "images/mock/products/5081074/detail/13.jpg",
+      "images/mock/products/5081074/detail/14.jpg",
+      "images/mock/products/5081074/detail/15.jpg",
+      "images/mock/products/5081074/detail/16.jpg",
+      "images/mock/products/5081074/detail/2.jpg",
+      "images/mock/products/5081074/detail/3.jpg",
+      "images/mock/products/5081074/detail/4.jpg",
+      "images/mock/products/5081074/detail/5.jpg",
+      "images/mock/products/5081074/detail/6.jpg",
+      "images/mock/products/5081074/detail/7.jpg",
+      "images/mock/products/5081074/detail/8.jpg",
+      "images/mock/products/5081074/detail/9.jpg"
     ],
     "store_id": 1002,
     "product_likes": 9046,
@@ -2181,30 +2181,30 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5049688/main/1.jpg",
-      "/img/products/5049688/main/2.jpg",
-      "/img/products/5049688/main/3.jpg",
-      "/img/products/5049688/main/4.jpg",
-      "/img/products/5049688/main/5.jpg",
-      "/img/products/5049688/main/6.jpg"
+      "images/mock/products/5049688/main/1.jpg",
+      "images/mock/products/5049688/main/2.jpg",
+      "images/mock/products/5049688/main/3.jpg",
+      "images/mock/products/5049688/main/4.jpg",
+      "images/mock/products/5049688/main/5.jpg",
+      "images/mock/products/5049688/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5049688/detail/1.jpg",
-      "/img/products/5049688/detail/10.jpg",
-      "/img/products/5049688/detail/11.jpg",
-      "/img/products/5049688/detail/12.jpg",
-      "/img/products/5049688/detail/13.jpg",
-      "/img/products/5049688/detail/14.jpg",
-      "/img/products/5049688/detail/15.jpg",
-      "/img/products/5049688/detail/16.jpg",
-      "/img/products/5049688/detail/2.jpg",
-      "/img/products/5049688/detail/3.jpg",
-      "/img/products/5049688/detail/4.jpg",
-      "/img/products/5049688/detail/5.jpg",
-      "/img/products/5049688/detail/6.jpg",
-      "/img/products/5049688/detail/7.jpg",
-      "/img/products/5049688/detail/8.jpg",
-      "/img/products/5049688/detail/9.jpg"
+      "images/mock/products/5049688/detail/1.jpg",
+      "images/mock/products/5049688/detail/10.jpg",
+      "images/mock/products/5049688/detail/11.jpg",
+      "images/mock/products/5049688/detail/12.jpg",
+      "images/mock/products/5049688/detail/13.jpg",
+      "images/mock/products/5049688/detail/14.jpg",
+      "images/mock/products/5049688/detail/15.jpg",
+      "images/mock/products/5049688/detail/16.jpg",
+      "images/mock/products/5049688/detail/2.jpg",
+      "images/mock/products/5049688/detail/3.jpg",
+      "images/mock/products/5049688/detail/4.jpg",
+      "images/mock/products/5049688/detail/5.jpg",
+      "images/mock/products/5049688/detail/6.jpg",
+      "images/mock/products/5049688/detail/7.jpg",
+      "images/mock/products/5049688/detail/8.jpg",
+      "images/mock/products/5049688/detail/9.jpg"
     ],
     "store_id": 1002,
     "product_likes": 2591,
@@ -2296,30 +2296,30 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4444969/main/1.jpg",
-      "/img/products/4444969/main/2.jpg",
-      "/img/products/4444969/main/3.jpg",
-      "/img/products/4444969/main/4.jpg",
-      "/img/products/4444969/main/5.jpg",
-      "/img/products/4444969/main/6.jpg"
+      "images/mock/products/4444969/main/1.jpg",
+      "images/mock/products/4444969/main/2.jpg",
+      "images/mock/products/4444969/main/3.jpg",
+      "images/mock/products/4444969/main/4.jpg",
+      "images/mock/products/4444969/main/5.jpg",
+      "images/mock/products/4444969/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4444969/detail/1.jpg",
-      "/img/products/4444969/detail/10.jpg",
-      "/img/products/4444969/detail/11.jpg",
-      "/img/products/4444969/detail/12.jpg",
-      "/img/products/4444969/detail/13.jpg",
-      "/img/products/4444969/detail/14.jpg",
-      "/img/products/4444969/detail/15.jpg",
-      "/img/products/4444969/detail/16.jpg",
-      "/img/products/4444969/detail/2.jpg",
-      "/img/products/4444969/detail/3.jpg",
-      "/img/products/4444969/detail/4.jpg",
-      "/img/products/4444969/detail/5.jpg",
-      "/img/products/4444969/detail/6.jpg",
-      "/img/products/4444969/detail/7.jpg",
-      "/img/products/4444969/detail/8.jpg",
-      "/img/products/4444969/detail/9.jpg"
+      "images/mock/products/4444969/detail/1.jpg",
+      "images/mock/products/4444969/detail/10.jpg",
+      "images/mock/products/4444969/detail/11.jpg",
+      "images/mock/products/4444969/detail/12.jpg",
+      "images/mock/products/4444969/detail/13.jpg",
+      "images/mock/products/4444969/detail/14.jpg",
+      "images/mock/products/4444969/detail/15.jpg",
+      "images/mock/products/4444969/detail/16.jpg",
+      "images/mock/products/4444969/detail/2.jpg",
+      "images/mock/products/4444969/detail/3.jpg",
+      "images/mock/products/4444969/detail/4.jpg",
+      "images/mock/products/4444969/detail/5.jpg",
+      "images/mock/products/4444969/detail/6.jpg",
+      "images/mock/products/4444969/detail/7.jpg",
+      "images/mock/products/4444969/detail/8.jpg",
+      "images/mock/products/4444969/detail/9.jpg"
     ],
     "store_id": 1002,
     "product_likes": 1815,
@@ -2403,24 +2403,24 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5167855/main/1.jpg",
-      "/img/products/5167855/main/2.jpg",
-      "/img/products/5167855/main/3.jpg",
-      "/img/products/5167855/main/4.jpg",
-      "/img/products/5167855/main/5.jpg",
-      "/img/products/5167855/main/6.jpg",
-      "/img/products/5167855/main/7.jpg",
-      "/img/products/5167855/main/8.jpg"
+      "images/mock/products/5167855/main/1.jpg",
+      "images/mock/products/5167855/main/2.jpg",
+      "images/mock/products/5167855/main/3.jpg",
+      "images/mock/products/5167855/main/4.jpg",
+      "images/mock/products/5167855/main/5.jpg",
+      "images/mock/products/5167855/main/6.jpg",
+      "images/mock/products/5167855/main/7.jpg",
+      "images/mock/products/5167855/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5167855/detail/1.jpg",
-      "/img/products/5167855/detail/2.jpg",
-      "/img/products/5167855/detail/3.jpg",
-      "/img/products/5167855/detail/4.jpg",
-      "/img/products/5167855/detail/5.jpg",
-      "/img/products/5167855/detail/6.jpg",
-      "/img/products/5167855/detail/7.jpg",
-      "/img/products/5167855/detail/8.jpg"
+      "images/mock/products/5167855/detail/1.jpg",
+      "images/mock/products/5167855/detail/2.jpg",
+      "images/mock/products/5167855/detail/3.jpg",
+      "images/mock/products/5167855/detail/4.jpg",
+      "images/mock/products/5167855/detail/5.jpg",
+      "images/mock/products/5167855/detail/6.jpg",
+      "images/mock/products/5167855/detail/7.jpg",
+      "images/mock/products/5167855/detail/8.jpg"
     ],
     "store_id": 1002,
     "product_likes": 4863,
@@ -2484,30 +2484,30 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5038697/main/1.jpg",
-      "/img/products/5038697/main/2.jpg",
-      "/img/products/5038697/main/3.jpg",
-      "/img/products/5038697/main/4.jpg",
-      "/img/products/5038697/main/5.jpg",
-      "/img/products/5038697/main/6.jpg"
+      "images/mock/products/5038697/main/1.jpg",
+      "images/mock/products/5038697/main/2.jpg",
+      "images/mock/products/5038697/main/3.jpg",
+      "images/mock/products/5038697/main/4.jpg",
+      "images/mock/products/5038697/main/5.jpg",
+      "images/mock/products/5038697/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5038697/detail/1.jpg",
-      "/img/products/5038697/detail/10.jpg",
-      "/img/products/5038697/detail/11.jpg",
-      "/img/products/5038697/detail/12.jpg",
-      "/img/products/5038697/detail/13.jpg",
-      "/img/products/5038697/detail/14.jpg",
-      "/img/products/5038697/detail/15.jpg",
-      "/img/products/5038697/detail/16.jpg",
-      "/img/products/5038697/detail/2.jpg",
-      "/img/products/5038697/detail/3.jpg",
-      "/img/products/5038697/detail/4.jpg",
-      "/img/products/5038697/detail/5.jpg",
-      "/img/products/5038697/detail/6.jpg",
-      "/img/products/5038697/detail/7.jpg",
-      "/img/products/5038697/detail/8.jpg",
-      "/img/products/5038697/detail/9.jpg"
+      "images/mock/products/5038697/detail/1.jpg",
+      "images/mock/products/5038697/detail/10.jpg",
+      "images/mock/products/5038697/detail/11.jpg",
+      "images/mock/products/5038697/detail/12.jpg",
+      "images/mock/products/5038697/detail/13.jpg",
+      "images/mock/products/5038697/detail/14.jpg",
+      "images/mock/products/5038697/detail/15.jpg",
+      "images/mock/products/5038697/detail/16.jpg",
+      "images/mock/products/5038697/detail/2.jpg",
+      "images/mock/products/5038697/detail/3.jpg",
+      "images/mock/products/5038697/detail/4.jpg",
+      "images/mock/products/5038697/detail/5.jpg",
+      "images/mock/products/5038697/detail/6.jpg",
+      "images/mock/products/5038697/detail/7.jpg",
+      "images/mock/products/5038697/detail/8.jpg",
+      "images/mock/products/5038697/detail/9.jpg"
     ],
     "store_id": 1002,
     "product_likes": 8627,
@@ -2571,30 +2571,30 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5181261/main/1.jpg",
-      "/img/products/5181261/main/2.jpg",
-      "/img/products/5181261/main/3.jpg",
-      "/img/products/5181261/main/4.jpg",
-      "/img/products/5181261/main/5.jpg",
-      "/img/products/5181261/main/6.jpg"
+      "images/mock/products/5181261/main/1.jpg",
+      "images/mock/products/5181261/main/2.jpg",
+      "images/mock/products/5181261/main/3.jpg",
+      "images/mock/products/5181261/main/4.jpg",
+      "images/mock/products/5181261/main/5.jpg",
+      "images/mock/products/5181261/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5181261/detail/1.jpg",
-      "/img/products/5181261/detail/10.jpg",
-      "/img/products/5181261/detail/11.jpg",
-      "/img/products/5181261/detail/12.jpg",
-      "/img/products/5181261/detail/13.jpg",
-      "/img/products/5181261/detail/14.jpg",
-      "/img/products/5181261/detail/15.jpg",
-      "/img/products/5181261/detail/16.jpg",
-      "/img/products/5181261/detail/2.jpg",
-      "/img/products/5181261/detail/3.jpg",
-      "/img/products/5181261/detail/4.jpg",
-      "/img/products/5181261/detail/5.jpg",
-      "/img/products/5181261/detail/6.jpg",
-      "/img/products/5181261/detail/7.jpg",
-      "/img/products/5181261/detail/8.jpg",
-      "/img/products/5181261/detail/9.jpg"
+      "images/mock/products/5181261/detail/1.jpg",
+      "images/mock/products/5181261/detail/10.jpg",
+      "images/mock/products/5181261/detail/11.jpg",
+      "images/mock/products/5181261/detail/12.jpg",
+      "images/mock/products/5181261/detail/13.jpg",
+      "images/mock/products/5181261/detail/14.jpg",
+      "images/mock/products/5181261/detail/15.jpg",
+      "images/mock/products/5181261/detail/16.jpg",
+      "images/mock/products/5181261/detail/2.jpg",
+      "images/mock/products/5181261/detail/3.jpg",
+      "images/mock/products/5181261/detail/4.jpg",
+      "images/mock/products/5181261/detail/5.jpg",
+      "images/mock/products/5181261/detail/6.jpg",
+      "images/mock/products/5181261/detail/7.jpg",
+      "images/mock/products/5181261/detail/8.jpg",
+      "images/mock/products/5181261/detail/9.jpg"
     ],
     "store_id": 1002,
     "product_likes": 4110,
@@ -2702,30 +2702,30 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5038729/main/1.jpg",
-      "/img/products/5038729/main/2.jpg",
-      "/img/products/5038729/main/3.jpg",
-      "/img/products/5038729/main/4.jpg",
-      "/img/products/5038729/main/5.jpg",
-      "/img/products/5038729/main/6.jpg"
+      "images/mock/products/5038729/main/1.jpg",
+      "images/mock/products/5038729/main/2.jpg",
+      "images/mock/products/5038729/main/3.jpg",
+      "images/mock/products/5038729/main/4.jpg",
+      "images/mock/products/5038729/main/5.jpg",
+      "images/mock/products/5038729/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5038729/detail/1.jpg",
-      "/img/products/5038729/detail/10.jpg",
-      "/img/products/5038729/detail/11.jpg",
-      "/img/products/5038729/detail/12.jpg",
-      "/img/products/5038729/detail/13.jpg",
-      "/img/products/5038729/detail/14.jpg",
-      "/img/products/5038729/detail/15.jpg",
-      "/img/products/5038729/detail/16.jpg",
-      "/img/products/5038729/detail/2.jpg",
-      "/img/products/5038729/detail/3.jpg",
-      "/img/products/5038729/detail/4.jpg",
-      "/img/products/5038729/detail/5.jpg",
-      "/img/products/5038729/detail/6.jpg",
-      "/img/products/5038729/detail/7.jpg",
-      "/img/products/5038729/detail/8.jpg",
-      "/img/products/5038729/detail/9.jpg"
+      "images/mock/products/5038729/detail/1.jpg",
+      "images/mock/products/5038729/detail/10.jpg",
+      "images/mock/products/5038729/detail/11.jpg",
+      "images/mock/products/5038729/detail/12.jpg",
+      "images/mock/products/5038729/detail/13.jpg",
+      "images/mock/products/5038729/detail/14.jpg",
+      "images/mock/products/5038729/detail/15.jpg",
+      "images/mock/products/5038729/detail/16.jpg",
+      "images/mock/products/5038729/detail/2.jpg",
+      "images/mock/products/5038729/detail/3.jpg",
+      "images/mock/products/5038729/detail/4.jpg",
+      "images/mock/products/5038729/detail/5.jpg",
+      "images/mock/products/5038729/detail/6.jpg",
+      "images/mock/products/5038729/detail/7.jpg",
+      "images/mock/products/5038729/detail/8.jpg",
+      "images/mock/products/5038729/detail/9.jpg"
     ],
     "store_id": 1002,
     "product_likes": 5123,
@@ -2809,30 +2809,30 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5147164/main/1.jpg",
-      "/img/products/5147164/main/2.jpg",
-      "/img/products/5147164/main/3.jpg",
-      "/img/products/5147164/main/4.jpg",
-      "/img/products/5147164/main/5.jpg",
-      "/img/products/5147164/main/6.jpg"
+      "images/mock/products/5147164/main/1.jpg",
+      "images/mock/products/5147164/main/2.jpg",
+      "images/mock/products/5147164/main/3.jpg",
+      "images/mock/products/5147164/main/4.jpg",
+      "images/mock/products/5147164/main/5.jpg",
+      "images/mock/products/5147164/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5147164/detail/1.jpg",
-      "/img/products/5147164/detail/10.jpg",
-      "/img/products/5147164/detail/11.jpg",
-      "/img/products/5147164/detail/12.jpg",
-      "/img/products/5147164/detail/13.jpg",
-      "/img/products/5147164/detail/14.jpg",
-      "/img/products/5147164/detail/15.jpg",
-      "/img/products/5147164/detail/16.jpg",
-      "/img/products/5147164/detail/2.jpg",
-      "/img/products/5147164/detail/3.jpg",
-      "/img/products/5147164/detail/4.jpg",
-      "/img/products/5147164/detail/5.jpg",
-      "/img/products/5147164/detail/6.jpg",
-      "/img/products/5147164/detail/7.jpg",
-      "/img/products/5147164/detail/8.jpg",
-      "/img/products/5147164/detail/9.jpg"
+      "images/mock/products/5147164/detail/1.jpg",
+      "images/mock/products/5147164/detail/10.jpg",
+      "images/mock/products/5147164/detail/11.jpg",
+      "images/mock/products/5147164/detail/12.jpg",
+      "images/mock/products/5147164/detail/13.jpg",
+      "images/mock/products/5147164/detail/14.jpg",
+      "images/mock/products/5147164/detail/15.jpg",
+      "images/mock/products/5147164/detail/16.jpg",
+      "images/mock/products/5147164/detail/2.jpg",
+      "images/mock/products/5147164/detail/3.jpg",
+      "images/mock/products/5147164/detail/4.jpg",
+      "images/mock/products/5147164/detail/5.jpg",
+      "images/mock/products/5147164/detail/6.jpg",
+      "images/mock/products/5147164/detail/7.jpg",
+      "images/mock/products/5147164/detail/8.jpg",
+      "images/mock/products/5147164/detail/9.jpg"
     ],
     "store_id": 1002,
     "product_likes": 2134,
@@ -2920,18 +2920,18 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5151518/main/1.jpg",
-      "/img/products/5151518/main/2.jpg",
-      "/img/products/5151518/main/3.jpg",
-      "/img/products/5151518/main/4.jpg",
-      "/img/products/5151518/main/5.jpg",
-      "/img/products/5151518/main/6.jpg"
+      "images/mock/products/5151518/main/1.jpg",
+      "images/mock/products/5151518/main/2.jpg",
+      "images/mock/products/5151518/main/3.jpg",
+      "images/mock/products/5151518/main/4.jpg",
+      "images/mock/products/5151518/main/5.jpg",
+      "images/mock/products/5151518/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5151518/detail/1.jpg",
-      "/img/products/5151518/detail/2.jpg",
-      "/img/products/5151518/detail/3.jpg",
-      "/img/products/5151518/detail/4.jpg"
+      "images/mock/products/5151518/detail/1.jpg",
+      "images/mock/products/5151518/detail/2.jpg",
+      "images/mock/products/5151518/detail/3.jpg",
+      "images/mock/products/5151518/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 7979,
@@ -2945,31 +2945,31 @@
       "other_color_products": [
         {
           "product_id": 5151518,
-          "thumbnail_url": "/img/products/5151518/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151518/main/1.jpg"
         },
         {
           "product_id": 5086393,
-          "thumbnail_url": "/img/products/5086393/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5086393/main/1.jpg"
         },
         {
           "product_id": 4678345,
-          "thumbnail_url": "/img/products/4678345/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678345/main/1.jpg"
         },
         {
           "product_id": 4678344,
-          "thumbnail_url": "/img/products/4678344/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678344/main/1.jpg"
         },
         {
           "product_id": 4797720,
-          "thumbnail_url": "/img/products/4797720/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4797720/main/1.jpg"
         },
         {
           "product_id": 4797718,
-          "thumbnail_url": "/img/products/4797718/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4797718/main/1.jpg"
         },
         {
           "product_id": 4678346,
-          "thumbnail_url": "/img/products/4678346/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678346/main/1.jpg"
         }
       ]
     }
@@ -3044,19 +3044,19 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5151822/main/1.jpg",
-      "/img/products/5151822/main/2.jpg",
-      "/img/products/5151822/main/3.jpg",
-      "/img/products/5151822/main/4.jpg",
-      "/img/products/5151822/main/5.jpg",
-      "/img/products/5151822/main/6.jpg",
-      "/img/products/5151822/main/7.jpg"
+      "images/mock/products/5151822/main/1.jpg",
+      "images/mock/products/5151822/main/2.jpg",
+      "images/mock/products/5151822/main/3.jpg",
+      "images/mock/products/5151822/main/4.jpg",
+      "images/mock/products/5151822/main/5.jpg",
+      "images/mock/products/5151822/main/6.jpg",
+      "images/mock/products/5151822/main/7.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5151822/detail/1.jpg",
-      "/img/products/5151822/detail/2.jpg",
-      "/img/products/5151822/detail/3.jpg",
-      "/img/products/5151822/detail/4.jpg"
+      "images/mock/products/5151822/detail/1.jpg",
+      "images/mock/products/5151822/detail/2.jpg",
+      "images/mock/products/5151822/detail/3.jpg",
+      "images/mock/products/5151822/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 4220,
@@ -3070,43 +3070,43 @@
       "other_color_products": [
         {
           "product_id": 5151822,
-          "thumbnail_url": "/img/products/5151822/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151822/main/1.jpg"
         },
         {
           "product_id": 5049387,
-          "thumbnail_url": "/img/products/5049387/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049387/main/1.jpg"
         },
         {
           "product_id": 5049386,
-          "thumbnail_url": "/img/products/5049386/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049386/main/1.jpg"
         },
         {
           "product_id": 4878026,
-          "thumbnail_url": "/img/products/4878026/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878026/main/1.jpg"
         },
         {
           "product_id": 4878025,
-          "thumbnail_url": "/img/products/4878025/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878025/main/1.jpg"
         },
         {
           "product_id": 4771898,
-          "thumbnail_url": "/img/products/4771898/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4771898/main/1.jpg"
         },
         {
           "product_id": 4122749,
-          "thumbnail_url": "/img/products/4122749/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4122749/main/1.jpg"
         },
         {
           "product_id": 4751231,
-          "thumbnail_url": "/img/products/4751231/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4751231/main/1.jpg"
         },
         {
           "product_id": 4701589,
-          "thumbnail_url": "/img/products/4701589/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4701589/main/1.jpg"
         },
         {
           "product_id": 3645257,
-          "thumbnail_url": "/img/products/3645257/main/1.jpg"
+          "thumbnail_url": "images/mock/products/3645257/main/1.jpg"
         }
       ]
     }
@@ -3173,19 +3173,19 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5129318/main/1.jpg",
-      "/img/products/5129318/main/2.jpg",
-      "/img/products/5129318/main/3.jpg",
-      "/img/products/5129318/main/4.jpg",
-      "/img/products/5129318/main/5.jpg",
-      "/img/products/5129318/main/6.jpg",
-      "/img/products/5129318/main/7.jpg",
-      "/img/products/5129318/main/8.jpg"
+      "images/mock/products/5129318/main/1.jpg",
+      "images/mock/products/5129318/main/2.jpg",
+      "images/mock/products/5129318/main/3.jpg",
+      "images/mock/products/5129318/main/4.jpg",
+      "images/mock/products/5129318/main/5.jpg",
+      "images/mock/products/5129318/main/6.jpg",
+      "images/mock/products/5129318/main/7.jpg",
+      "images/mock/products/5129318/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5129318/detail/1.jpg",
-      "/img/products/5129318/detail/2.jpg",
-      "/img/products/5129318/detail/3.jpg"
+      "images/mock/products/5129318/detail/1.jpg",
+      "images/mock/products/5129318/detail/2.jpg",
+      "images/mock/products/5129318/detail/3.jpg"
     ],
     "store_id": 1003,
     "product_likes": 5260,
@@ -3199,19 +3199,19 @@
       "other_color_products": [
         {
           "product_id": 5129318,
-          "thumbnail_url": "/img/products/5129318/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5129318/main/1.jpg"
         },
         {
           "product_id": 5129317,
-          "thumbnail_url": "/img/products/5129317/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5129317/main/1.jpg"
         },
         {
           "product_id": 5046838,
-          "thumbnail_url": "/img/products/5046838/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5046838/main/1.jpg"
         },
         {
           "product_id": 5046837,
-          "thumbnail_url": "/img/products/5046837/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5046837/main/1.jpg"
         }
       ]
     }
@@ -3278,19 +3278,19 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5129317/main/1.jpg",
-      "/img/products/5129317/main/2.jpg",
-      "/img/products/5129317/main/3.jpg",
-      "/img/products/5129317/main/4.jpg",
-      "/img/products/5129317/main/5.jpg",
-      "/img/products/5129317/main/6.jpg",
-      "/img/products/5129317/main/7.jpg",
-      "/img/products/5129317/main/8.jpg"
+      "images/mock/products/5129317/main/1.jpg",
+      "images/mock/products/5129317/main/2.jpg",
+      "images/mock/products/5129317/main/3.jpg",
+      "images/mock/products/5129317/main/4.jpg",
+      "images/mock/products/5129317/main/5.jpg",
+      "images/mock/products/5129317/main/6.jpg",
+      "images/mock/products/5129317/main/7.jpg",
+      "images/mock/products/5129317/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5129317/detail/1.jpg",
-      "/img/products/5129317/detail/2.jpg",
-      "/img/products/5129317/detail/3.jpg"
+      "images/mock/products/5129317/detail/1.jpg",
+      "images/mock/products/5129317/detail/2.jpg",
+      "images/mock/products/5129317/detail/3.jpg"
     ],
     "store_id": 1003,
     "product_likes": 6836,
@@ -3304,19 +3304,19 @@
       "other_color_products": [
         {
           "product_id": 5129317,
-          "thumbnail_url": "/img/products/5129317/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5129317/main/1.jpg"
         },
         {
           "product_id": 5129318,
-          "thumbnail_url": "/img/products/5129318/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5129318/main/1.jpg"
         },
         {
           "product_id": 5046838,
-          "thumbnail_url": "/img/products/5046838/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5046838/main/1.jpg"
         },
         {
           "product_id": 5046837,
-          "thumbnail_url": "/img/products/5046837/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5046837/main/1.jpg"
         }
       ]
     }
@@ -3363,21 +3363,21 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5123470/main/1.jpg",
-      "/img/products/5123470/main/2.jpg",
-      "/img/products/5123470/main/3.jpg",
-      "/img/products/5123470/main/4.jpg",
-      "/img/products/5123470/main/5.jpg",
-      "/img/products/5123470/main/6.jpg",
-      "/img/products/5123470/main/7.jpg",
-      "/img/products/5123470/main/8.jpg",
-      "/img/products/5123470/main/9.jpg"
+      "images/mock/products/5123470/main/1.jpg",
+      "images/mock/products/5123470/main/2.jpg",
+      "images/mock/products/5123470/main/3.jpg",
+      "images/mock/products/5123470/main/4.jpg",
+      "images/mock/products/5123470/main/5.jpg",
+      "images/mock/products/5123470/main/6.jpg",
+      "images/mock/products/5123470/main/7.jpg",
+      "images/mock/products/5123470/main/8.jpg",
+      "images/mock/products/5123470/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5123470/detail/1.jpg",
-      "/img/products/5123470/detail/2.jpg",
-      "/img/products/5123470/detail/3.jpg",
-      "/img/products/5123470/detail/4.jpg"
+      "images/mock/products/5123470/detail/1.jpg",
+      "images/mock/products/5123470/detail/2.jpg",
+      "images/mock/products/5123470/detail/3.jpg",
+      "images/mock/products/5123470/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 7847,
@@ -3391,11 +3391,11 @@
       "other_color_products": [
         {
           "product_id": 5123472,
-          "thumbnail_url": "/img/products/5123472/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123472/main/1.jpg"
         },
         {
           "product_id": 5123470,
-          "thumbnail_url": "/img/products/5123470/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123470/main/1.jpg"
         }
       ]
     }
@@ -3442,21 +3442,21 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5123468/main/1.jpg",
-      "/img/products/5123468/main/2.jpg",
-      "/img/products/5123468/main/3.jpg",
-      "/img/products/5123468/main/4.jpg",
-      "/img/products/5123468/main/5.jpg",
-      "/img/products/5123468/main/6.jpg",
-      "/img/products/5123468/main/7.jpg",
-      "/img/products/5123468/main/8.jpg",
-      "/img/products/5123468/main/9.jpg"
+      "images/mock/products/5123468/main/1.jpg",
+      "images/mock/products/5123468/main/2.jpg",
+      "images/mock/products/5123468/main/3.jpg",
+      "images/mock/products/5123468/main/4.jpg",
+      "images/mock/products/5123468/main/5.jpg",
+      "images/mock/products/5123468/main/6.jpg",
+      "images/mock/products/5123468/main/7.jpg",
+      "images/mock/products/5123468/main/8.jpg",
+      "images/mock/products/5123468/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5123468/detail/1.jpg",
-      "/img/products/5123468/detail/2.jpg",
-      "/img/products/5123468/detail/3.jpg",
-      "/img/products/5123468/detail/4.jpg"
+      "images/mock/products/5123468/detail/1.jpg",
+      "images/mock/products/5123468/detail/2.jpg",
+      "images/mock/products/5123468/detail/3.jpg",
+      "images/mock/products/5123468/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 6842,
@@ -3470,11 +3470,11 @@
       "other_color_products": [
         {
           "product_id": 5123471,
-          "thumbnail_url": "/img/products/5123471/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123471/main/1.jpg"
         },
         {
           "product_id": 5123468,
-          "thumbnail_url": "/img/products/5123468/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123468/main/1.jpg"
         }
       ]
     }
@@ -3521,21 +3521,21 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5123472/main/1.jpg",
-      "/img/products/5123472/main/2.jpg",
-      "/img/products/5123472/main/3.jpg",
-      "/img/products/5123472/main/4.jpg",
-      "/img/products/5123472/main/5.jpg",
-      "/img/products/5123472/main/6.jpg",
-      "/img/products/5123472/main/7.jpg",
-      "/img/products/5123472/main/8.jpg",
-      "/img/products/5123472/main/9.jpg"
+      "images/mock/products/5123472/main/1.jpg",
+      "images/mock/products/5123472/main/2.jpg",
+      "images/mock/products/5123472/main/3.jpg",
+      "images/mock/products/5123472/main/4.jpg",
+      "images/mock/products/5123472/main/5.jpg",
+      "images/mock/products/5123472/main/6.jpg",
+      "images/mock/products/5123472/main/7.jpg",
+      "images/mock/products/5123472/main/8.jpg",
+      "images/mock/products/5123472/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5123472/detail/1.jpg",
-      "/img/products/5123472/detail/2.jpg",
-      "/img/products/5123472/detail/3.jpg",
-      "/img/products/5123472/detail/4.jpg"
+      "images/mock/products/5123472/detail/1.jpg",
+      "images/mock/products/5123472/detail/2.jpg",
+      "images/mock/products/5123472/detail/3.jpg",
+      "images/mock/products/5123472/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 1166,
@@ -3549,11 +3549,11 @@
       "other_color_products": [
         {
           "product_id": 5123470,
-          "thumbnail_url": "/img/products/5123470/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123470/main/1.jpg"
         },
         {
           "product_id": 5123472,
-          "thumbnail_url": "/img/products/5123472/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123472/main/1.jpg"
         }
       ]
     }
@@ -3604,21 +3604,21 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5123471/main/1.jpg",
-      "/img/products/5123471/main/2.jpg",
-      "/img/products/5123471/main/3.jpg",
-      "/img/products/5123471/main/4.jpg",
-      "/img/products/5123471/main/5.jpg",
-      "/img/products/5123471/main/6.jpg",
-      "/img/products/5123471/main/7.jpg",
-      "/img/products/5123471/main/8.jpg",
-      "/img/products/5123471/main/9.jpg"
+      "images/mock/products/5123471/main/1.jpg",
+      "images/mock/products/5123471/main/2.jpg",
+      "images/mock/products/5123471/main/3.jpg",
+      "images/mock/products/5123471/main/4.jpg",
+      "images/mock/products/5123471/main/5.jpg",
+      "images/mock/products/5123471/main/6.jpg",
+      "images/mock/products/5123471/main/7.jpg",
+      "images/mock/products/5123471/main/8.jpg",
+      "images/mock/products/5123471/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5123471/detail/1.jpg",
-      "/img/products/5123471/detail/2.jpg",
-      "/img/products/5123471/detail/3.jpg",
-      "/img/products/5123471/detail/4.jpg"
+      "images/mock/products/5123471/detail/1.jpg",
+      "images/mock/products/5123471/detail/2.jpg",
+      "images/mock/products/5123471/detail/3.jpg",
+      "images/mock/products/5123471/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 4396,
@@ -3632,11 +3632,11 @@
       "other_color_products": [
         {
           "product_id": 5123468,
-          "thumbnail_url": "/img/products/5123468/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123468/main/1.jpg"
         },
         {
           "product_id": 5123471,
-          "thumbnail_url": "/img/products/5123471/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123471/main/1.jpg"
         }
       ]
     }
@@ -3695,21 +3695,21 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5123467/main/1.jpg",
-      "/img/products/5123467/main/2.jpg",
-      "/img/products/5123467/main/3.jpg",
-      "/img/products/5123467/main/4.jpg",
-      "/img/products/5123467/main/5.jpg",
-      "/img/products/5123467/main/6.jpg",
-      "/img/products/5123467/main/7.jpg",
-      "/img/products/5123467/main/8.jpg",
-      "/img/products/5123467/main/9.jpg"
+      "images/mock/products/5123467/main/1.jpg",
+      "images/mock/products/5123467/main/2.jpg",
+      "images/mock/products/5123467/main/3.jpg",
+      "images/mock/products/5123467/main/4.jpg",
+      "images/mock/products/5123467/main/5.jpg",
+      "images/mock/products/5123467/main/6.jpg",
+      "images/mock/products/5123467/main/7.jpg",
+      "images/mock/products/5123467/main/8.jpg",
+      "images/mock/products/5123467/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5123467/detail/1.jpg",
-      "/img/products/5123467/detail/2.jpg",
-      "/img/products/5123467/detail/3.jpg",
-      "/img/products/5123467/detail/4.jpg"
+      "images/mock/products/5123467/detail/1.jpg",
+      "images/mock/products/5123467/detail/2.jpg",
+      "images/mock/products/5123467/detail/3.jpg",
+      "images/mock/products/5123467/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 9661,
@@ -3723,11 +3723,11 @@
       "other_color_products": [
         {
           "product_id": 5123465,
-          "thumbnail_url": "/img/products/5123465/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123465/main/1.jpg"
         },
         {
           "product_id": 5123467,
-          "thumbnail_url": "/img/products/5123467/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123467/main/1.jpg"
         }
       ]
     }
@@ -3786,21 +3786,21 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5123466/main/1.jpg",
-      "/img/products/5123466/main/2.jpg",
-      "/img/products/5123466/main/3.jpg",
-      "/img/products/5123466/main/4.jpg",
-      "/img/products/5123466/main/5.jpg",
-      "/img/products/5123466/main/6.jpg",
-      "/img/products/5123466/main/7.jpg",
-      "/img/products/5123466/main/8.jpg",
-      "/img/products/5123466/main/9.jpg"
+      "images/mock/products/5123466/main/1.jpg",
+      "images/mock/products/5123466/main/2.jpg",
+      "images/mock/products/5123466/main/3.jpg",
+      "images/mock/products/5123466/main/4.jpg",
+      "images/mock/products/5123466/main/5.jpg",
+      "images/mock/products/5123466/main/6.jpg",
+      "images/mock/products/5123466/main/7.jpg",
+      "images/mock/products/5123466/main/8.jpg",
+      "images/mock/products/5123466/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5123466/detail/1.jpg",
-      "/img/products/5123466/detail/2.jpg",
-      "/img/products/5123466/detail/3.jpg",
-      "/img/products/5123466/detail/4.jpg"
+      "images/mock/products/5123466/detail/1.jpg",
+      "images/mock/products/5123466/detail/2.jpg",
+      "images/mock/products/5123466/detail/3.jpg",
+      "images/mock/products/5123466/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 8389,
@@ -3814,11 +3814,11 @@
       "other_color_products": [
         {
           "product_id": 5123469,
-          "thumbnail_url": "/img/products/5123469/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123469/main/1.jpg"
         },
         {
           "product_id": 5123466,
-          "thumbnail_url": "/img/products/5123466/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123466/main/1.jpg"
         }
       ]
     }
@@ -3877,21 +3877,21 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5123465/main/1.jpg",
-      "/img/products/5123465/main/2.jpg",
-      "/img/products/5123465/main/3.jpg",
-      "/img/products/5123465/main/4.jpg",
-      "/img/products/5123465/main/5.jpg",
-      "/img/products/5123465/main/6.jpg",
-      "/img/products/5123465/main/7.jpg",
-      "/img/products/5123465/main/8.jpg",
-      "/img/products/5123465/main/9.jpg"
+      "images/mock/products/5123465/main/1.jpg",
+      "images/mock/products/5123465/main/2.jpg",
+      "images/mock/products/5123465/main/3.jpg",
+      "images/mock/products/5123465/main/4.jpg",
+      "images/mock/products/5123465/main/5.jpg",
+      "images/mock/products/5123465/main/6.jpg",
+      "images/mock/products/5123465/main/7.jpg",
+      "images/mock/products/5123465/main/8.jpg",
+      "images/mock/products/5123465/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5123465/detail/1.jpg",
-      "/img/products/5123465/detail/2.jpg",
-      "/img/products/5123465/detail/3.jpg",
-      "/img/products/5123465/detail/4.jpg"
+      "images/mock/products/5123465/detail/1.jpg",
+      "images/mock/products/5123465/detail/2.jpg",
+      "images/mock/products/5123465/detail/3.jpg",
+      "images/mock/products/5123465/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 4612,
@@ -3905,11 +3905,11 @@
       "other_color_products": [
         {
           "product_id": 5123467,
-          "thumbnail_url": "/img/products/5123467/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123467/main/1.jpg"
         },
         {
           "product_id": 5123465,
-          "thumbnail_url": "/img/products/5123465/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123465/main/1.jpg"
         }
       ]
     }
@@ -3968,21 +3968,21 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5123469/main/1.jpg",
-      "/img/products/5123469/main/2.jpg",
-      "/img/products/5123469/main/3.jpg",
-      "/img/products/5123469/main/4.jpg",
-      "/img/products/5123469/main/5.jpg",
-      "/img/products/5123469/main/6.jpg",
-      "/img/products/5123469/main/7.jpg",
-      "/img/products/5123469/main/8.jpg",
-      "/img/products/5123469/main/9.jpg"
+      "images/mock/products/5123469/main/1.jpg",
+      "images/mock/products/5123469/main/2.jpg",
+      "images/mock/products/5123469/main/3.jpg",
+      "images/mock/products/5123469/main/4.jpg",
+      "images/mock/products/5123469/main/5.jpg",
+      "images/mock/products/5123469/main/6.jpg",
+      "images/mock/products/5123469/main/7.jpg",
+      "images/mock/products/5123469/main/8.jpg",
+      "images/mock/products/5123469/main/9.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5123469/detail/1.jpg",
-      "/img/products/5123469/detail/2.jpg",
-      "/img/products/5123469/detail/3.jpg",
-      "/img/products/5123469/detail/4.jpg"
+      "images/mock/products/5123469/detail/1.jpg",
+      "images/mock/products/5123469/detail/2.jpg",
+      "images/mock/products/5123469/detail/3.jpg",
+      "images/mock/products/5123469/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 6168,
@@ -3996,11 +3996,11 @@
       "other_color_products": [
         {
           "product_id": 5123466,
-          "thumbnail_url": "/img/products/5123466/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123466/main/1.jpg"
         },
         {
           "product_id": 5123469,
-          "thumbnail_url": "/img/products/5123469/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5123469/main/1.jpg"
         }
       ]
     }
@@ -4043,20 +4043,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5049385/main/1.jpg",
-      "/img/products/5049385/main/2.jpg",
-      "/img/products/5049385/main/3.jpg",
-      "/img/products/5049385/main/4.jpg",
-      "/img/products/5049385/main/5.jpg",
-      "/img/products/5049385/main/6.jpg",
-      "/img/products/5049385/main/7.jpg",
-      "/img/products/5049385/main/8.jpg"
+      "images/mock/products/5049385/main/1.jpg",
+      "images/mock/products/5049385/main/2.jpg",
+      "images/mock/products/5049385/main/3.jpg",
+      "images/mock/products/5049385/main/4.jpg",
+      "images/mock/products/5049385/main/5.jpg",
+      "images/mock/products/5049385/main/6.jpg",
+      "images/mock/products/5049385/main/7.jpg",
+      "images/mock/products/5049385/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5049385/detail/1.jpg",
-      "/img/products/5049385/detail/2.jpg",
-      "/img/products/5049385/detail/3.jpg",
-      "/img/products/5049385/detail/4.jpg"
+      "images/mock/products/5049385/detail/1.jpg",
+      "images/mock/products/5049385/detail/2.jpg",
+      "images/mock/products/5049385/detail/3.jpg",
+      "images/mock/products/5049385/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 6174,
@@ -4144,18 +4144,18 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5049386/main/1.jpg",
-      "/img/products/5049386/main/2.jpg",
-      "/img/products/5049386/main/3.jpg",
-      "/img/products/5049386/main/4.jpg",
-      "/img/products/5049386/main/5.jpg",
-      "/img/products/5049386/main/6.jpg"
+      "images/mock/products/5049386/main/1.jpg",
+      "images/mock/products/5049386/main/2.jpg",
+      "images/mock/products/5049386/main/3.jpg",
+      "images/mock/products/5049386/main/4.jpg",
+      "images/mock/products/5049386/main/5.jpg",
+      "images/mock/products/5049386/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5049386/detail/1.jpg",
-      "/img/products/5049386/detail/2.jpg",
-      "/img/products/5049386/detail/3.jpg",
-      "/img/products/5049386/detail/4.jpg"
+      "images/mock/products/5049386/detail/1.jpg",
+      "images/mock/products/5049386/detail/2.jpg",
+      "images/mock/products/5049386/detail/3.jpg",
+      "images/mock/products/5049386/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 7671,
@@ -4173,43 +4173,43 @@
       "other_color_products": [
         {
           "product_id": 5049386,
-          "thumbnail_url": "/img/products/5049386/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049386/main/1.jpg"
         },
         {
           "product_id": 5151822,
-          "thumbnail_url": "/img/products/5151822/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151822/main/1.jpg"
         },
         {
           "product_id": 5049387,
-          "thumbnail_url": "/img/products/5049387/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049387/main/1.jpg"
         },
         {
           "product_id": 4878026,
-          "thumbnail_url": "/img/products/4878026/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878026/main/1.jpg"
         },
         {
           "product_id": 4878025,
-          "thumbnail_url": "/img/products/4878025/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878025/main/1.jpg"
         },
         {
           "product_id": 4771898,
-          "thumbnail_url": "/img/products/4771898/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4771898/main/1.jpg"
         },
         {
           "product_id": 4122749,
-          "thumbnail_url": "/img/products/4122749/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4122749/main/1.jpg"
         },
         {
           "product_id": 4751231,
-          "thumbnail_url": "/img/products/4751231/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4751231/main/1.jpg"
         },
         {
           "product_id": 4701589,
-          "thumbnail_url": "/img/products/4701589/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4701589/main/1.jpg"
         },
         {
           "product_id": 3645257,
-          "thumbnail_url": "/img/products/3645257/main/1.jpg"
+          "thumbnail_url": "images/mock/products/3645257/main/1.jpg"
         }
       ]
     }
@@ -4276,20 +4276,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5086393/main/1.jpg",
-      "/img/products/5086393/main/2.jpg",
-      "/img/products/5086393/main/3.jpg",
-      "/img/products/5086393/main/4.jpg",
-      "/img/products/5086393/main/5.jpg",
-      "/img/products/5086393/main/6.jpg",
-      "/img/products/5086393/main/7.jpg",
-      "/img/products/5086393/main/8.jpg"
+      "images/mock/products/5086393/main/1.jpg",
+      "images/mock/products/5086393/main/2.jpg",
+      "images/mock/products/5086393/main/3.jpg",
+      "images/mock/products/5086393/main/4.jpg",
+      "images/mock/products/5086393/main/5.jpg",
+      "images/mock/products/5086393/main/6.jpg",
+      "images/mock/products/5086393/main/7.jpg",
+      "images/mock/products/5086393/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5086393/detail/1.jpg",
-      "/img/products/5086393/detail/2.jpg",
-      "/img/products/5086393/detail/3.jpg",
-      "/img/products/5086393/detail/4.jpg"
+      "images/mock/products/5086393/detail/1.jpg",
+      "images/mock/products/5086393/detail/2.jpg",
+      "images/mock/products/5086393/detail/3.jpg",
+      "images/mock/products/5086393/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 8859,
@@ -4303,31 +4303,31 @@
       "other_color_products": [
         {
           "product_id": 5086393,
-          "thumbnail_url": "/img/products/5086393/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5086393/main/1.jpg"
         },
         {
           "product_id": 5151518,
-          "thumbnail_url": "/img/products/5151518/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151518/main/1.jpg"
         },
         {
           "product_id": 4678345,
-          "thumbnail_url": "/img/products/4678345/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678345/main/1.jpg"
         },
         {
           "product_id": 4678344,
-          "thumbnail_url": "/img/products/4678344/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678344/main/1.jpg"
         },
         {
           "product_id": 4797720,
-          "thumbnail_url": "/img/products/4797720/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4797720/main/1.jpg"
         },
         {
           "product_id": 4797718,
-          "thumbnail_url": "/img/products/4797718/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4797718/main/1.jpg"
         },
         {
           "product_id": 4678346,
-          "thumbnail_url": "/img/products/4678346/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678346/main/1.jpg"
         }
       ]
     }
@@ -4378,17 +4378,17 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5168187/main/1.jpg",
-      "/img/products/5168187/main/2.jpg",
-      "/img/products/5168187/main/3.jpg",
-      "/img/products/5168187/main/4.jpg",
-      "/img/products/5168187/main/5.jpg",
-      "/img/products/5168187/main/6.jpg"
+      "images/mock/products/5168187/main/1.jpg",
+      "images/mock/products/5168187/main/2.jpg",
+      "images/mock/products/5168187/main/3.jpg",
+      "images/mock/products/5168187/main/4.jpg",
+      "images/mock/products/5168187/main/5.jpg",
+      "images/mock/products/5168187/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5168187/detail/1.jpg",
-      "/img/products/5168187/detail/2.jpg",
-      "/img/products/5168187/detail/3.jpg"
+      "images/mock/products/5168187/detail/1.jpg",
+      "images/mock/products/5168187/detail/2.jpg",
+      "images/mock/products/5168187/detail/3.jpg"
     ],
     "store_id": 1004,
     "product_likes": 1207,
@@ -4402,11 +4402,11 @@
       "other_color_products": [
         {
           "product_id": 5168188,
-          "thumbnail_url": "/img/products/5168188/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5168188/main/1.jpg"
         },
         {
           "product_id": 5168187,
-          "thumbnail_url": "/img/products/5168187/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5168187/main/1.jpg"
         }
       ]
     }
@@ -4457,17 +4457,17 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5168188/main/1.jpg",
-      "/img/products/5168188/main/2.jpg",
-      "/img/products/5168188/main/3.jpg",
-      "/img/products/5168188/main/4.jpg",
-      "/img/products/5168188/main/5.jpg",
-      "/img/products/5168188/main/6.jpg"
+      "images/mock/products/5168188/main/1.jpg",
+      "images/mock/products/5168188/main/2.jpg",
+      "images/mock/products/5168188/main/3.jpg",
+      "images/mock/products/5168188/main/4.jpg",
+      "images/mock/products/5168188/main/5.jpg",
+      "images/mock/products/5168188/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5168188/detail/1.jpg",
-      "/img/products/5168188/detail/2.jpg",
-      "/img/products/5168188/detail/3.jpg"
+      "images/mock/products/5168188/detail/1.jpg",
+      "images/mock/products/5168188/detail/2.jpg",
+      "images/mock/products/5168188/detail/3.jpg"
     ],
     "store_id": 1004,
     "product_likes": 6206,
@@ -4481,11 +4481,11 @@
       "other_color_products": [
         {
           "product_id": 5168187,
-          "thumbnail_url": "/img/products/5168187/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5168187/main/1.jpg"
         },
         {
           "product_id": 5168188,
-          "thumbnail_url": "/img/products/5168188/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5168188/main/1.jpg"
         }
       ]
     }
@@ -4536,18 +4536,18 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5168189/main/1.jpg",
-      "/img/products/5168189/main/2.jpg",
-      "/img/products/5168189/main/3.jpg",
-      "/img/products/5168189/main/4.jpg",
-      "/img/products/5168189/main/5.jpg",
-      "/img/products/5168189/main/6.jpg",
-      "/img/products/5168189/main/7.jpg"
+      "images/mock/products/5168189/main/1.jpg",
+      "images/mock/products/5168189/main/2.jpg",
+      "images/mock/products/5168189/main/3.jpg",
+      "images/mock/products/5168189/main/4.jpg",
+      "images/mock/products/5168189/main/5.jpg",
+      "images/mock/products/5168189/main/6.jpg",
+      "images/mock/products/5168189/main/7.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5168189/detail/1.jpg",
-      "/img/products/5168189/detail/2.jpg",
-      "/img/products/5168189/detail/3.jpg"
+      "images/mock/products/5168189/detail/1.jpg",
+      "images/mock/products/5168189/detail/2.jpg",
+      "images/mock/products/5168189/detail/3.jpg"
     ],
     "store_id": 1004,
     "product_likes": 9649,
@@ -4561,19 +4561,19 @@
       "other_color_products": [
         {
           "product_id": 5168189,
-          "thumbnail_url": "/img/products/5168189/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5168189/main/1.jpg"
         },
         {
           "product_id": 5168175,
-          "thumbnail_url": "/img/products/5168175/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5168175/main/1.jpg"
         },
         {
           "product_id": 4763283,
-          "thumbnail_url": "/img/products/4763283/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4763283/main/1.jpg"
         },
         {
           "product_id": 4763282,
-          "thumbnail_url": "/img/products/4763282/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4763282/main/1.jpg"
         }
       ]
     }
@@ -4624,19 +4624,19 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5104580/main/1.jpg",
-      "/img/products/5104580/main/2.jpg",
-      "/img/products/5104580/main/3.jpg",
-      "/img/products/5104580/main/4.jpg",
-      "/img/products/5104580/main/5.jpg",
-      "/img/products/5104580/main/6.jpg",
-      "/img/products/5104580/main/7.jpg",
-      "/img/products/5104580/main/8.jpg"
+      "images/mock/products/5104580/main/1.jpg",
+      "images/mock/products/5104580/main/2.jpg",
+      "images/mock/products/5104580/main/3.jpg",
+      "images/mock/products/5104580/main/4.jpg",
+      "images/mock/products/5104580/main/5.jpg",
+      "images/mock/products/5104580/main/6.jpg",
+      "images/mock/products/5104580/main/7.jpg",
+      "images/mock/products/5104580/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5104580/detail/1.jpg",
-      "/img/products/5104580/detail/2.jpg",
-      "/img/products/5104580/detail/3.jpg"
+      "images/mock/products/5104580/detail/1.jpg",
+      "images/mock/products/5104580/detail/2.jpg",
+      "images/mock/products/5104580/detail/3.jpg"
     ],
     "store_id": 1004,
     "product_likes": 1644,
@@ -4704,25 +4704,25 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5169305/main/1.jpg",
-      "/img/products/5169305/main/2.jpg",
-      "/img/products/5169305/main/3.jpg",
-      "/img/products/5169305/main/4.jpg",
-      "/img/products/5169305/main/5.jpg",
-      "/img/products/5169305/main/6.jpg",
-      "/img/products/5169305/main/7.jpg"
+      "images/mock/products/5169305/main/1.jpg",
+      "images/mock/products/5169305/main/2.jpg",
+      "images/mock/products/5169305/main/3.jpg",
+      "images/mock/products/5169305/main/4.jpg",
+      "images/mock/products/5169305/main/5.jpg",
+      "images/mock/products/5169305/main/6.jpg",
+      "images/mock/products/5169305/main/7.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5169305/detail/1.jpg",
-      "/img/products/5169305/detail/10.jpg",
-      "/img/products/5169305/detail/2.jpg",
-      "/img/products/5169305/detail/3.jpg",
-      "/img/products/5169305/detail/4.jpg",
-      "/img/products/5169305/detail/5.jpg",
-      "/img/products/5169305/detail/6.jpg",
-      "/img/products/5169305/detail/7.jpg",
-      "/img/products/5169305/detail/8.jpg",
-      "/img/products/5169305/detail/9.jpg"
+      "images/mock/products/5169305/detail/1.jpg",
+      "images/mock/products/5169305/detail/10.jpg",
+      "images/mock/products/5169305/detail/2.jpg",
+      "images/mock/products/5169305/detail/3.jpg",
+      "images/mock/products/5169305/detail/4.jpg",
+      "images/mock/products/5169305/detail/5.jpg",
+      "images/mock/products/5169305/detail/6.jpg",
+      "images/mock/products/5169305/detail/7.jpg",
+      "images/mock/products/5169305/detail/8.jpg",
+      "images/mock/products/5169305/detail/9.jpg"
     ],
     "store_id": 1004,
     "product_likes": 8171,
@@ -4782,19 +4782,19 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5104581/main/1.jpg",
-      "/img/products/5104581/main/2.jpg",
-      "/img/products/5104581/main/3.jpg",
-      "/img/products/5104581/main/4.jpg",
-      "/img/products/5104581/main/5.jpg",
-      "/img/products/5104581/main/6.jpg",
-      "/img/products/5104581/main/7.jpg",
-      "/img/products/5104581/main/8.jpg"
+      "images/mock/products/5104581/main/1.jpg",
+      "images/mock/products/5104581/main/2.jpg",
+      "images/mock/products/5104581/main/3.jpg",
+      "images/mock/products/5104581/main/4.jpg",
+      "images/mock/products/5104581/main/5.jpg",
+      "images/mock/products/5104581/main/6.jpg",
+      "images/mock/products/5104581/main/7.jpg",
+      "images/mock/products/5104581/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5104581/detail/1.jpg",
-      "/img/products/5104581/detail/2.jpg",
-      "/img/products/5104581/detail/3.jpg"
+      "images/mock/products/5104581/detail/1.jpg",
+      "images/mock/products/5104581/detail/2.jpg",
+      "images/mock/products/5104581/detail/3.jpg"
     ],
     "store_id": 1004,
     "product_likes": 8921,
@@ -4854,18 +4854,18 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5168175/main/1.jpg",
-      "/img/products/5168175/main/2.jpg",
-      "/img/products/5168175/main/3.jpg",
-      "/img/products/5168175/main/4.jpg",
-      "/img/products/5168175/main/5.jpg",
-      "/img/products/5168175/main/6.jpg",
-      "/img/products/5168175/main/7.jpg"
+      "images/mock/products/5168175/main/1.jpg",
+      "images/mock/products/5168175/main/2.jpg",
+      "images/mock/products/5168175/main/3.jpg",
+      "images/mock/products/5168175/main/4.jpg",
+      "images/mock/products/5168175/main/5.jpg",
+      "images/mock/products/5168175/main/6.jpg",
+      "images/mock/products/5168175/main/7.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5168175/detail/1.jpg",
-      "/img/products/5168175/detail/2.jpg",
-      "/img/products/5168175/detail/3.jpg"
+      "images/mock/products/5168175/detail/1.jpg",
+      "images/mock/products/5168175/detail/2.jpg",
+      "images/mock/products/5168175/detail/3.jpg"
     ],
     "store_id": 1004,
     "product_likes": 8555,
@@ -4883,19 +4883,19 @@
       "other_color_products": [
         {
           "product_id": 5168175,
-          "thumbnail_url": "/img/products/5168175/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5168175/main/1.jpg"
         },
         {
           "product_id": 5168189,
-          "thumbnail_url": "/img/products/5168189/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5168189/main/1.jpg"
         },
         {
           "product_id": 4763283,
-          "thumbnail_url": "/img/products/4763283/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4763283/main/1.jpg"
         },
         {
           "product_id": 4763282,
-          "thumbnail_url": "/img/products/4763282/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4763282/main/1.jpg"
         }
       ]
     }
@@ -4946,19 +4946,19 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5104579/main/1.jpg",
-      "/img/products/5104579/main/2.jpg",
-      "/img/products/5104579/main/3.jpg",
-      "/img/products/5104579/main/4.jpg",
-      "/img/products/5104579/main/5.jpg",
-      "/img/products/5104579/main/6.jpg",
-      "/img/products/5104579/main/7.jpg",
-      "/img/products/5104579/main/8.jpg"
+      "images/mock/products/5104579/main/1.jpg",
+      "images/mock/products/5104579/main/2.jpg",
+      "images/mock/products/5104579/main/3.jpg",
+      "images/mock/products/5104579/main/4.jpg",
+      "images/mock/products/5104579/main/5.jpg",
+      "images/mock/products/5104579/main/6.jpg",
+      "images/mock/products/5104579/main/7.jpg",
+      "images/mock/products/5104579/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5104579/detail/1.jpg",
-      "/img/products/5104579/detail/2.jpg",
-      "/img/products/5104579/detail/3.jpg"
+      "images/mock/products/5104579/detail/1.jpg",
+      "images/mock/products/5104579/detail/2.jpg",
+      "images/mock/products/5104579/detail/3.jpg"
     ],
     "store_id": 1004,
     "product_likes": 5360,
@@ -5022,19 +5022,19 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5104578/main/1.jpg",
-      "/img/products/5104578/main/2.jpg",
-      "/img/products/5104578/main/3.jpg",
-      "/img/products/5104578/main/4.jpg",
-      "/img/products/5104578/main/5.jpg",
-      "/img/products/5104578/main/6.jpg",
-      "/img/products/5104578/main/7.jpg",
-      "/img/products/5104578/main/8.jpg"
+      "images/mock/products/5104578/main/1.jpg",
+      "images/mock/products/5104578/main/2.jpg",
+      "images/mock/products/5104578/main/3.jpg",
+      "images/mock/products/5104578/main/4.jpg",
+      "images/mock/products/5104578/main/5.jpg",
+      "images/mock/products/5104578/main/6.jpg",
+      "images/mock/products/5104578/main/7.jpg",
+      "images/mock/products/5104578/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5104578/detail/1.jpg",
-      "/img/products/5104578/detail/2.jpg",
-      "/img/products/5104578/detail/3.jpg"
+      "images/mock/products/5104578/detail/1.jpg",
+      "images/mock/products/5104578/detail/2.jpg",
+      "images/mock/products/5104578/detail/3.jpg"
     ],
     "store_id": 1004,
     "product_likes": 3582,
@@ -5102,12 +5102,12 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5131846/main/1.jpg",
-      "/img/products/5131846/main/2.jpg",
-      "/img/products/5131846/main/3.jpg",
-      "/img/products/5131846/main/4.jpg",
-      "/img/products/5131846/main/5.jpg",
-      "/img/products/5131846/main/6.jpg"
+      "images/mock/products/5131846/main/1.jpg",
+      "images/mock/products/5131846/main/2.jpg",
+      "images/mock/products/5131846/main/3.jpg",
+      "images/mock/products/5131846/main/4.jpg",
+      "images/mock/products/5131846/main/5.jpg",
+      "images/mock/products/5131846/main/6.jpg"
     ],
     "detail_image_urls": [],
     "store_id": 1004,
@@ -5172,20 +5172,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5104577/main/1.jpg",
-      "/img/products/5104577/main/2.jpg",
-      "/img/products/5104577/main/3.jpg",
-      "/img/products/5104577/main/4.jpg",
-      "/img/products/5104577/main/5.jpg",
-      "/img/products/5104577/main/6.jpg",
-      "/img/products/5104577/main/7.jpg",
-      "/img/products/5104577/main/8.jpg"
+      "images/mock/products/5104577/main/1.jpg",
+      "images/mock/products/5104577/main/2.jpg",
+      "images/mock/products/5104577/main/3.jpg",
+      "images/mock/products/5104577/main/4.jpg",
+      "images/mock/products/5104577/main/5.jpg",
+      "images/mock/products/5104577/main/6.jpg",
+      "images/mock/products/5104577/main/7.jpg",
+      "images/mock/products/5104577/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5104577/detail/1.jpg",
-      "/img/products/5104577/detail/2.jpg",
-      "/img/products/5104577/detail/3.jpg",
-      "/img/products/5104577/detail/4.jpg"
+      "images/mock/products/5104577/detail/1.jpg",
+      "images/mock/products/5104577/detail/2.jpg",
+      "images/mock/products/5104577/detail/3.jpg",
+      "images/mock/products/5104577/detail/4.jpg"
     ],
     "store_id": 1004,
     "product_likes": 561,
@@ -5277,18 +5277,18 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4931664/main/1.jpg",
-      "/img/products/4931664/main/2.jpg",
-      "/img/products/4931664/main/3.jpg",
-      "/img/products/4931664/main/4.jpg",
-      "/img/products/4931664/main/5.jpg",
-      "/img/products/4931664/main/6.jpg",
-      "/img/products/4931664/main/7.jpg",
-      "/img/products/4931664/main/8.jpg"
+      "images/mock/products/4931664/main/1.jpg",
+      "images/mock/products/4931664/main/2.jpg",
+      "images/mock/products/4931664/main/3.jpg",
+      "images/mock/products/4931664/main/4.jpg",
+      "images/mock/products/4931664/main/5.jpg",
+      "images/mock/products/4931664/main/6.jpg",
+      "images/mock/products/4931664/main/7.jpg",
+      "images/mock/products/4931664/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4931664/detail/1.jpg",
-      "/img/products/4931664/detail/2.jpg"
+      "images/mock/products/4931664/detail/1.jpg",
+      "images/mock/products/4931664/detail/2.jpg"
     ],
     "store_id": 1004,
     "product_likes": 7884,
@@ -5348,16 +5348,16 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4763290/main/1.jpg",
-      "/img/products/4763290/main/2.jpg",
-      "/img/products/4763290/main/3.jpg",
-      "/img/products/4763290/main/4.jpg",
-      "/img/products/4763290/main/5.jpg",
-      "/img/products/4763290/main/6.jpg"
+      "images/mock/products/4763290/main/1.jpg",
+      "images/mock/products/4763290/main/2.jpg",
+      "images/mock/products/4763290/main/3.jpg",
+      "images/mock/products/4763290/main/4.jpg",
+      "images/mock/products/4763290/main/5.jpg",
+      "images/mock/products/4763290/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4763290/detail/1.jpg",
-      "/img/products/4763290/detail/2.jpg"
+      "images/mock/products/4763290/detail/1.jpg",
+      "images/mock/products/4763290/detail/2.jpg"
     ],
     "store_id": 1004,
     "product_likes": 8736,
@@ -5421,18 +5421,18 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4763283/main/1.jpg",
-      "/img/products/4763283/main/2.jpg",
-      "/img/products/4763283/main/3.jpg",
-      "/img/products/4763283/main/4.jpg",
-      "/img/products/4763283/main/5.jpg",
-      "/img/products/4763283/main/6.jpg",
-      "/img/products/4763283/main/7.jpg",
-      "/img/products/4763283/main/8.jpg"
+      "images/mock/products/4763283/main/1.jpg",
+      "images/mock/products/4763283/main/2.jpg",
+      "images/mock/products/4763283/main/3.jpg",
+      "images/mock/products/4763283/main/4.jpg",
+      "images/mock/products/4763283/main/5.jpg",
+      "images/mock/products/4763283/main/6.jpg",
+      "images/mock/products/4763283/main/7.jpg",
+      "images/mock/products/4763283/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4763283/detail/1.jpg",
-      "/img/products/4763283/detail/2.jpg"
+      "images/mock/products/4763283/detail/1.jpg",
+      "images/mock/products/4763283/detail/2.jpg"
     ],
     "store_id": 1004,
     "product_likes": 2292,
@@ -5450,19 +5450,19 @@
       "other_color_products": [
         {
           "product_id": 4763283,
-          "thumbnail_url": "/img/products/4763283/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4763283/main/1.jpg"
         },
         {
           "product_id": 5168189,
-          "thumbnail_url": "/img/products/5168189/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5168189/main/1.jpg"
         },
         {
           "product_id": 5168175,
-          "thumbnail_url": "/img/products/5168175/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5168175/main/1.jpg"
         },
         {
           "product_id": 4763282,
-          "thumbnail_url": "/img/products/4763282/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4763282/main/1.jpg"
         }
       ]
     }
@@ -5545,17 +5545,17 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4201442/main/1.jpg",
-      "/img/products/4201442/main/2.jpg",
-      "/img/products/4201442/main/3.jpg",
-      "/img/products/4201442/main/4.jpg",
-      "/img/products/4201442/main/5.jpg",
-      "/img/products/4201442/main/6.jpg",
-      "/img/products/4201442/main/7.jpg"
+      "images/mock/products/4201442/main/1.jpg",
+      "images/mock/products/4201442/main/2.jpg",
+      "images/mock/products/4201442/main/3.jpg",
+      "images/mock/products/4201442/main/4.jpg",
+      "images/mock/products/4201442/main/5.jpg",
+      "images/mock/products/4201442/main/6.jpg",
+      "images/mock/products/4201442/main/7.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4201442/detail/1.jpg",
-      "/img/products/4201442/detail/2.jpg"
+      "images/mock/products/4201442/detail/1.jpg",
+      "images/mock/products/4201442/detail/2.jpg"
     ],
     "store_id": 1004,
     "product_likes": 5974,
@@ -5569,19 +5569,19 @@
       "other_color_products": [
         {
           "product_id": 4201444,
-          "thumbnail_url": "/img/products/4201444/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4201444/main/1.jpg"
         },
         {
           "product_id": 4289228,
-          "thumbnail_url": "/img/products/4289228/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4289228/main/1.jpg"
         },
         {
           "product_id": 4289227,
-          "thumbnail_url": "/img/products/4289227/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4289227/main/1.jpg"
         },
         {
           "product_id": 4201442,
-          "thumbnail_url": "/img/products/4201442/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4201442/main/1.jpg"
         }
       ]
     }
@@ -5636,20 +5636,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4878502/main/1.jpg",
-      "/img/products/4878502/main/2.jpg",
-      "/img/products/4878502/main/3.jpg",
-      "/img/products/4878502/main/4.jpg",
-      "/img/products/4878502/main/5.jpg",
-      "/img/products/4878502/main/6.jpg"
+      "images/mock/products/4878502/main/1.jpg",
+      "images/mock/products/4878502/main/2.jpg",
+      "images/mock/products/4878502/main/3.jpg",
+      "images/mock/products/4878502/main/4.jpg",
+      "images/mock/products/4878502/main/5.jpg",
+      "images/mock/products/4878502/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4878502/detail/1.jpg",
-      "/img/products/4878502/detail/2.jpg",
-      "/img/products/4878502/detail/3.jpg",
-      "/img/products/4878502/detail/4.jpg",
-      "/img/products/4878502/detail/5.jpg",
-      "/img/products/4878502/detail/6.jpg"
+      "images/mock/products/4878502/detail/1.jpg",
+      "images/mock/products/4878502/detail/2.jpg",
+      "images/mock/products/4878502/detail/3.jpg",
+      "images/mock/products/4878502/detail/4.jpg",
+      "images/mock/products/4878502/detail/5.jpg",
+      "images/mock/products/4878502/detail/6.jpg"
     ],
     "store_id": 1004,
     "product_likes": 5622,
@@ -5717,18 +5717,18 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4878497/main/1.jpg",
-      "/img/products/4878497/main/2.jpg",
-      "/img/products/4878497/main/3.jpg",
-      "/img/products/4878497/main/4.jpg",
-      "/img/products/4878497/main/5.jpg"
+      "images/mock/products/4878497/main/1.jpg",
+      "images/mock/products/4878497/main/2.jpg",
+      "images/mock/products/4878497/main/3.jpg",
+      "images/mock/products/4878497/main/4.jpg",
+      "images/mock/products/4878497/main/5.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4878497/detail/1.jpg",
-      "/img/products/4878497/detail/2.jpg",
-      "/img/products/4878497/detail/3.jpg",
-      "/img/products/4878497/detail/4.jpg",
-      "/img/products/4878497/detail/5.jpg"
+      "images/mock/products/4878497/detail/1.jpg",
+      "images/mock/products/4878497/detail/2.jpg",
+      "images/mock/products/4878497/detail/3.jpg",
+      "images/mock/products/4878497/detail/4.jpg",
+      "images/mock/products/4878497/detail/5.jpg"
     ],
     "store_id": 1004,
     "product_likes": 6614,
@@ -5824,16 +5824,16 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4201444/main/1.jpg",
-      "/img/products/4201444/main/2.jpg",
-      "/img/products/4201444/main/3.jpg",
-      "/img/products/4201444/main/4.jpg",
-      "/img/products/4201444/main/5.jpg",
-      "/img/products/4201444/main/6.jpg"
+      "images/mock/products/4201444/main/1.jpg",
+      "images/mock/products/4201444/main/2.jpg",
+      "images/mock/products/4201444/main/3.jpg",
+      "images/mock/products/4201444/main/4.jpg",
+      "images/mock/products/4201444/main/5.jpg",
+      "images/mock/products/4201444/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4201444/detail/1.jpg",
-      "/img/products/4201444/detail/2.jpg"
+      "images/mock/products/4201444/detail/1.jpg",
+      "images/mock/products/4201444/detail/2.jpg"
     ],
     "store_id": 1004,
     "product_likes": 3489,
@@ -5847,11 +5847,11 @@
       "other_color_products": [
         {
           "product_id": 4201442,
-          "thumbnail_url": "/img/products/4201442/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4201442/main/1.jpg"
         },
         {
           "product_id": 4201444,
-          "thumbnail_url": "/img/products/4201444/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4201444/main/1.jpg"
         }
       ]
     }
@@ -5910,25 +5910,25 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5120443/main/1.jpg",
-      "/img/products/5120443/main/2.jpg",
-      "/img/products/5120443/main/3.jpg",
-      "/img/products/5120443/main/4.jpg",
-      "/img/products/5120443/main/5.jpg",
-      "/img/products/5120443/main/6.jpg",
-      "/img/products/5120443/main/7.jpg"
+      "images/mock/products/5120443/main/1.jpg",
+      "images/mock/products/5120443/main/2.jpg",
+      "images/mock/products/5120443/main/3.jpg",
+      "images/mock/products/5120443/main/4.jpg",
+      "images/mock/products/5120443/main/5.jpg",
+      "images/mock/products/5120443/main/6.jpg",
+      "images/mock/products/5120443/main/7.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5120443/detail/1.jpg",
-      "/img/products/5120443/detail/10.jpg",
-      "/img/products/5120443/detail/2.jpg",
-      "/img/products/5120443/detail/3.jpg",
-      "/img/products/5120443/detail/4.jpg",
-      "/img/products/5120443/detail/5.jpg",
-      "/img/products/5120443/detail/6.jpg",
-      "/img/products/5120443/detail/7.jpg",
-      "/img/products/5120443/detail/8.jpg",
-      "/img/products/5120443/detail/9.jpg"
+      "images/mock/products/5120443/detail/1.jpg",
+      "images/mock/products/5120443/detail/10.jpg",
+      "images/mock/products/5120443/detail/2.jpg",
+      "images/mock/products/5120443/detail/3.jpg",
+      "images/mock/products/5120443/detail/4.jpg",
+      "images/mock/products/5120443/detail/5.jpg",
+      "images/mock/products/5120443/detail/6.jpg",
+      "images/mock/products/5120443/detail/7.jpg",
+      "images/mock/products/5120443/detail/8.jpg",
+      "images/mock/products/5120443/detail/9.jpg"
     ],
     "store_id": 1004,
     "product_likes": 5817,
@@ -5980,14 +5980,14 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5144893/main/1.jpg",
-      "/img/products/5144893/main/2.jpg",
-      "/img/products/5144893/main/3.jpg",
-      "/img/products/5144893/main/4.jpg",
-      "/img/products/5144893/main/5.jpg",
-      "/img/products/5144893/main/6.jpg",
-      "/img/products/5144893/main/7.jpg",
-      "/img/products/5144893/main/8.jpg"
+      "images/mock/products/5144893/main/1.jpg",
+      "images/mock/products/5144893/main/2.jpg",
+      "images/mock/products/5144893/main/3.jpg",
+      "images/mock/products/5144893/main/4.jpg",
+      "images/mock/products/5144893/main/5.jpg",
+      "images/mock/products/5144893/main/6.jpg",
+      "images/mock/products/5144893/main/7.jpg",
+      "images/mock/products/5144893/main/8.jpg"
     ],
     "detail_image_urls": [],
     "store_id": 1005,
@@ -6072,13 +6072,13 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4035448/main/1.jpg",
-      "/img/products/4035448/main/2.jpg",
-      "/img/products/4035448/main/3.jpg",
-      "/img/products/4035448/main/4.jpg",
-      "/img/products/4035448/main/5.jpg",
-      "/img/products/4035448/main/6.jpg",
-      "/img/products/4035448/main/7.jpg"
+      "images/mock/products/4035448/main/1.jpg",
+      "images/mock/products/4035448/main/2.jpg",
+      "images/mock/products/4035448/main/3.jpg",
+      "images/mock/products/4035448/main/4.jpg",
+      "images/mock/products/4035448/main/5.jpg",
+      "images/mock/products/4035448/main/6.jpg",
+      "images/mock/products/4035448/main/7.jpg"
     ],
     "detail_image_urls": [],
     "store_id": 1005,
@@ -6139,13 +6139,13 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4932621/main/1.jpg",
-      "/img/products/4932621/main/2.jpg",
-      "/img/products/4932621/main/3.jpg",
-      "/img/products/4932621/main/4.jpg",
-      "/img/products/4932621/main/5.jpg",
-      "/img/products/4932621/main/6.jpg",
-      "/img/products/4932621/main/7.jpg"
+      "images/mock/products/4932621/main/1.jpg",
+      "images/mock/products/4932621/main/2.jpg",
+      "images/mock/products/4932621/main/3.jpg",
+      "images/mock/products/4932621/main/4.jpg",
+      "images/mock/products/4932621/main/5.jpg",
+      "images/mock/products/4932621/main/6.jpg",
+      "images/mock/products/4932621/main/7.jpg"
     ],
     "detail_image_urls": [],
     "store_id": 1005,
@@ -6226,13 +6226,13 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/3392007/main/1.jpg",
-      "/img/products/3392007/main/2.jpg",
-      "/img/products/3392007/main/3.jpg",
-      "/img/products/3392007/main/4.jpg",
-      "/img/products/3392007/main/5.jpg",
-      "/img/products/3392007/main/6.jpg",
-      "/img/products/3392007/main/7.jpg"
+      "images/mock/products/3392007/main/1.jpg",
+      "images/mock/products/3392007/main/2.jpg",
+      "images/mock/products/3392007/main/3.jpg",
+      "images/mock/products/3392007/main/4.jpg",
+      "images/mock/products/3392007/main/5.jpg",
+      "images/mock/products/3392007/main/6.jpg",
+      "images/mock/products/3392007/main/7.jpg"
     ],
     "detail_image_urls": [],
     "store_id": 1005,
@@ -6309,22 +6309,22 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5010681/main/1.jpg",
-      "/img/products/5010681/main/2.jpg",
-      "/img/products/5010681/main/3.jpg",
-      "/img/products/5010681/main/4.jpg",
-      "/img/products/5010681/main/5.jpg",
-      "/img/products/5010681/main/6.jpg",
-      "/img/products/5010681/main/7.jpg"
+      "images/mock/products/5010681/main/1.jpg",
+      "images/mock/products/5010681/main/2.jpg",
+      "images/mock/products/5010681/main/3.jpg",
+      "images/mock/products/5010681/main/4.jpg",
+      "images/mock/products/5010681/main/5.jpg",
+      "images/mock/products/5010681/main/6.jpg",
+      "images/mock/products/5010681/main/7.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5010681/detail/1.jpg",
-      "/img/products/5010681/detail/2.jpg",
-      "/img/products/5010681/detail/3.jpg",
-      "/img/products/5010681/detail/4.jpg",
-      "/img/products/5010681/detail/5.jpg",
-      "/img/products/5010681/detail/6.jpg",
-      "/img/products/5010681/detail/7.jpg"
+      "images/mock/products/5010681/detail/1.jpg",
+      "images/mock/products/5010681/detail/2.jpg",
+      "images/mock/products/5010681/detail/3.jpg",
+      "images/mock/products/5010681/detail/4.jpg",
+      "images/mock/products/5010681/detail/5.jpg",
+      "images/mock/products/5010681/detail/6.jpg",
+      "images/mock/products/5010681/detail/7.jpg"
     ],
     "store_id": 1005,
     "product_likes": 8142,
@@ -6380,14 +6380,14 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5056064/main/1.jpg",
-      "/img/products/5056064/main/2.jpg",
-      "/img/products/5056064/main/3.jpg",
-      "/img/products/5056064/main/4.jpg",
-      "/img/products/5056064/main/5.jpg",
-      "/img/products/5056064/main/6.jpg",
-      "/img/products/5056064/main/7.jpg",
-      "/img/products/5056064/main/8.jpg"
+      "images/mock/products/5056064/main/1.jpg",
+      "images/mock/products/5056064/main/2.jpg",
+      "images/mock/products/5056064/main/3.jpg",
+      "images/mock/products/5056064/main/4.jpg",
+      "images/mock/products/5056064/main/5.jpg",
+      "images/mock/products/5056064/main/6.jpg",
+      "images/mock/products/5056064/main/7.jpg",
+      "images/mock/products/5056064/main/8.jpg"
     ],
     "detail_image_urls": [],
     "store_id": 1005,
@@ -6468,24 +6468,24 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4452584/main/1.jpg",
-      "/img/products/4452584/main/2.jpg",
-      "/img/products/4452584/main/3.jpg",
-      "/img/products/4452584/main/4.jpg",
-      "/img/products/4452584/main/5.jpg",
-      "/img/products/4452584/main/6.jpg",
-      "/img/products/4452584/main/7.jpg",
-      "/img/products/4452584/main/8.jpg"
+      "images/mock/products/4452584/main/1.jpg",
+      "images/mock/products/4452584/main/2.jpg",
+      "images/mock/products/4452584/main/3.jpg",
+      "images/mock/products/4452584/main/4.jpg",
+      "images/mock/products/4452584/main/5.jpg",
+      "images/mock/products/4452584/main/6.jpg",
+      "images/mock/products/4452584/main/7.jpg",
+      "images/mock/products/4452584/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4452584/detail/1.jpg",
-      "/img/products/4452584/detail/2.jpg",
-      "/img/products/4452584/detail/3.jpg",
-      "/img/products/4452584/detail/4.jpg",
-      "/img/products/4452584/detail/5.jpg",
-      "/img/products/4452584/detail/6.jpg",
-      "/img/products/4452584/detail/7.jpg",
-      "/img/products/4452584/detail/8.jpg"
+      "images/mock/products/4452584/detail/1.jpg",
+      "images/mock/products/4452584/detail/2.jpg",
+      "images/mock/products/4452584/detail/3.jpg",
+      "images/mock/products/4452584/detail/4.jpg",
+      "images/mock/products/4452584/detail/5.jpg",
+      "images/mock/products/4452584/detail/6.jpg",
+      "images/mock/products/4452584/detail/7.jpg",
+      "images/mock/products/4452584/detail/8.jpg"
     ],
     "store_id": 1005,
     "product_likes": 7384,
@@ -6549,14 +6549,14 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4932618/main/1.jpg",
-      "/img/products/4932618/main/2.jpg",
-      "/img/products/4932618/main/3.jpg",
-      "/img/products/4932618/main/4.jpg",
-      "/img/products/4932618/main/5.jpg",
-      "/img/products/4932618/main/6.jpg",
-      "/img/products/4932618/main/7.jpg",
-      "/img/products/4932618/main/8.jpg"
+      "images/mock/products/4932618/main/1.jpg",
+      "images/mock/products/4932618/main/2.jpg",
+      "images/mock/products/4932618/main/3.jpg",
+      "images/mock/products/4932618/main/4.jpg",
+      "images/mock/products/4932618/main/5.jpg",
+      "images/mock/products/4932618/main/6.jpg",
+      "images/mock/products/4932618/main/7.jpg",
+      "images/mock/products/4932618/main/8.jpg"
     ],
     "detail_image_urls": [],
     "store_id": 1005,
@@ -6633,14 +6633,14 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4526931/main/1.jpg",
-      "/img/products/4526931/main/2.jpg",
-      "/img/products/4526931/main/3.jpg",
-      "/img/products/4526931/main/4.jpg",
-      "/img/products/4526931/main/5.jpg",
-      "/img/products/4526931/main/6.jpg",
-      "/img/products/4526931/main/7.jpg",
-      "/img/products/4526931/main/8.jpg"
+      "images/mock/products/4526931/main/1.jpg",
+      "images/mock/products/4526931/main/2.jpg",
+      "images/mock/products/4526931/main/3.jpg",
+      "images/mock/products/4526931/main/4.jpg",
+      "images/mock/products/4526931/main/5.jpg",
+      "images/mock/products/4526931/main/6.jpg",
+      "images/mock/products/4526931/main/7.jpg",
+      "images/mock/products/4526931/main/8.jpg"
     ],
     "detail_image_urls": [],
     "store_id": 1005,
@@ -6721,14 +6721,14 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5056069/main/1.jpg",
-      "/img/products/5056069/main/2.jpg",
-      "/img/products/5056069/main/3.jpg",
-      "/img/products/5056069/main/4.jpg",
-      "/img/products/5056069/main/5.jpg",
-      "/img/products/5056069/main/6.jpg",
-      "/img/products/5056069/main/7.jpg",
-      "/img/products/5056069/main/8.jpg"
+      "images/mock/products/5056069/main/1.jpg",
+      "images/mock/products/5056069/main/2.jpg",
+      "images/mock/products/5056069/main/3.jpg",
+      "images/mock/products/5056069/main/4.jpg",
+      "images/mock/products/5056069/main/5.jpg",
+      "images/mock/products/5056069/main/6.jpg",
+      "images/mock/products/5056069/main/7.jpg",
+      "images/mock/products/5056069/main/8.jpg"
     ],
     "detail_image_urls": [],
     "store_id": 1005,
@@ -6805,14 +6805,14 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4858259/main/1.jpg",
-      "/img/products/4858259/main/2.jpg",
-      "/img/products/4858259/main/3.jpg",
-      "/img/products/4858259/main/4.jpg",
-      "/img/products/4858259/main/5.jpg",
-      "/img/products/4858259/main/6.jpg",
-      "/img/products/4858259/main/7.jpg",
-      "/img/products/4858259/main/8.jpg"
+      "images/mock/products/4858259/main/1.jpg",
+      "images/mock/products/4858259/main/2.jpg",
+      "images/mock/products/4858259/main/3.jpg",
+      "images/mock/products/4858259/main/4.jpg",
+      "images/mock/products/4858259/main/5.jpg",
+      "images/mock/products/4858259/main/6.jpg",
+      "images/mock/products/4858259/main/7.jpg",
+      "images/mock/products/4858259/main/8.jpg"
     ],
     "detail_image_urls": [],
     "store_id": 1005,
@@ -6889,22 +6889,22 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4452595/main/1.jpg",
-      "/img/products/4452595/main/2.jpg",
-      "/img/products/4452595/main/3.jpg",
-      "/img/products/4452595/main/4.jpg",
-      "/img/products/4452595/main/5.jpg",
-      "/img/products/4452595/main/6.jpg",
-      "/img/products/4452595/main/7.jpg"
+      "images/mock/products/4452595/main/1.jpg",
+      "images/mock/products/4452595/main/2.jpg",
+      "images/mock/products/4452595/main/3.jpg",
+      "images/mock/products/4452595/main/4.jpg",
+      "images/mock/products/4452595/main/5.jpg",
+      "images/mock/products/4452595/main/6.jpg",
+      "images/mock/products/4452595/main/7.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4452595/detail/1.jpg",
-      "/img/products/4452595/detail/2.jpg",
-      "/img/products/4452595/detail/3.jpg",
-      "/img/products/4452595/detail/4.jpg",
-      "/img/products/4452595/detail/5.jpg",
-      "/img/products/4452595/detail/6.jpg",
-      "/img/products/4452595/detail/7.jpg"
+      "images/mock/products/4452595/detail/1.jpg",
+      "images/mock/products/4452595/detail/2.jpg",
+      "images/mock/products/4452595/detail/3.jpg",
+      "images/mock/products/4452595/detail/4.jpg",
+      "images/mock/products/4452595/detail/5.jpg",
+      "images/mock/products/4452595/detail/6.jpg",
+      "images/mock/products/4452595/detail/7.jpg"
     ],
     "store_id": 1005,
     "product_likes": 48,
@@ -6984,14 +6984,14 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5056072/main/1.jpg",
-      "/img/products/5056072/main/2.jpg",
-      "/img/products/5056072/main/3.jpg",
-      "/img/products/5056072/main/4.jpg",
-      "/img/products/5056072/main/5.jpg",
-      "/img/products/5056072/main/6.jpg",
-      "/img/products/5056072/main/7.jpg",
-      "/img/products/5056072/main/8.jpg"
+      "images/mock/products/5056072/main/1.jpg",
+      "images/mock/products/5056072/main/2.jpg",
+      "images/mock/products/5056072/main/3.jpg",
+      "images/mock/products/5056072/main/4.jpg",
+      "images/mock/products/5056072/main/5.jpg",
+      "images/mock/products/5056072/main/6.jpg",
+      "images/mock/products/5056072/main/7.jpg",
+      "images/mock/products/5056072/main/8.jpg"
     ],
     "detail_image_urls": [],
     "store_id": 1005,
@@ -7068,22 +7068,22 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4815190/main/1.jpg",
-      "/img/products/4815190/main/2.jpg",
-      "/img/products/4815190/main/3.jpg",
-      "/img/products/4815190/main/4.jpg",
-      "/img/products/4815190/main/5.jpg",
-      "/img/products/4815190/main/6.jpg",
-      "/img/products/4815190/main/7.jpg"
+      "images/mock/products/4815190/main/1.jpg",
+      "images/mock/products/4815190/main/2.jpg",
+      "images/mock/products/4815190/main/3.jpg",
+      "images/mock/products/4815190/main/4.jpg",
+      "images/mock/products/4815190/main/5.jpg",
+      "images/mock/products/4815190/main/6.jpg",
+      "images/mock/products/4815190/main/7.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4815190/detail/1.jpg",
-      "/img/products/4815190/detail/2.jpg",
-      "/img/products/4815190/detail/3.jpg",
-      "/img/products/4815190/detail/4.jpg",
-      "/img/products/4815190/detail/5.jpg",
-      "/img/products/4815190/detail/6.jpg",
-      "/img/products/4815190/detail/7.jpg"
+      "images/mock/products/4815190/detail/1.jpg",
+      "images/mock/products/4815190/detail/2.jpg",
+      "images/mock/products/4815190/detail/3.jpg",
+      "images/mock/products/4815190/detail/4.jpg",
+      "images/mock/products/4815190/detail/5.jpg",
+      "images/mock/products/4815190/detail/6.jpg",
+      "images/mock/products/4815190/detail/7.jpg"
     ],
     "store_id": 1005,
     "product_likes": 3039,
@@ -7167,20 +7167,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/3392006/main/1.jpg",
-      "/img/products/3392006/main/2.jpg",
-      "/img/products/3392006/main/3.jpg",
-      "/img/products/3392006/main/4.jpg",
-      "/img/products/3392006/main/5.jpg",
-      "/img/products/3392006/main/6.jpg",
-      "/img/products/3392006/main/7.jpg"
+      "images/mock/products/3392006/main/1.jpg",
+      "images/mock/products/3392006/main/2.jpg",
+      "images/mock/products/3392006/main/3.jpg",
+      "images/mock/products/3392006/main/4.jpg",
+      "images/mock/products/3392006/main/5.jpg",
+      "images/mock/products/3392006/main/6.jpg",
+      "images/mock/products/3392006/main/7.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/3392006/detail/1.jpg",
-      "/img/products/3392006/detail/2.jpg",
-      "/img/products/3392006/detail/3.jpg",
-      "/img/products/3392006/detail/4.jpg",
-      "/img/products/3392006/detail/5.jpg"
+      "images/mock/products/3392006/detail/1.jpg",
+      "images/mock/products/3392006/detail/2.jpg",
+      "images/mock/products/3392006/detail/3.jpg",
+      "images/mock/products/3392006/detail/4.jpg",
+      "images/mock/products/3392006/detail/5.jpg"
     ],
     "store_id": 1005,
     "product_likes": 5509,
@@ -7260,14 +7260,14 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4720386/main/1.jpg",
-      "/img/products/4720386/main/2.jpg",
-      "/img/products/4720386/main/3.jpg",
-      "/img/products/4720386/main/4.jpg",
-      "/img/products/4720386/main/5.jpg",
-      "/img/products/4720386/main/6.jpg",
-      "/img/products/4720386/main/7.jpg",
-      "/img/products/4720386/main/8.jpg"
+      "images/mock/products/4720386/main/1.jpg",
+      "images/mock/products/4720386/main/2.jpg",
+      "images/mock/products/4720386/main/3.jpg",
+      "images/mock/products/4720386/main/4.jpg",
+      "images/mock/products/4720386/main/5.jpg",
+      "images/mock/products/4720386/main/6.jpg",
+      "images/mock/products/4720386/main/7.jpg",
+      "images/mock/products/4720386/main/8.jpg"
     ],
     "detail_image_urls": [],
     "store_id": 1005,
@@ -7324,14 +7324,14 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4932619/main/1.jpg",
-      "/img/products/4932619/main/2.jpg",
-      "/img/products/4932619/main/3.jpg",
-      "/img/products/4932619/main/4.jpg",
-      "/img/products/4932619/main/5.jpg",
-      "/img/products/4932619/main/6.jpg",
-      "/img/products/4932619/main/7.jpg",
-      "/img/products/4932619/main/8.jpg"
+      "images/mock/products/4932619/main/1.jpg",
+      "images/mock/products/4932619/main/2.jpg",
+      "images/mock/products/4932619/main/3.jpg",
+      "images/mock/products/4932619/main/4.jpg",
+      "images/mock/products/4932619/main/5.jpg",
+      "images/mock/products/4932619/main/6.jpg",
+      "images/mock/products/4932619/main/7.jpg",
+      "images/mock/products/4932619/main/8.jpg"
     ],
     "detail_image_urls": [],
     "store_id": 1005,
@@ -7408,14 +7408,14 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4720384/main/1.jpg",
-      "/img/products/4720384/main/2.jpg",
-      "/img/products/4720384/main/3.jpg",
-      "/img/products/4720384/main/4.jpg",
-      "/img/products/4720384/main/5.jpg",
-      "/img/products/4720384/main/6.jpg",
-      "/img/products/4720384/main/7.jpg",
-      "/img/products/4720384/main/8.jpg"
+      "images/mock/products/4720384/main/1.jpg",
+      "images/mock/products/4720384/main/2.jpg",
+      "images/mock/products/4720384/main/3.jpg",
+      "images/mock/products/4720384/main/4.jpg",
+      "images/mock/products/4720384/main/5.jpg",
+      "images/mock/products/4720384/main/6.jpg",
+      "images/mock/products/4720384/main/7.jpg",
+      "images/mock/products/4720384/main/8.jpg"
     ],
     "detail_image_urls": [],
     "store_id": 1005,
@@ -7444,11 +7444,11 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5013603/main/1.jpg",
-      "/img/products/5013603/main/2.jpg"
+      "images/mock/products/5013603/main/1.jpg",
+      "images/mock/products/5013603/main/2.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5013603/detail/1.jpg"
+      "images/mock/products/5013603/detail/1.jpg"
     ],
     "store_id": 1005,
     "product_likes": 7710,
@@ -7536,18 +7536,18 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5049387/main/1.jpg",
-      "/img/products/5049387/main/2.jpg",
-      "/img/products/5049387/main/3.jpg",
-      "/img/products/5049387/main/4.jpg",
-      "/img/products/5049387/main/5.jpg",
-      "/img/products/5049387/main/6.jpg"
+      "images/mock/products/5049387/main/1.jpg",
+      "images/mock/products/5049387/main/2.jpg",
+      "images/mock/products/5049387/main/3.jpg",
+      "images/mock/products/5049387/main/4.jpg",
+      "images/mock/products/5049387/main/5.jpg",
+      "images/mock/products/5049387/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5049387/detail/1.jpg",
-      "/img/products/5049387/detail/2.jpg",
-      "/img/products/5049387/detail/3.jpg",
-      "/img/products/5049387/detail/4.jpg"
+      "images/mock/products/5049387/detail/1.jpg",
+      "images/mock/products/5049387/detail/2.jpg",
+      "images/mock/products/5049387/detail/3.jpg",
+      "images/mock/products/5049387/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 0,
@@ -7556,43 +7556,43 @@
       "other_color_products": [
         {
           "product_id": 5049387,
-          "thumbnail_url": "/img/products/5049387/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049387/main/1.jpg"
         },
         {
           "product_id": 5151822,
-          "thumbnail_url": "/img/products/5151822/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151822/main/1.jpg"
         },
         {
           "product_id": 5049386,
-          "thumbnail_url": "/img/products/5049386/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049386/main/1.jpg"
         },
         {
           "product_id": 4878026,
-          "thumbnail_url": "/img/products/4878026/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878026/main/1.jpg"
         },
         {
           "product_id": 4878025,
-          "thumbnail_url": "/img/products/4878025/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878025/main/1.jpg"
         },
         {
           "product_id": 4771898,
-          "thumbnail_url": "/img/products/4771898/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4771898/main/1.jpg"
         },
         {
           "product_id": 4122749,
-          "thumbnail_url": "/img/products/4122749/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4122749/main/1.jpg"
         },
         {
           "product_id": 4751231,
-          "thumbnail_url": "/img/products/4751231/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4751231/main/1.jpg"
         },
         {
           "product_id": 4701589,
-          "thumbnail_url": "/img/products/4701589/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4701589/main/1.jpg"
         },
         {
           "product_id": 3645257,
-          "thumbnail_url": "/img/products/3645257/main/1.jpg"
+          "thumbnail_url": "images/mock/products/3645257/main/1.jpg"
         }
       ]
     }
@@ -7675,20 +7675,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5046837/main/1.jpg",
-      "/img/products/5046837/main/2.jpg",
-      "/img/products/5046837/main/3.jpg",
-      "/img/products/5046837/main/4.jpg",
-      "/img/products/5046837/main/5.jpg",
-      "/img/products/5046837/main/6.jpg",
-      "/img/products/5046837/main/7.jpg",
-      "/img/products/5046837/main/8.jpg"
+      "images/mock/products/5046837/main/1.jpg",
+      "images/mock/products/5046837/main/2.jpg",
+      "images/mock/products/5046837/main/3.jpg",
+      "images/mock/products/5046837/main/4.jpg",
+      "images/mock/products/5046837/main/5.jpg",
+      "images/mock/products/5046837/main/6.jpg",
+      "images/mock/products/5046837/main/7.jpg",
+      "images/mock/products/5046837/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5046837/detail/1.jpg",
-      "/img/products/5046837/detail/2.jpg",
-      "/img/products/5046837/detail/3.jpg",
-      "/img/products/5046837/detail/4.jpg"
+      "images/mock/products/5046837/detail/1.jpg",
+      "images/mock/products/5046837/detail/2.jpg",
+      "images/mock/products/5046837/detail/3.jpg",
+      "images/mock/products/5046837/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 0,
@@ -7697,19 +7697,19 @@
       "other_color_products": [
         {
           "product_id": 5046837,
-          "thumbnail_url": "/img/products/5046837/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5046837/main/1.jpg"
         },
         {
           "product_id": 5129318,
-          "thumbnail_url": "/img/products/5129318/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5129318/main/1.jpg"
         },
         {
           "product_id": 5129317,
-          "thumbnail_url": "/img/products/5129317/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5129317/main/1.jpg"
         },
         {
           "product_id": 5046838,
-          "thumbnail_url": "/img/products/5046838/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5046838/main/1.jpg"
         }
       ]
     }
@@ -7792,20 +7792,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/5046838/main/1.jpg",
-      "/img/products/5046838/main/2.jpg",
-      "/img/products/5046838/main/3.jpg",
-      "/img/products/5046838/main/4.jpg",
-      "/img/products/5046838/main/5.jpg",
-      "/img/products/5046838/main/6.jpg",
-      "/img/products/5046838/main/7.jpg",
-      "/img/products/5046838/main/8.jpg"
+      "images/mock/products/5046838/main/1.jpg",
+      "images/mock/products/5046838/main/2.jpg",
+      "images/mock/products/5046838/main/3.jpg",
+      "images/mock/products/5046838/main/4.jpg",
+      "images/mock/products/5046838/main/5.jpg",
+      "images/mock/products/5046838/main/6.jpg",
+      "images/mock/products/5046838/main/7.jpg",
+      "images/mock/products/5046838/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/5046838/detail/1.jpg",
-      "/img/products/5046838/detail/2.jpg",
-      "/img/products/5046838/detail/3.jpg",
-      "/img/products/5046838/detail/4.jpg"
+      "images/mock/products/5046838/detail/1.jpg",
+      "images/mock/products/5046838/detail/2.jpg",
+      "images/mock/products/5046838/detail/3.jpg",
+      "images/mock/products/5046838/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 0,
@@ -7814,19 +7814,19 @@
       "other_color_products": [
         {
           "product_id": 5046838,
-          "thumbnail_url": "/img/products/5046838/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5046838/main/1.jpg"
         },
         {
           "product_id": 5129318,
-          "thumbnail_url": "/img/products/5129318/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5129318/main/1.jpg"
         },
         {
           "product_id": 5129317,
-          "thumbnail_url": "/img/products/5129317/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5129317/main/1.jpg"
         },
         {
           "product_id": 5046837,
-          "thumbnail_url": "/img/products/5046837/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5046837/main/1.jpg"
         }
       ]
     }
@@ -7909,20 +7909,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4771898/main/1.jpg",
-      "/img/products/4771898/main/2.jpg",
-      "/img/products/4771898/main/3.jpg",
-      "/img/products/4771898/main/4.jpg",
-      "/img/products/4771898/main/5.jpg",
-      "/img/products/4771898/main/6.jpg",
-      "/img/products/4771898/main/7.jpg",
-      "/img/products/4771898/main/8.jpg"
+      "images/mock/products/4771898/main/1.jpg",
+      "images/mock/products/4771898/main/2.jpg",
+      "images/mock/products/4771898/main/3.jpg",
+      "images/mock/products/4771898/main/4.jpg",
+      "images/mock/products/4771898/main/5.jpg",
+      "images/mock/products/4771898/main/6.jpg",
+      "images/mock/products/4771898/main/7.jpg",
+      "images/mock/products/4771898/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4771898/detail/1.jpg",
-      "/img/products/4771898/detail/2.jpg",
-      "/img/products/4771898/detail/3.jpg",
-      "/img/products/4771898/detail/4.jpg"
+      "images/mock/products/4771898/detail/1.jpg",
+      "images/mock/products/4771898/detail/2.jpg",
+      "images/mock/products/4771898/detail/3.jpg",
+      "images/mock/products/4771898/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 0,
@@ -7931,43 +7931,43 @@
       "other_color_products": [
         {
           "product_id": 4771898,
-          "thumbnail_url": "/img/products/4771898/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4771898/main/1.jpg"
         },
         {
           "product_id": 5151822,
-          "thumbnail_url": "/img/products/5151822/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151822/main/1.jpg"
         },
         {
           "product_id": 5049387,
-          "thumbnail_url": "/img/products/5049387/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049387/main/1.jpg"
         },
         {
           "product_id": 5049386,
-          "thumbnail_url": "/img/products/5049386/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049386/main/1.jpg"
         },
         {
           "product_id": 4878026,
-          "thumbnail_url": "/img/products/4878026/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878026/main/1.jpg"
         },
         {
           "product_id": 4878025,
-          "thumbnail_url": "/img/products/4878025/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878025/main/1.jpg"
         },
         {
           "product_id": 4122749,
-          "thumbnail_url": "/img/products/4122749/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4122749/main/1.jpg"
         },
         {
           "product_id": 4751231,
-          "thumbnail_url": "/img/products/4751231/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4751231/main/1.jpg"
         },
         {
           "product_id": 4701589,
-          "thumbnail_url": "/img/products/4701589/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4701589/main/1.jpg"
         },
         {
           "product_id": 3645257,
-          "thumbnail_url": "/img/products/3645257/main/1.jpg"
+          "thumbnail_url": "images/mock/products/3645257/main/1.jpg"
         }
       ]
     }
@@ -8050,20 +8050,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4122749/main/1.jpg",
-      "/img/products/4122749/main/2.jpg",
-      "/img/products/4122749/main/3.jpg",
-      "/img/products/4122749/main/4.jpg",
-      "/img/products/4122749/main/5.jpg",
-      "/img/products/4122749/main/6.jpg",
-      "/img/products/4122749/main/7.jpg",
-      "/img/products/4122749/main/8.jpg"
+      "images/mock/products/4122749/main/1.jpg",
+      "images/mock/products/4122749/main/2.jpg",
+      "images/mock/products/4122749/main/3.jpg",
+      "images/mock/products/4122749/main/4.jpg",
+      "images/mock/products/4122749/main/5.jpg",
+      "images/mock/products/4122749/main/6.jpg",
+      "images/mock/products/4122749/main/7.jpg",
+      "images/mock/products/4122749/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4122749/detail/1.jpg",
-      "/img/products/4122749/detail/2.jpg",
-      "/img/products/4122749/detail/3.jpg",
-      "/img/products/4122749/detail/4.jpg"
+      "images/mock/products/4122749/detail/1.jpg",
+      "images/mock/products/4122749/detail/2.jpg",
+      "images/mock/products/4122749/detail/3.jpg",
+      "images/mock/products/4122749/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 0,
@@ -8072,43 +8072,43 @@
       "other_color_products": [
         {
           "product_id": 4122749,
-          "thumbnail_url": "/img/products/4122749/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4122749/main/1.jpg"
         },
         {
           "product_id": 5151822,
-          "thumbnail_url": "/img/products/5151822/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151822/main/1.jpg"
         },
         {
           "product_id": 5049387,
-          "thumbnail_url": "/img/products/5049387/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049387/main/1.jpg"
         },
         {
           "product_id": 5049386,
-          "thumbnail_url": "/img/products/5049386/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049386/main/1.jpg"
         },
         {
           "product_id": 4878026,
-          "thumbnail_url": "/img/products/4878026/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878026/main/1.jpg"
         },
         {
           "product_id": 4878025,
-          "thumbnail_url": "/img/products/4878025/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878025/main/1.jpg"
         },
         {
           "product_id": 4771898,
-          "thumbnail_url": "/img/products/4771898/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4771898/main/1.jpg"
         },
         {
           "product_id": 4751231,
-          "thumbnail_url": "/img/products/4751231/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4751231/main/1.jpg"
         },
         {
           "product_id": 4701589,
-          "thumbnail_url": "/img/products/4701589/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4701589/main/1.jpg"
         },
         {
           "product_id": 3645257,
-          "thumbnail_url": "/img/products/3645257/main/1.jpg"
+          "thumbnail_url": "images/mock/products/3645257/main/1.jpg"
         }
       ]
     }
@@ -8159,16 +8159,16 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4763282/main/1.jpg",
-      "/img/products/4763282/main/2.jpg",
-      "/img/products/4763282/main/3.jpg",
-      "/img/products/4763282/main/4.jpg",
-      "/img/products/4763282/main/5.jpg",
-      "/img/products/4763282/main/6.jpg"
+      "images/mock/products/4763282/main/1.jpg",
+      "images/mock/products/4763282/main/2.jpg",
+      "images/mock/products/4763282/main/3.jpg",
+      "images/mock/products/4763282/main/4.jpg",
+      "images/mock/products/4763282/main/5.jpg",
+      "images/mock/products/4763282/main/6.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4763282/detail/1.jpg",
-      "/img/products/4763282/detail/2.jpg"
+      "images/mock/products/4763282/detail/1.jpg",
+      "images/mock/products/4763282/detail/2.jpg"
     ],
     "store_id": 1004,
     "product_likes": 0,
@@ -8182,19 +8182,19 @@
       "other_color_products": [
         {
           "product_id": 4763282,
-          "thumbnail_url": "/img/products/4763282/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4763282/main/1.jpg"
         },
         {
           "product_id": 5168189,
-          "thumbnail_url": "/img/products/5168189/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5168189/main/1.jpg"
         },
         {
           "product_id": 5168175,
-          "thumbnail_url": "/img/products/5168175/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5168175/main/1.jpg"
         },
         {
           "product_id": 4763283,
-          "thumbnail_url": "/img/products/4763283/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4763283/main/1.jpg"
         }
       ]
     }
@@ -8273,20 +8273,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4678344/main/1.jpg",
-      "/img/products/4678344/main/2.jpg",
-      "/img/products/4678344/main/3.jpg",
-      "/img/products/4678344/main/4.jpg",
-      "/img/products/4678344/main/5.jpg",
-      "/img/products/4678344/main/6.jpg",
-      "/img/products/4678344/main/7.jpg",
-      "/img/products/4678344/main/8.jpg"
+      "images/mock/products/4678344/main/1.jpg",
+      "images/mock/products/4678344/main/2.jpg",
+      "images/mock/products/4678344/main/3.jpg",
+      "images/mock/products/4678344/main/4.jpg",
+      "images/mock/products/4678344/main/5.jpg",
+      "images/mock/products/4678344/main/6.jpg",
+      "images/mock/products/4678344/main/7.jpg",
+      "images/mock/products/4678344/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4678344/detail/1.jpg",
-      "/img/products/4678344/detail/2.jpg",
-      "/img/products/4678344/detail/3.jpg",
-      "/img/products/4678344/detail/4.jpg"
+      "images/mock/products/4678344/detail/1.jpg",
+      "images/mock/products/4678344/detail/2.jpg",
+      "images/mock/products/4678344/detail/3.jpg",
+      "images/mock/products/4678344/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 0,
@@ -8295,31 +8295,31 @@
       "other_color_products": [
         {
           "product_id": 4678344,
-          "thumbnail_url": "/img/products/4678344/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678344/main/1.jpg"
         },
         {
           "product_id": 5151518,
-          "thumbnail_url": "/img/products/5151518/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151518/main/1.jpg"
         },
         {
           "product_id": 5086393,
-          "thumbnail_url": "/img/products/5086393/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5086393/main/1.jpg"
         },
         {
           "product_id": 4678345,
-          "thumbnail_url": "/img/products/4678345/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678345/main/1.jpg"
         },
         {
           "product_id": 4797720,
-          "thumbnail_url": "/img/products/4797720/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4797720/main/1.jpg"
         },
         {
           "product_id": 4797718,
-          "thumbnail_url": "/img/products/4797718/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4797718/main/1.jpg"
         },
         {
           "product_id": 4678346,
-          "thumbnail_url": "/img/products/4678346/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678346/main/1.jpg"
         }
       ]
     }
@@ -8386,20 +8386,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4678345/main/1.jpg",
-      "/img/products/4678345/main/2.jpg",
-      "/img/products/4678345/main/3.jpg",
-      "/img/products/4678345/main/4.jpg",
-      "/img/products/4678345/main/5.jpg",
-      "/img/products/4678345/main/6.jpg",
-      "/img/products/4678345/main/7.jpg",
-      "/img/products/4678345/main/8.jpg"
+      "images/mock/products/4678345/main/1.jpg",
+      "images/mock/products/4678345/main/2.jpg",
+      "images/mock/products/4678345/main/3.jpg",
+      "images/mock/products/4678345/main/4.jpg",
+      "images/mock/products/4678345/main/5.jpg",
+      "images/mock/products/4678345/main/6.jpg",
+      "images/mock/products/4678345/main/7.jpg",
+      "images/mock/products/4678345/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4678345/detail/1.jpg",
-      "/img/products/4678345/detail/2.jpg",
-      "/img/products/4678345/detail/3.jpg",
-      "/img/products/4678345/detail/4.jpg"
+      "images/mock/products/4678345/detail/1.jpg",
+      "images/mock/products/4678345/detail/2.jpg",
+      "images/mock/products/4678345/detail/3.jpg",
+      "images/mock/products/4678345/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 0,
@@ -8413,31 +8413,31 @@
       "other_color_products": [
         {
           "product_id": 4678345,
-          "thumbnail_url": "/img/products/4678345/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678345/main/1.jpg"
         },
         {
           "product_id": 5151518,
-          "thumbnail_url": "/img/products/5151518/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151518/main/1.jpg"
         },
         {
           "product_id": 5086393,
-          "thumbnail_url": "/img/products/5086393/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5086393/main/1.jpg"
         },
         {
           "product_id": 4678344,
-          "thumbnail_url": "/img/products/4678344/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678344/main/1.jpg"
         },
         {
           "product_id": 4797720,
-          "thumbnail_url": "/img/products/4797720/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4797720/main/1.jpg"
         },
         {
           "product_id": 4797718,
-          "thumbnail_url": "/img/products/4797718/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4797718/main/1.jpg"
         },
         {
           "product_id": 4678346,
-          "thumbnail_url": "/img/products/4678346/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678346/main/1.jpg"
         }
       ]
     }
@@ -8520,20 +8520,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4678346/main/1.jpg",
-      "/img/products/4678346/main/2.jpg",
-      "/img/products/4678346/main/3.jpg",
-      "/img/products/4678346/main/4.jpg",
-      "/img/products/4678346/main/5.jpg",
-      "/img/products/4678346/main/6.jpg",
-      "/img/products/4678346/main/7.jpg",
-      "/img/products/4678346/main/8.jpg"
+      "images/mock/products/4678346/main/1.jpg",
+      "images/mock/products/4678346/main/2.jpg",
+      "images/mock/products/4678346/main/3.jpg",
+      "images/mock/products/4678346/main/4.jpg",
+      "images/mock/products/4678346/main/5.jpg",
+      "images/mock/products/4678346/main/6.jpg",
+      "images/mock/products/4678346/main/7.jpg",
+      "images/mock/products/4678346/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4678346/detail/1.jpg",
-      "/img/products/4678346/detail/2.jpg",
-      "/img/products/4678346/detail/3.jpg",
-      "/img/products/4678346/detail/4.jpg"
+      "images/mock/products/4678346/detail/1.jpg",
+      "images/mock/products/4678346/detail/2.jpg",
+      "images/mock/products/4678346/detail/3.jpg",
+      "images/mock/products/4678346/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 0,
@@ -8547,31 +8547,31 @@
       "other_color_products": [
         {
           "product_id": 4678346,
-          "thumbnail_url": "/img/products/4678346/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678346/main/1.jpg"
         },
         {
           "product_id": 5151518,
-          "thumbnail_url": "/img/products/5151518/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151518/main/1.jpg"
         },
         {
           "product_id": 5086393,
-          "thumbnail_url": "/img/products/5086393/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5086393/main/1.jpg"
         },
         {
           "product_id": 4678345,
-          "thumbnail_url": "/img/products/4678345/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678345/main/1.jpg"
         },
         {
           "product_id": 4678344,
-          "thumbnail_url": "/img/products/4678344/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678344/main/1.jpg"
         },
         {
           "product_id": 4797720,
-          "thumbnail_url": "/img/products/4797720/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4797720/main/1.jpg"
         },
         {
           "product_id": 4797718,
-          "thumbnail_url": "/img/products/4797718/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4797718/main/1.jpg"
         }
       ]
     }
@@ -8654,20 +8654,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4878026/main/1.jpg",
-      "/img/products/4878026/main/2.jpg",
-      "/img/products/4878026/main/3.jpg",
-      "/img/products/4878026/main/4.jpg",
-      "/img/products/4878026/main/5.jpg",
-      "/img/products/4878026/main/6.jpg",
-      "/img/products/4878026/main/7.jpg",
-      "/img/products/4878026/main/8.jpg"
+      "images/mock/products/4878026/main/1.jpg",
+      "images/mock/products/4878026/main/2.jpg",
+      "images/mock/products/4878026/main/3.jpg",
+      "images/mock/products/4878026/main/4.jpg",
+      "images/mock/products/4878026/main/5.jpg",
+      "images/mock/products/4878026/main/6.jpg",
+      "images/mock/products/4878026/main/7.jpg",
+      "images/mock/products/4878026/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4878026/detail/1.jpg",
-      "/img/products/4878026/detail/2.jpg",
-      "/img/products/4878026/detail/3.jpg",
-      "/img/products/4878026/detail/4.jpg"
+      "images/mock/products/4878026/detail/1.jpg",
+      "images/mock/products/4878026/detail/2.jpg",
+      "images/mock/products/4878026/detail/3.jpg",
+      "images/mock/products/4878026/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 0,
@@ -8676,43 +8676,43 @@
       "other_color_products": [
         {
           "product_id": 4878026,
-          "thumbnail_url": "/img/products/4878026/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878026/main/1.jpg"
         },
         {
           "product_id": 5151822,
-          "thumbnail_url": "/img/products/5151822/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151822/main/1.jpg"
         },
         {
           "product_id": 5049387,
-          "thumbnail_url": "/img/products/5049387/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049387/main/1.jpg"
         },
         {
           "product_id": 5049386,
-          "thumbnail_url": "/img/products/5049386/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049386/main/1.jpg"
         },
         {
           "product_id": 4878025,
-          "thumbnail_url": "/img/products/4878025/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878025/main/1.jpg"
         },
         {
           "product_id": 4771898,
-          "thumbnail_url": "/img/products/4771898/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4771898/main/1.jpg"
         },
         {
           "product_id": 4122749,
-          "thumbnail_url": "/img/products/4122749/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4122749/main/1.jpg"
         },
         {
           "product_id": 4751231,
-          "thumbnail_url": "/img/products/4751231/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4751231/main/1.jpg"
         },
         {
           "product_id": 4701589,
-          "thumbnail_url": "/img/products/4701589/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4701589/main/1.jpg"
         },
         {
           "product_id": 3645257,
-          "thumbnail_url": "/img/products/3645257/main/1.jpg"
+          "thumbnail_url": "images/mock/products/3645257/main/1.jpg"
         }
       ]
     }
@@ -8787,20 +8787,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4878025/main/1.jpg",
-      "/img/products/4878025/main/2.jpg",
-      "/img/products/4878025/main/3.jpg",
-      "/img/products/4878025/main/4.jpg",
-      "/img/products/4878025/main/5.jpg",
-      "/img/products/4878025/main/6.jpg",
-      "/img/products/4878025/main/7.jpg",
-      "/img/products/4878025/main/8.jpg"
+      "images/mock/products/4878025/main/1.jpg",
+      "images/mock/products/4878025/main/2.jpg",
+      "images/mock/products/4878025/main/3.jpg",
+      "images/mock/products/4878025/main/4.jpg",
+      "images/mock/products/4878025/main/5.jpg",
+      "images/mock/products/4878025/main/6.jpg",
+      "images/mock/products/4878025/main/7.jpg",
+      "images/mock/products/4878025/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4878025/detail/1.jpg",
-      "/img/products/4878025/detail/2.jpg",
-      "/img/products/4878025/detail/3.jpg",
-      "/img/products/4878025/detail/4.jpg"
+      "images/mock/products/4878025/detail/1.jpg",
+      "images/mock/products/4878025/detail/2.jpg",
+      "images/mock/products/4878025/detail/3.jpg",
+      "images/mock/products/4878025/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 0,
@@ -8809,43 +8809,43 @@
       "other_color_products": [
         {
           "product_id": 4878025,
-          "thumbnail_url": "/img/products/4878025/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878025/main/1.jpg"
         },
         {
           "product_id": 5151822,
-          "thumbnail_url": "/img/products/5151822/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151822/main/1.jpg"
         },
         {
           "product_id": 5049387,
-          "thumbnail_url": "/img/products/5049387/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049387/main/1.jpg"
         },
         {
           "product_id": 5049386,
-          "thumbnail_url": "/img/products/5049386/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049386/main/1.jpg"
         },
         {
           "product_id": 4878026,
-          "thumbnail_url": "/img/products/4878026/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878026/main/1.jpg"
         },
         {
           "product_id": 4771898,
-          "thumbnail_url": "/img/products/4771898/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4771898/main/1.jpg"
         },
         {
           "product_id": 4122749,
-          "thumbnail_url": "/img/products/4122749/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4122749/main/1.jpg"
         },
         {
           "product_id": 4751231,
-          "thumbnail_url": "/img/products/4751231/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4751231/main/1.jpg"
         },
         {
           "product_id": 4701589,
-          "thumbnail_url": "/img/products/4701589/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4701589/main/1.jpg"
         },
         {
           "product_id": 3645257,
-          "thumbnail_url": "/img/products/3645257/main/1.jpg"
+          "thumbnail_url": "images/mock/products/3645257/main/1.jpg"
         }
       ]
     }
@@ -8920,21 +8920,21 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4289228/main/1.jpg",
-      "/img/products/4289228/main/2.jpg",
-      "/img/products/4289228/main/3.jpg",
-      "/img/products/4289228/main/4.jpg",
-      "/img/products/4289228/main/5.jpg",
-      "/img/products/4289228/main/6.jpg",
-      "/img/products/4289228/main/7.jpg"
+      "images/mock/products/4289228/main/1.jpg",
+      "images/mock/products/4289228/main/2.jpg",
+      "images/mock/products/4289228/main/3.jpg",
+      "images/mock/products/4289228/main/4.jpg",
+      "images/mock/products/4289228/main/5.jpg",
+      "images/mock/products/4289228/main/6.jpg",
+      "images/mock/products/4289228/main/7.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4289228/detail/1.jpg",
-      "/img/products/4289228/detail/2.jpg",
-      "/img/products/4289228/detail/3.jpg",
-      "/img/products/4289228/detail/4.jpg",
-      "/img/products/4289228/detail/5.jpg",
-      "/img/products/4289228/detail/6.jpg"
+      "images/mock/products/4289228/detail/1.jpg",
+      "images/mock/products/4289228/detail/2.jpg",
+      "images/mock/products/4289228/detail/3.jpg",
+      "images/mock/products/4289228/detail/4.jpg",
+      "images/mock/products/4289228/detail/5.jpg",
+      "images/mock/products/4289228/detail/6.jpg"
     ],
     "store_id": 1004,
     "product_likes": 0,
@@ -8948,19 +8948,19 @@
       "other_color_products": [
         {
           "product_id": 4289228,
-          "thumbnail_url": "/img/products/4289228/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4289228/main/1.jpg"
         },
         {
           "product_id": 4289227,
-          "thumbnail_url": "/img/products/4289227/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4289227/main/1.jpg"
         },
         {
           "product_id": 4201444,
-          "thumbnail_url": "/img/products/4201444/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4201444/main/1.jpg"
         },
         {
           "product_id": 4201442,
-          "thumbnail_url": "/img/products/4201442/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4201442/main/1.jpg"
         }
       ]
     }
@@ -9043,21 +9043,21 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4289227/main/1.jpg",
-      "/img/products/4289227/main/2.jpg",
-      "/img/products/4289227/main/3.jpg",
-      "/img/products/4289227/main/4.jpg",
-      "/img/products/4289227/main/5.jpg",
-      "/img/products/4289227/main/6.jpg",
-      "/img/products/4289227/main/7.jpg"
+      "images/mock/products/4289227/main/1.jpg",
+      "images/mock/products/4289227/main/2.jpg",
+      "images/mock/products/4289227/main/3.jpg",
+      "images/mock/products/4289227/main/4.jpg",
+      "images/mock/products/4289227/main/5.jpg",
+      "images/mock/products/4289227/main/6.jpg",
+      "images/mock/products/4289227/main/7.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4289227/detail/1.jpg",
-      "/img/products/4289227/detail/2.jpg",
-      "/img/products/4289227/detail/3.jpg",
-      "/img/products/4289227/detail/4.jpg",
-      "/img/products/4289227/detail/5.jpg",
-      "/img/products/4289227/detail/6.jpg"
+      "images/mock/products/4289227/detail/1.jpg",
+      "images/mock/products/4289227/detail/2.jpg",
+      "images/mock/products/4289227/detail/3.jpg",
+      "images/mock/products/4289227/detail/4.jpg",
+      "images/mock/products/4289227/detail/5.jpg",
+      "images/mock/products/4289227/detail/6.jpg"
     ],
     "store_id": 1004,
     "product_likes": 0,
@@ -9071,19 +9071,19 @@
       "other_color_products": [
         {
           "product_id": 4289227,
-          "thumbnail_url": "/img/products/4289227/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4289227/main/1.jpg"
         },
         {
           "product_id": 4289228,
-          "thumbnail_url": "/img/products/4289228/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4289228/main/1.jpg"
         },
         {
           "product_id": 4201444,
-          "thumbnail_url": "/img/products/4201444/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4201444/main/1.jpg"
         },
         {
           "product_id": 4201442,
-          "thumbnail_url": "/img/products/4201442/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4201442/main/1.jpg"
         }
       ]
     }
@@ -9166,20 +9166,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4797720/main/1.jpg",
-      "/img/products/4797720/main/2.jpg",
-      "/img/products/4797720/main/3.jpg",
-      "/img/products/4797720/main/4.jpg",
-      "/img/products/4797720/main/5.jpg",
-      "/img/products/4797720/main/6.jpg",
-      "/img/products/4797720/main/7.jpg",
-      "/img/products/4797720/main/8.jpg"
+      "images/mock/products/4797720/main/1.jpg",
+      "images/mock/products/4797720/main/2.jpg",
+      "images/mock/products/4797720/main/3.jpg",
+      "images/mock/products/4797720/main/4.jpg",
+      "images/mock/products/4797720/main/5.jpg",
+      "images/mock/products/4797720/main/6.jpg",
+      "images/mock/products/4797720/main/7.jpg",
+      "images/mock/products/4797720/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4797720/detail/1.jpg",
-      "/img/products/4797720/detail/2.jpg",
-      "/img/products/4797720/detail/3.jpg",
-      "/img/products/4797720/detail/4.jpg"
+      "images/mock/products/4797720/detail/1.jpg",
+      "images/mock/products/4797720/detail/2.jpg",
+      "images/mock/products/4797720/detail/3.jpg",
+      "images/mock/products/4797720/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 0,
@@ -9188,31 +9188,31 @@
       "other_color_products": [
         {
           "product_id": 4797720,
-          "thumbnail_url": "/img/products/4797720/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4797720/main/1.jpg"
         },
         {
           "product_id": 5151518,
-          "thumbnail_url": "/img/products/5151518/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151518/main/1.jpg"
         },
         {
           "product_id": 5086393,
-          "thumbnail_url": "/img/products/5086393/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5086393/main/1.jpg"
         },
         {
           "product_id": 4678345,
-          "thumbnail_url": "/img/products/4678345/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678345/main/1.jpg"
         },
         {
           "product_id": 4678344,
-          "thumbnail_url": "/img/products/4678344/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678344/main/1.jpg"
         },
         {
           "product_id": 4797718,
-          "thumbnail_url": "/img/products/4797718/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4797718/main/1.jpg"
         },
         {
           "product_id": 4678346,
-          "thumbnail_url": "/img/products/4678346/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678346/main/1.jpg"
         }
       ]
     }
@@ -9295,20 +9295,20 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4797718/main/1.jpg",
-      "/img/products/4797718/main/2.jpg",
-      "/img/products/4797718/main/3.jpg",
-      "/img/products/4797718/main/4.jpg",
-      "/img/products/4797718/main/5.jpg",
-      "/img/products/4797718/main/6.jpg",
-      "/img/products/4797718/main/7.jpg",
-      "/img/products/4797718/main/8.jpg"
+      "images/mock/products/4797718/main/1.jpg",
+      "images/mock/products/4797718/main/2.jpg",
+      "images/mock/products/4797718/main/3.jpg",
+      "images/mock/products/4797718/main/4.jpg",
+      "images/mock/products/4797718/main/5.jpg",
+      "images/mock/products/4797718/main/6.jpg",
+      "images/mock/products/4797718/main/7.jpg",
+      "images/mock/products/4797718/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4797718/detail/1.jpg",
-      "/img/products/4797718/detail/2.jpg",
-      "/img/products/4797718/detail/3.jpg",
-      "/img/products/4797718/detail/4.jpg"
+      "images/mock/products/4797718/detail/1.jpg",
+      "images/mock/products/4797718/detail/2.jpg",
+      "images/mock/products/4797718/detail/3.jpg",
+      "images/mock/products/4797718/detail/4.jpg"
     ],
     "store_id": 1003,
     "product_likes": 0,
@@ -9317,31 +9317,31 @@
       "other_color_products": [
         {
           "product_id": 4797718,
-          "thumbnail_url": "/img/products/4797718/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4797718/main/1.jpg"
         },
         {
           "product_id": 5151518,
-          "thumbnail_url": "/img/products/5151518/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151518/main/1.jpg"
         },
         {
           "product_id": 5086393,
-          "thumbnail_url": "/img/products/5086393/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5086393/main/1.jpg"
         },
         {
           "product_id": 4678345,
-          "thumbnail_url": "/img/products/4678345/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678345/main/1.jpg"
         },
         {
           "product_id": 4678344,
-          "thumbnail_url": "/img/products/4678344/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678344/main/1.jpg"
         },
         {
           "product_id": 4797720,
-          "thumbnail_url": "/img/products/4797720/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4797720/main/1.jpg"
         },
         {
           "product_id": 4678346,
-          "thumbnail_url": "/img/products/4678346/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4678346/main/1.jpg"
         }
       ]
     }
@@ -9424,12 +9424,12 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/3645257/main/1.jpg"
+      "images/mock/products/3645257/main/1.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/3645257/detail/1.jpg",
-      "/img/products/3645257/detail/2.jpg",
-      "/img/products/3645257/detail/3.jpg"
+      "images/mock/products/3645257/detail/1.jpg",
+      "images/mock/products/3645257/detail/2.jpg",
+      "images/mock/products/3645257/detail/3.jpg"
     ],
     "store_id": 1003,
     "product_likes": 0,
@@ -9438,43 +9438,43 @@
       "other_color_products": [
         {
           "product_id": 3645257,
-          "thumbnail_url": "/img/products/3645257/main/1.jpg"
+          "thumbnail_url": "images/mock/products/3645257/main/1.jpg"
         },
         {
           "product_id": 5151822,
-          "thumbnail_url": "/img/products/5151822/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151822/main/1.jpg"
         },
         {
           "product_id": 5049387,
-          "thumbnail_url": "/img/products/5049387/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049387/main/1.jpg"
         },
         {
           "product_id": 5049386,
-          "thumbnail_url": "/img/products/5049386/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049386/main/1.jpg"
         },
         {
           "product_id": 4878026,
-          "thumbnail_url": "/img/products/4878026/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878026/main/1.jpg"
         },
         {
           "product_id": 4878025,
-          "thumbnail_url": "/img/products/4878025/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878025/main/1.jpg"
         },
         {
           "product_id": 4771898,
-          "thumbnail_url": "/img/products/4771898/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4771898/main/1.jpg"
         },
         {
           "product_id": 4122749,
-          "thumbnail_url": "/img/products/4122749/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4122749/main/1.jpg"
         },
         {
           "product_id": 4751231,
-          "thumbnail_url": "/img/products/4751231/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4751231/main/1.jpg"
         },
         {
           "product_id": 4701589,
-          "thumbnail_url": "/img/products/4701589/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4701589/main/1.jpg"
         }
       ]
     }
@@ -9557,19 +9557,19 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4751231/main/1.jpg",
-      "/img/products/4751231/main/2.jpg",
-      "/img/products/4751231/main/3.jpg",
-      "/img/products/4751231/main/4.jpg",
-      "/img/products/4751231/main/5.jpg",
-      "/img/products/4751231/main/6.jpg",
-      "/img/products/4751231/main/7.jpg",
-      "/img/products/4751231/main/8.jpg"
+      "images/mock/products/4751231/main/1.jpg",
+      "images/mock/products/4751231/main/2.jpg",
+      "images/mock/products/4751231/main/3.jpg",
+      "images/mock/products/4751231/main/4.jpg",
+      "images/mock/products/4751231/main/5.jpg",
+      "images/mock/products/4751231/main/6.jpg",
+      "images/mock/products/4751231/main/7.jpg",
+      "images/mock/products/4751231/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4751231/detail/1.jpg",
-      "/img/products/4751231/detail/2.jpg",
-      "/img/products/4751231/detail/3.jpg"
+      "images/mock/products/4751231/detail/1.jpg",
+      "images/mock/products/4751231/detail/2.jpg",
+      "images/mock/products/4751231/detail/3.jpg"
     ],
     "store_id": 1003,
     "product_likes": 0,
@@ -9578,43 +9578,43 @@
       "other_color_products": [
         {
           "product_id": 4751231,
-          "thumbnail_url": "/img/products/4751231/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4751231/main/1.jpg"
         },
         {
           "product_id": 5151822,
-          "thumbnail_url": "/img/products/5151822/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151822/main/1.jpg"
         },
         {
           "product_id": 5049387,
-          "thumbnail_url": "/img/products/5049387/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049387/main/1.jpg"
         },
         {
           "product_id": 5049386,
-          "thumbnail_url": "/img/products/5049386/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049386/main/1.jpg"
         },
         {
           "product_id": 4878026,
-          "thumbnail_url": "/img/products/4878026/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878026/main/1.jpg"
         },
         {
           "product_id": 4878025,
-          "thumbnail_url": "/img/products/4878025/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878025/main/1.jpg"
         },
         {
           "product_id": 4771898,
-          "thumbnail_url": "/img/products/4771898/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4771898/main/1.jpg"
         },
         {
           "product_id": 4122749,
-          "thumbnail_url": "/img/products/4122749/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4122749/main/1.jpg"
         },
         {
           "product_id": 4701589,
-          "thumbnail_url": "/img/products/4701589/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4701589/main/1.jpg"
         },
         {
           "product_id": 3645257,
-          "thumbnail_url": "/img/products/3645257/main/1.jpg"
+          "thumbnail_url": "images/mock/products/3645257/main/1.jpg"
         }
       ]
     }
@@ -9697,19 +9697,19 @@
       }
     ],
     "main_image_urls": [
-      "/img/products/4701589/main/1.jpg",
-      "/img/products/4701589/main/2.jpg",
-      "/img/products/4701589/main/3.jpg",
-      "/img/products/4701589/main/4.jpg",
-      "/img/products/4701589/main/5.jpg",
-      "/img/products/4701589/main/6.jpg",
-      "/img/products/4701589/main/7.jpg",
-      "/img/products/4701589/main/8.jpg"
+      "images/mock/products/4701589/main/1.jpg",
+      "images/mock/products/4701589/main/2.jpg",
+      "images/mock/products/4701589/main/3.jpg",
+      "images/mock/products/4701589/main/4.jpg",
+      "images/mock/products/4701589/main/5.jpg",
+      "images/mock/products/4701589/main/6.jpg",
+      "images/mock/products/4701589/main/7.jpg",
+      "images/mock/products/4701589/main/8.jpg"
     ],
     "detail_image_urls": [
-      "/img/products/4701589/detail/1.jpg",
-      "/img/products/4701589/detail/2.jpg",
-      "/img/products/4701589/detail/3.jpg"
+      "images/mock/products/4701589/detail/1.jpg",
+      "images/mock/products/4701589/detail/2.jpg",
+      "images/mock/products/4701589/detail/3.jpg"
     ],
     "store_id": 1003,
     "product_likes": 0,
@@ -9718,43 +9718,43 @@
       "other_color_products": [
         {
           "product_id": 4701589,
-          "thumbnail_url": "/img/products/4701589/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4701589/main/1.jpg"
         },
         {
           "product_id": 5151822,
-          "thumbnail_url": "/img/products/5151822/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5151822/main/1.jpg"
         },
         {
           "product_id": 5049387,
-          "thumbnail_url": "/img/products/5049387/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049387/main/1.jpg"
         },
         {
           "product_id": 5049386,
-          "thumbnail_url": "/img/products/5049386/main/1.jpg"
+          "thumbnail_url": "images/mock/products/5049386/main/1.jpg"
         },
         {
           "product_id": 4878026,
-          "thumbnail_url": "/img/products/4878026/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878026/main/1.jpg"
         },
         {
           "product_id": 4878025,
-          "thumbnail_url": "/img/products/4878025/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4878025/main/1.jpg"
         },
         {
           "product_id": 4771898,
-          "thumbnail_url": "/img/products/4771898/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4771898/main/1.jpg"
         },
         {
           "product_id": 4122749,
-          "thumbnail_url": "/img/products/4122749/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4122749/main/1.jpg"
         },
         {
           "product_id": 4751231,
-          "thumbnail_url": "/img/products/4751231/main/1.jpg"
+          "thumbnail_url": "images/mock/products/4751231/main/1.jpg"
         },
         {
           "product_id": 3645257,
-          "thumbnail_url": "/img/products/3645257/main/1.jpg"
+          "thumbnail_url": "images/mock/products/3645257/main/1.jpg"
         }
       ]
     }

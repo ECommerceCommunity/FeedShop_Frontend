@@ -17,6 +17,8 @@ const ProductDetailPage = lazy(() => import("./pages/products/DetailPage"));
 const MyPage = lazy(() => import("./pages/auth/MyPage"));
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const SignUp = lazy(() => import("./pages/auth/SignUp"));
+const FindAccountPage = lazy(() => import("./pages/auth/FindAccountPage"));
+const FindPasswordPage = lazy(() => import("./pages/auth/FindPasswordPage"));
 const PrivacyPolicy = lazy(() => import("./pages/common/PrivacyPolicy"));
 const ProductUploadPage = lazy(
   () => import("./pages/products/registerProduct/RegisterProductPage")
@@ -47,12 +49,12 @@ const ProfileSettingsPage = lazy(
   () => import("./pages/auth/ProfileSettingsPage")
 );
 const FeedListPage = lazy(() => import("./pages/feed/FeedListPage"));
+const FeedDetailPage = lazy(() => import("./pages/feed/FeedDetailPage"));
 const FeedCreatePage = lazy(() => import("./pages/feed/FeedCreatePage"));
 const FeedEditPage = lazy(() => import("./pages/feed/FeedEditPage"));
 const MyFeedPage = lazy(() => import("./pages/feed/MyFeedPage"));
 const EventListPage = lazy(() => import("./pages/event/EventListPage"));
 const EventCreatePage = lazy(() => import("./pages/event/EventCreatePage"));
-const EventDetailPage = lazy(() => import("./pages/event/EventDetailPage"));
 const EventEditPage = lazy(() => import("./pages/event/EventEditPage"));
 const EventResultPage = lazy(() => import("./pages/event/EventResultPage"));
 const BecomeSellerPage = lazy(() => import("./pages/seller/BecomeSellerPage"));
@@ -112,12 +114,12 @@ const App: FC = () => {
                 element={<ProfileSettingsPage />}
               />
               <Route path="/feed-list" element={<FeedListPage />} />
+              <Route path="/feed/:id" element={<FeedDetailPage />} />
               <Route path="/feed-create" element={<FeedCreatePage />} />
               <Route path="/feed-edit" element={<FeedEditPage />} />
               <Route path="/my-feed" element={<MyFeedPage />} />
               <Route path="/event-list" element={<EventListPage />} />
               <Route path="/events/create" element={<EventCreatePage />} />
-              <Route path="/events/:id" element={<EventDetailPage />} />
               <Route path="/events/edit/:id" element={<EventEditPage />} />
               <Route path="/events/result" element={<EventResultPage />} />
               <Route path="/become-seller" element={<BecomeSellerPage />} />
@@ -137,6 +139,8 @@ const App: FC = () => {
             {/* Layout 없이 보여야 하는 페이지들 */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/find-account" element={<FindAccountPage />} />
+            <Route path="/find-password" element={<FindPasswordPage />} />
           </Routes>
         </Suspense>
       </AuthProvider>

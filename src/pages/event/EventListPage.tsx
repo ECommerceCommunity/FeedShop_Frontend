@@ -2,20 +2,25 @@ import { useState, useEffect } from "react";
 import axiosInstance from "../../api/axios";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { EventStatus, EventType } from "../../types/types";
+import EventDetailModal from "./EventDetailModal";
 
-interface Event {
-  eventId: number;
-  title: string;
-  status: "upcoming" | "ongoing" | "ended";
-  description: string;
-  purchasePeriod: string;
-  votePeriod: string;
-  announcementDate: string;
+interface EventListItem {
+  id: number; // event_id
+  type: EventType;
+  status: EventStatus;
   maxParticipants: number;
-  rewards: { rank: number; reward: string }[];
-  imageUrl: string;
-  eventStartDate?: string;
-  eventEndDate?: string;
+  eventDetail: {
+    title: string;
+    description: string;
+    purchaseStartDate: string;
+    purchaseEndDate: string;
+    eventStartDate: string;
+    eventEndDate: string;
+    imageUrl: string;
+  };
+  participantCount?: number;
+  deletedAt?: string; // 추가: 소프트 딜리트 필드
 }
 
 const PAGE_SIZE = 4;
@@ -31,17 +36,30 @@ const getDday = (endDate: string) => {
 
 const EventListPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState(""); // 실제 검색에 사용될 키워드
   const [activeFilter, setActiveFilter] = useState("all");
   const [sortType, setSortType] = useState("latest");
   const [page, setPage] = useState(1);
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<EventListItem[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<EventListItem | null>(null);
 
   const navigate = useNavigate();
   const { user } = useAuth();
   const nickname = user?.nickname;
+  
+  // 디버깅을 위한 사용자 정보 출력
+      // console.log('Current user:', user);
+    // console.log('User nickname:', nickname);
+    // console.log('User type:', user?.userType);
+
+  const handleEventClick = (event: EventListItem) => {
+    setSelectedEvent(event);
+    setModalOpen(true);
+  };
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -51,147 +69,317 @@ const EventListPage = () => {
         const params: any = {
           page,
           size: PAGE_SIZE,
-          sort: sortType,
         };
-        if (activeFilter !== "all") params.status = activeFilter;
-        if (searchTerm) params.keyword = searchTerm;
-
-        // API 경로 분기: 검색어 또는 필터가 있으면 /search, 아니면 /all
-        let url = "/api/events/all";
-        if (searchTerm || activeFilter !== "all" || sortType !== "latest") {
-          url = "/api/events/search";
+        
+        // 정렬 파라미터 설정
+        switch (sortType) {
+          case "latest":
+            params.sort = "createdAt,desc"; // 최신순
+            break;
+          case "participants":
+            params.sort = "participantCount,desc"; // 참여자순
+            break;
+          case "ending":
+            params.sort = "eventEndDate,asc"; // 종료임박순
+            break;
+          default:
+            params.sort = "createdAt,desc"; // 기본값
         }
-        const res = await axiosInstance.get(url, { params });
-        setEvents(res.data.content);
-        setTotalPages(res.data.totalPages);
-      } catch (err) {
-        console.error("이벤트 목록 조회 실패:", err);
-        setError("이벤트 목록을 불러오지 못했습니다.");
+        
+        // 필터 파라미터 설정
+        if (activeFilter !== "all") {
+          params.status = activeFilter;
+        }
+        
+        // 검색 파라미터 설정
+        if (searchKeyword.trim()) {
+          params.search = searchKeyword.trim();
+        }
+        
+        const response = await axiosInstance.get("/api/events", { params });
+        const data = response.data;
+        
+        setEvents(data.content || []);
+        setTotalPages(data.totalPages || 1);
+      } catch (error: any) {
+        console.error("이벤트 목록 조회 실패:", error);
+        setError("이벤트 목록을 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }
     };
-    fetchEvents();
-  }, [searchTerm, activeFilter, sortType, page]);
 
-  const getStatusText = (status: Event["status"]) => {
+    fetchEvents();
+  }, [page, sortType, activeFilter, searchKeyword]);
+
+  const handleSearch = () => {
+    setSearchKeyword(searchTerm);
+    setPage(1);
+  };
+
+  const handleFilterChange = (filter: string) => {
+    setActiveFilter(filter);
+    setPage(1);
+  };
+
+  const handleSortChange = (sort: string) => {
+    setSortType(sort);
+    setPage(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const getStatusText = (status: EventStatus) => {
     switch (status) {
-      case "upcoming":
-        return "진행 예정";
-      case "ongoing":
+      case "RECRUITING":
+        return "모집중";
+      case "IN_PROGRESS":
         return "진행중";
-      case "ended":
-        return "종료";
+      case "COMPLETED":
+        return "완료";
+      case "CANCELLED":
+        return "취소";
       default:
-        return "";
+        return status;
+    }
+  };
+
+  const getTypeText = (type: EventType) => {
+    switch (type) {
+      case "BATTLE":
+        return "배틀";
+      case "REVIEW":
+        return "리뷰";
+      case "CHALLENGE":
+        return "챌린지";
+      default:
+        return type;
     }
   };
 
   return (
-    <div className="p-5">
-      <div className="mb-4">
-        <Link to="/events" className="text-[#87CEEB] hover:underline font-semibold text-lg">이벤트 메인</Link>
-      </div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">이벤트 목록</h1>
-        <div className="flex gap-2">
-          <button
-            className="bg-[#87CEEB] text-white px-4 py-2 rounded-lg hover:bg-blue-400"
-            onClick={() => navigate("/events/create")}
-          >
-            이벤트 생성하기
-          </button>
-          {nickname === "admin" && (
-            <button
-              className="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-900"
-              onClick={() => navigate("/events/result")}
-            >
-              결과 관리
-            </button>
-          )}
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-6xl mx-auto px-4">
+        {/* 헤더 */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">이벤트 목록</h1>
+          <p className="text-gray-600">다양한 이벤트에 참여해보세요!</p>
         </div>
-      </div>
 
-      <div className="flex flex-wrap gap-2 mb-4">
-        <button
-          className={`px-4 py-2 rounded-lg ${activeFilter === "all" ? "bg-blue-500 text-white" : "bg-gray-100"}`}
-          onClick={() => { setActiveFilter("all"); setPage(1); }}
-        >
-          전체
-        </button>
-        <button
-          className={`px-4 py-2 rounded-lg ${activeFilter === "ongoing" ? "bg-blue-500 text-white" : "bg-gray-100"}`}
-          onClick={() => { setActiveFilter("ongoing"); setPage(1); }}
-        >
-          진행중
-        </button>
-        <button
-          className={`px-4 py-2 rounded-lg ${activeFilter === "upcoming" ? "bg-blue-500 text-white" : "bg-gray-100"}`}
-          onClick={() => { setActiveFilter("upcoming"); setPage(1); }}
-        >
-          예정
-        </button>
-        <button
-          className={`px-4 py-2 rounded-lg ${activeFilter === "ended" ? "bg-blue-500 text-white" : "bg-gray-100"}`}
-          onClick={() => { setActiveFilter("ended"); setPage(1); }}
-        >
-          종료
-        </button>
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-6 items-center">
-        <input
-          type="text"
-          placeholder="이벤트명 검색"
-          value={searchTerm}
-          onChange={e => { setSearchTerm(e.target.value); setPage(1); }}
-          className="border border-gray-300 rounded px-3 py-2 text-sm"
-        />
-        <select
-          value={sortType}
-          onChange={e => setSortType(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2 text-sm"
-        >
-          <option value="latest">최신순</option>
-          <option value="participants">참여자순</option>
-          <option value="ending">종료임박순</option>
-        </select>
-      </div>
-
-      {loading && <div>로딩 중...</div>}
-      {error && <div className="text-red-500">{error}</div>}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {events.map((event) => (
-          <div
-            key={event.eventId}
-            className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md relative"
-            onClick={() => navigate(`/events/${event.eventId}`)}
-          >
-            <img src={event.imageUrl} alt={event.title} className="w-full h-40 object-cover rounded mb-4" />
-            <h2 className="text-lg font-bold mb-2">{event.title}</h2>
-            <p className="text-gray-500 mb-2">{event.description}</p>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm text-blue-500 font-medium">{getStatusText(event.status)}</span>
-              {(event.status === "upcoming" || event.status === "ongoing") && event.eventEndDate && (
-                <span className="ml-2 text-xs text-red-500 font-semibold">{getDday(event.eventEndDate)}</span>
-              )}
+        {/* 검색 및 필터 */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* 검색 */}
+            <div className="flex-1">
+              <div className="flex">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  placeholder="이벤트 제목으로 검색..."
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  onClick={handleSearch}
+                  className="px-6 py-2 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 transition-colors"
+                >
+                  검색
+                </button>
+              </div>
             </div>
-            <div className="text-xs text-gray-400">참여자: {event.maxParticipants.toLocaleString()}명</div>
+
+            {/* 필터 */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleFilterChange("all")}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  activeFilter === "all"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                전체
+              </button>
+              <button
+                onClick={() => handleFilterChange("RECRUITING")}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  activeFilter === "RECRUITING"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                모집중
+              </button>
+              <button
+                onClick={() => handleFilterChange("IN_PROGRESS")}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  activeFilter === "IN_PROGRESS"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                진행중
+              </button>
+            </div>
+
+            {/* 정렬 */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleSortChange("latest")}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  sortType === "latest"
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                최신순
+              </button>
+              <button
+                onClick={() => handleSortChange("participants")}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  sortType === "participants"
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                참여자순
+              </button>
+              <button
+                onClick={() => handleSortChange("ending")}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  sortType === "ending"
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                종료임박순
+              </button>
+            </div>
           </div>
-        ))}
+        </div>
+
+        {/* 이벤트 목록 */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <span className="ml-2 text-gray-600">이벤트 목록을 불러오는 중...</span>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-red-500">{error}</p>
+          </div>
+        ) : events.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">등록된 이벤트가 없습니다.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.map((event) => (
+              <div
+                key={event.id}
+                onClick={() => handleEventClick(event)}
+                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+              >
+                <div className="relative">
+                  <img
+                    src={event.eventDetail.imageUrl || "https://via.placeholder.com/400x200"}
+                    alt={event.eventDetail.title}
+                    className="w-full h-48 object-cover rounded-t-lg"
+                  />
+                  <div className="absolute top-2 right-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      event.status === "RECRUITING"
+                        ? "bg-green-500 text-white"
+                        : event.status === "IN_PROGRESS"
+                        ? "bg-blue-500 text-white"
+                        : event.status === "COMPLETED"
+                        ? "bg-gray-500 text-white"
+                        : "bg-red-500 text-white"
+                    }`}>
+                      {getStatusText(event.status)}
+                    </span>
+                  </div>
+                  {getDday(event.eventDetail.eventEndDate) && (
+                    <div className="absolute top-2 left-2">
+                      <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                        {getDday(event.eventDetail.eventEndDate)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-blue-600 font-medium">
+                      {getTypeText(event.type)}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      {event.participantCount || 0}/{event.maxParticipants}명
+                    </span>
+                  </div>
+                  
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                    {event.eventDetail.title}
+                  </h3>
+                  
+                  <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                    {event.eventDetail.description}
+                  </p>
+                  
+                  <div className="text-xs text-gray-500">
+                    <div>구매기간: {new Date(event.eventDetail.purchaseStartDate).toLocaleDateString()} ~ {new Date(event.eventDetail.purchaseEndDate).toLocaleDateString()}</div>
+                    <div>이벤트기간: {new Date(event.eventDetail.eventStartDate).toLocaleDateString()} ~ {new Date(event.eventDetail.eventEndDate).toLocaleDateString()}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 페이지네이션 */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-8">
+            <div className="flex gap-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                <button
+                  key={pageNum}
+                  onClick={() => handlePageChange(pageNum)}
+                  className={`px-3 py-2 rounded-lg transition-colors ${
+                    page === pageNum
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 관리자용 이벤트 생성 버튼 */}
+        {user?.userType === "ADMIN" && (
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => navigate("/events/create")}
+              className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              새 이벤트 생성
+            </button>
+          </div>
+        )}
       </div>
 
-      <div className="flex justify-center mt-8 gap-2">
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            className={`px-3 py-1 rounded ${page === i + 1 ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-            onClick={() => setPage(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
+      {/* 이벤트 상세 모달 */}
+      {modalOpen && selectedEvent && (
+        <EventDetailModal
+          event={selectedEvent}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

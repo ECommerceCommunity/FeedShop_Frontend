@@ -97,19 +97,15 @@ const Title = styled.h1`
   font-size: 4rem;
   font-weight: 900;
   margin-bottom: 1.5rem;
-  background: linear-gradient(135deg, #ffffff, #e0e7ff);
+  background: linear-gradient(135deg, #ffffff, #e0f2fe);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   animation: ${float} 3s ease-in-out infinite;
+  text-shadow: 0 4px 20px rgba(14, 165, 233, 0.3);
 
-  @media (min-width: 768px) {
-    font-size: 5rem;
-  }
-
-  @media (min-width: 1024px) {
-    font-size: 6rem;
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
   }
 `;
 
@@ -242,10 +238,11 @@ const StatNumber = styled.div`
   font-size: 2.5rem;
   font-weight: 900;
   margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #ffffff, #e0e7ff);
+  background: linear-gradient(135deg, #ffffff, #e0f2fe);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: ${pulse} 2s infinite;
 `;
 
 const StatLabel = styled.div`
@@ -310,16 +307,18 @@ const ProductsGrid = styled.div`
 
 const ProductCard = styled.div`
   background: white;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(14, 165, 233, 0.12);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   overflow: hidden;
   position: relative;
   animation: ${fadeInUp} 1s ease-out;
+  border: 1px solid rgba(14, 165, 233, 0.1);
 
   &:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 20px 48px rgba(14, 165, 233, 0.25);
+    border-color: rgba(14, 165, 233, 0.3);
   }
 
   &::before {
@@ -329,20 +328,37 @@ const ProductCard = styled.div`
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #0ea5e9, #3b82f6, #6366f1);
     transform: scaleX(0);
-    transition: transform 0.3s ease;
+    transition: transform 0.4s ease;
   }
 
   &:hover::before {
     transform: scaleX(1);
   }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(14, 165, 233, 0.03) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
 `;
 
 const ProductImage = styled.div`
   width: 100%;
-  height: 250px;
-  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  height: 280px;
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
   overflow: hidden;
   position: relative;
 
@@ -350,7 +366,7 @@ const ProductImage = styled.div`
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
   &::after {
@@ -362,15 +378,15 @@ const ProductImage = styled.div`
     bottom: 0;
     background: linear-gradient(
       135deg,
-      rgba(102, 126, 234, 0.1),
-      rgba(118, 75, 162, 0.1)
+      rgba(14, 165, 233, 0.1),
+      rgba(99, 102, 241, 0.1)
     );
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.4s ease;
   }
 
   &:hover img {
-    transform: scale(1.1);
+    transform: scale(1.08);
   }
 
   &:hover::after {
@@ -379,42 +395,68 @@ const ProductImage = styled.div`
 `;
 
 const ProductInfo = styled.div`
-  padding: 1.5rem;
+  padding: 2rem 1.5rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+  backdrop-filter: blur(10px);
 `;
 
 const ProductName = styled.h3`
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   color: #1f2937;
+  line-height: 1.4;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #3b82f6;
+  }
 `;
 
 const ProductPrice = styled.p`
-  color: #667eea;
+  color: #3b82f6;
   font-weight: 800;
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.4rem;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 `;
 
 const ProductDescription = styled.p`
   color: #6b7280;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-  line-height: 1.5;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
 `;
 
 const ViewMoreButton = styled(Link)`
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: #667eea;
+  color: #3b82f6;
   font-weight: 600;
   text-decoration: none;
   transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
 
   &:hover {
-    color: #764ba2;
+    color: #6366f1;
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.3);
     transform: translateX(5px);
+  }
+
+  i {
+    transition: transform 0.3s ease;
+  }
+
+  &:hover i {
+    transform: translateX(3px);
   }
 `;
 
@@ -436,18 +478,20 @@ const FeatureGrid = styled.div`
 
 const FeatureCard = styled.div`
   background: white;
-  padding: 2.5rem 2rem;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 3rem 2.5rem;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(14, 165, 233, 0.12);
   text-align: center;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   overflow: hidden;
   animation: ${fadeInUp} 1s ease-out;
+  border: 1px solid rgba(14, 165, 233, 0.1);
 
   &:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 20px 48px rgba(14, 165, 233, 0.25);
+    border-color: rgba(14, 165, 233, 0.3);
   }
 
   &::before {
@@ -457,46 +501,86 @@ const FeatureCard = styled.div`
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #0ea5e9, #3b82f6, #6366f1);
     transform: scaleX(0);
-    transition: transform 0.3s ease;
+    transition: transform 0.4s ease;
   }
 
   &:hover::before {
     transform: scaleX(1);
   }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(14, 165, 233, 0.03) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
 `;
 
 const FeatureIcon = styled.div`
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  width: 90px;
+  height: 90px;
+  background: linear-gradient(135deg, #0ea5e9, #3b82f6, #6366f1);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 1.5rem;
+  margin: 0 auto 2rem;
   color: white;
-  font-size: 2rem;
-  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-  transition: all 0.3s ease;
+  font-size: 2.2rem;
+  box-shadow: 0 12px 32px rgba(14, 165, 233, 0.4);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0ea5e9, #3b82f6, #6366f1);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
 
   &:hover {
-    transform: scale(1.1);
+    transform: scale(1.15) rotate(5deg);
     animation: ${pulse} 0.6s ease-in-out;
+    box-shadow: 0 16px 40px rgba(14, 165, 233, 0.5);
+  }
+
+  &:hover::before {
+    opacity: 0.3;
   }
 `;
 
 const FeatureTitle = styled.h3`
-  font-size: 1.25rem;
+  font-size: 1.4rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
   color: #1f2937;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #3b82f6;
+  }
 `;
 
 const FeatureDescription = styled.p`
   color: #6b7280;
-  line-height: 1.6;
+  line-height: 1.7;
+  font-size: 1rem;
 `;
 
 const CTASection = styled.section`
