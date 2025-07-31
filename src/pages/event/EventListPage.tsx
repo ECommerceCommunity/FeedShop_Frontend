@@ -433,20 +433,20 @@ const EventListPage = () => {
                           <span className="text-2xl mr-2">🏆</span>
                           보상
                         </div>
-                        {event.rewards && event.rewards.length > 0 ? (
+                        {event.rewards && event.rewards.trim() ? (
                           <div className="flex flex-wrap gap-3">
-                            {event.rewards.slice(0, 3).map((reward, index) => (
+                            {event.rewards.split('\n').filter(line => line.trim()).slice(0, 3).map((reward: string, index: number) => (
                               <div
                                 key={index}
                                 className="bg-gradient-to-r from-yellow-50 to-orange-50 text-orange-700 px-4 py-3 rounded-xl text-sm font-semibold border border-orange-200 shadow-sm hover:shadow-md transition-all duration-200"
                               >
-                                <span className="font-bold text-lg">{reward.conditionValue}등</span>
-                                <span className="ml-2">{reward.rewardValue}</span>
+                                <span className="font-bold text-lg">{index + 1}등</span>
+                                <span className="ml-2">{reward.trim()}</span>
                               </div>
                             ))}
-                            {event.rewards.length > 3 && (
+                            {event.rewards.split('\n').filter(line => line.trim()).length > 3 && (
                               <div className="text-gray-500 text-sm px-4 py-3 bg-gray-50 rounded-xl border border-gray-200">
-                                +{event.rewards.length - 3}개 더
+                                +{event.rewards.split('\n').filter(line => line.trim()).length - 3}개 더
                               </div>
                             )}
                           </div>
@@ -548,6 +548,7 @@ const EventListPage = () => {
       {/* 이벤트 상세 모달 */}
       {modalOpen && selectedEvent && (
         <EventDetailModal
+          open={modalOpen}
           event={selectedEvent}
           onClose={() => setModalOpen(false)}
         />
