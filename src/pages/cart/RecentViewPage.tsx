@@ -1,16 +1,9 @@
-import React, { useState, useEffect } from "react";
-import styled, { keyframes } from "styled-components";
-
-const fadeInUp = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`;
+import { useState, useEffect } from "react";
+import { RecentViewItem } from "types/types";
+import styled from "styled-components";
+import { getRecentViewItems } from "utils/recentview";
+import Warning from "components/modal/Warning";
+import { useNavigate } from "react-router-dom";
 
 const PageWrapper = styled.div`
   min-height: 100vh;
@@ -64,30 +57,22 @@ const Card = styled.div`
   background: white;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  transition: 0.2s;
-
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition: 0.3s;
   &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: scale(1.02);
   }
 `;
 
 const ImageWrapper = styled.div`
   position: relative;
-  height: 192px;
-  overflow: hidden;
+  height: 240px;
 `;
 
 const ProductImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: top;
-  transition: transform 0.3s;
-
-  ${Card}:hover & {
-    transform: scale(1.05);
-  }
 `;
 
 const Badge = styled.div`
@@ -172,305 +157,248 @@ const CartButton = styled.button`
   }
 `;
 
-const WishButton = styled.button`
+const WishButton = styled.button<{ $isWishlisted: boolean }>`
   width: 40px;
   height: 40px;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${(props) => (props.$isWishlisted ? "#ef4444" : "#d1d5db")};
+  background: ${(props) => (props.$isWishlisted ? "#ef4444" : "white")};
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #4b5563;
+  color: ${(props) => (props.$isWishlisted ? "white" : "#4b5563")};
   cursor: pointer;
+  transition: all 0.2s;
 
   &:hover {
-    border-color: #87ceeb;
-    color: #87ceeb;
+    border-color: #ef4444;
+    background: ${(props) => (props.$isWishlisted ? "#dc2626" : "#fef2f2")};
+    color: ${(props) => (props.$isWishlisted ? "white" : "#ef4444")};
   }
 `;
 
-const Toast = styled.div`
-  position: fixed;
-  bottom: 16px;
-  right: 16px;
-  background-color: #111827;
-  color: white;
-  padding: 12px 16px;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  animation: ${fadeInUp} 0.3s ease-out;
-  z-index: 50;
-`;
-
-const ModalOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-`;
-
-const Modal = styled.div`
-  background: white;
-  border-radius: 8px;
-  padding: 24px;
-  width: 100%;
-  max-width: 400px;
-`;
-
-const ModalTitle = styled.h3`
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 12px;
-`;
-
-const ModalText = styled.p`
-  color: #4b5563;
-  margin-bottom: 24px;
-`;
-
-const ModalButtonRow = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-`;
-
-const ModalCancel = styled.button`
-  padding: 8px 16px;
-  border: 1px solid #d1d5db;
-  background: white;
-  color: #374151;
-  border-radius: 6px;
-  cursor: pointer;
-`;
-
-const ModalDelete = styled.button`
-  padding: 8px 16px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  &:hover {
-    background: #dc2626;
-  }
+const ViewedAtText = styled.div`
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 8px;
 `;
 
 const RecentViewPage: React.FC = () => {
-  const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-
-  const recentItems = [
-    {
-      id: 1,
-      name: "프리미엄 스마트폰",
-      price: 1200000,
-      discount: 10,
-      image:
-        "https://readdy.ai/api/search-image?query=A%2520sleek%2520modern%2520smartphone%2520with%2520a%2520minimalist%2520design%252C%2520displayed%2520on%2520a%2520clean%2520white%2520background%2520with%2520subtle%2520shadows%252C%2520professional%2520product%2520photography%2520with%2520high%2520detail%2520and%2520clarity%252C%2520soft%2520lighting%2520highlighting%2520the%2520premium%2520features&width=240&height=240&seq=1&orientation=squarish",
-    },
-    {
-      id: 2,
-      name: "울트라 노트북",
-      price: 1800000,
-      discount: 5,
-      image:
-        "https://readdy.ai/api/search-image?query=A%2520premium%2520ultrabook%2520laptop%2520with%2520thin%2520aluminum%2520body%252C%2520displayed%2520at%2520an%2520angle%2520on%2520a%2520clean%2520white%2520background%252C%2520professional%2520product%2520photography%2520with%2520soft%2520lighting%2520highlighting%2520the%2520sleek%2520design%2520and%2520keyboard&width=240&height=240&seq=2&orientation=squarish",
-    },
-    {
-      id: 3,
-      name: "프리미엄 헤드폰",
-      price: 350000,
-      discount: 15,
-      image:
-        "https://readdy.ai/api/search-image?query=Premium%2520over-ear%2520headphones%2520with%2520luxurious%2520design%252C%2520displayed%2520on%2520a%2520clean%2520white%2520background%252C%2520professional%2520product%2520photography%2520with%2520soft%2520lighting%2520highlighting%2520the%2520cushioned%2520ear%2520cups%2520and%2520metallic%2520details&width=240&height=240&seq=3&orientation=squarish",
-    },
-    {
-      id: 4,
-      name: "스마트 워치",
-      price: 280000,
-      discount: 8,
-      image:
-        "https://readdy.ai/api/search-image?query=Modern%2520smartwatch%2520with%2520sleek%2520design%2520and%2520vibrant%2520display%252C%2520shown%2520on%2520a%2520clean%2520white%2520background%252C%2520professional%2520product%2520photography%2520with%2520soft%2520lighting%2520highlighting%2520the%2520premium%2520materials%2520and%2520screen%2520interface&width=240&height=240&seq=4&orientation=squarish",
-    },
-    {
-      id: 5,
-      name: "무선 이어버드",
-      price: 180000,
-      discount: 12,
-      image:
-        "https://readdy.ai/api/search-image?query=Wireless%2520earbuds%2520with%2520charging%2520case%252C%2520modern%2520design%2520with%2520ergonomic%2520shape%252C%2520displayed%2520on%2520a%2520clean%2520white%2520background%252C%2520professional%2520product%2520photography%2520with%2520soft%2520lighting%2520highlighting%2520the%2520glossy%2520finish&width=240&height=240&seq=5&orientation=squarish",
-    },
-    {
-      id: 6,
-      name: "게이밍 마우스",
-      price: 89000,
-      discount: 0,
-      image:
-        "https://readdy.ai/api/search-image?query=High%2520performance%2520gaming%2520mouse%2520with%2520ergonomic%2520design%2520and%2520RGB%2520lighting%252C%2520displayed%2520on%2520a%2520clean%2520white%2520background%252C%2520professional%2520product%2520photography%2520with%2520soft%2520lighting%2520highlighting%2520the%2520buttons%2520and%2520texture&width=240&height=240&seq=6&orientation=squarish",
-    },
-    {
-      id: 7,
-      name: "블루투스 스피커",
-      price: 120000,
-      discount: 10,
-      image:
-        "https://readdy.ai/api/search-image?query=Portable%2520bluetooth%2520speaker%2520with%2520modern%2520fabric%2520covered%2520design%252C%2520displayed%2520on%2520a%2520clean%2520white%2520background%252C%2520professional%2520product%2520photography%2520with%2520soft%2520lighting%2520highlighting%2520the%2520texture%2520and%2520control%2520buttons&width=240&height=240&seq=7&orientation=squarish",
-    },
-    {
-      id: 8,
-      name: "태블릿 PC",
-      price: 650000,
-      discount: 7,
-      image:
-        "https://readdy.ai/api/search-image?query=Slim%2520tablet%2520computer%2520with%2520large%2520display%2520and%2520minimal%2520bezels%252C%2520displayed%2520on%2520a%2520clean%2520white%2520background%252C%2520professional%2520product%2520photography%2520with%2520soft%2520lighting%2520highlighting%2520the%2520screen%2520and%2520premium%2520finish&width=240&height=240&seq=8&orientation=squarish",
-    },
-  ];
-
-  const calculateItemPrice = (item: (typeof recentItems)[0]) => {
-    return item.price * (1 - item.discount / 100);
-  };
-
-  const addToCart = (itemId: number) => {
-    setToastMessage("장바구니에 상품이 추가되었습니다.");
-    setShowToast(true);
-  };
-
-  const addToWishlist = (itemId: number) => {
-    setToastMessage("관심 상품에 추가되었습니다.");
-    setShowToast(true);
-  };
-
-  const confirmDelete = (itemId: number) => {
-    setItemToDelete(itemId);
-    setShowDeleteConfirm(true);
-  };
-
-  const deleteItem = () => {
-    if (itemToDelete === -1) {
-      setSelectedItems([]);
-      setToastMessage("모든 최근 본 상품이 삭제되었습니다.");
-    } else {
-      setSelectedItems((prev) => prev.filter((id) => id !== itemToDelete));
-      setToastMessage("선택한 상품이 삭제되었습니다.");
-    }
-    setShowDeleteConfirm(false);
-    setShowToast(true);
-  };
-
-  const confirmDeleteAll = () => {
-    setItemToDelete(-1);
-    setShowDeleteConfirm(true);
-  };
+  const navigate = useNavigate();
+  const [recentViewItems, setRecentViewItems] = useState<RecentViewItem[]>([]);
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [showAllRemoveModal, setShowAllRemoveModal] = useState(false);
+  const [removeItemId, setRemoveItemId] = useState<number | null>(null);
+  const [wishlistItems, setWishlistItems] = useState<number[]>([]);
 
   useEffect(() => {
-    if (showToast) {
-      const timer = setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
-      return () => clearTimeout(timer);
+    const items = getRecentViewItems(8);
+    setRecentViewItems(items);
+
+    const loadWishlist = () => {
+      try {
+        const currentWishlist = JSON.parse(localStorage.getItem('wishlist') ?? '[]');
+        const wishlistIds = currentWishlist.map((item: any) => item.id);
+        setWishlistItems(wishlistIds);
+      } catch (error) {
+        console.log('위시리스트 로드 중 오류 : ', error);
+        setWishlistItems([]);
+      }
+    };
+
+    loadWishlist();
+  }, []);
+
+  const formatViewdAt = (viewedAt: string) => {
+    const date = new Date(viewedAt);
+    const now = new Date();
+    const differenceInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+
+    if (differenceInMinutes < 1) {
+      return '방금 전';
+    } else if (differenceInMinutes < 60) {
+      return `${differenceInMinutes}분 전`;
+    } else if (differenceInMinutes < 24 * 60) {
+      const hours = Math.floor(differenceInMinutes / 60);
+      return `${hours}시간 전`;
+    } else {
+      const days = Math.floor(differenceInMinutes / (24 * 60));
+      return `${days}일 전`;
     }
-  }, [showToast]);
+  };
+
+  const onClickProduct = (id: number) => {
+    const item = recentViewItems.find((item) => item.id === id);
+    if (item) {
+      navigate(`/products/${item.id}`);
+    }
+  };
+
+  const toggleWishlist = (item: RecentViewItem) => {
+    const currentWishlist = JSON.parse(localStorage.getItem('wishlist') ?? '[]');
+    const isCurrentWishlist = wishlistItems.includes(item.id);
+
+    if (isCurrentWishlist) {
+      const updateWishlist = currentWishlist.filter((wishItem: any) => wishItem.id !== item.id);
+      localStorage.setItem('wishlist', JSON.stringify(updateWishlist));
+      setWishlistItems((prev) => prev.filter((id) => id !== item.id));
+    } else {
+      const wishItem = {
+        id: item.id,
+        name: item.name,
+        originalPrice: item.originalPrice,
+        discountPrice: item.discountPrice,
+        discountRate: item.discountRate,
+        category: item.category,
+        image: item.image,
+        addedAt: new Date().toISOString(),
+      }
+
+      const updatedWishlist = [...currentWishlist, wishItem];
+      localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
+      setWishlistItems((prev) => [...prev, item.id]);
+    }
+  }
+
+  const onClickRemove = (id: number) => {
+    setRemoveItemId(id);
+    setShowRemoveModal(true);
+  };
+
+  const onClickAllRemove = () => {
+    setRemoveItemId(-1);
+    setShowAllRemoveModal(true);
+  };
+
+  const removeFromRecentView = () => {
+    if (removeItemId !== null) {
+      const updated = recentViewItems.filter(
+        (item) => item.id !== removeItemId
+      );
+      setRecentViewItems(updated);
+      localStorage.setItem("recentview", JSON.stringify(updated));
+      setShowRemoveModal(false);
+      setRemoveItemId(null);
+    }
+  };
+
+  const clearRecentView = () => {
+    setRecentViewItems([]);
+    localStorage.setItem("recentview", JSON.stringify([]));
+    setShowAllRemoveModal(false);
+    setRemoveItemId(null);
+  };
 
   return (
-    <PageWrapper>
-      <Main>
-        <TitleRow>
-          <Title>최근 본 상품</Title>
-          <DeleteAllButton onClick={confirmDeleteAll}>
-            <i className="fa-solid fa-trash" style={{ marginRight: 4 }}></i>{" "}
-            전체 삭제
-          </DeleteAllButton>
-        </TitleRow>
-
-        {recentItems.length > 0 ? (
-          <Grid>
-            {recentItems.map((item) => (
-              <Card key={item.id}>
-                <ImageWrapper>
-                  <ProductImage src={item.image} alt={item.name} />
-                  {item.discount > 0 && <Badge>{item.discount}% 할인</Badge>}
-                  <DeleteIcon onClick={() => confirmDelete(item.id)}>
-                    <i className="fa-solid fa-xmark"></i>
-                  </DeleteIcon>
-                </ImageWrapper>
-                <CardContent>
-                  <ProductTitle>{item.name}</ProductTitle>
-                  <PriceRow>
-                    <FinalPrice>
-                      {calculateItemPrice(item).toLocaleString()}원
-                    </FinalPrice>
-                    {item.discount > 0 && (
-                      <OriginalPrice>
-                        {item.price.toLocaleString()}원
-                      </OriginalPrice>
-                    )}
-                  </PriceRow>
-                  <ButtonRow>
-                    <CartButton onClick={() => addToCart(item.id)}>
-                      <i
-                        className="fa-solid fa-cart-shopping"
-                        style={{ marginRight: 4 }}
-                      ></i>{" "}
-                      장바구니
-                    </CartButton>
-                    <WishButton onClick={() => addToWishlist(item.id)}>
-                      <i className="fa-solid fa-heart"></i>
-                    </WishButton>
-                  </ButtonRow>
-                </CardContent>
-              </Card>
-            ))}
-          </Grid>
-        ) : (
-          <div style={{ textAlign: "center", padding: "64px 0" }}>
-            <div style={{ fontSize: 48, color: "#9ca3af", marginBottom: 16 }}>
-              <i className="fa-solid fa-clock-rotate-left"></i>
-            </div>
-            <h3
-              style={{
-                fontSize: 20,
-                fontWeight: 500,
-                color: "#374151",
-                marginBottom: 8,
-              }}
-            >
-              최근 본 상품이 없습니다
-            </h3>
-            <p style={{ color: "#6b7280", marginBottom: 24 }}>
-              상품을 둘러보고 다시 방문해 주세요.
-            </p>
-          </div>
-        )}
-      </Main>
-
-      {showDeleteConfirm && (
-        <ModalOverlay>
-          <Modal>
-            <ModalTitle>삭제 확인</ModalTitle>
-            <ModalText>
-              {itemToDelete === -1
-                ? "모든 최근 본 상품을 삭제하시겠습니까?"
-                : "선택한 상품을 삭제하시겠습니까?"}
-            </ModalText>
-            <ModalButtonRow>
-              <ModalCancel onClick={() => setShowDeleteConfirm(false)}>
-                취소
-              </ModalCancel>
-              <ModalDelete onClick={deleteItem}>삭제</ModalDelete>
-            </ModalButtonRow>
-          </Modal>
-        </ModalOverlay>
+    <>
+      {showRemoveModal && (
+        <Warning
+          open={showRemoveModal}
+          title="최근 본 상품 삭제"
+          message="최근 본 상품에서 삭제하시겠어요?"
+          onConfirm={() => {
+            setShowRemoveModal(false);
+            removeFromRecentView();
+          }}
+          onCancel={() => setShowRemoveModal(false)}
+        />
       )}
 
-      {showToast && <Toast>{toastMessage}</Toast>}
-    </PageWrapper>
+      {showAllRemoveModal && (
+        <Warning
+          open={showAllRemoveModal}
+          title="최근 본 상품 전체 삭제"
+          message="최근 본 상품을 전부 삭제하시겠어요?"
+          onConfirm={() => {
+            setShowAllRemoveModal(false);
+            clearRecentView();
+          }}
+          onCancel={() => setShowAllRemoveModal(false)}
+        />
+      )}
+
+      <PageWrapper>
+        <Main>
+          <TitleRow>
+            <Title>최근 본 상품</Title>
+            {recentViewItems.length > 0 ? (
+              <DeleteAllButton onClick={onClickAllRemove}>
+                <i className="fa-solid fa-trash" style={{ marginRight: 4 }}></i>{" "}
+                전체 삭제
+              </DeleteAllButton>
+            ) : (
+              <></>
+            )}
+          </TitleRow>
+
+          {recentViewItems.length > 0 ? (
+            <Grid>
+              {recentViewItems.map((item) => (
+                <Card key={item.id}>
+                  <ImageWrapper>
+                    <ProductImage src={item.image} alt={item.name} />
+                    {item.discountRate > 0 && (
+                      <Badge>{item.discountRate}% 할인</Badge>
+                    )}
+                    <DeleteIcon onClick={() => onClickRemove(item.id)}>
+                      <i className="fa-solid fa-xmark"></i>
+                    </DeleteIcon>
+                  </ImageWrapper>
+                  <CardContent>
+                    <ViewedAtText>{formatViewdAt(item.viewedAt)}</ViewedAtText>
+                    <ProductTitle>{item.name}</ProductTitle>
+                    <PriceRow>
+                      <FinalPrice>
+                        {item.discountPrice.toLocaleString()}원
+                      </FinalPrice>
+                      {item.discountRate > 0 && (
+                        <OriginalPrice>
+                          {item.originalPrice.toLocaleString()}원
+                        </OriginalPrice>
+                      )}
+                    </PriceRow>
+                    <ButtonRow>
+                      <CartButton onClick={() => onClickProduct(item.id)}>
+                        <i
+                          className="fa-solid fa-cart-shopping"
+                          style={{ marginRight: 4 }}
+                        ></i>{" "}
+                        상품 보기
+                      </CartButton>
+                      <WishButton
+                        $isWishlisted={wishlistItems.includes(item.id)}
+                        onClick={() => toggleWishlist(item)}
+                      >
+                        <i className={wishlistItems.includes(item.id) ? "fa-solid fa-heart" : "fa-regular fa-heart"}></i>
+                      </WishButton>
+                    </ButtonRow>
+                  </CardContent>
+                </Card>
+              ))}
+            </Grid>
+          ) : (
+            <div style={{ textAlign: "center", padding: "64px 0" }}>
+              <div style={{ fontSize: 48, color: "#9ca3af", marginBottom: 16 }}>
+                <i className="fa-solid fa-clock-rotate-left"></i>
+              </div>
+              <h3
+                style={{
+                  fontSize: 20,
+                  fontWeight: 500,
+                  color: "#374151",
+                  marginBottom: 8,
+                }}
+              >
+                최근 본 상품이 없습니다
+              </h3>
+              <p style={{ color: "#6b7280", marginBottom: 24 }}>
+                상품을 둘러보고 다시 방문해 주세요.
+              </p>
+            </div>
+          )}
+        </Main>
+      </PageWrapper>
+    </>
   );
 };
 

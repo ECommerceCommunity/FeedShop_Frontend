@@ -120,3 +120,83 @@ export type WishListItem = {
   image: string;
   addedAt: string;
 };
+
+export type RecentViewItem = {
+  id: number;
+  name: string;
+  originalPrice: number;
+  discountPrice: number;
+  discountRate: number;
+  category: string;
+  image: string;
+  viewedAt: string;
+}
+
+// Event 관련 타입들 추가
+export type EventStatus = "UPCOMING" | "ONGOING" | "ENDED";
+export type EventType = "BATTLE" | "MISSION" | "MULTIPLE";
+export type ParticipationStatus = "PARTICIPATING" | "COMPLETED" | "ELIMINATED";
+export type MatchStatus = "PENDING" | "ONGOING" | "COMPLETED";
+
+export interface EventReward {
+  id: number;
+  rank: number;
+  reward: string;
+  conditionType: string;
+  conditionValue: number;
+  maxRecipients: number;
+}
+
+export interface EventDetail {
+  id: number;
+  title: string;
+  description: string;
+  purchaseStartDate: string;
+  purchaseEndDate: string;
+  eventStartDate: string;
+  eventEndDate: string;
+  announcement: string;
+  participationMethod: string;
+  selectionCriteria: string;
+  imageUrl: string;
+  precautions: string;
+  rewards: string;
+}
+
+export interface Event {
+  id: number; // event_id
+  type: EventType;
+  status: EventStatus;
+  maxParticipants: number;
+  createdBy: string;
+  updatedBy: string;
+  eventDetail: EventDetail;
+  rewards: EventReward[];
+}
+
+export interface EventParticipant {
+  id: number;
+  participationStatus: ParticipationStatus;
+  participationDate: string;
+  feedId: number;
+  eventId: number;
+}
+
+export interface EventRanking {
+  rankingId: number;
+  participantId: number;
+  voteCount: number;
+  rankPosition: number;
+  calculatedAt: string;
+}
+
+export interface BattleMatch {
+  battleMatchId: number;
+  participant1Id: number;
+  participant2Id: number;
+  winnerId?: number;
+  matchStatus: MatchStatus;
+  createdAt: string;
+  startTime?: string;
+  endTime?: string;
+}

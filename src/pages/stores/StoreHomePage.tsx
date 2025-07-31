@@ -4,7 +4,9 @@ import reviews from "../../pages/data/reviews/reviews.json";
 import brands from "../../pages/data/products/brands.json";
 import RegisterStoreModal from "../../pages/stores/registerStores/RegisterStoreModal";
 import EditStoreModal from "pages/stores/editStores/EditStoreModal";
+import Warning from "../../components/modal/Warning";
 import { useNavigate } from "react-router-dom";
+import { toUrl } from "utils/images";
 
 const StoreHomePage: FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -13,6 +15,8 @@ const StoreHomePage: FC = () => {
   const [selectedStore, setSelectedStore] = useState<any>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [brandToDelete, setBrandToDelete] = useState<any>(null);
 
   const navigation = useNavigate();
 
@@ -38,6 +42,21 @@ const StoreHomePage: FC = () => {
             className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
           />
         )}
+        <Warning
+          open={showWarning}
+          title="경고"
+          message="정말 삭제하시겠습니까?"
+          onConfirm={() => {
+            // 삭제 로직을 여기에 구현
+            console.log("삭제할 brand:", brandToDelete);
+            setShowWarning(false);
+            setBrandToDelete(null);
+          }}
+          onCancel={() => {
+            setShowWarning(false);
+            setBrandToDelete(null);
+          }}
+        />
 
         <main className="pt-[60px] min-h-[calc(100vh-60px)] transition-all ml-0 md:ml-[60px]">
           <div className="p-6">
@@ -132,7 +151,6 @@ const StoreHomePage: FC = () => {
                           <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">배달 완료</span>
                         </td>
                       </tr>
-                      {/** 다른 주문들도 반복 구성 */}
                     </tbody>
                   </table>
                 </div>
@@ -179,24 +197,39 @@ const StoreHomePage: FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {brands.map((brand) => (
-                <div key={brand.store_id} className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center mb-4">
-                    <img src={brand.brand_logo_url} alt={brand.store_name} className="w-12 h-12 mr-4" />
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800">{brand.store_name}</h3>
-                      <p className="text-sm text-gray-500">{brand.brand_likes.toLocaleString()} likes</p>
+                <div key={brand.store_id} className="bg-white rounded-lg shadow p-6 relative flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center mb-4">
+                      <img src={toUrl(brand.brand_logo_url)} alt={brand.store_name} className="bg-black rounded-md w-12 h-12 mr-4" />
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800">{brand.store_name}</h3>
+                        <p className="text-sm text-gray-500">{brand.brand_likes.toLocaleString()} likes</p>
+                      </div>
                     </div>
+                    <p className="text-sm text-gray-600 line-clamp-3 mb-4">{brand.brand_info}</p>
                   </div>
-                  <p className="text-sm text-gray-600 line-clamp-3 mb-4">{brand.brand_info}</p>
-                  <button
-                    className="text-sm text-sky-500 hover:underline"
-                    onClick={() => {
-                      setSelectedStore(brand);
-                      setShowEditModal(true);
-                    }}
-                  >
-                    수정
-                  </button>
+
+                  <div className="flex justify-between items-center mt-4">
+                    <button
+                      className="text-sm text-sky-500 hover:underline"
+                      onClick={() => {
+                        setSelectedStore(brand);
+                        setShowEditModal(true);
+                      }}
+                    >
+                      수정
+                    </button>
+                    <button
+                      className="text-sm text-red-500 hover:text-red-700"
+                      onClick={() => {
+                        setBrandToDelete(brand);
+                        setShowWarning(true);
+                      }}
+                      title="삭제"
+                      aria-label="삭제"
+                    >삭제
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
