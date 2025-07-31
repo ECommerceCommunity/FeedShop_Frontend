@@ -1,5 +1,6 @@
 import { useState, ChangeEvent, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 import axiosInstance from "../../api/axios";
 import { EventType } from "../../types/types";
 
@@ -44,6 +45,7 @@ document.head.appendChild(style);
 
 const EventCreatePage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [eventForm, setEventForm] = useState<EventForm>({
     title: "",
     type: "BATTLE",
@@ -86,6 +88,21 @@ const EventCreatePage = () => {
     const date = new Date(dateTimeStr);
     return date.toISOString().split('T')[0]; // YYYY-MM-DD 형식
   };
+
+  // 권한 체크
+  useEffect(() => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+      return;
+    }
+    
+    if (user.userType !== 'admin') {
+      alert('관리자 권한이 필요합니다.');
+      navigate('/events');
+      return;
+    }
+  }, [user, navigate]);
 
   // 현재 날짜를 기본값으로 설정 (한국 시간대 적용)
   useEffect(() => {
@@ -313,7 +330,7 @@ const EventCreatePage = () => {
       case "MISSION":
         return "미션";
       case "MULTIPLE":
-        return "다수";
+        return "랭킹";
       default:
         return type;
     }

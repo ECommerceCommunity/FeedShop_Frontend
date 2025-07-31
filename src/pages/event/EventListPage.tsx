@@ -166,7 +166,7 @@ const EventListPage = () => {
       case "MISSION":
         return "미션";
       case "MULTIPLE":
-        return "다수";
+        return "랭킹";
       default:
         return type;
     }
