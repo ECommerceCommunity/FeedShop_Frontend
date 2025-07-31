@@ -137,7 +137,7 @@ const ProfileSettingsPage: FC = () => {
             <div className="mb-6">
               <div className="flex items-center">
                 <h1 className="text-2xl font-bold text-gray-900">
-                  프로필 설정
+                  프로필 관리
                 </h1>
               </div>
               <nav className="flex mt-2" aria-label="Breadcrumb">
