@@ -3,7 +3,7 @@ import axiosInstance from "../../api/axios";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { EventStatus, EventType } from "../../types/types";
-import { EventDto } from "../../api/eventService";
+import { EventDto, EventReward } from "../../api/eventService";
 import EventDetailModal from "./EventDetailModal";
 
 const PAGE_SIZE = 4;
@@ -437,13 +437,13 @@ const EventListPage = () => {
                         </div>
                         {event.rewards && Array.isArray(event.rewards) && event.rewards.length > 0 ? (
                           <div className="flex flex-wrap gap-3">
-                            {event.rewards.slice(0, 3).map((reward: any, index: number) => (
+                            {event.rewards.slice(0, 3).map((reward: EventReward, index: number) => (
                               <div
                                 key={index}
                                 className="bg-gradient-to-r from-yellow-50 to-orange-50 text-orange-700 px-4 py-3 rounded-xl text-sm font-semibold border border-orange-200 shadow-sm hover:shadow-md transition-all duration-200"
                               >
                                 <span className="font-bold text-lg">{reward.rank || index + 1}등</span>
-                                <span className="ml-2">{reward.reward || reward}</span>
+                                <span className="ml-2">{reward.reward}</span>
                               </div>
                             ))}
                             {event.rewards.length > 3 && (

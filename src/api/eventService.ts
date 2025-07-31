@@ -16,6 +16,13 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export interface EventReward {
+  rank: number;
+  reward: string;
+  conditionType: string;
+  conditionDescription: string;
+}
+
 export interface EventDto {
   id: number;
   title: string;
@@ -28,7 +35,7 @@ export interface EventDto {
   purchaseEndDate: string;
   announcement: string;
   participationMethod: string;
-  rewards: string;
+  rewards: EventReward[];
   selectionCriteria: string;
   precautions: string;
   maxParticipants: number;
@@ -49,7 +56,7 @@ export interface EventCreateRequestDto {
   purchaseEndDate: string;
   announcement: string;
   participationMethod: string;
-  rewards: string;
+  rewards: EventReward[];
   selectionCriteria: string;
   precautions: string;
   maxParticipants: number;

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { EventDto } from '../../api/eventService';
+import { EventDto, EventReward } from '../../api/eventService';
 import EventService from '../../api/eventService';
 
 interface EventDetailModalProps {
@@ -259,11 +259,11 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">이벤트 혜택</h3>
                 <div className="space-y-3">
-                  {detail.rewards.map((reward: any, index: number) => (
+                  {detail.rewards.map((reward: EventReward, index: number) => (
                     <div key={index} className="bg-gradient-to-r from-yellow-50 to-orange-50 text-orange-700 px-6 py-4 rounded-2xl text-base font-semibold border border-orange-200 shadow-sm hover:shadow-md transition-all duration-200">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-lg">{reward.rank || index + 1}등</span>
-                        <span className="text-orange-600">{reward.reward || reward}</span>
+                        <span className="text-orange-600">{reward.reward}</span>
                       </div>
                     </div>
                   ))}
