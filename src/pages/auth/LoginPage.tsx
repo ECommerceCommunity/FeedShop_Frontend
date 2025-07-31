@@ -17,6 +17,7 @@ import {
 
 const AuthForm = styled(BaseAuthForm)`
   gap: 0;
+<<<<<<< Updated upstream
 
 const fadeInUp = keyframes`
   from { opacity: 0; transform: translateY(30px); }
@@ -82,6 +83,21 @@ const Logo = styled.div`
   margin-bottom: 8px;
   animation: ${float} 3s ease-in-out infinite;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+=======
+import {
+  AuthCard,
+  AuthForm as BaseAuthForm,
+  AuthFormGroup as BaseAuthFormGroup,
+  AuthLabel,
+  AuthInput,
+  AuthButton,
+  AuthLink,
+  ErrorMessage,
+} from "../../components/auth/AuthCard";
+
+const AuthForm = styled(BaseAuthForm)`
+  gap: 0;
+>>>>>>> Stashed changes
 `;
 
 const AuthFormGroup = styled(BaseAuthFormGroup)`
@@ -100,48 +116,7 @@ const InputIcon = styled.div`
   color: #9ca3af;
   font-size: 1.1rem;
 `;
-const LoginButton = styled.button`
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #f97316, #ea580c);
-  color: white;
-  border: none;
-  border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
-  position: relative;
-  overflow: hidden;
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.2),
-      transparent
-    );
-    transition: left 0.5s;
-  }
-  &:hover {
-    transform: translateY(-3px) scale(1.04);
-    box-shadow: 0 12px 35px rgba(249, 115, 22, 0.4);
-    &::before {
-      left: 100%;
-    }
-  }
-  &:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
+
 const SocialLoginButton = styled.button`
   width: 100%;
   padding: 14px;
