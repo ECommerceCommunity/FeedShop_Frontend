@@ -383,8 +383,8 @@ const EventListPage = () => {
                     />
                     {/* 상태 배지 - 이미지 왼쪽 상단 */}
                     <div className="absolute top-4 left-4">
-                      <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-semibold shadow-lg backdrop-blur-sm ${getStatusColor(event.status || calculateEventStatus(event))}`}>
-                        {getStatusText(event.status || calculateEventStatus(event))}
+                      <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-semibold shadow-lg backdrop-blur-sm ${getStatusColor((event.status as EventStatus) || calculateEventStatus(event))}`}>
+                        {getStatusText((event.status as EventStatus) || calculateEventStatus(event))}
                       </span>
                     </div>
                   </div>
