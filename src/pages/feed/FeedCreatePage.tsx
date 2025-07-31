@@ -101,7 +101,7 @@ const FeedCreatePage: React.FC = () => {
     fetchPurchasedProducts();
   }, []);
 
-  // 🔧 백엔드 연동: 이벤트 목록 가져오기
+  // 🔧 백엔드 연동: 피드 생성 가능한 이벤트 목록 가져오기
   useEffect(() => {
     const fetchAvailableEvents = async () => {
       try {
@@ -110,8 +110,6 @@ const FeedCreatePage: React.FC = () => {
         setAvailableEvents(events);
       } catch (error: any) {
         console.error('이벤트 목록 조회 실패:', error);
-        // 백엔드 연결 실패시 fallback 데이터 사용
-        console.warn('백엔드 연결 실패 - fallback 이벤트 데이터 사용');
         setAvailableEvents([]);
       } finally {
         setEventsLoading(false);
@@ -121,42 +119,19 @@ const FeedCreatePage: React.FC = () => {
     fetchAvailableEvents();
   }, []);
 
-  // 수정 모드: id가 있으면 localFeeds에서 해당 피드 불러오기
-  useEffect(() => {
-    if (editId) {
-      const localFeeds = JSON.parse(localStorage.getItem('localFeeds') || '[]');
-      const feed = localFeeds.find((f: any) => String(f.id) === String(editId));
-      if (feed) {
-        setUploadedImages(feed.images || []);
-        setSelectedProductId(feed.productName || '');
-        setSelectedSize(feed.size || '');
-        setHashtags(feed.hashtags || []);
-        setInstagramId(feed.instagramId || '');
-        setInstagramLinked(!!feed.instagramId);
-        setTitle(feed.title || '');
-        setContent(feed.content || '');
-      }
-    }
-  }, [editId]);
-
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+    const files = Array.from(e.target.files || []);
+    
+    if (uploadedImages.length + files.length > MAX_IMAGES) {
+      showToastMessage(`이미지는 최대 ${MAX_IMAGES}개까지 업로드 가능합니다.`, 'error');
+      return;
+    }
 
-    Array.from(files).forEach(file => {
-      if (uploadedImages.length >= MAX_IMAGES) {
-        showToastMessage('최대 5장까지만 업로드 가능합니다.', 'error');
-        return;
-      }
-
-      if (!validateImageFile(file)) {
-        showToastMessage('이미지 파일만 업로드 가능합니다.', 'error');
-        return;
-      }
-
-      createImagePreview(file, (preview) => {
+    files.forEach(async file => {
+      if (validateImageFile(file)) {
+        const preview = await createImagePreview(file);
         setUploadedImages(prev => [...prev, preview]);
-      });
+      }
     });
   };
 
@@ -202,66 +177,57 @@ const FeedCreatePage: React.FC = () => {
       showToastMessage('제목을 입력해주세요.', 'error');
       return;
     }
-    
+
     if (!content.trim()) {
       showToastMessage('내용을 입력해주세요.', 'error');
       return;
     }
-    
+
     if (uploadedImages.length === 0) {
-      showToastMessage('이미지를 최소 1장 업로드해주세요.', 'error');
+      showToastMessage('최소 1개의 이미지를 업로드해주세요.', 'error');
       return;
     }
-
-    if (!selectedProductId) {
-      showToastMessage('상품을 선택해주세요.', 'error');
-      return;
-    }
-
-    setIsLoading(true);
 
     try {
-      // 이미지 업로드
+      setIsLoading(true);
+
+      // 🔧 백엔드 연동: 이미지 업로드
       const imageUrls = await uploadBase64Images(uploadedImages);
-      
-      // 피드 데이터 준비
+
       const feedData: CreateFeedRequest = {
         title: title.trim(),
         content: content.trim(),
-        feedType: selectedEventId ? 'EVENT' : 'DAILY',
-        orderItemId: parseInt(selectedProductId),
+        imageUrls: imageUrls,
+        hashtags: hashtags,
+        orderItemId: selectedProductId ? parseInt(selectedProductId) : 0,
         eventId: selectedEventId ? parseInt(selectedEventId) : undefined,
-        imageUrls,
-        hashtags,
-        instagramId: instagramLinked ? instagramId.trim() : undefined,
+        feedType: selectedEventId ? 'EVENT' : 'DAILY',
+        instagramId: instagramLinked ? instagramId : undefined
       };
 
-      // 백엔드 API 호출
-      const createdFeed = await FeedService.createFeed(feedData);
-      
-      showToastMessage('피드가 성공적으로 생성되었습니다!', 'success');
-      
+      if (editId) {
+        // 수정 모드
+        await FeedService.updateFeed(parseInt(editId), feedData);
+        showToastMessage('피드가 성공적으로 수정되었습니다!', 'success');
+      } else {
+        // 생성 모드
+        await FeedService.createFeed(feedData);
+        showToastMessage('피드가 성공적으로 생성되었습니다!', 'success');
+      }
+
       // 성공 후 피드 목록 페이지로 이동
       setTimeout(() => {
         navigate('/feeds');
       }, 1500);
-      
+
     } catch (error: any) {
       console.error('피드 생성 실패:', error);
-      showToastMessage(
-        error.response?.data?.message || '피드 생성에 실패했습니다. 다시 시도해주세요.',
-        'error'
-      );
+      const errorMessage = error.response?.data?.message || '피드 생성에 실패했습니다.';
+      showToastMessage(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }
   };
-
-  const recommendedHashtags = [
-    '#오늘의코디', '#데일리룩', '#패션', '#스타일링', '#코디', '#패션스타그램',
-    '#데일리패션', '#스타일', '#패션코디', '#룩북', '#패션스타그램', '#스타일링',
-    '#패션스타그램', '#패션코디', '#데일리룩', '#스타일링', '#패션', '#코디'
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -277,124 +243,54 @@ const FeedCreatePage: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* 제목 입력 */}
+          {/* 기본 정보 */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              제목 *
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="피드 제목을 입력해주세요"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              maxLength={100}
-            />
-            <div className="text-right text-sm text-gray-500 mt-1">
-              {title.length}/100
-            </div>
-          </div>
-
-          {/* 내용 입력 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              내용 *
-            </label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="피드 내용을 자유롭게 작성해주세요"
-              rows={6}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              maxLength={1000}
-            />
-            <div className="text-right text-sm text-gray-500 mt-1">
-              {content.length}/1000
-            </div>
-          </div>
-
-          {/* 상품 선택 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              상품 선택 *
-            </label>
-            {productsLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                <span className="ml-2 text-gray-600">상품 목록을 불러오는 중...</span>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {purchasedProducts.map((product) => (
-                  <div
-                    key={product.orderItemId}
-                    onClick={() => setSelectedProductId(String(product.orderItemId))}
-                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                      selectedProductId === String(product.orderItemId)
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <img
-                      src={product.productImageUrl}
-                      alt={product.productName}
-                      className="w-full h-32 object-cover rounded-lg mb-3"
-                    />
-                    <h3 className="font-medium text-gray-900 mb-1">
-                      {product.productName}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      구매일: {new Date(product.orderedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* 이벤트 선택 (선택사항) */}
-          {availableEvents.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">기본 정보</h2>
+            
+            {/* 제목 */}
+            <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                이벤트 참여 (선택사항)
+                제목 *
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {availableEvents.map((event) => (
-                  <div
-                    key={event.id}
-                    onClick={() => setSelectedEventId(selectedEventId === String(event.id) ? null : String(event.id))}
-                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                      selectedEventId === String(event.id)
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <h3 className="font-medium text-gray-900 mb-1">
-                      {event.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-2">
-                      {event.description}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(event.startDate).toLocaleDateString()} ~ {new Date(event.endDate).toLocaleDateString()}
-                    </p>
-                  </div>
-                ))}
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="피드 제목을 입력하세요"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                maxLength={100}
+              />
+            </div>
+
+            {/* 내용 */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                내용 *
+              </label>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="피드 내용을 입력하세요"
+                rows={6}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                maxLength={2000}
+              />
+              <div className="text-right text-sm text-gray-500 mt-1">
+                {content.length}/2000
               </div>
             </div>
-          )}
+          </div>
 
           {/* 이미지 업로드 */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              이미지 업로드 * (최대 5장)
-            </label>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">이미지 업로드</h2>
+            
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
               <input
                 ref={fileInputRef}
                 type="file"
-                multiple
                 accept="image/*"
+                multiple
                 onChange={handleImageUpload}
                 className="hidden"
               />
@@ -406,124 +302,214 @@ const FeedCreatePage: React.FC = () => {
                 이미지 선택
               </button>
               <p className="text-sm text-gray-500 mt-2">
-                JPG, PNG, GIF 파일만 업로드 가능합니다.
+                JPG, PNG, GIF 파일만 업로드 가능합니다. (최대 {MAX_IMAGES}개)
               </p>
             </div>
             
-            {/* 업로드된 이미지 미리보기 */}
+            {/* 이미지 미리보기 */}
             {uploadedImages.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {uploadedImages.map((image, index) => (
-                  <div key={index} className="relative">
-                    <img
-                      src={image}
-                      alt={`업로드된 이미지 ${index + 1}`}
-                      className="w-full h-24 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
+              <div className="mt-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">업로드된 이미지</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {uploadedImages.map((image, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={image}
+                        alt={`업로드된 이미지 ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 구매 상품 선택 */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">구매 상품 선택</h2>
+            
+            {productsLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                <p className="text-gray-500 mt-2">구매 상품을 불러오는 중...</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <select
+                  value={selectedProductId}
+                  onChange={(e) => setSelectedProductId(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">구매 상품을 선택하세요 (선택사항)</option>
+                  {purchasedProducts.map((product) => (
+                    <option key={product.orderItemId} value={product.productId}>
+                      {product.productName}
+                    </option>
+                  ))}
+                </select>
+                
+                {selectedProductId && (
+                  <select
+                    value={selectedSize}
+                    onChange={(e) => setSelectedSize(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">사이즈를 선택하세요 (선택사항)</option>
+                    <option value="220">220</option>
+                    <option value="225">225</option>
+                    <option value="230">230</option>
+                    <option value="235">235</option>
+                    <option value="240">240</option>
+                    <option value="245">245</option>
+                    <option value="250">250</option>
+                    <option value="255">255</option>
+                    <option value="260">260</option>
+                    <option value="265">265</option>
+                    <option value="270">270</option>
+                    <option value="275">275</option>
+                    <option value="280">280</option>
+                    <option value="285">285</option>
+                    <option value="290">290</option>
+                    <option value="295">295</option>
+                    <option value="300">300</option>
+                  </select>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 이벤트 선택 */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">이벤트 참여</h2>
+            
+            {eventsLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                <p className="text-gray-500 mt-2">이벤트를 불러오는 중...</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <select
+                  value={selectedEventId || ''}
+                  onChange={(e) => setSelectedEventId(e.target.value || null)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">이벤트를 선택하세요 (선택사항)</option>
+                  {availableEvents.map((event) => (
+                    <option key={event.eventId} value={event.eventId}>
+                      {event.title}
+                    </option>
+                  ))}
+                </select>
+                
+                {availableEvents.length === 0 && (
+                  <p className="text-gray-500 text-sm">
+                    현재 참여 가능한 이벤트가 없습니다.
+                  </p>
+                )}
               </div>
             )}
           </div>
 
           {/* 해시태그 */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              해시태그
-            </label>
-            <div className="flex gap-2 mb-4">
-              <input
-                type="text"
-                value={hashtagInput}
-                onChange={(e) => setHashtagInput(e.target.value)}
-                onKeyDown={handleHashtagKeyDown}
-                placeholder="해시태그를 입력하세요"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <button
-                type="button"
-                onClick={handleAddHashtag}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                추가
-              </button>
-            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">해시태그</h2>
             
-            {/* 선택된 해시태그들 */}
-            {hashtags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                {hashtags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
-                  >
-                    {tag}
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={hashtagInput}
+                  onChange={(e) => setHashtagInput(e.target.value)}
+                  onKeyDown={handleHashtagKeyDown}
+                  placeholder="해시태그를 입력하세요"
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddHashtag}
+                  className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  추가
+                </button>
+              </div>
+              
+              {/* 추천 해시태그 */}
+              <div>
+                <p className="text-sm text-gray-600 mb-2">추천 해시태그:</p>
+                <div className="flex flex-wrap gap-2">
+                  {['#스니커즈', '#운동화', '#패션', '#스타일', '#코디'].map((tag) => (
                     <button
+                      key={tag}
                       type="button"
-                      onClick={() => removeHashtag(tag)}
-                      className="text-blue-600 hover:text-blue-800"
+                      onClick={() => addRecommendedHashtag(tag)}
+                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition-colors"
                     >
-                      ×
+                      {tag}
                     </button>
-                  </span>
-                ))}
+                  ))}
+                </div>
               </div>
-            )}
-            
-            {/* 추천 해시태그 */}
-            <div>
-              <p className="text-sm text-gray-600 mb-2">추천 해시태그:</p>
-              <div className="flex flex-wrap gap-2">
-                {recommendedHashtags.map((tag, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => addRecommendedHashtag(tag)}
-                    className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-200 transition-colors"
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
+              
+              {/* 추가된 해시태그 */}
+              {hashtags.length > 0 && (
+                <div>
+                  <p className="text-sm text-gray-600 mb-2">추가된 해시태그:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {hashtags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm flex items-center gap-1"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => removeHashtag(tag)}
+                          className="text-blue-500 hover:text-blue-700"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* 인스타그램 연동 */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center mb-4">
-              <input
-                type="checkbox"
-                id="instagramLink"
-                checked={instagramLinked}
-                onChange={(e) => setInstagramLinked(e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor="instagramLink" className="ml-2 text-sm font-medium text-gray-700">
-                인스타그램 연동
-              </label>
-            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">인스타그램 연동</h2>
             
-            {instagramLinked && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  인스타그램 ID
-                </label>
+            <div className="space-y-4">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={instagramLinked}
+                  onChange={(e) => setInstagramLinked(e.target.checked)}
+                  className="mr-2"
+                />
+                <span className="text-sm text-gray-700">인스타그램과 연동하기</span>
+              </label>
+              
+              {instagramLinked && (
                 <input
                   type="text"
                   value={instagramId}
                   onChange={(e) => setInstagramId(e.target.value)}
-                  placeholder="@username"
+                  placeholder="인스타그램 아이디를 입력하세요"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* 제출 버튼 */}
@@ -540,7 +526,7 @@ const FeedCreatePage: React.FC = () => {
               disabled={isLoading}
               className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? '업로드 중...' : (editId ? '수정하기' : '피드 작성')}
+              {isLoading ? (editId ? '수정 중...' : '생성 중...') : (editId ? '피드 수정' : '피드 생성')}
             </button>
           </div>
         </form>
@@ -548,7 +534,7 @@ const FeedCreatePage: React.FC = () => {
 
       {/* 토스트 메시지 */}
       {showToast && (
-        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg animate-fade-in-out ${
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg animate-fade-in-out ${
           toastType === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
         }`}>
           {toastMessage}

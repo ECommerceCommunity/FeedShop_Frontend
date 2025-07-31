@@ -1,17 +1,10 @@
 // Event 관련 타입들 추가
 export type EventStatus = "UPCOMING" | "ONGOING" | "ENDED";
-export type EventType = "BATTLE" | "MISSION" | "MULTIPLE";
+export type EventType = "BATTLE" | "MISSION" | "MULTIPLE" | "REVIEW" | "CHALLENGE";
 export type ParticipationStatus = "PARTICIPATING" | "COMPLETED" | "ELIMINATED";
 export type MatchStatus = "PENDING" | "ONGOING" | "COMPLETED";
 
-export interface EventReward {
-  id: number;
-  rank: number;
-  reward: string;
-  conditionType: string;
-  conditionValue: number;
-  maxRecipients: number;
-}
+// EventReward는 eventService.ts에서 정의
 
 export interface EventDetail {
   id: number;
@@ -26,7 +19,7 @@ export interface EventDetail {
   selectionCriteria: string;
   imageUrl: string;
   precautions: string;
-  rewards: string;
+  rewards: any[] | string; // eventService.ts의 EventReward 사용
 }
 
 export interface Event {
@@ -37,7 +30,7 @@ export interface Event {
   createdBy: string;
   updatedBy: string;
   eventDetail: EventDetail;
-  rewards: EventReward[];
+  rewards: any[]; // eventService.ts의 EventReward 사용
 }
 
 export interface EventParticipant {
