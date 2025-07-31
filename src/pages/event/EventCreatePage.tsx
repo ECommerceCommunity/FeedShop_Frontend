@@ -55,9 +55,9 @@ const EventCreatePage = () => {
     description: "",
     participationMethod: "",
     rewards: [
-      { conditionValue: "1등", rewardValue: "프리미엄 스니커즈" },
-      { conditionValue: "2등", rewardValue: "트렌디한 운동화" },
-      { conditionValue: "3등", rewardValue: "스타일리시한 슈즈" }
+      { conditionValue: "1", rewardValue: "프리미엄 스니커즈" },
+      { conditionValue: "2", rewardValue: "트렌디한 운동화" },
+      { conditionValue: "3", rewardValue: "스타일리시한 슈즈" }
     ],
     selectionCriteria: "",
     precautions: "",
@@ -157,7 +157,7 @@ const EventCreatePage = () => {
     setEventForm(prev => ({
       ...prev,
       rewards: [...prev.rewards, { 
-        conditionValue: `${prev.rewards.length + 1}등`, 
+        conditionValue: `${prev.rewards.length + 1}`, 
         rewardValue: "" 
       }]
     }));
