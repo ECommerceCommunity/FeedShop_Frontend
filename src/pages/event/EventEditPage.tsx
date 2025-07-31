@@ -273,11 +273,11 @@ const EventEditPage = () => {
       const formData = new FormData();
       formData.append("title", eventForm.title);
       formData.append("type", eventForm.type);
-      formData.append("purchaseStartDate", toLocalDateString(eventForm.purchaseStartDate));
-      formData.append("purchaseEndDate", toLocalDateString(eventForm.purchaseEndDate));
-      formData.append("eventStartDate", toLocalDateString(eventForm.eventStartDate));
-      formData.append("eventEndDate", toLocalDateString(eventForm.eventEndDate));
-      formData.append("announcement", toLocalDateString(eventForm.announcement));
+      formData.append("purchaseStartDate", eventForm.purchaseStartDate.split('T')[0]);
+      formData.append("purchaseEndDate", eventForm.purchaseEndDate.split('T')[0]);
+      formData.append("eventStartDate", eventForm.eventStartDate.split('T')[0]);
+      formData.append("eventEndDate", eventForm.eventEndDate.split('T')[0]);
+      formData.append("announcement", eventForm.announcement.split('T')[0]);
       formData.append("description", eventForm.description);
       formData.append("participationMethod", eventForm.participationMethod);
       formData.append("selectionCriteria", eventForm.selectionCriteria);
