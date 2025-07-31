@@ -373,7 +373,7 @@ const EventCreatePage = () => {
             {/* 이벤트 타입 */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                이벤트 타입 *
+                이벤트 유형 *
               </label>
               <div className="grid grid-cols-3 gap-4">
                 {(["BATTLE", "MISSION", "MULTIPLE"] as EventType[]).map((type) => (
@@ -381,13 +381,35 @@ const EventCreatePage = () => {
                     key={type}
                     type="button"
                     onClick={() => handleTypeSelect(type)}
-                    className={`p-4 border-2 rounded-lg text-center transition-all ${
+                    className={`p-6 border-2 rounded-xl text-center transition-all duration-200 hover:shadow-md ${
                       eventForm.type === type
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-lg'
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   >
-                    <div className="font-medium">{getTypeText(type)}</div>
+                    <div className="mb-3">
+                      {type === "BATTLE" && (
+                        <svg className="w-12 h-12 mx-auto text-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      )}
+                      {type === "MISSION" && (
+                        <svg className="w-12 h-12 mx-auto text-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                      )}
+                      {type === "MULTIPLE" && (
+                        <svg className="w-12 h-12 mx-auto text-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      )}
+                    </div>
+                    <div className="font-bold text-lg mb-2">{getTypeText(type)}</div>
+                    <div className="text-sm text-gray-600">
+                      {type === "BATTLE" && "1:1 스타일 대결"}
+                      {type === "MISSION" && "주어진 미션 수행"}
+                      {type === "MULTIPLE" && "다수 참여 이벤트"}
+                    </div>
                   </button>
                 ))}
               </div>
@@ -423,26 +445,40 @@ const EventCreatePage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   구매 시작일 *
                 </label>
-                <input
-                  type="datetime-local"
-                  name="purchaseStartDate"
-                  value={eventForm.purchaseStartDate}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <div className="relative">
+                  <input
+                    type="datetime-local"
+                    name="purchaseStartDate"
+                    value={eventForm.purchaseStartDate}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   구매 종료일 *
                 </label>
-                <input
-                  type="datetime-local"
-                  name="purchaseEndDate"
-                  value={eventForm.purchaseEndDate}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <div className="relative">
+                  <input
+                    type="datetime-local"
+                    name="purchaseEndDate"
+                    value={eventForm.purchaseEndDate}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
               </div>
               
               {/* 이벤트 기간 */}
@@ -450,26 +486,40 @@ const EventCreatePage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   이벤트 시작일 *
                 </label>
-                <input
-                  type="datetime-local"
-                  name="eventStartDate"
-                  value={eventForm.eventStartDate}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <div className="relative">
+                  <input
+                    type="datetime-local"
+                    name="eventStartDate"
+                    value={eventForm.eventStartDate}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   이벤트 종료일 *
                 </label>
-                <input
-                  type="datetime-local"
-                  name="eventEndDate"
-                  value={eventForm.eventEndDate}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <div className="relative">
+                  <input
+                    type="datetime-local"
+                    name="eventEndDate"
+                    value={eventForm.eventEndDate}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
               </div>
               
               {/* 발표일 */}
@@ -477,13 +527,20 @@ const EventCreatePage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   발표일 *
                 </label>
-                <input
-                  type="datetime-local"
-                  name="announcement"
-                  value={eventForm.announcement}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <div className="relative">
+                  <input
+                    type="datetime-local"
+                    name="announcement"
+                    value={eventForm.announcement}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
