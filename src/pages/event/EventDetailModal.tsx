@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { EventDto } from '../../types/event';
+import { EventDto } from '../../api/eventService';
 import EventService from '../../api/eventService';
 
 interface EventDetailModalProps {
@@ -45,7 +45,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
       // 이미 event 객체가 있으면 그대로 사용, 없으면 API 호출
       if (event && Object.keys(event).length > 0) {
         console.log('EventDetailModal - event 데이터:', event);
-        console.log('EventDetailModal - announcementDate:', event.announcementDate);
+        console.log('EventDetailModal - announcement:', event.announcement);
         setDetail(event);
         setLoading(false);
       } else {
@@ -241,7 +241,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl border border-purple-200/50">
                 <h3 className="text-sm font-semibold text-purple-600 mb-2">발표일</h3>
                 <p className="text-gray-900 font-medium">
-                  {detail.announcementDate ? formatDate(detail.announcementDate) : '발표일 미정'}
+                  {detail.announcement ? formatDate(detail.announcement) : '발표일 미정'}
                 </p>
               </div>
             </div>
@@ -255,15 +255,15 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             </div>
 
             {/* 이벤트 혜택 */}
-            {detail.rewards && detail.rewards.length > 0 && (
+            {detail.rewards && detail.rewards.trim() && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">이벤트 혜택</h3>
                 <div className="space-y-3">
-                  {detail.rewards.map((reward, index) => (
+                  {detail.rewards.split('\n').filter(line => line.trim()).map((reward, index) => (
                     <div key={index} className="bg-gradient-to-r from-yellow-50 to-orange-50 text-orange-700 px-6 py-4 rounded-2xl text-base font-semibold border border-orange-200 shadow-sm hover:shadow-md transition-all duration-200">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-lg">{reward.conditionValue}등</span>
-                        <span className="text-orange-600">{reward.rewardValue}</span>
+                        <span className="font-bold text-lg">{index + 1}등</span>
+                        <span className="text-orange-600">{reward.trim()}</span>
                       </div>
                     </div>
                   ))}
