@@ -90,8 +90,8 @@ const EventEditPage = () => {
         let mappedRewards: EventRewardRequestDto[] = [];
         if (detail.rewards && Array.isArray(detail.rewards)) {
           mappedRewards = detail.rewards.map((reward: any) => ({
-            conditionValue: reward.rank ? reward.rank.toString() : "1",
-            rewardValue: reward.reward || ''
+            conditionValue: reward.rank ? reward.rank.toString() : reward.conditionValue || "1",
+            rewardValue: reward.reward || reward.rewardValue || ''
           }));
         } else {
           // 기본 보상 설정
@@ -273,11 +273,11 @@ const EventEditPage = () => {
       const formData = new FormData();
       formData.append("title", eventForm.title);
       formData.append("type", eventForm.type);
-      formData.append("purchaseStartDate", eventForm.purchaseStartDate.split('T')[0]);
-      formData.append("purchaseEndDate", eventForm.purchaseEndDate.split('T')[0]);
-      formData.append("eventStartDate", eventForm.eventStartDate.split('T')[0]);
-      formData.append("eventEndDate", eventForm.eventEndDate.split('T')[0]);
-      formData.append("announcement", eventForm.announcement.split('T')[0]);
+      formData.append("purchaseStartDate", toLocalDateString(eventForm.purchaseStartDate));
+      formData.append("purchaseEndDate", toLocalDateString(eventForm.purchaseEndDate));
+      formData.append("eventStartDate", toLocalDateString(eventForm.eventStartDate));
+      formData.append("eventEndDate", toLocalDateString(eventForm.eventEndDate));
+      formData.append("announcement", toLocalDateString(eventForm.announcement));
       formData.append("description", eventForm.description);
       formData.append("participationMethod", eventForm.participationMethod);
       formData.append("selectionCriteria", eventForm.selectionCriteria);
@@ -291,7 +291,7 @@ const EventEditPage = () => {
         formData.append("image", eventForm.imageFile);
       }
 
-      const response = await axiosInstance.put(`/api/events/${id}`, formData, {
+      const response = await axiosInstance.put(`/api/events/${id}/multipart`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

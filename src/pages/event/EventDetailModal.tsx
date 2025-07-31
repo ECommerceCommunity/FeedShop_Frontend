@@ -107,10 +107,11 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
     try {
       await EventService.deleteEvent(eventId);
       alert('이벤트가 삭제되었습니다.');
-      navigate('/event-list', { replace: true });
-      window.location.reload(); // 강제 새로고침 추가
-    } catch (err) {
-      alert('이벤트 삭제에 실패했습니다.');
+      onClose(); // 모달 닫기
+      navigate('/events', { replace: true }); // 올바른 경로로 수정
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || '이벤트 삭제에 실패했습니다.';
+      alert(errorMessage);
     }
   };
 
@@ -229,13 +230,17 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border border-blue-200/50">
                 <h3 className="text-sm font-semibold text-blue-600 mb-2">구매 기간</h3>
                 <p className="text-gray-900 font-medium">
-                  {detail.purchasePeriod || '기간 정보 없음'}
+                  {detail.purchaseStartDate && detail.purchaseEndDate 
+                    ? `${formatDate(detail.purchaseStartDate)} ~ ${formatDate(detail.purchaseEndDate)}`
+                    : detail.purchasePeriod || '기간 정보 없음'}
                 </p>
               </div>
               <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl border border-green-200/50">
                 <h3 className="text-sm font-semibold text-green-600 mb-2">이벤트 기간</h3>
                 <p className="text-gray-900 font-medium">
-                  {detail.votePeriod || '기간 정보 없음'}
+                  {detail.eventStartDate && detail.eventEndDate 
+                    ? `${formatDate(detail.eventStartDate)} ~ ${formatDate(detail.eventEndDate)}`
+                    : detail.votePeriod || '기간 정보 없음'}
                 </p>
               </div>
               <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl border border-purple-200/50">

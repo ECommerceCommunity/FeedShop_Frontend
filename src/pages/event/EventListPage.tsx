@@ -63,29 +63,41 @@ const EventListPage = () => {
         // 정렬 파라미터 설정
         switch (sortType) {
           case "latest":
-              params.sort = "latest"; // 최신순
+              params.sort = "createdAt,desc"; // 최신순
             break;
             case "upcoming":
-              params.sort = "upcoming"; // 예정순
+              params.sort = "eventStartDate,asc"; // 예정순
             break;
             case "past":
-              params.sort = "past"; // 지난순
+              params.sort = "eventEndDate,desc"; // 지난순
             break;
           default:
             params.sort = "createdAt,desc"; // 기본값
         }
         
-        // 필터 파라미터 설정
+        // 필터 파라미터 설정 (백엔드 상태값으로 변환)
         if (activeFilter !== "all") {
-          params.status = activeFilter;
+          switch (activeFilter) {
+            case "RECRUITING":
+              params.status = "upcoming";
+              break;
+            case "IN_PROGRESS":
+              params.status = "ongoing";
+              break;
+            case "COMPLETED":
+              params.status = "ended";
+              break;
+            default:
+              params.status = activeFilter;
+          }
         }
         
         // 검색 파라미터 설정
         if (searchKeyword.trim()) {
-          params.search = searchKeyword.trim();
+          params.keyword = searchKeyword.trim();
         }
         
-        const response = await axiosInstance.get("/api/events/all", { params });
+        const response = await axiosInstance.get(url, { params });
         const data = response.data;
         
         console.log('이벤트 목록 응답:', data);
@@ -313,7 +325,7 @@ const EventListPage = () => {
                       : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
                   }`}
                 >
-                  모집중
+                  예정
                 </button>
                 <button
                   onClick={() => handleFilterChange("IN_PROGRESS")}
@@ -528,17 +540,7 @@ const EventListPage = () => {
           </div>
         )}
 
-        {/* 관리자용 이벤트 생성 버튼 */}
-        {user?.userType === "admin" && (
-          <div className="mt-8 text-center">
-          <button
-              onClick={() => navigate("/events/create")}
-              className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
-          >
-              새 이벤트 생성
-          </button>
-          </div>
-        )}
+
       </div>
 
       {/* 이벤트 상세 모달 */}

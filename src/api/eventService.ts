@@ -31,8 +31,10 @@ export interface EventDto {
   status: string;
   eventStartDate: string;
   eventEndDate: string;
-  purchasePeriod: string;
-  votePeriod: string;
+  purchaseStartDate?: string;
+  purchaseEndDate?: string;
+  purchasePeriod?: string;
+  votePeriod?: string;
   announcementDate: string;
   participationMethod: string;
   rewards: EventReward[];

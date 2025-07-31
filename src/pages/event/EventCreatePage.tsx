@@ -80,6 +80,13 @@ const EventCreatePage = () => {
     precautions: false
   });
 
+  // 날짜 변환 헬퍼 함수
+  const toLocalDateString = (dateTimeStr: string): string => {
+    if (!dateTimeStr) return '';
+    const date = new Date(dateTimeStr);
+    return date.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+  };
+
   // 현재 날짜를 기본값으로 설정 (한국 시간대 적용)
   useEffect(() => {
     // 한국 시간대 (UTC+9) 적용
@@ -259,11 +266,11 @@ const EventCreatePage = () => {
       const formData = new FormData();
       formData.append("title", eventForm.title);
       formData.append("type", eventForm.type);
-      formData.append("purchaseStartDate", eventForm.purchaseStartDate.split('T')[0]);
-      formData.append("purchaseEndDate", eventForm.purchaseEndDate.split('T')[0]);
-      formData.append("eventStartDate", eventForm.eventStartDate.split('T')[0]);
-      formData.append("eventEndDate", eventForm.eventEndDate.split('T')[0]);
-      formData.append("announcement", eventForm.announcement.split('T')[0]);
+      formData.append("purchaseStartDate", toLocalDateString(eventForm.purchaseStartDate));
+      formData.append("purchaseEndDate", toLocalDateString(eventForm.purchaseEndDate));
+      formData.append("eventStartDate", toLocalDateString(eventForm.eventStartDate));
+      formData.append("eventEndDate", toLocalDateString(eventForm.eventEndDate));
+      formData.append("announcement", toLocalDateString(eventForm.announcement));
       formData.append("description", eventForm.description);
       formData.append("participationMethod", eventForm.participationMethod);
       formData.append("selectionCriteria", eventForm.selectionCriteria);
