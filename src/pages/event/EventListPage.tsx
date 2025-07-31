@@ -85,7 +85,7 @@ const EventListPage = () => {
           params.search = searchKeyword.trim();
         }
         
-        const response = await axiosInstance.get("/api/event", { params });
+        const response = await axiosInstance.get("/event", { params });
         const data = response.data;
         
         console.log('이벤트 목록 응답:', data);

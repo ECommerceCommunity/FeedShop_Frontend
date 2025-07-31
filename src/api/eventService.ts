@@ -82,7 +82,7 @@ class EventService {
    */
   async getFeedAvailableEvents(): Promise<FeedEventDto[]> {
     try {
-      const response = await axiosInstance.get<ApiResponse<FeedEventDto[]>>('/api/event/feed-available');
+      const response = await axiosInstance.get<ApiResponse<FeedEventDto[]>>('/event/feed-available');
       
       if (response.data.success) {
         // Soft delete된 이벤트 필터링 및 현재 진행중인 이벤트만 필터링
@@ -129,7 +129,7 @@ class EventService {
     keyword?: string;
   }): Promise<EventListResponse> {
     try {
-      const response = await axiosInstance.get('/api/event', { params });
+      const response = await axiosInstance.get('/event', { params });
       return response.data.data || { content: [], totalPages: 0, totalElements: 0, last: true, first: true, size: 10, number: 0 };
     } catch (error) {
       console.error('이벤트 목록 조회 실패:', error);
@@ -143,7 +143,7 @@ class EventService {
   async getEventById(eventId: number): Promise<EventDto | null> {
     try {
       // console.log('Calling API:', `/api/events/${eventId}`);
-      const response = await axiosInstance.get(`/api/event/${eventId}`);
+      const response = await axiosInstance.get(`/event/${eventId}`);
       // console.log('API Response:', response.data);
       // console.log('Response data structure:', JSON.stringify(response.data, null, 2));
       
@@ -164,7 +164,7 @@ class EventService {
    */
   async createEvent(eventData: EventCreateRequestDto): Promise<EventDto> {
     try {
-      const response = await axiosInstance.post('/api/event', eventData);
+      const response = await axiosInstance.post('/event', eventData);
       return response.data.data;
     } catch (error) {
       console.error('이벤트 생성 실패:', error);
@@ -177,7 +177,7 @@ class EventService {
    */
   async updateEvent(eventId: number, eventData: EventUpdateRequestDto): Promise<EventDto> {
     try {
-      const response = await axiosInstance.put(`/api/event/${eventId}`, eventData);
+      const response = await axiosInstance.put(`/event/${eventId}`, eventData);
       return response.data.data;
     } catch (error) {
       console.error('이벤트 수정 실패:', error);
@@ -190,7 +190,7 @@ class EventService {
    */
   async deleteEvent(eventId: number): Promise<void> {
     try {
-      await axiosInstance.delete(`/api/event/${eventId}`);
+      await axiosInstance.delete(`/event/${eventId}`);
     } catch (error) {
       console.error('이벤트 삭제 실패:', error);
       throw error;
