@@ -4,11 +4,8 @@ import axiosInstance from "../../api/axios";
 import { EventType } from "../../types/types";
 
 interface EventRewardRequestDto {
-  rank: number;
-  reward: string;
-  conditionType: string;
-  conditionDescription: string;
-  maxRecipients: number;
+  conditionValue: string;
+  rewardValue: string;
 }
 
 interface EventForm {
@@ -58,9 +55,9 @@ const EventCreatePage = () => {
     description: "",
     participationMethod: "",
     rewards: [
-      { rank: 1, reward: "프리미엄 스니커즈", conditionType: "RANK", conditionDescription: "1등", maxRecipients: 1 },
-      { rank: 2, reward: "트렌디한 운동화", conditionType: "RANK", conditionDescription: "2등", maxRecipients: 1 },
-      { rank: 3, reward: "스타일리시한 슈즈", conditionType: "RANK", conditionDescription: "3등", maxRecipients: 1 }
+      { conditionValue: "1등", rewardValue: "프리미엄 스니커즈" },
+      { conditionValue: "2등", rewardValue: "트렌디한 운동화" },
+      { conditionValue: "3등", rewardValue: "스타일리시한 슈즈" }
     ],
     selectionCriteria: "",
     precautions: "",
@@ -160,11 +157,8 @@ const EventCreatePage = () => {
     setEventForm(prev => ({
       ...prev,
       rewards: [...prev.rewards, { 
-        rank: prev.rewards.length + 1, 
-        reward: "", 
-        conditionType: "RANK", 
-        conditionDescription: `${prev.rewards.length + 1}등`, 
-        maxRecipients: 1 
+        conditionValue: `${prev.rewards.length + 1}등`, 
+        rewardValue: "" 
       }]
     }));
   };
@@ -606,8 +600,8 @@ const EventCreatePage = () => {
                     </label>
                     <input
                       type="text"
-                      value={reward.conditionDescription}
-                      onChange={(e) => handleRewardChange(index, 'conditionDescription', e.target.value)}
+                      value={reward.conditionValue}
+                      onChange={(e) => handleRewardChange(index, 'conditionValue', e.target.value)}
                       placeholder="예: 1등, 최우수상"
                       className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
@@ -619,8 +613,8 @@ const EventCreatePage = () => {
                     </label>
                     <input
                       type="text"
-                      value={reward.reward}
-                      onChange={(e) => handleRewardChange(index, 'reward', e.target.value)}
+                      value={reward.rewardValue}
+                      onChange={(e) => handleRewardChange(index, 'rewardValue', e.target.value)}
                       placeholder="예: 프리미엄 스니커즈"
                       className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
