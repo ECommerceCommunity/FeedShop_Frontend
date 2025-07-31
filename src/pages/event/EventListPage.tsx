@@ -85,8 +85,10 @@ const EventListPage = () => {
           params.search = searchKeyword.trim();
         }
         
-        const response = await axiosInstance.get("/api/events", { params });
+        const response = await axiosInstance.get("/api/v1/events", { params });
         const data = response.data;
+        
+        console.log('이벤트 목록 응답:', data);
         
         setEvents(data.content || []);
         setTotalPages(data.totalPages || 1);
@@ -548,7 +550,7 @@ const EventListPage = () => {
       {/* 이벤트 상세 모달 */}
       {modalOpen && selectedEvent && (
         <EventDetailModal
-          open={modalOpen}
+           open={modalOpen}
           event={selectedEvent}
           onClose={() => setModalOpen(false)}
         />
