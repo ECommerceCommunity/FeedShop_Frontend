@@ -554,23 +554,25 @@ const PaymentPage: React.FC = () => {
               selected: item.selected,
             };
           });
-      } else if (state.directOrder && state.product) {
+      } else if (
+        state.directOrder &&
+        state.product &&
+        Array.isArray(state.selectedOptions)
+      ) {
         // 바로 주문인 경우 (DetailPage에서 온 경우)
         const { product, selectedOptions } = state;
 
-        items = [
-          {
-            id: `${product.productId}-${selectedOptions?.optionId}`,
-            productName: product.name,
-            size: selectedOptions?.size?.replace("SIZE_", "") || "",
-            discountPrice: product.discountPrice,
-            productPrice: product.price,
-            discount: product.price - product.discountPrice,
-            quantity: selectedOptions.quantity,
-            imageUrl: product.images[0]?.url,
-            selected: true,
-          },
-        ];
+        items = selectedOptions.map((item: any) => ({
+          id: `${product.productId}-${item.optionId}`,
+          productName: product.name,
+          size: item.size,
+          discountPrice: product.discountPrice,
+          productPrice: product.price,
+          discount: product.price - product.discountPrice,
+          quantity: item.quantity,
+          imageUrl: product.images[0]?.url,
+          selected: true,
+        }));
       } else {
         throw new Error("지원하지 않는 주문 방식입니다.");
       }
@@ -842,30 +844,19 @@ const PaymentPage: React.FC = () => {
         cardNumber:
           selectedMethod === "카드" ? shippingInfo.cardNumber : undefined,
         cardExpiry:
-          selectedMethod === "카드" ? shippingInfo.cardExpiry : undefined,
+          selectedMethod === "카드"
+            ? shippingInfo.cardExpiry.replace("/", "")
+            : undefined,
         cardCvc: selectedMethod === "카드" ? shippingInfo.cardCvv : undefined,
       };
 
       // 실제 주문 API 호출
       const orderResponse = await OrderService.createOrder(orderData);
 
-      // 장바구니에서 온 주문인 경우, 장바구니 아이템들 삭제
-      if (location.state?.fromCart && location.state?.cartItems) {
-        // 선택된 장바구니 아이템들을 삭제
-        const deletePromises = location.state.cartItems.map((item: any) =>
-          CartService.removeCartItem(item.cartItemId)
-        );
-        await Promise.all(deletePromises);
-
-        // 장바구니 개수 업데이트
-        await updateCartItemCount();
-      }
-
       // 주문 완료 페이지로 이동 (API에서 받은 실제 orderId 사용)
       navigate("/checkout", {
         state: {
           orderId: orderResponse.orderId,
-          orderData: orderResponse,
         },
       });
     } catch (error: any) {

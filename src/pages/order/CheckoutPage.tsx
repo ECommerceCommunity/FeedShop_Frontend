@@ -241,7 +241,6 @@ const CheckoutPage: React.FC = () => {
 
   // PaymentPage에서 전달받은 orderId
   const orderId = location.state?.orderId;
-  const orderData = location.state?.orderData; // 임시 데이터 (API 호출 실패 시 백업용)
 
   // 주문 상세 정보 로딩
   useEffect(() => {
@@ -259,45 +258,14 @@ const CheckoutPage: React.FC = () => {
         const detail = await OrderService.getOrderDetail(orderId);
         setOrderDetail(detail);
       } catch (err: any) {
-        // API 호출 실패 시 PaymentPage에서 받은 데이터로 대체
-        if (orderData) {
-          // orderData를 OrderDetail 형식으로 변환
-          const fallbackDetail: OrderDetail = {
-            orderId: orderData.orderId,
-            status: orderData.status,
-            orderedAt: orderData.orderedAt,
-            usedPoints: orderData.usedPoints || 0,
-            earnedPoints: orderData.earnedPoints || 0,
-            currency: "KRW",
-            deliveryFee: orderData.deliveryFee || 0,
-            totalDiscountPrice: 0,
-            totalPrice: orderData.totalPrice,
-            finalPrice: orderData.totalPrice,
-            shippingInfo: {
-              recipientName: "주문자",
-              recipientPhone: "",
-              postalCode: "",
-              deliveryAddress: "",
-              deliveryDetailAddress: "",
-              deliveryMessage: "",
-            },
-            paymentInfo: {
-              paymentMethod: orderData.paymentMethod,
-            },
-            items: [], // 아이템 정보는 생략
-          };
-
-          setOrderDetail(fallbackDetail);
-        } else {
-          setError("주문 정보를 불러오는데 실패했습니다.");
-        }
+        setError("주문 정보를 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }
     };
 
     loadOrderDetail();
-  }, [orderId, orderData]);
+  }, [orderId]);
 
   // 가격 포맷팅 함수
   const formatPrice = (price: number): string => {
