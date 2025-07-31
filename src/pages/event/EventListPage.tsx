@@ -3,7 +3,7 @@ import axiosInstance from "../../api/axios";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { EventStatus, EventType } from "../../types/types";
-import { EventDto } from "../../types/event";
+import { EventDto } from "../../api/eventService";
 import EventDetailModal from "./EventDetailModal";
 
 const PAGE_SIZE = 4;
