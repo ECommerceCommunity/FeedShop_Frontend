@@ -58,6 +58,7 @@ const EventListPage = () => {
         
         if (searchKeyword || activeFilter !== "all" || sortType !== "latest") {
           url = "/api/events/search";
+        }
         
         // 정렬 파라미터 설정
         switch (sortType) {
@@ -131,11 +132,11 @@ const EventListPage = () => {
 
   const getStatusText = (status: EventStatus) => {
     switch (status) {
-      case "RECRUITING":
-        return "모집중";
-      case "IN_PROGRESS":
+      case "UPCOMING":
+        return "예정";
+      case "ONGOING":
         return "진행중";
-      case "COMPLETED":
+      case "ENDED":
         return "완료";
       case "CANCELLED":
         return "취소";
@@ -159,9 +160,9 @@ const EventListPage = () => {
 
   const getStatusColor = (status: EventStatus) => {
     switch (status) {
-      case 'RECRUITING': return 'bg-blue-600 text-white';
-      case 'IN_PROGRESS': return 'bg-green-600 text-white';
-      case 'COMPLETED': return 'bg-gray-600 text-white';
+      case 'UPCOMING': return 'bg-blue-600 text-white';
+      case 'ONGOING': return 'bg-green-600 text-white';
+      case 'ENDED': return 'bg-gray-600 text-white';
       case 'CANCELLED': return 'bg-red-600 text-white';
       default: return 'bg-gray-600 text-white';
     }
