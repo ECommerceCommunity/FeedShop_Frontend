@@ -11,6 +11,7 @@
 .env.development.local
 .env.test.local
 .env.production.local
+.env.production
 
 # log files
 npm-debug.log*
@@ -35,3 +36,6 @@ pnpm-debug.log*
 
 # SonarLint related files
 .sonarlint/
+
+FETCH_HEAD
+.vercel

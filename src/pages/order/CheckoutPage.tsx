@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import React, { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Order } from "types/types";
 import Fail from "components/modal/Fail";
@@ -79,7 +79,7 @@ const ThankYou = styled.div`
   color: #4b5563;
 `;
 
-const CheckoutPage: React.FC = () => {
+const CheckoutPage: FC = () => {
   const location = useLocation();
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [orderInfo, setOrderInfo] = useState<Order | null>(null);
