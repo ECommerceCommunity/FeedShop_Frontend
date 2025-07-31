@@ -255,15 +255,15 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             </div>
 
             {/* 이벤트 혜택 */}
-            {detail.rewards && detail.rewards.trim() && (
+            {detail.rewards && Array.isArray(detail.rewards) && detail.rewards.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">이벤트 혜택</h3>
                 <div className="space-y-3">
-                  {detail.rewards.split('\n').filter(line => line.trim()).map((reward, index) => (
+                  {detail.rewards.map((reward: any, index: number) => (
                     <div key={index} className="bg-gradient-to-r from-yellow-50 to-orange-50 text-orange-700 px-6 py-4 rounded-2xl text-base font-semibold border border-orange-200 shadow-sm hover:shadow-md transition-all duration-200">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-lg">{index + 1}등</span>
-                        <span className="text-orange-600">{reward.trim()}</span>
+                        <span className="font-bold text-lg">{reward.rank || index + 1}등</span>
+                        <span className="text-orange-600">{reward.reward || reward}</span>
                       </div>
                     </div>
                   ))}

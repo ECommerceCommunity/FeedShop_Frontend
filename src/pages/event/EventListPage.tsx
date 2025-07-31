@@ -435,26 +435,26 @@ const EventListPage = () => {
                           <span className="text-2xl mr-2">🏆</span>
                           보상
                         </div>
-                        {event.rewards && event.rewards.trim() ? (
+                        {event.rewards && Array.isArray(event.rewards) && event.rewards.length > 0 ? (
                           <div className="flex flex-wrap gap-3">
-                            {event.rewards.split('\n').filter(line => line.trim()).slice(0, 3).map((reward: string, index: number) => (
+                            {event.rewards.slice(0, 3).map((reward: any, index: number) => (
                               <div
                                 key={index}
                                 className="bg-gradient-to-r from-yellow-50 to-orange-50 text-orange-700 px-4 py-3 rounded-xl text-sm font-semibold border border-orange-200 shadow-sm hover:shadow-md transition-all duration-200"
                               >
-                                <span className="font-bold text-lg">{index + 1}등</span>
-                                <span className="ml-2">{reward.trim()}</span>
+                                <span className="font-bold text-lg">{reward.rank || index + 1}등</span>
+                                <span className="ml-2">{reward.reward || reward}</span>
                               </div>
                             ))}
-                            {event.rewards.split('\n').filter(line => line.trim()).length > 3 && (
+                            {event.rewards.length > 3 && (
                               <div className="text-gray-500 text-sm px-4 py-3 bg-gray-50 rounded-xl border border-gray-200">
-                                +{event.rewards.split('\n').filter(line => line.trim()).length - 3}개 더
+                                +{event.rewards.length - 3}개 더
                               </div>
                             )}
                           </div>
                         ) : (
                           <div className="text-gray-400 text-sm bg-gray-50 px-4 py-3 rounded-xl border border-gray-200">보상 정보가 없습니다.</div>
-              )}
+                        )}
             </div>
                     </div>
 
