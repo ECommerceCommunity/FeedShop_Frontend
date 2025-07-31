@@ -426,7 +426,7 @@ const EventCreatePage = () => {
                 onChange={handleChange}
                 placeholder="이벤트에 대한 상세한 설명을 입력하세요"
                 rows={4}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
                 maxLength={1000}
               />
               <div className="text-right text-sm text-gray-500 mt-1">
@@ -574,7 +574,7 @@ const EventCreatePage = () => {
                 onChange={handleChange}
                 placeholder="이벤트 참여 방법을 상세히 설명하세요"
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
               />
             </div>
 
@@ -603,7 +603,7 @@ const EventCreatePage = () => {
                 onChange={handleChange}
                 placeholder="당선자 선정 기준을 설명하세요"
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
               />
             </div>
 
@@ -632,7 +632,7 @@ const EventCreatePage = () => {
                 onChange={handleChange}
                 placeholder="이벤트 참여 시 주의사항을 입력하세요"
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
               />
             </div>
 
