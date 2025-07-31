@@ -462,7 +462,7 @@ const EventListPage = () => {
                         {/* 참여자 수 표시 제거 */}
                       </div>
                       <div className="flex gap-3">
-                        {(event.status || calculateEventStatus(event)) === 'IN_PROGRESS' ? (
+                        {(event.status || calculateEventStatus(event)) === 'ONGOING' ? (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -472,7 +472,7 @@ const EventListPage = () => {
                           >
                             참여하기
                           </button>
-                        ) : (event.status || calculateEventStatus(event)) === 'COMPLETED' ? (
+                        ) : (event.status || calculateEventStatus(event)) === 'ENDED' ? (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
