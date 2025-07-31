@@ -4,9 +4,25 @@ import axiosInstance from "../../api/axios";
 import { EventType } from "../../types/types";
 import EventService from "../../api/eventService";
 
+// Add global styles for animation
+const style = document.createElement('style');
+style.textContent = `
+@keyframes fadeInOut {
+0% { opacity: 0; transform: translateY(-10px); }
+10% { opacity: 1; transform: translateY(0); }
+90% { opacity: 1; transform: translateY(0); }
+100% { opacity: 0; transform: translateY(-10px); }
+}
+.animate-fade-in-out {
+animation: fadeInOut 3s ease-in-out forwards;
+}
+`;
+document.head.appendChild(style);
+
+// 백엔드 EventUpdateRequestDto.EventRewardRequestDto와 일치하는 타입
 interface EventRewardRequestDto {
-  conditionValue: string;  // 백엔드와 호환되도록 변경
-  rewardValue: string;     // 백엔드와 호환되도록 변경
+  conditionValue: string;
+  rewardValue: string;
 }
 
 interface EventForm {
@@ -16,7 +32,7 @@ interface EventForm {
   purchaseEndDate: string;
   eventStartDate: string;
   eventEndDate: string;
-  announcement: string;
+  announcementDate: string;
   description: string;
   participationMethod: string;
   rewards: EventRewardRequestDto[];
@@ -28,12 +44,7 @@ interface EventForm {
   imagePreview: string;
 }
 
-function toDateString(str: string | undefined) {
-  if (!str) return '';
-  const date = new Date(str);
-  return date.toISOString().slice(0, 16);
-}
-
+// 날짜 변환 함수들 - 필요시 유틸리티로 분리 권장
 function toDatetimeLocal(str: string | undefined) {
   if (!str) return '';
   const date = new Date(str);
@@ -52,6 +63,9 @@ const EventEditPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const [eventForm, setEventForm] = useState<EventForm>({
     title: "",
     type: "BATTLE",
@@ -59,7 +73,7 @@ const EventEditPage = () => {
     purchaseEndDate: "",
     eventStartDate: "",
     eventEndDate: "",
-    announcement: "",
+          announcementDate: "",
     description: "",
     participationMethod: "",
     rewards: [
@@ -109,7 +123,7 @@ const EventEditPage = () => {
           purchaseEndDate: toDatetimeLocal(detail.purchaseEndDate),
           eventStartDate: toDatetimeLocal(detail.eventStartDate),
           eventEndDate: toDatetimeLocal(detail.eventEndDate),
-          announcement: toDatetimeLocal(detail.announcement || detail.announcementDate),
+          announcementDate: toDatetimeLocal(detail.announcement || detail.announcementDate),
           description: detail.description || '',
           participationMethod: detail.participationMethod || '',
           rewards: mappedRewards,
@@ -157,6 +171,13 @@ const EventEditPage = () => {
       imageFile: null,
       imagePreview: ""
     }));
+  };
+
+  const showToastMessage = (message: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage(message);
+    setToastType(type);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   const handleRewardChange = (index: number, field: keyof EventRewardRequestDto, value: string) => {
@@ -208,7 +229,7 @@ const EventEditPage = () => {
     if (!eventForm.purchaseEndDate) errors.push("구매 종료일을 입력해주세요.");
     if (!eventForm.eventStartDate) errors.push("이벤트 시작일을 입력해주세요.");
     if (!eventForm.eventEndDate) errors.push("이벤트 종료일을 입력해주세요.");
-    if (!eventForm.announcement) errors.push("발표일을 입력해주세요.");
+    if (!eventForm.announcementDate) errors.push("발표일을 입력해주세요.");
     if (eventForm.maxParticipants < 1) errors.push("최대 참여자 수는 1명 이상이어야 합니다.");
     
     // 보상 검증
@@ -248,8 +269,8 @@ const EventEditPage = () => {
       }
     }
 
-    if (eventForm.eventEndDate && eventForm.announcement) {
-      if (new Date(eventForm.eventEndDate) >= new Date(eventForm.announcement)) {
+    if (eventForm.eventEndDate && eventForm.announcementDate) {
+      if (new Date(eventForm.eventEndDate) >= new Date(eventForm.announcementDate)) {
         errors.push("결과 발표일은 이벤트 종료일 이후여야 합니다.");
       }
     }
@@ -277,7 +298,7 @@ const EventEditPage = () => {
       formData.append("purchaseEndDate", toLocalDateString(eventForm.purchaseEndDate));
       formData.append("eventStartDate", toLocalDateString(eventForm.eventStartDate));
       formData.append("eventEndDate", toLocalDateString(eventForm.eventEndDate));
-      formData.append("announcement", toLocalDateString(eventForm.announcement));
+      formData.append("announcement", toLocalDateString(eventForm.announcementDate));
       formData.append("description", eventForm.description);
       formData.append("participationMethod", eventForm.participationMethod);
       formData.append("selectionCriteria", eventForm.selectionCriteria);
@@ -298,11 +319,30 @@ const EventEditPage = () => {
       });
 
       // console.log('API Response:', response.data);
-      alert("이벤트가 성공적으로 수정되었습니다.");
-      navigate("/events");
+      showToastMessage("이벤트가 성공적으로 수정되었습니다! 이벤트 목록 페이지로 이동합니다.", 'success');
+      
+      // 성공 후 이벤트 목록 페이지로 이동 (토스트 메시지가 보인 후)
+      setTimeout(() => {
+        navigate("/events");
+      }, 2000);
     } catch (error: any) {
       console.error("이벤트 수정 실패:", error);
-      alert("이벤트 수정에 실패했습니다.");
+      
+      let errorMessage = "이벤트 수정에 실패했습니다.";
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.status === 400) {
+        errorMessage = "입력 데이터가 올바르지 않습니다. 모든 필수 항목을 확인해주세요.";
+      } else if (error.response?.status === 401) {
+        errorMessage = "로그인이 필요하거나 권한이 없습니다.";
+      } else if (error.response?.status === 403) {
+        errorMessage = "관리자 권한이 필요합니다.";
+      } else if (error.response?.status >= 500) {
+        errorMessage = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+      }
+      
+      showToastMessage(errorMessage, 'error');
     } finally {
       setLoading(false);
     }
@@ -491,8 +531,8 @@ const EventEditPage = () => {
                 </label>
                 <input
                   type="datetime-local"
-                  name="announcement"
-                  value={eventForm.announcement}
+                  name="announcementDate"
+                  value={eventForm.announcementDate}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
@@ -682,13 +722,29 @@ const EventEditPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {loading ? '수정 중...' : '이벤트 수정'}
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  수정 중...
+                </>
+              ) : (
+                '이벤트 수정'
+              )}
             </button>
           </div>
         </form>
       </div>
+
+      {/* 토스트 메시지 */}
+      {showToast && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg animate-fade-in-out ${
+          toastType === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+        }`}>
+          {toastMessage}
+        </div>
+      )}
     </div>
   );
 };

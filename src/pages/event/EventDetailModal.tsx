@@ -8,10 +8,6 @@ interface EventDetailModalProps {
   open: boolean;
   onClose: () => void;
   event: EventDto | null;
-  setEditingEvent?: (event: EventDto) => void;
-  setShowEditModal?: (show: boolean) => void;
-  setEventToDelete?: (id: number) => void;
-  setShowDeleteModal?: (show: boolean) => void;
 }
 
 // 날짜 포맷 함수 추가 (컴포넌트 상단)
@@ -26,10 +22,6 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   open,
   onClose,
   event,
-  setEditingEvent,
-  setShowEditModal,
-  setEventToDelete,
-  setShowDeleteModal,
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -44,8 +36,6 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
       
       // 이미 event 객체가 있으면 그대로 사용, 없으면 API 호출
       if (event && Object.keys(event).length > 0) {
-        console.log('EventDetailModal - event 데이터:', event);
-        console.log('EventDetailModal - announcementDate:', event.announcementDate);
         setDetail(event);
         setLoading(false);
       } else {
@@ -106,21 +96,25 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
     if (!window.confirm('정말로 이 이벤트를 삭제하시겠습니까?')) return;
     try {
       await EventService.deleteEvent(eventId);
-      alert('이벤트가 삭제되었습니다.');
+      alert('이벤트가 삭제되었습니다. 이벤트 목록 페이지로 이동합니다.');
       onClose(); // 모달 닫기
-      navigate('/events', { replace: true }); // 올바른 경로로 수정
+      
+      // 삭제 성공 후 이벤트 목록 페이지로 이동 (메시지가 보인 후)
+      setTimeout(() => {
+        navigate('/events', { replace: true });
+      }, 1500);
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || '이벤트 삭제에 실패했습니다.';
       alert(errorMessage);
     }
   };
 
+  // 공통 유틸리티 함수로 분리 권장
   const getStatusText = (status: string) => {
     switch (status) {
       case 'UPCOMING': return '예정';
       case 'ONGOING': return '진행중';
-      case 'ENDED': return '종료';
-      case 'CANCELLED': return '취소';
+      case 'ENDED': return '완료';
       default: return '알 수 없음';
     }
   };
@@ -139,7 +133,6 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
       case 'UPCOMING': return 'bg-blue-600 text-white';
       case 'ONGOING': return 'bg-green-600 text-white';
       case 'ENDED': return 'bg-gray-600 text-white';
-      case 'CANCELLED': return 'bg-red-600 text-white';
       default: return 'bg-gray-600 text-white';
     }
   };
@@ -179,8 +172,6 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             <div className="absolute top-6 right-20 flex gap-3">
               <button
                 onClick={() => {
-                  console.log('Edit button clicked for event ID:', detail.eventId);
-                  console.log('Navigating to:', `/events/edit/${detail.eventId}`);
                   onClose();
                   navigate(`/events/edit/${detail.eventId}`);
                 }}

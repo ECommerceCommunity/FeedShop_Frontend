@@ -1,4 +1,5 @@
 import axiosInstance from './axios';
+import { EventRewardDto } from '../types/event';
 
 export interface FeedEventDto {
   eventId: number;
@@ -17,14 +18,16 @@ export interface ApiResponse<T> {
 }
 
 export interface EventReward {
-  rank: number;
-  reward: string;
-  conditionType: string;
-  conditionDescription: string;
+  id?: number;
+  rank?: number;
+  reward: string; // 백엔드와 일치 (rewardValue 제거)
+  conditionType?: string;
+  conditionDescription?: string;
+  maxRecipients?: number;
 }
 
 export interface EventDto {
-  eventId: number;
+  eventId: number; // 백엔드와 일치
   title: string;
   description: string;
   type: string;
@@ -35,9 +38,9 @@ export interface EventDto {
   purchaseEndDate?: string;
   purchasePeriod?: string;
   votePeriod?: string;
-  announcementDate: string;
+  announcementDate?: string; // 백엔드와 일치
   participationMethod: string;
-  rewards: EventReward[];
+  rewards: EventReward[] | string;
   selectionCriteria: string;
   precautions: string;
   maxParticipants: number;
@@ -56,7 +59,7 @@ export interface EventCreateRequestDto {
   purchaseEndDate: string;
   announcement: string;
   participationMethod: string;
-  rewards: EventReward[];
+  rewards: EventReward[] | string;
   selectionCriteria: string;
   precautions: string;
   maxParticipants: number;
@@ -77,10 +80,7 @@ export interface EventListResponse {
   number: number;
 }
 
-export interface EventRewardDto {
-  conditionValue: number;
-  rewardValue: string;
-}
+// EventRewardDto는 event.ts에서 import하여 사용
 
 class EventService {
 
@@ -212,8 +212,8 @@ class EventService {
       // 간단한 파싱 로직 (실제로는 더 정교한 파싱 필요)
       const lines = rewardsString.split('\n').filter(line => line.trim());
       return lines.map((line, index) => ({
-        conditionValue: index + 1,
-        rewardValue: line.trim()
+        conditionValue: String(index + 1),
+        reward: line.trim()
       }));
     } catch (error) {
       console.error('rewards 파싱 실패:', error);
@@ -225,7 +225,7 @@ class EventService {
    * EventRewardDto[]를 문자열로 변환
    */
   stringifyRewards(rewards: EventRewardDto[]): string {
-    return rewards.map(reward => reward.rewardValue).join('\n');
+    return rewards.map(reward => reward.reward).join('\n');
   }
 
   /**

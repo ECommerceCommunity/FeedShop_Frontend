@@ -4,6 +4,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import axiosInstance from "../../api/axios";
 import { EventType } from "../../types/types";
 
+// 백엔드 EventCreateRequestDto.EventRewardRequestDto와 일치하는 타입
 interface EventRewardRequestDto {
   conditionValue: string;
   rewardValue: string;
@@ -16,7 +17,7 @@ interface EventForm {
   purchaseEndDate: string;
   eventStartDate: string;
   eventEndDate: string;
-  announcement: string;
+  announcementDate: string;
   description: string;
   participationMethod: string;
   rewards: EventRewardRequestDto[];
@@ -28,20 +29,6 @@ interface EventForm {
   imagePreview: string;
 }
 
-// Add global styles for animation
-const style = document.createElement('style');
-style.textContent = `
-@keyframes fadeInOut {
-0% { opacity: 0; transform: translateY(-10px); }
-10% { opacity: 1; transform: translateY(0); }
-90% { opacity: 1; transform: translateY(0); }
-100% { opacity: 0; transform: translateY(-10px); }
-}
-.animate-fade-in-out {
-animation: fadeInOut 3s ease-in-out forwards;
-}
-`;
-document.head.appendChild(style);
 
 const EventCreatePage = () => {
   const navigate = useNavigate();
@@ -53,7 +40,7 @@ const EventCreatePage = () => {
     purchaseEndDate: "",
     eventStartDate: "",
     eventEndDate: "",
-    announcement: "",
+          announcementDate: "",
     description: "",
     participationMethod: "",
     rewards: [
@@ -82,11 +69,20 @@ const EventCreatePage = () => {
     precautions: false
   });
 
-  // 날짜 변환 헬퍼 함수
+  // 날짜 변환 헬퍼 함수 (백엔드 LocalDate 형식에 맞춤)
   const toLocalDateString = (dateTimeStr: string): string => {
     if (!dateTimeStr) return '';
-    const date = new Date(dateTimeStr);
-    return date.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+    try {
+      const date = new Date(dateTimeStr);
+      // 한국 시간대 고려하여 YYYY-MM-DD 형식으로 변환
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    } catch (error) {
+      console.error('날짜 변환 오류:', error);
+      return '';
+    }
   };
 
   // 권한 체크
@@ -129,7 +125,7 @@ const EventCreatePage = () => {
       purchaseEndDate: formatDate(nextWeek),
       eventStartDate: formatDate(nextWeek),
       eventEndDate: formatDate(nextMonth),
-      announcement: formatDate(nextMonth)
+      announcementDate: formatDate(nextMonth)
     }));
   }, []);
 
@@ -221,7 +217,7 @@ const EventCreatePage = () => {
       errors.push("이벤트 종료일을 설정해주세요.");
     }
 
-    if (!eventForm.announcement) {
+    if (!eventForm.announcementDate) {
       errors.push("발표일을 설정해주세요.");
     }
 
@@ -241,12 +237,27 @@ const EventCreatePage = () => {
       errors.push("최대 참가자 수는 1명 이상이어야 합니다.");
     }
 
+    // 보상 데이터 검증
+    if (eventForm.rewards.length === 0) {
+      errors.push("최소 1개의 보상이 필요합니다.");
+    } else {
+      for (let i = 0; i < eventForm.rewards.length; i++) {
+        const reward = eventForm.rewards[i];
+        if (!reward.conditionValue || !reward.conditionValue.trim()) {
+          errors.push(`${i + 1}번째 보상의 조건값을 입력해주세요.`);
+        }
+        if (!reward.rewardValue || !reward.rewardValue.trim()) {
+          errors.push(`${i + 1}번째 보상의 내용을 입력해주세요.`);
+        }
+      }
+    }
+
     // 날짜 유효성 검사
     const purchaseStart = new Date(eventForm.purchaseStartDate);
     const purchaseEnd = new Date(eventForm.purchaseEndDate);
     const eventStart = new Date(eventForm.eventStartDate);
     const eventEnd = new Date(eventForm.eventEndDate);
-    const announcement = new Date(eventForm.announcement);
+    const announcement = new Date(eventForm.announcementDate);
 
     if (purchaseEnd <= purchaseStart) {
       errors.push("구매 종료일은 시작일보다 늦어야 합니다.");
@@ -287,15 +298,19 @@ const EventCreatePage = () => {
       formData.append("purchaseEndDate", toLocalDateString(eventForm.purchaseEndDate));
       formData.append("eventStartDate", toLocalDateString(eventForm.eventStartDate));
       formData.append("eventEndDate", toLocalDateString(eventForm.eventEndDate));
-      formData.append("announcement", toLocalDateString(eventForm.announcement));
+      formData.append("announcement", toLocalDateString(eventForm.announcementDate));
       formData.append("description", eventForm.description);
       formData.append("participationMethod", eventForm.participationMethod);
       formData.append("selectionCriteria", eventForm.selectionCriteria);
       formData.append("precautions", eventForm.precautions);
       formData.append("maxParticipants", eventForm.maxParticipants.toString());
       
-      // rewards를 JSON 문자열로 변환
-      formData.append("rewards", JSON.stringify(eventForm.rewards));
+      // rewards를 JSON 문자열로 변환 (백엔드 형식에 맞춤)
+      const rewardsForBackend = eventForm.rewards.map(reward => ({
+        conditionValue: reward.conditionValue,
+        rewardValue: reward.rewardValue
+      }));
+      formData.append("rewards", JSON.stringify(rewardsForBackend));
       
       if (eventForm.imageFile) {
         formData.append("image", eventForm.imageFile);
@@ -307,16 +322,30 @@ const EventCreatePage = () => {
         },
       });
 
-      showToastMessage("이벤트가 성공적으로 생성되었습니다!", 'success');
+      showToastMessage("이벤트가 성공적으로 생성되었습니다! 이벤트 목록 페이지로 이동합니다.", 'success');
       
-      // 성공 후 이벤트 목록 페이지로 이동
+      // 성공 후 이벤트 목록 페이지로 이동 (토스트 메시지가 보인 후)
       setTimeout(() => {
         navigate("/events");
-      }, 1500);
+      }, 2000);
 
     } catch (error: any) {
       console.error("이벤트 생성 실패:", error);
-      const errorMessage = error.response?.data?.message || "이벤트 생성에 실패했습니다.";
+      
+      let errorMessage = "이벤트 생성에 실패했습니다.";
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.status === 400) {
+        errorMessage = "입력 데이터가 올바르지 않습니다. 모든 필수 항목을 확인해주세요.";
+      } else if (error.response?.status === 401) {
+        errorMessage = "로그인이 필요하거나 권한이 없습니다.";
+      } else if (error.response?.status === 403) {
+        errorMessage = "관리자 권한이 필요합니다.";
+      } else if (error.response?.status >= 500) {
+        errorMessage = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+      }
+      
       showToastMessage(errorMessage, 'error');
     } finally {
       setIsLoading(false);
@@ -530,8 +559,8 @@ const EventCreatePage = () => {
                 <div className="relative">
                   <input
                     type="datetime-local"
-                    name="announcement"
-                    value={eventForm.announcement}
+                    name="announcementDate"
+                    value={eventForm.announcementDate}
                     onChange={handleChange}
                     className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -769,9 +798,16 @@ const EventCreatePage = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {isLoading ? '생성 중...' : '이벤트 생성'}
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  생성 중...
+                </>
+              ) : (
+                '이벤트 생성'
+              )}
             </button>
           </div>
         </form>

@@ -78,14 +78,14 @@ const EventListPage = () => {
         // 필터 파라미터 설정 (백엔드 상태값으로 변환)
         if (activeFilter !== "all") {
           switch (activeFilter) {
-            case "RECRUITING":
-              params.status = "upcoming";
+            case "UPCOMING":
+              params.status = "UPCOMING";
               break;
-            case "IN_PROGRESS":
-              params.status = "ongoing";
+            case "ONGOING":
+              params.status = "ONGOING";
               break;
-            case "COMPLETED":
-              params.status = "ended";
+            case "ENDED":
+              params.status = "ENDED";
               break;
             default:
               params.status = activeFilter;
@@ -152,8 +152,6 @@ const EventListPage = () => {
         return "진행중";
       case "ENDED":
         return "완료";
-      case "CANCELLED":
-        return "취소";
       default:
         return status;
     }
@@ -177,7 +175,6 @@ const EventListPage = () => {
       case 'UPCOMING': return 'bg-blue-600 text-white';
       case 'ONGOING': return 'bg-green-600 text-white';
       case 'ENDED': return 'bg-gray-600 text-white';
-      case 'CANCELLED': return 'bg-red-600 text-white';
       default: return 'bg-gray-600 text-white';
     }
   };
@@ -318,19 +315,20 @@ const EventListPage = () => {
           전체
         </button>
         <button
-                  onClick={() => handleFilterChange("RECRUITING")}
+                  onClick={() => handleFilterChange("UPCOMING")}
                   className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
-                    activeFilter === "RECRUITING"
+                    activeFilter === "UPCOMING"
                       ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
                       : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
                   }`}
                 >
+
                   예정
                 </button>
                 <button
-                  onClick={() => handleFilterChange("IN_PROGRESS")}
+                  onClick={() => handleFilterChange("ONGOING")}
                   className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
-                    activeFilter === "IN_PROGRESS"
+                    activeFilter === "ONGOING"
                       ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
                       : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
                   }`}
@@ -338,9 +336,9 @@ const EventListPage = () => {
           진행중
         </button>
         <button
-                  onClick={() => handleFilterChange("COMPLETED")}
+                  onClick={() => handleFilterChange("ENDED")}
                   className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
-                    activeFilter === "COMPLETED"
+                    activeFilter === "ENDED"
                       ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
                       : "bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md"
                   }`}

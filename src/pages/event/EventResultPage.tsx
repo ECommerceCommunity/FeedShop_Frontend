@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../api/axios";
-import { Event, EventRanking, EventParticipant } from "../../types/types";
+import { Event, EventRanking } from "../../types/types";
+import EventService from "../../api/eventService";
 
 interface EventWithRanking extends Event {
   participantCount: number;
@@ -8,6 +10,7 @@ interface EventWithRanking extends Event {
 }
 
 const EventResultPage = () => {
+  const navigate = useNavigate();
   const [events, setEvents] = useState<EventWithRanking[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "UPCOMING" | "ONGOING" | "ENDED">("all");
@@ -30,6 +33,7 @@ const EventResultPage = () => {
         if (statusFilter !== "all") params.status = statusFilter;
         if (searchTerm) params.keyword = searchTerm;
 
+        // TODO: 백엔드 API 엔드포인트 확인 필요
         const res = await axiosInstance.get("/api/events/admin/results", { params });
         setEvents(res.data.content || res.data);
       } catch (err) {
@@ -56,6 +60,7 @@ const EventResultPage = () => {
   // 결과 승인/반려 처리
   const handleRankingApproval = async (participantId: number, action: "approve" | "reject") => {
     try {
+      // TODO: 백엔드 API 엔드포인트 확인 필요
       await axiosInstance.put(`/api/events/participants/${participantId}/${action}`);
       if (selectedEvent) {
         await fetchEventRankings(selectedEvent.id);
@@ -80,12 +85,12 @@ const EventResultPage = () => {
     return 0;
   });
 
+  // 공통 유틸리티 함수로 분리 권장
   const getStatusText = (status: Event["status"]) => {
     switch (status) {
       case "ONGOING": return "진행중";
       case "UPCOMING": return "예정";
       case "ENDED": return "완료";
-      case "CANCELLED": return "취소";
       default: return "";
     }
   };
@@ -94,7 +99,7 @@ const EventResultPage = () => {
     switch (type) {
       case "BATTLE": return "배틀";
       case "MISSION": return "미션";
-      case "MULTIPLE": return "다수";
+      case "MULTIPLE": return "랭킹";
       default: return "";
     }
   };
@@ -107,6 +112,7 @@ const EventResultPage = () => {
 
   const exportResults = async () => {
     try {
+      // TODO: 백엔드 API 엔드포인트 확인 필요
       const res = await axiosInstance.get("/api/events/admin/export", {
         responseType: 'blob'
       });
@@ -126,6 +132,7 @@ const EventResultPage = () => {
   const bulkApproval = async () => {
     if (!selectedEvent) return;
     try {
+      // TODO: 백엔드 API 엔드포인트 확인 필요
       await axiosInstance.put(`/api/events/${selectedEvent.id}/bulk-approval`);
       await fetchEventRankings(selectedEvent.id);
       alert("일괄 승인이 완료되었습니다.");
@@ -176,10 +183,10 @@ const EventResultPage = () => {
           <option value="latest">최신순</option>
           <option value="participants">참여자순</option>
         </select>
-        <button className={`px-4 py-2 rounded-lg font-medium ${statusFilter === "all" ? "bg-blue-500 text-white" : "bg-white text-gray-700 border"}`} onClick={() => setStatusFilter("all")}>전체</button>
-        <button className={`px-4 py-2 rounded-lg font-medium ${statusFilter === "ONGOING" ? "bg-blue-500 text-white" : "bg-white text-gray-700 border"}`} onClick={() => setStatusFilter("ONGOING")}>진행중</button>
-        <button className={`px-4 py-2 rounded-lg font-medium ${statusFilter === "UPCOMING" ? "bg-blue-500 text-white" : "bg-white text-gray-700 border"}`} onClick={() => setStatusFilter("UPCOMING")}>예정</button>
-        <button className={`px-4 py-2 rounded-lg font-medium ${statusFilter === "ENDED" ? "bg-blue-500 text-white" : "bg-white text-gray-700 border"}`} onClick={() => setStatusFilter("ENDED")}>종료</button>
+                    <button className={`px-4 py-2 rounded-lg font-medium ${statusFilter === "all" ? "bg-blue-500 text-white" : "bg-white text-gray-700 border"}`} onClick={() => setStatusFilter("all")}>전체</button>
+            <button className={`px-4 py-2 rounded-lg font-medium ${statusFilter === "ONGOING" ? "bg-blue-500 text-white" : "bg-white text-gray-700 border"}`} onClick={() => setStatusFilter("ONGOING")}>진행중</button>
+            <button className={`px-4 py-2 rounded-lg font-medium ${statusFilter === "UPCOMING" ? "bg-blue-500 text-white" : "bg-white text-gray-700 border"}`} onClick={() => setStatusFilter("UPCOMING")}>예정</button>
+            <button className={`px-4 py-2 rounded-lg font-medium ${statusFilter === "ENDED" ? "bg-blue-500 text-white" : "bg-white text-gray-700 border"}`} onClick={() => setStatusFilter("ENDED")}>완료</button>
       </div>
 
       {loading && <div>로딩 중...</div>}
@@ -222,7 +229,23 @@ const EventResultPage = () => {
                 </td>
                 <td className="px-4 py-2 space-x-2">
                   <button className="text-[#87CEEB] hover:underline" onClick={() => openResultModal(event)}>결과 보기</button>
-                  <button className="text-red-500 hover:underline" onClick={() => setEvents(events.filter(e => e.id !== event.id))}>삭제</button>
+                  <button 
+                    className="text-red-500 hover:underline" 
+                    onClick={async () => {
+                      if (window.confirm('정말로 이 이벤트를 삭제하시겠습니까?')) {
+                        try {
+                          await EventService.deleteEvent(event.id);
+                          alert('이벤트가 삭제되었습니다. 이벤트 목록 페이지로 이동합니다.');
+                          navigate('/events');
+                        } catch (error: any) {
+                          const errorMessage = error.response?.data?.message || '이벤트 삭제에 실패했습니다.';
+                          alert(errorMessage);
+                        }
+                      }
+                    }}
+                  >
+                    삭제
+                  </button>
                 </td>
               </tr>
             ))}
