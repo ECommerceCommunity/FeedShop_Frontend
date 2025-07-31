@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import AddressManagementPage from "./AddressManagementPage";
+import CouponsPage from "./CouponsPage"; // CouponsPage import 추가
 
 // 예시 데이터 (향후 API 연동 필요)
 const user = {
@@ -339,10 +340,10 @@ function MyPage() {
             <NavItem to="/wishlist">
               <i className="fas fa-heart"></i> 위시리스트
             </NavItem>
-            <NavItem to="/coupons">
+            <NavItem to="/mypage/coupons"> {/* 경로 수정 */}
               <i className="fas fa-ticket-alt"></i> 쿠폰/포인트
             </NavItem>
-            <NavItem to="settings">
+            <NavItem to="/mypage/settings"> {/* 경로 수정 */}
               <i className="fas fa-cog"></i> 설정
             </NavItem>
           </NavMenu>
@@ -351,7 +352,7 @@ function MyPage() {
           <Routes>
             <Route index element={<MyPageDashboard />} />
             <Route path="settings" element={<AddressManagementPage />} />
-            {/* 다른 서브 페이지 라우트 추가 */}
+            <Route path="coupons" element={<CouponsPage />} /> {/* 라우트 추가 */}
           </Routes>
         </MainContent>
       </MainLayout>
