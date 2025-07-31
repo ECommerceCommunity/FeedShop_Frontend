@@ -533,7 +533,7 @@ const EventListPage = () => {
         )}
 
         {/* 관리자용 이벤트 생성 버튼 */}
-        {user?.userType === "ADMIN" && (
+        {user?.userType === "admin" && (
           <div className="mt-8 text-center">
             <button
               onClick={() => navigate("/events/create")}
