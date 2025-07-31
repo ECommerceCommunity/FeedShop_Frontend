@@ -249,30 +249,26 @@ const EventEditPage = () => {
     try {
       setLoading(true);
 
-      const formData = new FormData();
-      formData.append("title", eventForm.title);
-      formData.append("type", eventForm.type);
-      formData.append("purchaseStartDate", eventForm.purchaseStartDate);
-      formData.append("purchaseEndDate", eventForm.purchaseEndDate);
-      formData.append("eventStartDate", eventForm.eventStartDate);
-      formData.append("eventEndDate", eventForm.eventEndDate);
-      formData.append("announcement", eventForm.announcement);
-      formData.append("description", eventForm.description);
-      formData.append("participationMethod", eventForm.participationMethod);
-      formData.append("selectionCriteria", eventForm.selectionCriteria);
-      formData.append("precautions", eventForm.precautions);
-      formData.append("maxParticipants", eventForm.maxParticipants.toString());
-      
-      // rewards를 JSON 문자열로 변환
-      formData.append("rewards", JSON.stringify(eventForm.rewards));
-      
-      if (eventForm.imageFile) {
-        formData.append("image", eventForm.imageFile);
-      }
+      // JSON 데이터로 전송
+      const eventData = {
+        title: eventForm.title,
+        type: eventForm.type,
+        purchaseStartDate: eventForm.purchaseStartDate,
+        purchaseEndDate: eventForm.purchaseEndDate,
+        eventStartDate: eventForm.eventStartDate,
+        eventEndDate: eventForm.eventEndDate,
+        announcement: eventForm.announcement,
+        description: eventForm.description,
+        participationMethod: eventForm.participationMethod,
+        selectionCriteria: eventForm.selectionCriteria,
+        precautions: eventForm.precautions,
+        maxParticipants: eventForm.maxParticipants,
+        rewards: eventForm.rewards
+      };
 
-      const response = await axiosInstance.put(`/api/events/${id}`, formData, {
+      const response = await axiosInstance.put(`/api/events/${id}`, eventData, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json",
         },
       });
 
