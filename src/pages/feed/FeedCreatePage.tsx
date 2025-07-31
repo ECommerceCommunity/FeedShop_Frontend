@@ -127,10 +127,10 @@ const FeedCreatePage: React.FC = () => {
       return;
     }
 
-    files.forEach(file => {
+    files.forEach(async file => {
       if (validateImageFile(file)) {
-        const preview = createImagePreview(file);
-        setUploadedImages(prev => [...prev, preview as string]);
+        const preview = await createImagePreview(file);
+        setUploadedImages(prev => [...prev, preview]);
       }
     });
   };
@@ -197,13 +197,12 @@ const FeedCreatePage: React.FC = () => {
       const feedData: CreateFeedRequest = {
         title: title.trim(),
         content: content.trim(),
-        images: imageUrls,
+        imageUrls: imageUrls,
         hashtags: hashtags,
-        productId: selectedProductId ? parseInt(selectedProductId) : undefined,
-        size: selectedSize || undefined,
+        orderItemId: selectedProductId ? parseInt(selectedProductId) : 0,
         eventId: selectedEventId ? parseInt(selectedEventId) : undefined,
-        instagramLinked,
-        instagramId: instagramId || undefined
+        feedType: selectedEventId ? 'EVENT' : 'DAILY',
+        instagramId: instagramLinked ? instagramId : undefined
       };
 
       if (editId) {
