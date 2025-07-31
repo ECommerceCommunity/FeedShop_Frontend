@@ -52,9 +52,9 @@ const EventListPage = () => {
   const nickname = user?.nickname;
   
   // 디버깅을 위한 사용자 정보 출력
-  console.log('Current user:', user);
-  console.log('User nickname:', nickname);
-  console.log('User type:', user?.userType);
+      // console.log('Current user:', user);
+    // console.log('User nickname:', nickname);
+    // console.log('User type:', user?.userType);
 
   const handleEventClick = (event: EventListItem) => {
     setSelectedEvent(event);

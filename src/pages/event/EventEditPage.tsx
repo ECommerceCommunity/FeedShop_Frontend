@@ -161,7 +161,7 @@ const EventEditPage = () => {
         },
       });
       
-      console.log('API Response:', response.data);
+              // console.log('API Response:', response.data);
       alert("이벤트가 성공적으로 수정되었습니다.");
       navigate("/events");
     } catch (error: any) {
@@ -176,10 +176,10 @@ const EventEditPage = () => {
     switch (type) {
       case "BATTLE":
         return "배틀";
-      case "REVIEW":
-        return "리뷰";
-      case "CHALLENGE":
-        return "챌린지";
+      case "MISSION":
+        return "미션";
+      case "MULTIPLE":
+        return "다수";
       default:
         return type;
     }
@@ -250,7 +250,7 @@ const EventEditPage = () => {
                 이벤트 타입 *
               </label>
               <div className="grid grid-cols-3 gap-4">
-                {(["BATTLE", "REVIEW", "CHALLENGE"] as EventType[]).map((type) => (
+                {(["BATTLE", "MISSION", "MULTIPLE"] as EventType[]).map((type) => (
                   <button
                     key={type}
                     type="button"

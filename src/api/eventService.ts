@@ -41,7 +41,7 @@ class EventService {
           return currentDate >= startDate && currentDate <= endDate;
         });
         
-        console.log('필터링된 이벤트 목록:', events);
+        // console.log('필터링된 이벤트 목록:', events);
         return events;
       } else {
         throw new Error(response.data.message || '이벤트 목록 조회에 실패했습니다.');
