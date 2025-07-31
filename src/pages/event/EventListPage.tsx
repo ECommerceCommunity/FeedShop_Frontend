@@ -85,13 +85,59 @@ const EventListPage = () => {
           params.search = searchKeyword.trim();
         }
         
-        const response = await axiosInstance.get("/api/v1/events", { params });
-        const data = response.data;
-        
-        console.log('이벤트 목록 응답:', data);
-        
-        setEvents(data.content || []);
-        setTotalPages(data.totalPages || 1);
+        try {
+          const response = await axiosInstance.get("/api/v1/events", { params });
+          const data = response.data;
+          
+          console.log('이벤트 목록 응답:', data);
+          
+          setEvents(data.content || []);
+          setTotalPages(data.totalPages || 1);
+        } catch (error) {
+          console.log('백엔드 연결 실패, fallback 데이터 사용');
+          // Fallback 데이터 사용
+          const fallbackEvents = [
+            {
+              id: 1,
+              title: "여름 스타일 챌린지",
+              description: "여름에 어울리는 스타일링을 공유해보세요!",
+              type: "BATTLE",
+              status: "ONGOING",
+              eventStartDate: "2025-07-01T00:00:00",
+              eventEndDate: "2025-08-31T23:59:59",
+              purchaseStartDate: "2025-06-15T00:00:00",
+              purchaseEndDate: "2025-07-31T23:59:59",
+              announcement: "2025-09-15T00:00:00",
+              participationMethod: "1. 이벤트 상품 구매\n2. 스타일링 후 사진 촬영\n3. 피드에 업로드",
+              rewards: "1등: 프리미엄 스니커즈\n2등: 트렌디한 운동화\n3등: 스타일리시한 슈즈",
+              selectionCriteria: "스타일링 퀄리티 40%\n사진 퀄리티 30%\n창의성 20%\n참여도 10%",
+              precautions: "동일한 아이템이 명확히 확인되지 않으면 제외\n타인의 저작권을 침해하는 콘텐츠는 제외",
+              maxParticipants: 100,
+              imageUrl: "https://via.placeholder.com/400x200?text=Summer+Style+Challenge"
+            },
+            {
+              id: 2,
+              title: "신상품 리뷰 이벤트",
+              description: "새로 출시된 상품들의 리뷰를 작성해보세요!",
+              type: "MISSION",
+              status: "UPCOMING",
+              eventStartDate: "2025-08-01T00:00:00",
+              eventEndDate: "2025-09-30T23:59:59",
+              purchaseStartDate: "2025-07-15T00:00:00",
+              purchaseEndDate: "2025-08-31T23:59:59",
+              announcement: "2025-10-15T00:00:00",
+              participationMethod: "1. 신상품 구매\n2. 상세한 리뷰 작성\n3. 피드에 업로드",
+              rewards: "1등: 상품권 10만원\n2등: 상품권 5만원\n3등: 상품권 3만원",
+              selectionCriteria: "리뷰 퀄리티 50%\n사진 퀄리티 30%\n창의성 20%",
+              precautions: "부정한 방법으로 참여한 경우 당첨 취소\n타인의 저작권을 침해하는 콘텐츠는 제외",
+              maxParticipants: 50,
+              imageUrl: "https://via.placeholder.com/400x200?text=New+Product+Review"
+            }
+          ];
+          
+          setEvents(fallbackEvents);
+          setTotalPages(1);
+        }
       } catch (error: any) {
         console.error("이벤트 목록 조회 실패:", error);
         setError("이벤트 목록을 불러오는데 실패했습니다.");
