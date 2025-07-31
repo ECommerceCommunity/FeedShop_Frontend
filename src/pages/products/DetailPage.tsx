@@ -545,7 +545,7 @@ const DetailPage: React.FC = () => {
   };
 
   // 바로 주문을 한다.
-  const handleDirectOrder = () => {
+  const handleDirectOrder = async () => {
     if (!user) {
       setModalMessage("로그인이 필요한 서비스입니다.");
       setShowErrorModal(true);
@@ -564,15 +564,46 @@ const DetailPage: React.FC = () => {
       return;
     }
 
-    // 바로 주문 페이지로 이동 (선택된 옵션 정보 전달)
-    // directOrder : true, 상품정보, 옵션정보
-    navigate("/payment", {
-      state: {
-        directOrder: true,
-        product,
-        selectedOptions,
-      },
-    });
+    const tempCartItemIds: number[] = [];
+
+    try {
+      // 선택된 모든 옵션을 임시로 장바구니에 추가
+      for (const option of selectedOptions) {
+        const response = await CartService.addCartItem({
+          optionId: option.optionId,
+          imageId: product?.images[0].imageId || 1,
+          quantity: option.quantity,
+        });
+
+        // 임시 장바구니 아이템 ID 저장
+        if (response?.cartItemId) {
+          tempCartItemIds.push(response.cartItemId);
+        }
+      }
+
+      // PaymentPage로 이동하며 바로주문 정보 전달
+      navigate("/payment", {
+        state: {
+          isDirectOrder: true, // 바로주문 플래그
+          tempCartItemIds, // 임시로 추가된 장바구니 아이템 ID들
+          originalProductInfo: {
+            productId: product?.productId,
+            productName: product?.name,
+            selectedOptions: selectedOptions, // 원본 선택 옵션 정보
+          },
+        },
+      });
+    } catch (error: any) {
+      if (tempCartItemIds.length > 0) {
+        for (const cartItemId of tempCartItemIds) {
+          await CartService.removeCartItem(cartItemId);
+        }
+      }
+      setModalMessage("주문 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+      setShowErrorModal(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 총 계산 함수들

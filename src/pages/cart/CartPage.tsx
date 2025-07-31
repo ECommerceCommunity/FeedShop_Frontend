@@ -505,7 +505,6 @@ const CartPageContent: React.FC = () => {
     navigate("/payment", {
       state: {
         cartItems: selectedCartItems,
-        fromCart: true,
       },
     });
   };

@@ -4,10 +4,9 @@ import styled from "styled-components";
 import { PaymentItem } from "../../types/order";
 import { CreateOrderRequest } from "../../types/order";
 import { OrderService } from "../../api/orderService";
-import { CartService } from "../../api/cartService";
-import { useCart } from "../../hooks/useCart";
 import { toUrl } from "../../utils/images";
 import Fail from "../../components/modal/Fail";
+import CartService from "api/cartService";
 
 // 스타일드 컴포넌트들 (기존 코드와 동일)
 const Container = styled.div`
@@ -499,7 +498,6 @@ const LoadingSpinner = styled.div`
 const PaymentPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { updateCartItemCount } = useCart();
 
   // 상태 관리
   const [items, setItems] = useState<PaymentItem[]>([]);
@@ -523,6 +521,8 @@ const PaymentPage: React.FC = () => {
   });
   const [errorMessage, setErrorMessage] = useState("");
   const [showErrorModal, setErrorModal] = useState(false);
+  const [isDirectOrder, setIsDirectOrder] = useState(false);
+  const [tempCartItemIds, setTempCartItemIds] = useState<number[]>([]);
 
   // 페이지 로드 시 주문 아이템 설정
   useEffect(() => {
@@ -534,69 +534,66 @@ const PaymentPage: React.FC = () => {
       return;
     }
 
-    let items: PaymentItem[] = [];
+    // 바로 주문인 경우
+    if (state.isDirectOrder) {
+      setIsDirectOrder(true);
+      setTempCartItemIds(state.tempCartItemIds);
+      loadDirectOrderItems(state.tempCartItemIds);
+      return;
+    }
 
-    try {
-      // 장바구니에서 온 경우
-      if (state.cartItems) {
-        items = state.cartItems
-          .filter((item: any) => item && item.productId)
-          .map((item: any) => {
-            return {
-              id: `${item.productId}-${item.optionId}`,
-              productName: item.productName,
-              size: item.optionDetails?.size?.replace("SIZE_", "") || "",
-              discountPrice: item.discountPrice,
-              productPrice: item.productPrice,
-              discount: item.productPrice - item.discountPrice,
-              quantity: item.quantity,
-              imageUrl: item.imageUrl,
-              selected: item.selected,
-            };
-          });
-      } else if (
-        state.directOrder &&
-        state.product &&
-        Array.isArray(state.selectedOptions)
-      ) {
-        // 바로 주문인 경우 (DetailPage에서 온 경우)
-        const { product, selectedOptions } = state;
-
-        items = selectedOptions.map((item: any) => ({
-          id: `${product.productId}-${item.optionId}`,
-          productName: product.name,
-          size: item.size,
-          discountPrice: product.discountPrice,
-          productPrice: product.price,
-          discount: product.price - product.discountPrice,
+    // 장바구니 주문인 경우
+    const items = state.cartItems
+      .filter((item: any) => item && item.productId)
+      .map((item: any) => {
+        return {
+          id: `${item.productId}-${item.optionId}`,
+          productName: item.productName,
+          size: item.optionDetails?.size?.replace("SIZE_", "") || "",
+          discountPrice: item.discountPrice,
+          productPrice: item.productPrice,
+          discount: item.productPrice - item.discountPrice,
           quantity: item.quantity,
-          imageUrl: product.images[0]?.url,
-          selected: true,
-        }));
-      } else {
-        throw new Error("지원하지 않는 주문 방식입니다.");
-      }
+          imageUrl: item.imageUrl,
+          selected: item.selected,
+        };
+      });
 
-      if (items.length === 0) {
-        setErrorMessage("주문할 상품이 없습니다.");
+    setItems(items);
+  }, [location.state, navigate]);
+
+  const loadDirectOrderItems = async (tempIds: number[]) => {
+    try {
+      // 장바구니 전체 데이터 가져오기
+      const cartData = await CartService.getCartItems();
+
+      // 임시 아이템들만 필터링
+      const directOrderItems = cartData.items
+        .filter((item) => tempIds.includes(item.cartItemId))
+        .map((item: any) => ({
+          id: `${item.productId}-${item.optionId || item.optionInfo?.optionId}`,
+          productName: item.productName,
+          size: item.optionInfo?.size?.replace("SIZE_", "") || "",
+          discountPrice: item.discountPrice,
+          productPrice: item.productPrice,
+          discount: item.productPrice - item.discountPrice,
+          quantity: item.quantity,
+          imageUrl: item.imageUrl,
+          selected: true, // 바로주문은 항상 선택됨
+        }));
+
+      if (directOrderItems.length === 0) {
+        setErrorMessage("주문할 상품을 찾을 수 없습니다.");
         setErrorModal(true);
         return;
       }
 
-      setItems(items);
-    } catch (error: any) {
-      setErrorMessage("주문 정보를 처리하는 중 오류가 발생했습니다.");
+      setItems(directOrderItems);
+    } catch (error) {
+      setErrorMessage("주문 정보를 불러오는데 실패했습니다.");
       setErrorModal(true);
-
-      setTimeout(() => {
-        if (window.history.length > 1) {
-          navigate(-1);
-        } else {
-          navigate("/products");
-        }
-      }, 3000);
     }
-  }, [location.state, navigate]);
+  };
 
   // 가격 포맷팅 함수
   const formatPrice = (price: number): string => {
