@@ -342,13 +342,11 @@ const CartPageContent: React.FC = () => {
     try {
       setLoading(true);
       const data = await CartService.getCartItems();
-      console.log("장바구니 데이터:", data);
       setCartData(data);
 
       // 기본적으로 모든 아이템 선택
       setSelectedItems(data.items.map((item) => item.cartItemId));
     } catch (err: any) {
-      console.error("장바구니 조회 실패:", err);
       setErrorMessage("장바구니 정보를 불러오는데 실패했습니다.");
       setShowErrorModal(true);
     } finally {
@@ -417,7 +415,6 @@ const CartPageContent: React.FC = () => {
     try {
       await CartService.updateCartItem(cartItemId, { quantity: newQuantity });
     } catch (err: any) {
-      console.error("수량 변경 실패:", err);
       // API 실패 시 원래 데이터로 복구
       await loadCartData();
       setErrorMessage("수량 변경에 실패했습니다.");
@@ -434,7 +431,6 @@ const CartPageContent: React.FC = () => {
       // 선택된 아이템 목록에서도 제거
       setSelectedItems((prev) => prev.filter((id) => id !== cartItemId));
     } catch (err: any) {
-      console.error("아이템 삭제 실패:", err);
       setErrorMessage("상품 삭제에 실패했습니다.");
       setShowErrorModal(true);
     }
@@ -461,11 +457,7 @@ const CartPageContent: React.FC = () => {
     }
 
     // 3. 백그라운드에서 API 호출
-    try {
-      await CartService.updateCartItem(cartItemId, { selected });
-    } catch (err: any) {
-      console.error("선택 상태 변경 실패:", err);
-    }
+    await CartService.updateCartItem(cartItemId, { selected });
   };
 
   // 전체 선택/해제 함수
@@ -490,14 +482,10 @@ const CartPageContent: React.FC = () => {
     });
 
     // 3. 백그라운드에서 API 호출
-    try {
-      const updatePromises = cartData.items.map((item) =>
-        CartService.updateCartItem(item.cartItemId, { selected: selectAll })
-      );
-      await Promise.all(updatePromises);
-    } catch (err: any) {
-      console.error("전체 선택 변경 실패:", err);
-    }
+    const updatePromises = cartData.items.map((item) =>
+      CartService.updateCartItem(item.cartItemId, { selected: selectAll })
+    );
+    await Promise.all(updatePromises);
   };
 
   // 주문하기 함수

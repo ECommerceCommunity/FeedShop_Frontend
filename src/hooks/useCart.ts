@@ -60,11 +60,7 @@ export const useCart = (): UseCartReturn => {
       );
 
       setCartItemCount(totalCount);
-
-      console.log(`장바구니 아이템 개수 업데이트: ${totalCount}개`);
     } catch (err: any) {
-      console.error("장바구니 개수 업데이트 실패:", err);
-
       // 에러 발생 시 개수를 0으로 설정
       setCartItemCount(0);
       setError(err.message || "장바구니 정보를 불러오는데 실패했습니다.");

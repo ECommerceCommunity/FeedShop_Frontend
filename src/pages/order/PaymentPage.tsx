@@ -2,9 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { PaymentItem } from "../../types/order";
+import { CreateOrderRequest } from "../../types/order";
+import { OrderService } from "../../api/orderService";
+import { CartService } from "../../api/cartService";
+import { useCart } from "../../hooks/useCart";
+import { toUrl } from "../../utils/images";
 import Fail from "../../components/modal/Fail";
 
-// 스타일드 컴포넌트들
+// 스타일드 컴포넌트들 (기존 코드와 동일)
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
@@ -103,6 +108,48 @@ const TextArea = styled.textarea`
   }
 `;
 
+const DeliveryRequestContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const RequestOptionContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+`;
+
+const RequestOptionButton = styled.button<{ selected: boolean }>`
+  padding: 12px 16px;
+  border: 2px solid ${(props) => (props.selected ? "#3b82f6" : "#e5e7eb")};
+  border-radius: 8px;
+  background: ${(props) => (props.selected ? "#eff6ff" : "#f9fafb")};
+  color: ${(props) => (props.selected ? "#2563eb" : "#374151")};
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+
+  &:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const CustomRequestContainer = styled.div<{ show: boolean }>`
+  margin-top: ${(props) => (props.show ? "8px" : "0")};
+  max-height: ${(props) => (props.show ? "200px" : "0")};
+  overflow: hidden;
+  transition: all 0.3s ease;
+  opacity: ${(props) => (props.show ? 1 : 0)};
+`;
+
 const Row = styled.div`
   display: grid;
   grid-template-columns: 1fr 2fr;
@@ -138,11 +185,6 @@ const PaymentMethodButton = styled.button<{ selected: boolean }>`
     border-color: #3b82f6;
     background: #eff6ff;
   }
-
-  @media (max-width: 768px) {
-    flex: unset;
-    width: 100%;
-  }
 `;
 
 const PointContainer = styled.div`
@@ -150,6 +192,70 @@ const PointContainer = styled.div`
   border-radius: 8px;
   padding: 16px;
   background: #f9fafb;
+`;
+
+const PointHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+`;
+
+const PointToggle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const ToggleSwitch = styled.label`
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+`;
+
+const ToggleSlider = styled.input.attrs({ type: "checkbox" })`
+  opacity: 0;
+  width: 0;
+  height: 0;
+
+  &:checked + span {
+    background-color: #3b82f6;
+  }
+
+  &:checked + span:before {
+    transform: translateX(26px);
+  }
+`;
+
+const Slider = styled.span`
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #d1d5db;
+  transition: 0.3s;
+  border-radius: 24px;
+
+  &:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+  }
+`;
+
+const ToggleLabel = styled.span`
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
 `;
 
 const PointInfo = styled.div`
@@ -165,14 +271,17 @@ const PointBalance = styled.span`
   color: #3b82f6;
 `;
 
-const PointInputContainer = styled.div`
+const PointInputContainer = styled.div<{ disabled: boolean }>`
   display: flex;
   gap: 8px;
   align-items: center;
+  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
+  pointer-events: ${(props) => (props.disabled ? "none" : "auto")};
+  transition: all 0.2s ease;
 `;
 
 const UseAllButton = styled.button`
-  padding: 8px 12px;
+  padding: 8px 16px;
   background: #e5e7eb;
   border: none;
   border-radius: 4px;
@@ -181,9 +290,16 @@ const UseAllButton = styled.button`
   color: #374151;
   cursor: pointer;
   transition: background 0.2s ease;
+  white-space: nowrap;
+  min-width: 70px;
 
   &:hover {
     background: #d1d5db;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
 
@@ -296,9 +412,9 @@ const ProductPreview = styled.div`
 
 const ProductItem = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  gap: 16px;
+  padding: 12px 0;
   border-bottom: 1px solid #f1f5f9;
 
   &:last-child {
@@ -306,14 +422,27 @@ const ProductItem = styled.div`
   }
 `;
 
+const ProductImage = styled.img`
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  flex-shrink: 0;
+`;
+
 const ProductInfo = styled.div`
   flex: 1;
+  min-width: 0; /* 텍스트 오버플로우 방지 */
 `;
 
 const ProductName = styled.div`
   font-weight: 600;
   color: #1f2937;
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const ProductDetails = styled.div`
@@ -324,11 +453,53 @@ const ProductDetails = styled.div`
 const ProductPrice = styled.div`
   font-weight: 600;
   color: #3b82f6;
+  text-align: right;
+  flex-shrink: 0;
+`;
+
+const LoadingOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const LoadingSpinner = styled.div`
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+
+  &::after {
+    content: "";
+    width: 32px;
+    height: 32px;
+    border: 3px solid #e5e7eb;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 `;
 
 const PaymentPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { updateCartItemCount } = useCart();
 
   // 상태 관리
   const [items, setItems] = useState<PaymentItem[]>([]);
@@ -337,13 +508,15 @@ const PaymentPage: React.FC = () => {
   const [usePoint, setUsePoint] = useState(false);
   const [usedPoints, setUsedPoints] = useState(0);
   const [availablePoints] = useState(5000); // 실제로는 API에서 가져와야 함
+  const [isProcessing, setIsProcessing] = useState(false); // 결제 처리 중 상태
   const [shippingInfo, setShippingInfo] = useState({
     name: "",
     phone: "",
     zipcode: "",
     address: "",
     detailAddress: "",
-    request: "",
+    request: "없음", // 기본값을 "없음"으로 설정
+    customRequest: "", // 직접 입력용 필드 추가
     cardNumber: "",
     cardExpiry: "",
     cardCvv: "",
@@ -435,22 +608,25 @@ const PaymentPage: React.FC = () => {
       0
     );
     const deliveryFee = productTotal >= 50000 ? 0 : 3000;
-    const finalAmount = productTotal + deliveryFee - usedPoints;
+    const pointsToUse = usePoint ? usedPoints : 0; // 토글 상태에 따라 포인트 사용량 결정
+    const finalAmount = productTotal + deliveryFee - pointsToUse;
 
     return {
       productTotal,
       deliveryFee,
       finalAmount,
-      usedPoints,
+      usedPoints: pointsToUse,
     };
   };
 
   // 포인트 사용 변경 함수
   const handlePointsChange = (value: string) => {
+    if (!usePoint) return; // 포인트 사용이 비활성화된 경우 무시
+
     const numValue = parseInt(value) || 0;
 
     // 100 단위로만 사용 가능
-    if (numValue % 100 !== 0) {
+    if (numValue % 100 !== 0 && numValue !== 0) {
       setErrorMessage("포인트는 100원 단위로만 사용 가능합니다.");
       setErrorModal(true);
       return;
@@ -480,6 +656,8 @@ const PaymentPage: React.FC = () => {
 
   // 전체 포인트 사용 함수
   const handleUseAllPoints = () => {
+    if (!usePoint) return; // 포인트 사용이 비활성화된 경우 무시
+
     const totals = calculateTotals();
     const maxUsablePoints = Math.floor(totals.productTotal * 0.1);
     const maxPoints = Math.min(availablePoints, maxUsablePoints);
@@ -487,6 +665,41 @@ const PaymentPage: React.FC = () => {
     // 100원 단위로 맞춤
     const roundedPoints = Math.floor(maxPoints / 100) * 100;
     setUsedPoints(roundedPoints);
+  };
+
+  // 배송 요구사항 옵션들
+  const deliveryOptions = [
+    "없음",
+    "문 앞에 두고 벨을 눌러주세요",
+    "경비실에 맡겨주세요",
+    "부재 시 안전한 곳에 보관해주세요",
+    "직접 받겠습니다",
+    "기타 (직접 입력)",
+  ];
+
+  // 배송 요구사항 선택 함수
+  const handleDeliveryRequestChange = (option: string) => {
+    setShippingInfo((prev) => ({
+      ...prev,
+      request: option,
+      customRequest: option === "기타 (직접 입력)" ? prev.customRequest : "",
+    }));
+  };
+
+  // 최종 배송 요구사항 생성 함수
+  const getFinalDeliveryRequest = () => {
+    if (shippingInfo.request === "기타 (직접 입력)") {
+      return shippingInfo.customRequest || "없음";
+    }
+    return shippingInfo.request;
+  };
+
+  // 포인트 사용 토글 함수
+  const handlePointToggle = (enabled: boolean) => {
+    setUsePoint(enabled);
+    if (!enabled) {
+      setUsedPoints(0); // 토글 비활성화 시 사용 포인트 초기화
+    }
   };
 
   // 입력값 변경 함수
@@ -499,8 +712,12 @@ const PaymentPage: React.FC = () => {
 
   // 유효성 검사 함수들
   const validatePhoneNumber = (phone: string): boolean => {
-    const phoneRegex = /^01[0-9]-[0-9]{3,4}-[0-9]{4}$/;
-    return phoneRegex.test(phone);
+    // 숫자만 추출 (공백, 하이픈 제거)
+    const cleanPhone = phone.replace(/[\s-]/g, "");
+
+    // 10~11자리 숫자이고 01로 시작하는지 체크
+    const phoneRegex = /^01[0-9]{8,9}$/;
+    return phoneRegex.test(cleanPhone);
   };
 
   const validatePostalCode = (postalCode: string): boolean => {
@@ -509,8 +726,12 @@ const PaymentPage: React.FC = () => {
   };
 
   const validateCardNumber = (cardNumber: string): boolean => {
-    const cardRegex = /^[0-9]{16}$/;
-    return cardRegex.test(cardNumber);
+    // 숫자만 추출 (공백, 하이픈 제거)
+    const cleanNumber = cardNumber.replace(/[\s-]/g, "");
+
+    // 13~19자리 숫자 체크만 (루앤 알고리즘 제거)
+    const cardRegex = /^[0-9]{13,19}$/;
+    return cardRegex.test(cleanNumber);
   };
 
   const validateCardExpiry = (expiry: string): boolean => {
@@ -540,7 +761,7 @@ const PaymentPage: React.FC = () => {
     return cvcRegex.test(cvc);
   };
 
-  // 결제 처리 함수
+  // 실제 API를 이용한 결제 처리 함수
   const handlePayment = async () => {
     // 필수 입력값 검증
     if (!shippingInfo.name.trim()) {
@@ -550,7 +771,9 @@ const PaymentPage: React.FC = () => {
     }
 
     if (!validatePhoneNumber(shippingInfo.phone)) {
-      setErrorMessage("올바른 휴대폰 번호를 입력해주세요. (예: 010-1234-5678)");
+      setErrorMessage(
+        "올바른 휴대폰 번호를 입력해주세요. (010, 011 등으로 시작하는 10~11자리)"
+      );
       setErrorModal(true);
       return;
     }
@@ -576,7 +799,7 @@ const PaymentPage: React.FC = () => {
     // 카드 결제일 때 카드 정보 검증
     if (selectedMethod === "카드") {
       if (!validateCardNumber(shippingInfo.cardNumber)) {
-        setErrorMessage("올바른 카드번호를 입력해주세요. (16자리 숫자)");
+        setErrorMessage("올바른 카드번호를 입력해주세요. (13~19자리 숫자)");
         setErrorModal(true);
         return;
       }
@@ -601,69 +824,86 @@ const PaymentPage: React.FC = () => {
     }
 
     try {
-      // 주문 데이터 생성
-      const totals = calculateTotals();
-      const orderId = generateRandomOrderId();
+      setIsProcessing(true);
 
-      const orderData = {
-        orderId,
-        status: "ORDERED",
-        orderedAt: new Date().toISOString(),
+      // 주문 API 요청 데이터 생성
+      const totals = calculateTotals();
+
+      const orderData: CreateOrderRequest = {
+        deliveryAddress: shippingInfo.address,
+        deliveryDetailAddress: shippingInfo.detailAddress,
+        postalCode: shippingInfo.zipcode,
+        recipientName: shippingInfo.name,
+        recipientPhone: shippingInfo.phone,
+        usedPoints: usePoint ? usedPoints : 0,
+        deliveryMessage: getFinalDeliveryRequest(), // 최종 배송 요구사항 사용
         deliveryFee: totals.deliveryFee,
-        totalPrice: totals.finalAmount,
-        totalDiscountPrice: items.reduce(
-          (sum, item) => sum + item.discount * item.quantity,
-          0
-        ),
-        currency: "KRW",
-        usedPoints: usedPoints,
-        earnedPoints: Math.floor(totals.finalAmount * 0.01), // 1% 적립
-        shippingInfo: {
-          recipientName: shippingInfo.name,
-          recipientPhone: shippingInfo.phone,
-          postalCode: shippingInfo.zipcode,
-          deliveryAddress: shippingInfo.address,
-          deliveryDetailAddress: shippingInfo.detailAddress,
-          deliveryMessage: shippingInfo.request,
-        },
-        paymentInfo: {
-          paymentMethod: selectedMethod,
-          cardNumber:
-            selectedMethod === "카드" ? shippingInfo.cardNumber : null,
-          cardExpiry:
-            selectedMethod === "카드" ? shippingInfo.cardExpiry : null,
-          cardCvc: selectedMethod === "카드" ? shippingInfo.cardCvv : null,
-        },
-        items: items,
-        deletedAt: null,
+        paymentMethod: selectedMethod,
+        cardNumber:
+          selectedMethod === "카드" ? shippingInfo.cardNumber : undefined,
+        cardExpiry:
+          selectedMethod === "카드" ? shippingInfo.cardExpiry : undefined,
+        cardCvc: selectedMethod === "카드" ? shippingInfo.cardCvv : undefined,
       };
 
-      // localStorage에 주문 정보 저장 (실제로는 서버에 전송)
-      const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]");
-      existingOrders.push(orderData);
-      localStorage.setItem("orders", JSON.stringify(existingOrders));
+      // 실제 주문 API 호출
+      const orderResponse = await OrderService.createOrder(orderData);
 
-      // 주문 완료 페이지로 이동
+      // 장바구니에서 온 주문인 경우, 장바구니 아이템들 삭제
+      if (location.state?.fromCart && location.state?.cartItems) {
+        // 선택된 장바구니 아이템들을 삭제
+        const deletePromises = location.state.cartItems.map((item: any) =>
+          CartService.removeCartItem(item.cartItemId)
+        );
+        await Promise.all(deletePromises);
+
+        // 장바구니 개수 업데이트
+        await updateCartItemCount();
+      }
+
+      // 주문 완료 페이지로 이동 (API에서 받은 실제 orderId 사용)
       navigate("/checkout", {
-        state: { orderId },
+        state: {
+          orderId: orderResponse.orderId,
+          orderData: orderResponse,
+        },
       });
     } catch (error: any) {
-      setErrorMessage("결제 처리 중 오류가 발생했습니다.");
-      setErrorModal(true);
-    }
-  };
+      // API 에러 메시지 처리
+      if (error.response?.data?.message) {
+        setErrorMessage(error.response.data.message);
+      } else if (error.message) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("결제 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+      }
 
-  // 랜덤 주문번호 생성 함수
-  const generateRandomOrderId = () => {
-    const array = new Uint32Array(1);
-    window.crypto.getRandomValues(array);
-    return 1000000 + (array[0] % 9000000); // 1000000 ~ 9999999
+      setErrorModal(true);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const totals = calculateTotals();
 
   return (
     <>
+      {/* 결제 처리 중 로딩 오버레이 */}
+      {isProcessing && (
+        <LoadingOverlay>
+          <LoadingSpinner>
+            <div
+              style={{ fontSize: "16px", fontWeight: "600", color: "#374151" }}
+            >
+              결제 처리 중입니다...
+            </div>
+            <div style={{ fontSize: "14px", color: "#6b7280" }}>
+              잠시만 기다려주세요.
+            </div>
+          </LoadingSpinner>
+        </LoadingOverlay>
+      )}
+
       {showErrorModal && (
         <Fail
           title="확인 필요"
@@ -685,6 +925,13 @@ const PaymentPage: React.FC = () => {
             <ProductPreview>
               {items.map((item) => (
                 <ProductItem key={item.id}>
+                  <ProductImage
+                    src={toUrl(item.imageUrl)}
+                    alt={item.productName}
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder-image.jpg";
+                    }}
+                  />
                   <ProductInfo>
                     <ProductName>{item.productName}</ProductName>
                     <ProductDetails>
@@ -709,6 +956,7 @@ const PaymentPage: React.FC = () => {
                 placeholder="성함을 입력해주세요"
                 value={shippingInfo.name}
                 onChange={(e) => handleInputChange("name", e.target.value)}
+                disabled={isProcessing}
               />
             </FormGroup>
 
@@ -716,9 +964,30 @@ const PaymentPage: React.FC = () => {
               <Label>휴대폰 번호 *</Label>
               <Input
                 type="text"
-                placeholder="010-1234-5678"
+                placeholder="01012345678 또는 010-1234-5678"
                 value={shippingInfo.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
+                onChange={(e) => {
+                  // 숫자만 입력 허용하고 자동으로 하이픈 추가
+                  const value = e.target.value.replace(/\D/g, "");
+                  let formattedValue = value;
+
+                  if (value.length >= 3) {
+                    if (value.length <= 6) {
+                      formattedValue = `${value.slice(0, 3)}-${value.slice(3)}`;
+                    } else {
+                      formattedValue = `${value.slice(0, 3)}-${value.slice(
+                        3,
+                        7
+                      )}-${value.slice(7, 11)}`;
+                    }
+                  }
+
+                  if (value.length <= 11) {
+                    // 최대 11자리까지 허용
+                    handleInputChange("phone", formattedValue);
+                  }
+                }}
+                disabled={isProcessing}
               />
             </FormGroup>
 
@@ -730,12 +999,14 @@ const PaymentPage: React.FC = () => {
                   placeholder="우편번호 (5자리)"
                   value={shippingInfo.zipcode}
                   onChange={(e) => handleInputChange("zipcode", e.target.value)}
+                  disabled={isProcessing}
                 />
                 <Input
                   type="text"
                   placeholder="주소"
                   value={shippingInfo.address}
                   onChange={(e) => handleInputChange("address", e.target.value)}
+                  disabled={isProcessing}
                 />
               </Row>
               <Input
@@ -746,16 +1017,41 @@ const PaymentPage: React.FC = () => {
                   handleInputChange("detailAddress", e.target.value)
                 }
                 style={{ marginTop: "8px" }}
+                disabled={isProcessing}
               />
             </FormGroup>
 
             <FormGroup>
               <Label>배송 요청사항</Label>
-              <TextArea
-                placeholder="배송 시 요청사항을 입력해주세요"
-                value={shippingInfo.request}
-                onChange={(e) => handleInputChange("request", e.target.value)}
-              />
+              <DeliveryRequestContainer>
+                <RequestOptionContainer>
+                  {deliveryOptions.map((option) => (
+                    <RequestOptionButton
+                      key={option}
+                      type="button"
+                      selected={shippingInfo.request === option}
+                      onClick={() => handleDeliveryRequestChange(option)}
+                      disabled={isProcessing}
+                    >
+                      {option}
+                    </RequestOptionButton>
+                  ))}
+                </RequestOptionContainer>
+
+                <CustomRequestContainer
+                  show={shippingInfo.request === "기타 (직접 입력)"}
+                >
+                  <TextArea
+                    placeholder="배송 시 요청사항을 직접 입력해주세요"
+                    value={shippingInfo.customRequest}
+                    onChange={(e) =>
+                      handleInputChange("customRequest", e.target.value)
+                    }
+                    disabled={isProcessing}
+                    style={{ minHeight: "60px" }}
+                  />
+                </CustomRequestContainer>
+              </DeliveryRequestContainer>
             </FormGroup>
           </Card>
 
@@ -763,23 +1059,43 @@ const PaymentPage: React.FC = () => {
           <Card>
             <SectionTitle>포인트 사용</SectionTitle>
             <PointContainer>
-              <PointInfo>
-                <span>보유 포인트</span>
-                <PointBalance>{formatPrice(availablePoints)}P</PointBalance>
-              </PointInfo>
-              <PointInputContainer>
+              <PointHeader>
+                <PointInfo>
+                  <span>보유 포인트</span>
+                  <PointBalance>{formatPrice(availablePoints)}P</PointBalance>
+                </PointInfo>
+                <PointToggle>
+                  <ToggleLabel>포인트 사용</ToggleLabel>
+                  <ToggleSwitch>
+                    <ToggleSlider
+                      checked={usePoint}
+                      onChange={(e) => handlePointToggle(e.target.checked)}
+                      disabled={isProcessing}
+                    />
+                    <Slider />
+                  </ToggleSwitch>
+                </PointToggle>
+              </PointHeader>
+
+              <PointInputContainer disabled={!usePoint}>
                 <Input
                   type="number"
                   placeholder="사용할 포인트"
-                  value={usedPoints || ""}
+                  value={usePoint ? usedPoints || "" : ""}
                   onChange={(e) => handlePointsChange(e.target.value)}
                   min="0"
                   step="100"
+                  disabled={isProcessing || !usePoint}
+                  style={{ opacity: usePoint ? 1 : 0.5 }}
                 />
-                <UseAllButton onClick={handleUseAllPoints}>
-                  전액 사용
+                <UseAllButton
+                  onClick={handleUseAllPoints}
+                  disabled={isProcessing || !usePoint}
+                >
+                  전액사용
                 </UseAllButton>
               </PointInputContainer>
+
               <div
                 style={{ fontSize: "12px", color: "#6b7280", marginTop: "8px" }}
               >
@@ -799,6 +1115,7 @@ const PaymentPage: React.FC = () => {
                     key={method}
                     selected={selectedMethod === method}
                     onClick={() => setSelectedMethod(method)}
+                    disabled={isProcessing}
                   >
                     {method}
                   </PaymentMethodButton>
@@ -819,6 +1136,7 @@ const PaymentPage: React.FC = () => {
                       handleInputChange("cardNumber", e.target.value)
                     }
                     maxLength={16}
+                    disabled={isProcessing}
                   />
                 </FormGroup>
                 <Row>
@@ -832,6 +1150,7 @@ const PaymentPage: React.FC = () => {
                         handleInputChange("cardExpiry", e.target.value)
                       }
                       maxLength={5}
+                      disabled={isProcessing}
                     />
                   </FormGroup>
                   <FormGroup>
@@ -844,6 +1163,7 @@ const PaymentPage: React.FC = () => {
                         handleInputChange("cardCvv", e.target.value)
                       }
                       maxLength={3}
+                      disabled={isProcessing}
                     />
                   </FormGroup>
                 </Row>
@@ -870,7 +1190,7 @@ const PaymentPage: React.FC = () => {
             </SummaryRow>
             <SummaryRow>
               <span>포인트 사용</span>
-              <span>-{formatPrice(usedPoints)}원</span>
+              <span>-{formatPrice(usePoint ? usedPoints : 0)}원</span>
             </SummaryRow>
             <TotalPrice>
               총 결제금액: {formatPrice(totals.finalAmount)}원
@@ -878,22 +1198,30 @@ const PaymentPage: React.FC = () => {
 
             <PrimaryButton
               onClick={handlePayment}
-              disabled={items.length === 0 || !isAgree}
+              disabled={items.length === 0 || !isAgree || isProcessing}
             >
-              {items.length === 0 ? "상품 정보 로딩 중..." : "결제하기"}
+              {isProcessing
+                ? "결제 처리 중..."
+                : items.length === 0
+                ? "상품 정보 로딩 중..."
+                : "결제하기"}
             </PrimaryButton>
-            <SecondaryButton onClick={() => navigate("/products")}>
+            <SecondaryButton
+              onClick={() => navigate("/products")}
+              disabled={isProcessing}
+            >
               계속 쇼핑하기
             </SecondaryButton>
 
             <Notice>
               <b>안내사항</b>
               <br />
-              50,000원 이상 구매 시 배송비 무료
+              • 50,000원 이상 구매 시 배송비 무료
               <br />
-              주문 완료 후 배송 조회는 마이페이지에서 가능합니다.
+              • 주문 완료 후 배송 조회는 마이페이지에서 가능합니다.
               <br />
-              무통장입금은 입금 확인 후 배송이 시작됩니다.
+              • 무통장입금은 입금 확인 후 배송이 시작됩니다.
+              <br />• 결제 완료 후에는 주문 취소가 어려우니 신중히 결제해주세요.
             </Notice>
 
             <CheckLabel>
@@ -901,6 +1229,7 @@ const PaymentPage: React.FC = () => {
                 type="checkbox"
                 checked={isAgree}
                 onChange={(e) => setIsAgree(e.target.checked)}
+                disabled={isProcessing}
               />
               주문 내용을 확인하였으며, 결제에 동의합니다.
             </CheckLabel>

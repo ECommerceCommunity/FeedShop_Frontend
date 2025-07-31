@@ -4,27 +4,18 @@ import styled from "styled-components";
 import { ProductService } from "../../api/productService";
 import { CartService } from "../../api/cartService";
 import { useAuth } from "../../contexts/AuthContext";
-import { useCart } from "../../contexts/CartContext";
-import { ProductDetail } from "../../types/products";
 import { toUrl } from "../../utils/images";
-import { addToRecentView } from "../../utils/recentView";
-import CartSuccessModal from "../../components/modal/CartSuccessModal";
+import { addToRecentView } from "../../utils/recentview";
 import Fail from "../../components/modal/Fail";
+import { ProductDetail } from "types/products";
+import CartSuccessModal from "components/modal/CartSuccessModal";
+import { useCart } from "hooks/useCart";
 
-// 스타일드 컴포넌트 정의
+// 스타일드 컴포넌트들
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-`;
-
-const LoadingContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
-  font-size: 1.1rem;
-  color: #6b7280;
 `;
 
 const ProductSection = styled.div`
@@ -42,24 +33,24 @@ const ProductSection = styled.div`
 const ImageSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
 `;
 
 const MainImage = styled.img`
   width: 100%;
-  height: 400px;
+  height: 500px;
   object-fit: cover;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  margin-bottom: 16px;
 `;
 
 const ThumbnailContainer = styled.div`
   display: flex;
   gap: 8px;
   overflow-x: auto;
+  padding: 8px 0;
 `;
 
-const Thumbnail = styled.img<{ $active: boolean }>`
+const ThumbnailImage = styled.img<{ $active?: boolean }>`
   width: 80px;
   height: 80px;
   object-fit: cover;
@@ -76,37 +67,31 @@ const Thumbnail = styled.img<{ $active: boolean }>`
 const InfoSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
 `;
 
-const ProductTitle = styled.h1`
-  font-size: 1.75rem;
+const StoreName = styled.div`
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+`;
+
+const ProductName = styled.h1`
+  font-size: 1.8rem;
   font-weight: 700;
   color: #1f2937;
-  margin: 0;
+  margin-bottom: 16px;
+  line-height: 1.3;
 `;
 
-const StoreInfo = styled.div`
-  font-size: 1rem;
-  color: #6b7280;
+const PriceSection = styled.div`
+  margin-bottom: 24px;
 `;
 
-const PriceContainer = styled.div`
+const DiscountInfo = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const Price = styled.div`
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #3b82f6;
-`;
-
-const OriginalPrice = styled.div`
-  font-size: 1.1rem;
-  color: #9ca3af;
-  text-decoration: line-through;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
 `;
 
 const DiscountBadge = styled.span`
@@ -116,13 +101,22 @@ const DiscountBadge = styled.span`
   border-radius: 4px;
   font-size: 0.875rem;
   font-weight: 600;
-  margin-left: 8px;
+`;
+
+const OriginalPrice = styled.span`
+  color: #9ca3af;
+  text-decoration: line-through;
+  font-size: 1.1rem;
+`;
+
+const CurrentPrice = styled.div`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ef4444;
 `;
 
 const OptionSection = styled.div`
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
+  margin-bottom: 24px;
 `;
 
 const OptionTitle = styled.h3`
@@ -132,65 +126,159 @@ const OptionTitle = styled.h3`
   margin-bottom: 12px;
 `;
 
-const OptionGrid = styled.div`
+const SizeGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
   gap: 8px;
+  margin-bottom: 16px;
 `;
 
-const OptionButton = styled.button<{ $available: boolean }>`
-  padding: 8px 12px;
-  border: 1px solid ${(props) => (props.$available ? "#d1d5db" : "#f3f4f6")};
+const SizeButton = styled.button<{
+  $selected?: boolean;
+  $outOfStock?: boolean;
+}>`
+  padding: 12px 8px;
+  border: 1px solid ${(props) => (props.$selected ? "#3b82f6" : "#d1d5db")};
+  background: ${(props) =>
+    props.$outOfStock ? "#f3f4f6" : props.$selected ? "#3b82f6" : "white"};
+  color: ${(props) =>
+    props.$outOfStock ? "#9ca3af" : props.$selected ? "white" : "#374151"};
   border-radius: 6px;
-  background: ${(props) => (props.$available ? "#fff" : "#f9fafb")};
-  color: ${(props) => (props.$available ? "#374151" : "#9ca3af")};
   font-size: 0.875rem;
-  cursor: ${(props) => (props.$available ? "pointer" : "not-allowed")};
+  cursor: ${(props) => (props.$outOfStock ? "not-allowed" : "pointer")};
   transition: all 0.2s ease;
 
-  &:hover {
-    ${(props) =>
-      props.$available &&
-      `
-      border-color: #3b82f6;
-      background: #eff6ff;
-    `}
+  &:hover:not(:disabled) {
+    border-color: #3b82f6;
   }
 `;
 
-const SelectedOptionsContainer = styled.div`
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+`;
+
+const ActionButton = styled.button<{ $variant?: "primary" | "secondary" }>`
+  flex: 1;
   padding: 16px;
+  border: 1px solid
+    ${(props) => (props.$variant === "primary" ? "#3b82f6" : "#d1d5db")};
+  background: ${(props) =>
+    props.$variant === "primary" ? "#3b82f6" : "white"};
+  color: ${(props) => (props.$variant === "primary" ? "white" : "#374151")};
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${(props) =>
+      props.$variant === "primary" ? "#2563eb" : "#f3f4f6"};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const DescriptionSection = styled.div`
+  margin-top: 40px;
+  padding-top: 40px;
+  border-top: 1px solid #e5e7eb;
+`;
+
+const DescriptionTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 20px;
+`;
+
+const DescriptionText = styled.div`
+  color: #374151;
+  line-height: 1.6;
+  margin-bottom: 24px;
+`;
+
+const DetailImages = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const DetailImage = styled.img`
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  border-radius: 8px;
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  font-size: 1.1rem;
+  color: #6b7280;
+`;
+
+const ErrorContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  color: #ef4444;
+`;
+
+const SelectedOptionsContainer = styled.div`
+  margin: 24px 0;
+  padding: 20px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f9fafb;
+`;
+
+const SelectedOptionsTitle = styled.h4`
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 16px;
 `;
 
 const SelectedOptionItem = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #f3f4f6;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
 
   &:last-child {
-    border-bottom: none;
+    margin-bottom: 0;
   }
 `;
 
 const OptionInfo = styled.div`
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 `;
 
-const OptionName = styled.div`
+const SizeText = styled.span`
   font-weight: 600;
   color: #374151;
+  min-width: 60px;
 `;
 
-const OptionPrice = styled.div`
-  font-size: 0.875rem;
-  color: #6b7280;
-`;
-
-const StockInfo = styled.div<{ $lowStock: boolean }>`
+const StockInfo = styled.span<{ $lowStock?: boolean }>`
   font-size: 0.875rem;
   color: ${(props) => (props.$lowStock ? "#ea580c" : "#6b7280")};
 `;
@@ -268,94 +356,6 @@ const TotalRow = styled.div`
   }
 `;
 
-const ActionButtons = styled.div`
-  display: flex;
-  gap: 12px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`;
-
-const ActionButton = styled.button<{ $variant: "primary" | "secondary" }>`
-  flex: 1;
-  padding: 14px 24px;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-
-  ${(props) =>
-    props.$variant === "primary"
-      ? `
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: white;
-    
-    &:hover:not(:disabled) {
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    }
-  `
-      : `
-    background: white;
-    color: #374151;
-    border: 2px solid #e5e7eb;
-    
-    &:hover:not(:disabled) {
-      border-color: #3b82f6;
-      color: #3b82f6;
-    }
-  `}
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-`;
-
-const DescriptionSection = styled.div`
-  margin-top: 40px;
-  padding: 24px;
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-`;
-
-const DescriptionTitle = styled.h2`
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 16px;
-`;
-
-const DescriptionText = styled.p`
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #374151;
-  white-space: pre-line;
-`;
-
-const DetailImages = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 24px;
-`;
-
-const DetailImage = styled.img`
-  width: 100%;
-  max-width: 600px;
-  height: auto;
-  border-radius: 8px;
-  margin: 0 auto;
-`;
-
-// 선택된 옵션 타입 정의
 interface SelectedOptions {
   optionId: number;
   size: string;
@@ -379,7 +379,7 @@ const DetailPage: React.FC = () => {
   // 옵션 선택 상태
   const [selectedOptions, setSelectedOptions] = useState<SelectedOptions[]>([]);
 
-  // 모달 상태
+  // 모달
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -395,6 +395,8 @@ const DetailPage: React.FC = () => {
 
       try {
         setLoading(true);
+
+        // 데이터를 가지고 온다.
         const productData = await ProductService.getProduct(Number(id));
         setProduct(productData);
 
@@ -402,7 +404,6 @@ const DetailPage: React.FC = () => {
         addToRecentView(productData);
       } catch (err: any) {
         setError("상품 정보를 불러오는데 실패했습니다.");
-        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -411,7 +412,6 @@ const DetailPage: React.FC = () => {
     loadProduct();
   }, [id]);
 
-  // 로딩 중일 때
   if (loading) {
     return (
       <Container>
@@ -420,53 +420,36 @@ const DetailPage: React.FC = () => {
     );
   }
 
-  // 에러 발생 시
-  if (error || !product) {
-    return (
-      <Container>
-        <LoadingContainer>
-          {error || "상품을 찾을 수 없습니다."}
-        </LoadingContainer>
-      </Container>
-    );
-  }
-
-  // 가격 포맷팅 함수
-  const formatPrice = (price: number): string => {
-    return new Intl.NumberFormat("ko-KR").format(price);
-  };
-
-  // 할인율 계산 함수
-  const getDiscountRate = (): number => {
-    if (product.discountType === "RATE_DISCOUNT") {
-      return product.discountValue;
-    } else if (product.discountType === "FIXED_DISCOUNT") {
-      return Math.round((product.discountValue / product.price) * 100);
+  // 사이즈 선택시 선택된 옵션 목록에 추가한다.
+  const handleSizeSelect = (optionId: number) => {
+    if (!product) {
+      return;
     }
-    return 0;
-  };
 
-  // 옵션 선택 함수
-  const handleOptionSelect = (option: any) => {
-    // 이미 선택된 옵션인지 확인
+    const option = product.options.find((opt) => opt.optionId === optionId);
+    if (!option) {
+      return;
+    }
+
+    // 중복 선택 방지
     const existingOption = selectedOptions.find(
-      (selected) => selected.optionId === option.optionId
+      (opt) => opt.optionId === optionId
     );
-
     if (existingOption) {
-      setModalMessage("이미 선택된 옵션입니다.");
+      setModalMessage("이미 선택된 사이즈입니다.");
       setShowErrorModal(true);
       return;
     }
 
-    // 재고가 없는 경우
-    if (option.stock <= 0) {
-      setModalMessage("재고가 없는 상품입니다.");
+    // 재고 확인
+    if (option.stock === 0) {
+      setModalMessage(
+        `${option.size.replace("SIZE_", "")} 사이즈는 현재 품절입니다.`
+      );
       setShowErrorModal(true);
       return;
     }
 
-    // 새 옵션 추가
     const newOption: SelectedOptions = {
       optionId: option.optionId,
       size: option.size.replace("SIZE_", ""),
@@ -475,80 +458,74 @@ const DetailPage: React.FC = () => {
       stock: option.stock,
     };
 
-    setSelectedOptions([...selectedOptions, newOption]);
+    setSelectedOptions((prev) => [...prev, newOption]);
   };
 
-  // 옵션 수량 변경 함수
+  // 선택된 옵션의 수량을 변경한다.
   const handleQuantityChange = (optionId: number, newQuantity: number) => {
-    if (newQuantity < 1) return;
+    // 0개는 불가
+    if (newQuantity < 1) {
+      return;
+    }
 
-    setSelectedOptions(
-      selectedOptions.map((option) => {
-        if (option.optionId === optionId) {
-          // 재고 확인
-          if (newQuantity > option.stock) {
-            setModalMessage(`재고가 부족합니다. (최대 ${option.stock}개)`);
-            setShowErrorModal(true);
-            return option;
-          }
-          return { ...option, quantity: newQuantity };
-        }
-        return option;
-      })
+    const option = selectedOptions.find((opt) => opt.optionId === optionId);
+    if (!option) {
+      return;
+    }
+
+    // 추가할 수량이 옵션의 재고보다는 작아야 한다.
+    if (newQuantity > option.stock) {
+      setModalMessage(`사이즈 ${option.size}의 재고가 부족합니다.`);
+      setShowErrorModal(true);
+      return;
+    }
+
+    // 최대 5개까지 구매 가능하다.
+    if (newQuantity > 5) {
+      setModalMessage("한 번에 최대 5개까지만 구매할 수 있습니다.");
+      setShowErrorModal(true);
+      return;
+    }
+
+    setSelectedOptions((prev) =>
+      prev.map((opt) =>
+        opt.optionId === optionId ? { ...opt, quantity: newQuantity } : opt
+      )
     );
   };
 
-  // 옵션 제거 함수
+  // 선택된 옵션을 제거한다.
   const handleRemoveOption = (optionId: number) => {
-    setSelectedOptions(
-      selectedOptions.filter((option) => option.optionId !== optionId)
+    setSelectedOptions((prev) =>
+      prev.filter((opt) => opt.optionId !== optionId)
     );
   };
 
-  // 총 수량 계산
-  const getTotalQuantity = (): number => {
-    return selectedOptions.reduce(
-      (total, option) => total + option.quantity,
-      0
-    );
-  };
-
-  // 총 가격 계산
-  const getTotalPrice = (): number => {
-    return selectedOptions.reduce(
-      (total, option) => total + option.price * option.quantity,
-      0
-    );
-  };
-
-  // 장바구니 담기 함수
+  // 장바구니에 추가한다.
   const handleAddToCart = async () => {
     if (!user) {
-      setModalMessage("로그인이 필요합니다.");
+      setModalMessage("로그인이 필요한 서비스입니다.");
+      setShowErrorModal(true);
+      return;
+    }
+
+    if (user.userType !== "user") {
+      setModalMessage("일반 사용자만 이용할 수 있는 서비스입니다.");
       setShowErrorModal(true);
       return;
     }
 
     if (selectedOptions.length === 0) {
-      setModalMessage("옵션을 선택해주세요.");
+      setModalMessage("사이즈를 선택해주세요.");
       setShowErrorModal(true);
       return;
     }
 
     try {
-      // 각 선택된 옵션별로 장바구니에 추가
       for (const option of selectedOptions) {
-        // 메인 이미지 찾기
-        const mainImage = product.images.find((img) => img.type === "MAIN");
-        if (!mainImage) {
-          setModalMessage("상품 이미지가 없습니다.");
-          setShowErrorModal(true);
-          return;
-        }
-
         await CartService.addCartItem({
           optionId: option.optionId,
-          imageId: mainImage.imageId,
+          imageId: product?.images[0].imageId || 1,
           quantity: option.quantity,
         });
       }
@@ -559,118 +536,172 @@ const DetailPage: React.FC = () => {
       setModalMessage("장바구니에 상품이 추가되었습니다.");
       setShowSuccessModal(true);
 
-      // 선택된 옵션 초기화
+      // 선택된 옵션은 초기화
       setSelectedOptions([]);
     } catch (err: any) {
-      console.error("장바구니 추가 실패:", err);
-      setModalMessage(err.message || "장바구니 추가에 실패했습니다.");
+      setModalMessage("장바구니 추가에 실패했습니다. 다시 시도해주세요.");
       setShowErrorModal(true);
     }
   };
 
-  // 바로 주문하기 함수
+  // 바로 주문을 한다.
   const handleDirectOrder = () => {
     if (!user) {
-      setModalMessage("로그인이 필요합니다.");
+      setModalMessage("로그인이 필요한 서비스입니다.");
       setShowErrorModal(true);
       return;
     }
 
-    if (selectedOptions.length === 0) {
-      setModalMessage("옵션을 선택해주세요.");
+    if (user.userType !== "user") {
+      setModalMessage("일반 사용자만 이용할 수 있는 서비스입니다.");
       setShowErrorModal(true);
       return;
     }
 
-    // 바로 주문 페이지로 이동
+    if (!selectedOptions) {
+      setModalMessage("사이즈를 선택해주세요.");
+      setShowErrorModal(true);
+      return;
+    }
+
+    // 바로 주문 페이지로 이동 (선택된 옵션 정보 전달)
+    // directOrder : true, 상품정보, 옵션정보
     navigate("/payment", {
       state: {
         directOrder: true,
-        product: product,
-        selectedOptions: selectedOptions[0], // 첫 번째 옵션만 전달 (단일 상품 주문)
+        product,
+        selectedOptions,
       },
     });
   };
 
+  // 총 계산 함수들
+  const getTotalQuantity = () => {
+    return selectedOptions.reduce(
+      (total, option) => total + option.quantity,
+      0
+    );
+  };
+
+  const getTotalPrice = () => {
+    return selectedOptions.reduce(
+      (total, option) => total + option.price * option.quantity,
+      0
+    );
+  };
+
+  const formatPrice = (price: number): string => {
+    return new Intl.NumberFormat("ko-KR").format(price);
+  };
+
+  const getDiscountRate = (): number => {
+    if (!product || product.price === product.discountPrice) return 0;
+    return Math.round(
+      ((product.price - product.discountPrice) / product.price) * 100
+    );
+  };
+
+  if (error || !product) {
+    return (
+      <Container>
+        <ErrorContainer>
+          <h3>오류가 발생했습니다</h3>
+          <p>{error}</p>
+          <button onClick={() => navigate("/products")}>
+            상품 목록으로 돌아가기
+          </button>
+        </ErrorContainer>
+      </Container>
+    );
+  }
+
+  const discountRate = getDiscountRate();
+
   return (
     <Container>
+      {/* 상품 정보 섹션 */}
       <ProductSection>
         {/* 이미지 섹션 */}
         <ImageSection>
           <MainImage
             src={toUrl(product.images[selectedImageIndex]?.url)}
             alt={product.name}
-            onError={(e) => {
-              e.currentTarget.src = "/placeholder-image.jpg";
-            }}
           />
-
-          {product.images.length > 1 && (
+          {product.images.filter((img) => img.type === "MAIN").length > 1 && (
             <ThumbnailContainer>
-              {product.images.map((image, index) => (
-                <Thumbnail
-                  key={image.imageId}
-                  src={toUrl(image.url)}
-                  alt={`${product.name} ${index + 1}`}
-                  $active={index === selectedImageIndex}
-                  onClick={() => setSelectedImageIndex(index)}
-                  onError={(e) => {
-                    e.currentTarget.src = "/placeholder-image.jpg";
-                  }}
-                />
-              ))}
+              {product.images
+                .filter((img) => img.type === "MAIN")
+                .map((image, index) => (
+                  <ThumbnailImage
+                    key={image.imageId}
+                    src={toUrl(image.url)}
+                    alt={`${product.name} ${index + 1}`}
+                    $active={selectedImageIndex === index}
+                    onClick={() => setSelectedImageIndex(index)}
+                    onError={(e) => {
+                      e.currentTarget.style.visibility = "hidden";
+                    }}
+                  />
+                ))}
             </ThumbnailContainer>
           )}
         </ImageSection>
 
         {/* 상품 정보 섹션 */}
         <InfoSection>
-          <ProductTitle>{product.name}</ProductTitle>
-          <StoreInfo>판매자: {product.storeName}</StoreInfo>
+          <StoreName>{product.storeName}</StoreName>
+          <ProductName>{product.name}</ProductName>
 
-          <PriceContainer>
-            <Price>
-              {formatPrice(product.discountPrice)}원
-              {getDiscountRate() > 0 && (
-                <DiscountBadge>{getDiscountRate()}% 할인</DiscountBadge>
-              )}
-            </Price>
-            {product.price !== product.discountPrice && (
-              <OriginalPrice>{formatPrice(product.price)}원</OriginalPrice>
+          {/* 가격 정보 */}
+          <PriceSection>
+            {discountRate > 0 && (
+              <DiscountInfo>
+                <DiscountBadge>{discountRate}%</DiscountBadge>
+                <OriginalPrice>{formatPrice(product.price)}원</OriginalPrice>
+              </DiscountInfo>
             )}
-          </PriceContainer>
+            <CurrentPrice>{formatPrice(product.discountPrice)}원</CurrentPrice>
+          </PriceSection>
 
           {/* 옵션 선택 */}
           <OptionSection>
             <OptionTitle>사이즈 선택</OptionTitle>
-            <OptionGrid>
+            <SizeGrid>
               {product.options.map((option) => (
-                <OptionButton
+                <SizeButton
                   key={option.optionId}
-                  $available={option.stock > 0}
-                  onClick={() => handleOptionSelect(option)}
-                  disabled={option.stock <= 0}
+                  $selected={selectedOptions.some(
+                    (opt) => opt.optionId === option.optionId
+                  )}
+                  $outOfStock={option.stock === 0}
+                  disabled={option.stock === 0}
+                  onClick={() => handleSizeSelect(option.optionId)}
                 >
                   {option.size.replace("SIZE_", "")}
-                  {option.stock <= 0 && " (품절)"}
-                </OptionButton>
+                  {option.stock === 0 && (
+                    <div style={{ fontSize: "10px", color: "#ef4444" }}>
+                      품절
+                    </div>
+                  )}
+                </SizeButton>
               ))}
-            </OptionGrid>
+            </SizeGrid>
           </OptionSection>
 
-          {/* 선택된 옵션들 */}
+          {/* 선택된 옵션들 표시 */}
           {selectedOptions.length > 0 && (
             <SelectedOptionsContainer>
-              <OptionTitle>선택된 옵션</OptionTitle>
+              <SelectedOptionsTitle>선택된 옵션</SelectedOptionsTitle>
+
               {selectedOptions.map((option) => (
                 <SelectedOptionItem key={option.optionId}>
                   <OptionInfo>
-                    <OptionName>사이즈: {option.size}</OptionName>
-                    <OptionPrice>{formatPrice(option.price)}원</OptionPrice>
-                    <StockInfo $lowStock={option.stock <= 5}>
-                      재고: {option.stock}개
+                    <SizeText>사이즈 {option.size}</SizeText>
+                    <StockInfo $lowStock={option.stock < 5}>
+                      재고 {option.stock}개
                     </StockInfo>
                   </OptionInfo>
+
                   <QuantityControls>
                     <QuantityButton
                       onClick={() =>
@@ -691,7 +722,9 @@ const DetailPage: React.FC = () => {
                           option.quantity + 1
                         )
                       }
-                      disabled={option.quantity >= option.stock}
+                      disabled={
+                        option.quantity >= 5 || option.quantity >= option.stock
+                      }
                     >
                       +
                     </QuantityButton>
