@@ -43,8 +43,6 @@ const SidebarContainer = styled.aside<{ open: boolean }>`
   width: 280px;
   background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
   box-shadow: 4px 0 20px rgba(249, 115, 22, 0.25);
-  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
-  box-shadow: 4px 0 20px rgba(249, 115, 22, 0.25);
   padding: 0;
   z-index: 100;
   transform: translateX(${({ open }) => (open ? "0" : "-100%")});
@@ -80,15 +78,11 @@ const SidebarContainer = styled.aside<{ open: boolean }>`
   &::-webkit-scrollbar-track {
     background: rgba(249, 115, 22, 0.1);
     border-radius: 3px;
-    background: rgba(249, 115, 22, 0.1);
-    border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb {
     background: rgba(249, 115, 22, 0.4);
-    background: rgba(249, 115, 22, 0.4);
     border-radius: 3px;
-    transition: background 0.3s ease;
     transition: background 0.3s ease;
   }
 
@@ -124,19 +118,6 @@ const SidebarHeader = styled.div`
       transparent
     );
   }
-  position: relative;
-  z-index: 2;
-
-  &::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-  }
 `;
 
 const SidebarLogo = styled.div`
@@ -149,18 +130,11 @@ const SidebarLogo = styled.div`
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(135deg, #ffffff, #fef3c7);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 `;
 
 const SidebarSubtitle = styled.div`
   font-size: 12px;
   color: rgba(255, 255, 255, 0.8);
-  font-weight: 400;
-  letter-spacing: 0.5px;
   font-weight: 400;
   letter-spacing: 0.5px;
 `;
@@ -170,17 +144,13 @@ const MenuSection = styled.div`
   animation: ${fadeIn} 0.6s ease-out;
   position: relative;
   z-index: 2;
-  position: relative;
-  z-index: 2;
 `;
 
 const MenuTitle = styled.h3`
   font-size: 12px;
   color: rgba(255, 255, 255, 0.8);
-  color: rgba(255, 255, 255, 0.8);
   padding: 0 20px;
   margin-bottom: 15px;
-  font-weight: 700;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -194,7 +164,6 @@ const MenuTitle = styled.h3`
     width: 20px;
     height: 2px;
     background: linear-gradient(90deg, rgba(249, 115, 22, 0.8), transparent);
-    background: linear-gradient(90deg, rgba(249, 115, 22, 0.8), transparent);
     transform: translateY(-50%);
   }
 `;
@@ -207,7 +176,6 @@ const MenuList = styled.ul`
 
 const MenuItem = styled.li`
   margin-bottom: 6px;
-  margin-bottom: 6px;
   padding: 0 15px;
 `;
 
@@ -216,25 +184,19 @@ const MenuLink = styled(Link)<{ active?: boolean }>`
   align-items: center;
   padding: 16px 20px;
   color: ${(props) => (props.active ? "#ffffff" : "rgba(255, 255, 255, 0.85)")};
-  padding: 16px 20px;
-  color: ${(props) => (props.active ? "#ffffff" : "rgba(255, 255, 255, 0.85)")};
   text-decoration: none;
   font-size: 14px;
   font-weight: ${(props) => (props.active ? "600" : "500")};
   background: ${(props) =>
     props.active
       ? "linear-gradient(135deg, rgba(249, 115, 22, 0.25), rgba(239, 68, 68, 0.15))"
-      ? "linear-gradient(135deg, rgba(249, 115, 22, 0.25), rgba(239, 68, 68, 0.15))"
       : "transparent"};
-  border-radius: 14px;
   border-radius: 14px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
   border: 1px solid
     ${(props) => (props.active ? "rgba(249, 115, 22, 0.3)" : "transparent")};
-  border: 1px solid ${(props) => 
-    props.active ? "rgba(249, 115, 22, 0.3)" : "transparent"};
 
   &::before {
     content: "";
@@ -247,23 +209,9 @@ const MenuLink = styled(Link)<{ active?: boolean }>`
       90deg,
       transparent,
       rgba(249, 115, 22, 0.2),
-      rgba(249, 115, 22, 0.2),
       transparent
     );
     transition: left 0.5s;
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 3px;
-    height: 0;
-    background: linear-gradient(135deg, #f97316, #dc2626);
-    border-radius: 0 2px 2px 0;
-    transition: height 0.3s ease;
   }
 
   &::after {
@@ -284,12 +232,8 @@ const MenuLink = styled(Link)<{ active?: boolean }>`
       135deg,
       rgba(249, 115, 22, 0.2),
       rgba(239, 68, 68, 0.1)
-      rgba(249, 115, 22, 0.2),
-      rgba(239, 68, 68, 0.1)
     );
     color: #ffffff;
-    transform: translateX(8px);
-    border-color: rgba(249, 115, 22, 0.4);
     transform: translateX(8px);
     border-color: rgba(249, 115, 22, 0.4);
 
@@ -305,17 +249,6 @@ const MenuLink = styled(Link)<{ active?: boolean }>`
   ${(props) =>
     props.active &&
     `
-    &::after {
-      height: 80%;
-    }
-  `}
-
-    &::after {
-      height: 60%;
-    }
-  }
-
-  ${(props) => props.active && `
     &::after {
       height: 80%;
     }
@@ -361,7 +294,6 @@ const ActiveIndicator = styled.div`
 const SidebarFooter = styled.div`
   padding: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
   margin-top: auto;
   text-align: center;
   position: relative;
@@ -381,19 +313,6 @@ const SidebarFooter = styled.div`
       rgba(255, 255, 255, 0.4),
       transparent
     );
-  }
-  position: relative;
-  z-index: 2;
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   }
 `;
 
@@ -429,24 +348,6 @@ const QuickStats = styled.div`
       rgba(255, 255, 255, 0.3),
       rgba(255, 255, 255, 0.1)
     );
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask-composite: exclude;
-    pointer-events: none;
-  }
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
-  border-radius: 16px;
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  position: relative;
-  z-index: 2;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 16px;
-    padding: 1px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
     pointer-events: none;
