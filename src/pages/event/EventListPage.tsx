@@ -184,15 +184,15 @@ const EventListPage = () => {
     const eventEnd = event.eventEndDate ? new Date(event.eventEndDate) : null;
 
     if (!eventStart || !eventEnd) {
-      return 'RECRUITING'; // 날짜 정보가 없으면 모집중으로 처리
+      return 'UPCOMING'; // 날짜 정보가 없으면 예정으로 처리
     }
 
     if (now < eventStart) {
-      return 'RECRUITING'; // 이벤트 시작일 이전
+      return 'UPCOMING'; // 이벤트 시작일 이전
     } else if (now >= eventStart && now <= eventEnd) {
-      return 'IN_PROGRESS'; // 이벤트 진행 중
+      return 'ONGOING'; // 이벤트 진행 중
     } else {
-      return 'COMPLETED'; // 이벤트 종료
+      return 'ENDED'; // 이벤트 종료
     }
   };
 
