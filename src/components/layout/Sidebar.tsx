@@ -47,9 +47,9 @@ const SidebarContainer = styled.aside<{ open: boolean }>`
   z-index: 100;
   transform: translateX(${({ open }) => (open ? "0" : "-100%")});
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: ${slideIn} 0.4s ease-out;
   overflow-y: auto;
   border-right: 1px solid rgba(249, 115, 22, 0.2);
+  visibility: ${({ open }) => (open ? "visible" : "hidden")};
 
   &::before {
     content: "";
@@ -58,8 +58,16 @@ const SidebarContainer = styled.aside<{ open: boolean }>`
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 20% 20%, rgba(249, 115, 22, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(239, 68, 68, 0.08) 0%, transparent 50%);
+    background: radial-gradient(
+        circle at 20% 20%,
+        rgba(249, 115, 22, 0.1) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 80% 80%,
+        rgba(239, 68, 68, 0.08) 0%,
+        transparent 50%
+      );
     pointer-events: none;
   }
 
@@ -81,6 +89,10 @@ const SidebarContainer = styled.aside<{ open: boolean }>`
   &::-webkit-scrollbar-thumb:hover {
     background: rgba(249, 115, 22, 0.6);
   }
+
+  @media (max-width: 768px) {
+    top: 70px;
+  }
 `;
 
 const SidebarHeader = styled.div`
@@ -99,7 +111,12 @@ const SidebarHeader = styled.div`
     transform: translateX(-50%);
     width: 60px;
     height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.5),
+      transparent
+    );
   }
 `;
 
@@ -178,8 +195,8 @@ const MenuLink = styled(Link)<{ active?: boolean }>`
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  border: 1px solid ${(props) => 
-    props.active ? "rgba(249, 115, 22, 0.3)" : "transparent"};
+  border: 1px solid
+    ${(props) => (props.active ? "rgba(249, 115, 22, 0.3)" : "transparent")};
 
   &::before {
     content: "";
@@ -229,7 +246,9 @@ const MenuLink = styled(Link)<{ active?: boolean }>`
     }
   }
 
-  ${(props) => props.active && `
+  ${(props) =>
+    props.active &&
+    `
     &::after {
       height: 80%;
     }
@@ -288,7 +307,12 @@ const SidebarFooter = styled.div`
     transform: translateX(-50%);
     width: 60px;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
   }
 `;
 
@@ -302,7 +326,11 @@ const SidebarFooterText = styled.div`
 const QuickStats = styled.div`
   padding: 20px;
   margin: 20px 15px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15),
+    rgba(255, 255, 255, 0.08)
+  );
   border-radius: 16px;
   backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -315,7 +343,11 @@ const QuickStats = styled.div`
     inset: 0;
     border-radius: 16px;
     padding: 1px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.3),
+      rgba(255, 255, 255, 0.1)
+    );
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
     pointer-events: none;
