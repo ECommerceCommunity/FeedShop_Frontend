@@ -2,6 +2,7 @@
   "name": "shop-chat-project",
   "version": "0.1.0",
   "private": true,
+  "proxy": "https://localhost:8443",
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
