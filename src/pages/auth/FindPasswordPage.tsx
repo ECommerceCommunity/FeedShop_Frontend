@@ -219,6 +219,9 @@ export default function FindPasswordPage() {
       }
     } catch (error: any) {
       console.error("Password reset error:", error);
+        setLoading(false);
+      }, 1500);
+    } catch (error) {
       setIsSuccess(false);
 
       if (error.response?.data?.message) {
