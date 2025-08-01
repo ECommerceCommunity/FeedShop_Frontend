@@ -216,12 +216,9 @@ export default function FindPasswordPage() {
         setMessage(
           "비밀번호 재설정 링크가 이메일로 전송되었습니다. 이메일을 확인해주세요."
         );
+        setLoading(false);
       }
     } catch (error: any) {
-      console.error("Password reset error:", error);
-        setLoading(false);
-      }, 1500);
-    } catch (error) {
       setIsSuccess(false);
 
       if (error.response?.data?.message) {
