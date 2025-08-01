@@ -43,27 +43,70 @@ const HeaderContainer = styled.header`
   left: 0;
   right: 0;
   height: 60px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+  box-shadow: 0 4px 20px rgba(249, 115, 22, 0.2);
   display: flex;
   align-items: center;
   padding: 0 20px;
   z-index: 40;
   animation: ${slideDown} 0.4s ease-out;
+  border-bottom: 1px solid rgba(249, 115, 22, 0.2);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 50%, rgba(249, 115, 22, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(239, 68, 68, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+`;
+
+const MenuButton = styled.button`
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 15px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+
+  &:hover {
+    background: rgba(249, 115, 22, 0.2);
+    color: white;
+    transform: scale(1.1);
+  }
+
+  @media (min-width: 769px) {
+    display: none;
+  }
 `;
 
 const Logo = styled(Link)`
   font-size: 24px;
-  font-weight: bold;
+  font-weight: 800;
   color: white;
   text-decoration: none;
   margin-right: 40px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
+  background: linear-gradient(135deg, #ffffff, #fef3c7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  z-index: 2;
 
   &:hover {
     transform: scale(1.05);
-    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 4px 8px rgba(249, 115, 22, 0.4);
   }
 `;
 
@@ -82,10 +125,11 @@ const NavLink = styled(Link)`
   font-size: 16px;
   font-weight: 500;
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: 12px;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  z-index: 2;
 
   &::before {
     content: "";
@@ -97,15 +141,15 @@ const NavLink = styled(Link)`
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(255, 255, 255, 0.2),
+      rgba(249, 115, 22, 0.3),
       transparent
     );
     transition: left 0.5s;
   }
 
   &:hover {
+    background: rgba(249, 115, 22, 0.2);
     color: white;
-    background: rgba(255, 255, 255, 0.1);
     transform: translateY(-2px);
 
     &::before {
@@ -114,90 +158,82 @@ const NavLink = styled(Link)`
   }
 `;
 
-const UserSection = styled.div`
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-`;
-
-const MenuButton = styled.button`
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  font-size: 20px;
-  margin-right: 16px;
-  cursor: pointer;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
-    animation: ${pulse} 0.6s ease-in-out;
-  }
-`;
-
-const SearchForm = styled.form`
-  display: flex;
-  align-items: center;
-  margin-right: 8px;
-`;
-
-const SearchWrapper = styled.div`
+const SearchContainer = styled.div`
   position: relative;
-  display: flex;
-  align-items: center;
+  margin-right: 20px;
+  z-index: 2;
+
+  @media (max-width: 768px) {
+    margin-right: 10px;
+  }
 `;
 
 const SearchInput = styled.input`
-  padding: 10px 40px 10px 16px;
-  border-radius: 25px;
-  border: none;
+  width: 300px;
+  height: 40px;
+  padding: 0 40px 0 16px;
+  border: 2px solid rgba(249, 115, 22, 0.3);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
   font-size: 14px;
-  width: 240px;
-  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+  }
 
   &:focus {
     outline: none;
-    background: white;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    transform: scale(1.02);
+    border-color: rgba(249, 115, 22, 0.6);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
   }
 
-  &::placeholder {
-    color: #666;
+  @media (max-width: 768px) {
+    width: 200px;
   }
 `;
 
-const SearchIcon = styled(MagnifyingGlassIcon)`
+const SearchButton = styled.button`
   position: absolute;
-  right: 12px;
-  width: 20px;
-  height: 20px;
-  color: #667eea;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
 
   &:hover {
-    transform: scale(1.1);
-    color: #764ba2;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: white;
   }
 `;
 
-const UserMenu = styled.div`
+const UserSection = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 20px;
+  position: relative;
+  z-index: 2;
+  margin-left: auto;
+`;
+
+const UserMenu = styled.div`
   position: relative;
 `;
 
@@ -206,14 +242,15 @@ const UserInfo = styled.div`
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 25px;
+  padding: 8px 12px;
+  border-radius: 20px;
   transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  background: rgba(249, 115, 22, 0.1);
+  border: 1px solid rgba(249, 115, 22, 0.2);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(249, 115, 22, 0.2);
+    border-color: rgba(249, 115, 22, 0.4);
     transform: translateY(-2px);
   }
 `;
@@ -222,126 +259,162 @@ const UserAvatar = styled.div`
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #f97316, #ea580c);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-weight: bold;
-  font-size: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
+  font-weight: 700;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
 `;
 
 const UserName = styled.span`
-  font-size: 14px;
-  font-weight: 500;
   color: white;
-`;
-
-const LogoutButton = styled.button`
-  background: none;
-  border: none;
-  color: var(--text-color);
+  font-weight: 500;
   font-size: 14px;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: all 0.2s;
-
-  &:hover {
-    color: var(--primary-color);
-    background-color: rgba(135, 206, 235, 0.1);
-  }
 `;
 
 const DropdownMenu = styled.div`
   position: absolute;
   top: 100%;
   right: 0;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  min-width: 180px;
-  z-index: 50;
   margin-top: 8px;
+  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  min-width: 200px;
+  overflow: hidden;
   animation: ${fadeIn} 0.3s ease-out;
   backdrop-filter: blur(10px);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 20%, rgba(249, 115, 22, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
 `;
 
 const DropdownItem = styled(Link)`
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 12px 16px;
-  color: var(--text-color);
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   font-size: 14px;
+  font-weight: 500;
   transition: all 0.3s ease;
-  border-radius: 8px;
-  margin: 4px;
+  position: relative;
+  z-index: 2;
 
   &:hover {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: rgba(249, 115, 22, 0.2);
     color: white;
-    transform: translateX(5px);
+    transform: translateX(4px);
   }
 
-  &:first-child {
-    border-radius: 8px 8px 0 0;
-    margin-top: 8px;
-  }
-
-  &:last-child {
-    border-radius: 0 0 8px 8px;
-    margin-bottom: 8px;
+  i {
+    width: 16px;
+    color: rgba(249, 115, 22, 0.8);
   }
 `;
 
 const DropdownButton = styled.button`
   display: flex;
   align-items: center;
-  gap: 10px;
-  width: 100%;
-  text-align: left;
+  gap: 12px;
   padding: 12px 16px;
-  color: var(--text-color);
-  text-decoration: none;
-  font-size: 14px;
-  background: none;
+  width: 100%;
+  background: transparent;
   border: none;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  border-radius: 8px;
-  margin: 4px;
+  position: relative;
+  z-index: 2;
 
   &:hover {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    background: rgba(239, 68, 68, 0.2);
     color: white;
-    transform: translateX(5px);
+    transform: translateX(4px);
   }
 
-  &:first-child {
-    border-radius: 8px 8px 0 0;
-    margin-top: 8px;
-  }
-
-  &:last-child {
-    border-radius: 0 0 8px 8px;
-    margin-bottom: 8px;
+  i {
+    width: 16px;
+    color: rgba(239, 68, 68, 0.8);
   }
 `;
 
 const DropdownDivider = styled.div`
   height: 1px;
-  background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
-  margin: 8px 16px;
+  background: rgba(249, 115, 22, 0.2);
+  margin: 8px 0;
+`;
+
+const UserButton = styled.button`
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(239, 68, 68, 0.1));
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+
+  &:hover {
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.3), rgba(239, 68, 68, 0.2));
+    border-color: rgba(249, 115, 22, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+  }
+`;
+
+const LoginButton = styled(Link)`
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+
+  &:hover {
+    background: linear-gradient(135deg, #ea580c, #dc2626);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+  }
+`;
+
+const LogoutButton = styled.button`
+  background: transparent;
+  border: 1px solid rgba(249, 115, 22, 0.4);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(249, 115, 22, 0.2);
+    border-color: rgba(249, 115, 22, 0.6);
+    color: white;
+    transform: translateY(-2px);
+  }
 `;
 
 const CartLink = styled(Link)`
@@ -382,25 +455,17 @@ const CartLink = styled(Link)`
   &:hover::before {
     left: 100%;
   }
-`;
 
-const LoginLink = styled(Link)`
-  color: rgba(255, 255, 255, 0.9);
-  text-decoration: none;
-  font-size: 16px;
-  font-weight: 500;
-  padding: 10px 20px;
-  border-radius: 25px;
-  transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 6px 12px;
+    gap: 6px;
+  }
 
-  &:hover {
-    color: white;
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  @media (max-width: 480px) {
+    font-size: 12px;
+    padding: 4px 8px;
+    gap: 4px;
   }
 `;
 
@@ -412,7 +477,7 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const { nickname, logout } = useAuth();
+  const { user, logout } = useAuth();
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -475,37 +540,58 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
         </NavLink>
       </Nav>
       <UserSection>
-        <SearchForm onSubmit={handleSearch}>
-          <SearchWrapper>
-            <SearchInput
-              type="text"
-              placeholder="검색어를 입력하세요"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <SearchIcon />
-          </SearchWrapper>
-        </SearchForm>
+        <SearchContainer>
+          <SearchInput
+            type="text"
+            placeholder="검색어를 입력하세요"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <SearchButton type="submit" onClick={handleSearch}>
+            <MagnifyingGlassIcon />
+          </SearchButton>
+        </SearchContainer>
         <CartLink to="/cart">
           <i className="fas fa-shopping-cart"></i>
           장바구니
         </CartLink>
-        {nickname && nickname.trim() !== "" ? (
+        {user && user.nickname && user.nickname.trim() !== "" ? (
           <UserMenu ref={userMenuRef}>
             <UserInfo onClick={() => setShowUserMenu(!showUserMenu)}>
-              <UserAvatar>{getInitials(nickname)}</UserAvatar>
-              <UserName>{nickname}님</UserName>
+              <UserAvatar>{getInitials(user.nickname)}</UserAvatar>
+              <UserName>{user.nickname}님</UserName>
             </UserInfo>
             {showUserMenu && (
               <DropdownMenu>
-                <DropdownItem to="/mypage">
-                  <i className="fas fa-user"></i>
-                  마이페이지
-                </DropdownItem>
-                <DropdownItem to="/profile-settings">
-                  <i className="fas fa-cog"></i>
-                  프로필 설정
-                </DropdownItem>
+                {user && user.userType === "admin" ? (
+                  <DropdownItem to="/admin-dashboard">
+                    <i className="fas fa-chart-line"></i>
+                    관리자 대시보드
+                  </DropdownItem>
+                ) : (
+                  <DropdownItem
+                    to={
+                      user && user.userType === "seller"
+                        ? "/seller-mypage"
+                        : "/mypage"
+                    }
+                  >
+                    <i className="fas fa-user"></i>
+                    마이페이지
+                  </DropdownItem>
+                )}
+                {user && user.userType !== "admin" && (
+                  <DropdownItem to="/profile-settings">
+                    <i className="fas fa-cog"></i>
+                    프로필 설정
+                  </DropdownItem>
+                )}
+                {user && user.userType === "user" && (
+                  <DropdownItem to="/become-seller">
+                    <i className="fas fa-store"></i>
+                    판매자 전환
+                  </DropdownItem>
+                )}
                 <DropdownDivider />
                 <DropdownButton onClick={handleLogout}>
                   <i className="fas fa-sign-out-alt"></i>
@@ -515,13 +601,13 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
             )}
           </UserMenu>
         ) : (
-          <LoginLink to="/login">
+          <LoginButton to="/login">
             <i
               className="fas fa-sign-in-alt"
               style={{ marginRight: "8px" }}
             ></i>
             로그인
-          </LoginLink>
+          </LoginButton>
         )}
       </UserSection>
     </HeaderContainer>

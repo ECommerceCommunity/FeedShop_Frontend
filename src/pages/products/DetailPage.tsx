@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState, useMemo, useRef } from "react";
+import { Fragment, useState, useMemo, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
@@ -28,6 +28,8 @@ import EditProductsModal from "./editProduct/EditProductsModal";
 import { isDiscountValid } from "utils/discount";
 import { getDiscountPrice } from "utils/price";
 import { useLocalLike } from "hooks/useLocalLike";
+import { addToRecentView } from "utils/recentview";
+import { toUrl } from "utils/images";
 
 type SelectedItem = {
   size: string;
@@ -49,11 +51,19 @@ export default function ProductDetailPage() {
   const [showEmptySelectionModal, setShowEmptySelectionModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
 
   const productData = products.find((p) => String(p.id) === id);
   const brandData = brands.find(
     (b) => String(b.store_id) === String(productData?.store_id)
   );
+
+  // 최근 본 상품에 추가
+  useEffect(() => {
+    if (productData) {
+      addToRecentView(productData.id);
+    }
+  }, [productData]);
 
   const productReviews = useMemo(() => {
     return reviews.filter((r) => r.product_id === productData?.id);
@@ -161,16 +171,16 @@ export default function ProductDetailPage() {
     price: originalPrice,
     rating: 4,
     likes: productData.product_likes ?? 0,
-    images: Array.isArray(productData.main_image_urls)
-      ? productData.main_image_urls.map((url: string, idx: number) => ({
+    images: Array.isArray(productData.main_image_urls?.map((url) => toUrl(url)))
+      ? productData.main_image_urls?.map((url) => toUrl(url)).map((url: string, idx: number) => ({
           id: idx,
           name: `${productData.name} 이미지 ${idx + 1}`,
-          src: url,
+          src: toUrl(url),
           alt: productData.name,
         }))
       : [],
     description: productData.description || "",
-    detail_image_urls: productData.detail_image_urls || [],
+    detail_image_urls: productData.detail_image_urls?.map((url) => toUrl(url)) || [],
   };
 
   const handlePrev = () => {
@@ -305,6 +315,21 @@ export default function ProductDetailPage() {
           onClose={() => setShowEditModal(false)}
         />
       )}
+      {showDeleteWarning && (
+        <Warning
+          open={showDeleteWarning}
+          title="상품 삭제"
+          message="정말로 이 상품을 삭제하시겠습니까?"
+          onConfirm={() => {
+            setShowDeleteWarning(false);
+            console.log("Deleting product:", productData.id);
+            navigate("/products");
+          }}
+          onCancel={() => {
+            setShowDeleteWarning(false);
+          }}
+        />
+      )}
       <div className="bg-white mx-auto">
         <div className="lg:grid lg:grid-cols-[1.7fr_1px_1fr] lg:items-start gap-4">
           <div className="col-span-1 p-5">
@@ -335,7 +360,7 @@ export default function ProductDetailPage() {
                             )}
                           >
                             <img
-                              src={image.src}
+                              src={toUrl(image.src)}
                               alt={image.alt}
                               className="h-full w-full object-cover rounded-md"
                             />
@@ -360,7 +385,7 @@ export default function ProductDetailPage() {
                     {product.images.map((image) => (
                       <TabPanel key={image.id}>
                         <img
-                          src={image.src}
+                          src={toUrl(image.src)}
                           alt={image.alt}
                           className="w-[720px] h-[720px] object-cover rounded-lg"
                         />
@@ -444,7 +469,7 @@ export default function ProductDetailPage() {
                                 return (
                                   <img
                                     key={url}
-                                    src={url}
+                                    src={toUrl(url)}
                                     alt={`자세한 이미지 ${idx + 1}`}
                                     className={`w-full object-cover block ${roundedClass}`}
                                   />
@@ -478,7 +503,7 @@ export default function ProductDetailPage() {
                               >
                                 <div className="flex items-center space-x-3">
                                   <img
-                                    src={review.userImage}
+                                    src={toUrl(review.userImage)}
                                     alt={`${review.userName} 프로필`}
                                     className="w-10 h-10 rounded-full object-cover"
                                   />
@@ -513,7 +538,7 @@ export default function ProductDetailPage() {
                                         {review.images.map((img, idx) => (
                                           <img
                                             key={`review-${review.id}-image-${idx}`}
-                                            src={img}
+                                            src={toUrl(img)}
                                             alt={`리뷰 이미지 ${idx + 1}`}
                                             className="w-24 h-24 object-cover rounded"
                                           />
@@ -554,12 +579,21 @@ export default function ProductDetailPage() {
 
               {/* 상품 수정 버튼 */}
               {productData && (
-                <button
-                  onClick={() => setShowEditModal(true)}
-                  className="inline-block text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-gray-700"
-                >
-                  상품 수정
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowDeleteWarning(true)}
+                    className="inline-block text-sm px-3 py-1 border border-red-300 rounded hover:bg-red-100 text-red-600"
+                  >
+                    상품 삭제
+                  </button>
+
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    className="inline-block text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-gray-700"
+                  >
+                    상품 수정
+                  </button>
+                </div>
               )}
             </div>
             {brandData && (
@@ -587,11 +621,11 @@ export default function ProductDetailPage() {
                 tabIndex={0}
               >
                 <img
-                  src={
-                    brandData.brand_logo_url?.startsWith("//")
-                      ? `https:${brandData.brand_logo_url}`
-                      : brandData.brand_logo_url
-                  }
+                  src={toUrl(
+                    toUrl(brandData.brand_logo_url)?.startsWith("//")
+                      ? `https:${toUrl(brandData.brand_logo_url)}`
+                      : toUrl(brandData.brand_logo_url)
+            )}
                   alt={`${brandData.store_name} 로고`}
                   className="w-6 h-6 object-contain bg-black rounded-full"
                 />
@@ -688,10 +722,9 @@ export default function ProductDetailPage() {
                           title={`상품 ID: ${item.product_id}`}
                         >
                           <img
-                            src={
-                              item.thumbnail_url.startsWith("//")
-                                ? `https:${item.thumbnail_url}`
-                                : item.thumbnail_url
+                            src={item.thumbnail_url.startsWith("//")
+                                ? toUrl(`https:${item.thumbnail_url}`)
+                                : toUrl(item.thumbnail_url)
                             }
                             alt={`다른 색상 ${item.product_id}`}
                             className="w-full h-full object-cover"

@@ -2,198 +2,86 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedList from "../../components/feed/FeedList";
-import FeedDetailModal from '../../components/feed/FeedDetailModal';
+import FeedService from "../../api/feedService";
+import { FeedPost, FeedListParams } from "../../types/feed";
 
-// 더미 데이터 생성 함수 및 타입 정의
-interface FeedPost {
-  id: number;
-  username: string;
-  level: number;
-  profileImg: string;
-  images: string[];
-  productName: string;
-  size: number;
-  gender: string;
-  height: number;
-  description: string;
-  likes: number;
-  votes: number;
-  comments: number;
-  instagramId: string;
-  createdAt: string;
-  isLiked?: boolean;
-  feedType: string;
-}
-
-interface Comment {
-  id: number;
-  username: string;
-  level: number;
-  profileImg: string;
-  content: string;
-  createdAt: string;
-}
-
+// 더미 데이터 생성 함수 (백엔드 연동 실패시 fallback용)
 function getSecureRandomInt(min: number, max: number): number {
   const array = new Uint32Array(1);
   window.crypto.getRandomValues(array);
   return min + (array[0] % (max - min));
 }
 
-const generateFeedPost = (id: number): FeedPost => ({
+const generateDummyFeed = (id: number): FeedPost => ({
   id,
-  username: `패션러버${id}`,
-  level: getSecureRandomInt(1, 6),
-  profileImg: `https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=60&height=60&seq=profile${id}&orientation=squarish`,
-  images: [
-    `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20trendy%20outfit&width=400&height=500&seq=post${id}&orientation=portrait`,
-    `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20casual%20streetwear&width=400&height=500&seq=post${id}a&orientation=portrait`,
-    `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20elegant%20outfit&width=400&height=500&seq=post${id}b&orientation=portrait`
-  ],
-  productName: `트렌디 아이템 ${id}`,
-  size: [220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300][getSecureRandomInt(0, 17)],
-  gender: getSecureRandomInt(0, 2) === 0 ? '여성' : '남성',
-  height: getSecureRandomInt(155, 185),
-  description: `트렌디한 스타일의 아이템입니다. 데일리룩으로 활용하기 좋아요. ${id}`,
-  likes: getSecureRandomInt(50, 250),
-  votes: getSecureRandomInt(10, 60),
-  comments: getSecureRandomInt(5, 25),
+  title: `트렌디 아이템 ${id}`,
+  content: `트렌디한 스타일의 아이템입니다. 데일리룩으로 활용하기 좋아요. ${id}`,
   instagramId: `fashion_lover${id}`,
-  createdAt: '2025-06-12',
+  feedType: ["DAILY", "EVENT", "RANKING"][getSecureRandomInt(0, 3)] as "DAILY" | "EVENT" | "RANKING",
+  likeCount: getSecureRandomInt(50, 250),
+  commentCount: getSecureRandomInt(5, 25),
+  participantVoteCount: getSecureRandomInt(10, 60),
+  user: {
+    id,
+    nickname: `패션러버${id}`,
+    level: getSecureRandomInt(1, 6),
+    profileImg: `https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait&width=60&height=60&seq=profile${id}`,
+    gender: getSecureRandomInt(0, 2) === 0 ? "여성" : "남성",
+    height: getSecureRandomInt(155, 185),
+  },
+  orderItem: {
+    id,
+    productName: `트렌디 아이템 ${id}`,
+    size: [220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300][getSecureRandomInt(0, 17)],
+  },
+  images: [
+    {
+      id: id * 10 + 1,
+      imageUrl: `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20trendy%20outfit&width=400&height=500&seq=post${id}`,
+      sortOrder: 0,
+    },
+    {
+      id: id * 10 + 2,
+      imageUrl: `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20casual%20streetwear&width=400&height=500&seq=post${id}a`,
+      sortOrder: 1,
+    },
+  ],
+  hashtags: [
+    { id: id * 10 + 1, tag: "데일리룩" },
+    { id: id * 10 + 2, tag: "패션" },
+  ],
+  createdAt: "2025-06-12",
   isLiked: false,
-  feedType: 'all',
 });
 
 const events = [
   {
     id: 1,
-    title: '여름 스타일 챌린지',
-    description: '여름 시즌 베스트 코디를 공유하고 투표에 참여하세요!',
-    purchasePeriod: '2025.06.25 - 2025.07.07',
-    votePeriod: '2025.07.08 - 2025.07.14',
-    announcementDate: '2025.07.15',
-    image: 'https://readdy.ai/api/search-image?query=summer%20fashion%20event%20promotional%20image&width=600&height=300&seq=event1&orientation=landscape',
+    title: "여름 스타일 챌린지",
+    description: "여름 시즌 베스트 코디를 공유하고 투표에 참여하세요!",
+    purchasePeriod: "2025.06.25 - 2025.07.07",
+    votePeriod: "2025.07.08 - 2025.07.14",
+    announcementDate: "2025.07.15",
+    image: "https://readdy.ai/api/search-image?query=summer%20fashion%20event%20promotional%20image&width=600&height=300&seq=event1&orientation=landscape",
     rewards: [
-      { rank: 1, reward: '전액 환급 또는 한정판 상품' },
-      { rank: 2, reward: '50,000원 쿠폰' },
-      { rank: 3, reward: '30,000원 쿠폰' }
-    ]
+      { rank: 1, reward: "전액 환급 또는 한정판 상품" },
+      { rank: 2, reward: "50,000원 쿠폰" },
+      { rank: 3, reward: "30,000원 쿠폰" },
+    ],
   },
   {
     id: 2,
-    title: '가을 트렌드 페스티벌',
-    description: '다가오는 가을, 트렌디한 스타일을 공유하고 특별한 혜택을 받아가세요!',
-    purchasePeriod: '2025.08.01 - 2025.08.15',
-    votePeriod: '2025.08.16 - 2025.08.22',
-    announcementDate: '2025.08.23',
-    image: 'https://readdy.ai/api/search-image?query=autumn%20fashion%20event%20promotional%20image&width=600&height=300&seq=event2&orientation=landscape',
+    title: "가을 트렌드 페스티벌",
+    description: "다가오는 가을, 트렌디한 스타일을 공유하고 특별한 혜택을 받아가세요!",
+    purchasePeriod: "2025.08.01 - 2025.08.15",
+    votePeriod: "2025.08.16 - 2025.08.22",
+    announcementDate: "2025.08.23",
+    image: "https://readdy.ai/api/search-image?query=autumn%20fashion%20event%20promotional%20image&width=600&height=300&seq=event2&orientation=landscape",
     rewards: [
-      { rank: 1, reward: '100만원 상당 브랜드 상품권' },
-      { rank: 2, reward: '30만원 상당 브랜드 상품권' },
-      { rank: 3, reward: '10만원 상당 브랜드 상품권' }
-    ]
-  }
-];
-
-// 샘플 피드 데이터
-const initialFeedPosts: FeedPost[] = [
-  // 일상 피드 샘플
-  {
-    id: 1,
-    username: '데일리러버',
-    level: 2,
-    profileImg: 'https://readdy.ai/api/search-image?query=asian%20woman%20profile&width=60&height=60&seq=profile1',
-    images: ['https://readdy.ai/api/search-image?query=casual%20asian%20woman%20outfit&width=400&height=500&seq=post1'],
-    productName: '화이트 스니커즈',
-    size: 240,
-    gender: '여성',
-    height: 162,
-    description: '데일리로 신기 좋은 화이트 스니커즈! 어디에나 잘 어울려요.',
-    likes: 120,
-    votes: 0,
-    comments: 5,
-    instagramId: 'daily_lover',
-    createdAt: '2025-06-10',
-    isLiked: false,
-    feedType: 'all',
-  },
-  // 이벤트 피드 샘플
-  {
-    id: 2,
-    username: '이벤트참가자',
-    level: 3,
-    profileImg: 'https://readdy.ai/api/search-image?query=asian%20man%20profile&width=60&height=60&seq=profile2',
-    images: ['https://readdy.ai/api/search-image?query=summer%20event%20outfit&width=400&height=500&seq=event1'],
-    productName: '여름 샌들',
-    size: 260,
-    gender: '남성',
-    height: 175,
-    description: '여름 이벤트에 맞춰 시원하게 신은 샌들! 투표 부탁드려요~',
-    likes: 80,
-    votes: 15,
-    comments: 3,
-    instagramId: 'event_guy',
-    createdAt: '2025-06-25',
-    isLiked: false,
-    feedType: 'event',
-  },
-  {
-    id: 3,
-    username: '썸머퀸',
-    level: 4,
-    profileImg: 'https://readdy.ai/api/search-image?query=asian%20woman%20profile&width=60&height=60&seq=profile3',
-    images: ['https://readdy.ai/api/search-image?query=summer%20fashion%20asian%20woman&width=400&height=500&seq=event2'],
-    productName: '플랫폼 샌들',
-    size: 235,
-    gender: '여성',
-    height: 168,
-    description: '이벤트 참여! 플랫폼 샌들로 키도 커보이고 스타일도 굿!',
-    likes: 95,
-    votes: 22,
-    comments: 7,
-    instagramId: 'summer_queen',
-    createdAt: '2025-06-26',
-    isLiked: false,
-    feedType: 'event',
-  },
-  // 랭킹 피드 샘플
-  {
-    id: 1001,
-    username: '랭킹스타',
-    level: 5,
-    profileImg: 'https://readdy.ai/api/search-image?query=asian%20man%20winner%20profile&width=60&height=60&seq=ranking1',
-    images: ['https://readdy.ai/api/search-image?query=award%20winning%20asian%20man%20outfit&width=400&height=500&seq=ranking1'],
-    productName: '한정판 러닝화',
-    size: 270,
-    gender: '남성',
-    height: 180,
-    description: '이벤트 1위! 한정판 러닝화로 스타일과 기능 모두 잡았어요.',
-    likes: 300,
-    votes: 120,
-    comments: 20,
-    instagramId: 'ranking_star',
-    createdAt: '2025-07-16',
-    isLiked: false,
-    feedType: 'ranking',
-  },
-  {
-    id: 1002,
-    username: '베스트퀸',
-    level: 5,
-    profileImg: 'https://readdy.ai/api/search-image?query=asian%20woman%20winner%20profile&width=60&height=60&seq=ranking2',
-    images: ['https://readdy.ai/api/search-image?query=award%20winning%20asian%20woman%20outfit&width=400&height=500&seq=ranking2'],
-    productName: '골드 스트랩 힐',
-    size: 240,
-    gender: '여성',
-    height: 170,
-    description: '랭킹 2위! 골드 스트랩 힐로 포인트를 줬어요.',
-    likes: 250,
-    votes: 100,
-    comments: 15,
-    instagramId: 'best_queen',
-    createdAt: '2025-07-16',
-    isLiked: false,
-    feedType: 'ranking',
+      { rank: 1, reward: "100만원 상당 브랜드 상품권" },
+      { rank: 2, reward: "30만원 상당 브랜드 상품권" },
+      { rank: 3, reward: "10만원 상당 브랜드 상품권" },
+    ],
   },
 ];
 
@@ -202,48 +90,78 @@ const FeedListPage = () => {
   const [sortBy, setSortBy] = useState("latest");
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [feedPosts, setFeedPosts] = useState<FeedPost[]>(() => initialFeedPosts);
-  const [localFeeds, setLocalFeeds] = useState<FeedPost[]>([]);
+  
+  // 🔧 백엔드 연동 버전: 실제 Feed Entity 구조 사용
+  const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const postsPerPage = 6;
-  const bestPosts = feedPosts.slice(0, 3);
 
-  // 상세 모달, 댓글, 투표 상태
-  const [selectedPost, setSelectedPost] = useState<FeedPost | null>(null);
-  const [showComments, setShowComments] = useState(false);
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: 1,
-      username: '패션리스타',
-      level: 3,
-      profileImg: 'https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=40&height=40&seq=comment1&orientation=squarish',
-      content: '정말 예쁘네요! 저도 이런 스타일 도전해보고 싶어요.',
-      createdAt: '2025-06-14 10:30'
-    },
-    {
-      id: 2,
-      username: '스타일마스터',
-      level: 4,
-      profileImg: 'https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=40&height=40&seq=comment2&orientation=squarish',
-      content: '데님 자켓 핏이 너무 좋아요! 어디 제품인지 궁금합니다.',
-      createdAt: '2025-06-14 11:15'
-    }
-  ]);
-  const [newComment, setNewComment] = useState("");
-  const [votedPosts, setVotedPosts] = useState<number[]>([]);
-  const [showVoteModal, setShowVoteModal] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  // 좋아요 상태
   const [likedPosts, setLikedPosts] = useState<number[]>([]);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
-  const { nickname } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
+  // 🔧 백엔드에서 피드 목록 가져오기
+  const fetchFeeds = async (page: number = 1, feedType?: string) => {
+    try {
+      const params: FeedListParams = {
+        page: page - 1, // 백엔드는 0부터 시작
+        size: postsPerPage,
+        sort: sortBy === 'latest' ? 'createdAt,desc' : 'likeCount,desc'
+      };
+
+      if (feedType && feedType !== 'all') {
+        params.feedType = feedType.toUpperCase() as 'DAILY' | 'EVENT' | 'RANKING';
+      }
+
+      const feedListResponse = await FeedService.getFeeds(params);
+      
+      return {
+        feeds: feedListResponse.content || [],
+        hasMore: !feedListResponse.last,
+        totalPages: feedListResponse.totalPages || 0
+      };
+      
+    } catch (error: any) {
+      console.error('피드 목록 조회 실패:', error);
+      
+      // 백엔드 연결 실패시 더미 데이터 사용
+      if (error.code === 'NETWORK_ERROR' || error.response?.status >= 500) {
+        console.warn('백엔드 서버 연결 실패 - 더미 데이터 사용');
+        const dummyFeeds = Array.from({ length: postsPerPage }, (_, i) => 
+          generateDummyFeed((page - 1) * postsPerPage + i + 1)
+        );
+        
+        return {
+          feeds: dummyFeeds,
+          hasMore: page < 3,
+          totalPages: 3
+        };
+      }
+      
+      return { feeds: [], hasMore: false, totalPages: 0 };
+    }
+  };
+
+  // 초기 데이터 로드
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('localFeeds') || '[]');
-    setLocalFeeds(stored);
-  }, []);
+    const loadInitialData = async () => {
+      setInitialLoading(true);
+      const result = await fetchFeeds(1, activeTab);
+      setFeedPosts(result.feeds);
+      setHasMore(result.hasMore);
+      setCurrentPage(1);
+      setInitialLoading(false);
+    };
+
+    loadInitialData();
+  }, [activeTab, sortBy]);
 
   const handleFilterToggle = (filter: string) => {
     if (selectedFilters.includes(filter)) {
@@ -253,97 +171,117 @@ const FeedListPage = () => {
     }
   };
 
-  // 더보기 버튼
+  // 🔧 백엔드 연동 버전: 더보기 버튼
   const handleLoadMore = async () => {
+    if (isLoading || !hasMore) return;
+    
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    const newPosts = Array.from({ length: 6 }, (_, i) => generateFeedPost(feedPosts.length + i + 1));
-    setFeedPosts([...feedPosts, ...newPosts]);
-    if (currentPage >= 3) {
-      setHasMore(false);
-    } else {
-      setCurrentPage((prev) => prev + 1);
-    }
+    const nextPage = currentPage + 1;
+    const result = await fetchFeeds(nextPage, activeTab);
+    
+    setFeedPosts([...feedPosts, ...result.feeds]);
+    setHasMore(result.hasMore);
+    setCurrentPage(nextPage);
     setIsLoading(false);
   };
 
-  // 상세 모달 열기
-  const handleOpenModal = (post: FeedPost) => {
-    setSelectedPost(post);
-    setShowComments(false);
+  // 피드 상세 페이지로 이동
+  const handleFeedClick = (feed: FeedPost) => {
+    navigate(`/feed/${feed.id}`);
   };
 
-  // 상세 모달 닫기
-  const handleCloseModal = () => {
-    setSelectedPost(null);
-    setShowComments(false);
-    setShowVoteModal(false);
-  };
-
-  // 댓글 등록
-  const handleCommentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newComment.trim()) {
-      const newCommentObj: Comment = {
-        id: comments.length + 1,
-        username: '나',
-        level: 2,
-        profileImg: 'https://readdy.ai/api/search-image?query=casual%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=40&height=40&seq=myprofile&orientation=squarish',
-        content: newComment,
-        createdAt: new Date().toLocaleString()
-      };
-      setComments([...comments, newCommentObj]);
-      setNewComment("");
+  // 🔧 백엔드 연동 버전: 좋아요 토글
+  const handleLike = async (postId: number) => {
+    if (!postId) return;
+    
+    try {
+      const likeResult = await FeedService.likeFeed(postId);
+      
+      // 백엔드 응답에 따라 좋아요 상태 업데이트
+      if (likeResult.liked) {
+        setLikedPosts([...likedPosts, postId]);
+      } else {
+        setLikedPosts(likedPosts.filter(id => id !== postId));
+      }
+      
+      setFeedPosts((prev) =>
+        prev.map((p) => (p.id === postId ? { ...p, likeCount: likeResult.likeCount } : p))
+      );
+      
+      const message = likeResult.liked ? "좋아요가 추가되었습니다!" : "좋아요가 취소되었습니다!";
+      setToastMessage(message);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+      
+    } catch (error: any) {
+      console.error('좋아요 실패:', error);
+      
+      if (error.response?.status === 401) {
+        setToastMessage("로그인이 필요합니다.");
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        setToastMessage(error.response?.data?.message || "좋아요 처리에 실패했습니다.");
+      }
+      
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
     }
   };
 
-  // 투표
-  const handleVote = (postId: number) => {
-    if (!postId || votedPosts.includes(postId)) return;
-    setVotedPosts([...votedPosts, postId]);
-    setFeedPosts((prev) => prev.map((p) => p.id === postId ? { ...p, votes: p.votes + 1 } : p));
-    setShowVoteModal(false);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 2000);
-  };
-
-  // 좋아요
-  const handleLike = (postId: number) => {
-    if (!postId || likedPosts.includes(postId)) return;
-    setLikedPosts([...likedPosts, postId]);
-    setFeedPosts((prev) => prev.map((p) => p.id === postId ? { ...p, likes: p.likes + 1 } : p));
-    setLocalFeeds((prev) => prev.map((p) => p.id === postId ? { ...p, likes: p.likes + 1 } : p));
-    // localStorage에도 반영
-    const stored = JSON.parse(localStorage.getItem('localFeeds') || '[]');
-    const updated = stored.map((p: any) => p.id === postId ? { ...p, likes: p.likes + 1 } : p);
-    localStorage.setItem('localFeeds', JSON.stringify(updated));
-  };
-
-  // FeedList에서 투표하기 버튼 클릭 시 상세 모달 오픈
+  // FeedList에서 투표하기 버튼 클릭 시 상세 페이지로 이동
   const handleVoteCardClick = (feed: FeedPost) => {
-    setSelectedPost(feed);
-    setShowComments(false);
-    setShowVoteModal(true);
+    navigate(`/feed/${feed.id}`);
   };
+
+  if (initialLoading) {
+    return (
+      <div className="p-5 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#87CEEB] mx-auto"></div>
+        <p className="mt-2 text-gray-600">피드를 불러오는 중...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-5">
+      {/* Toast 알림 */}
+      {showToast && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-out">
+          <div className="flex items-center">
+            <i className="fas fa-check-circle mr-2"></i>
+            {toastMessage}
+          </div>
+        </div>
+      )}
+
       {/* 탭 네비게이션 */}
       <div className="flex border-b border-gray-200 mb-6 overflow-x-auto">
         <button
-          className={`py-3 px-6 font-medium text-lg ${activeTab === "all" ? "text-[#87CEEB] border-b-2 border-[#87CEEB]" : "text-gray-500 hover:text-[#87CEEB]"}`}
+          className={`py-3 px-6 font-medium text-lg ${
+            activeTab === "all"
+              ? "text-[#87CEEB] border-b-2 border-[#87CEEB]"
+              : "text-gray-500 hover:text-[#87CEEB]"
+          }`}
           onClick={() => setActiveTab("all")}
         >
           일상 피드
         </button>
         <button
-          className={`py-3 px-6 font-medium text-lg ${activeTab === "event" ? "text-[#87CEEB] border-b-2 border-[#87CEEB]" : "text-gray-500 hover:text-[#87CEEB]"}`}
+          className={`py-3 px-6 font-medium text-lg ${
+            activeTab === "event"
+              ? "text-[#87CEEB] border-b-2 border-[#87CEEB]"
+              : "text-gray-500 hover:text-[#87CEEB]"
+          }`}
           onClick={() => setActiveTab("event")}
         >
           이벤트 피드
         </button>
         <button
-          className={`py-3 px-6 font-medium text-lg ${activeTab === "ranking" ? "text-[#87CEEB] border-b-2 border-[#87CEEB]" : "text-gray-500 hover:text-[#87CEEB]"}`}
+          className={`py-3 px-6 font-medium text-lg ${
+            activeTab === "ranking"
+              ? "text-[#87CEEB] border-b-2 border-[#87CEEB]"
+              : "text-gray-500 hover:text-[#87CEEB]"
+          }`}
           onClick={() => setActiveTab("ranking")}
         >
           랭킹 피드
@@ -353,112 +291,117 @@ const FeedListPage = () => {
       {/* 필터 및 정렬 옵션 */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
         <div className="flex flex-wrap items-center gap-4">
-        <div className="relative">
-          <button
-            className="bg-white border border-gray-300 rounded-lg px-4 py-2 flex items-center space-x-2"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          >
-              <span>{sortBy === "latest" ? "최신순" : sortBy === "popular" ? "인기순" : "유사 유저"}</span>
-              <i className={`fas fa-chevron-down text-sm transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}></i>
-          </button>
-          {isDropdownOpen && (
-            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 w-40">
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setSortBy("latest"); setIsDropdownOpen(false); }}>최신순</button>
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setSortBy("popular"); setIsDropdownOpen(false); }}>인기순</button>
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setSortBy("similar"); setIsDropdownOpen(false); }}>유사 유저</button>
+          <div className="relative">
+            <button
+              className="bg-white border border-gray-300 rounded-lg px-4 py-2 flex items-center space-x-2"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            >
+              <span>
+                {sortBy === "latest"
+                  ? "최신순"
+                  : sortBy === "popular"
+                  ? "인기순"
+                  : "유사 유저"}
+              </span>
+              <i
+                className={`fas fa-chevron-down text-sm transition-transform ${
+                  isDropdownOpen ? "rotate-180" : ""
+                }`}
+              ></i>
+            </button>
+            {isDropdownOpen && (
+              <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 w-40">
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => {
+                    setSortBy("latest");
+                    setIsDropdownOpen(false);
+                  }}
+                >
+                  최신순
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => {
+                    setSortBy("popular");
+                    setIsDropdownOpen(false);
+                  }}
+                >
+                  인기순
+                </button>
               </div>
             )}
           </div>
-          <div className="flex flex-wrap gap-2">
-            {["여성", "남성", "캐주얼", "미니멀"].map((filter) => (
-              <button
-                key={filter}
-                className={`px-3 py-1 rounded-full text-sm cursor-pointer ${selectedFilters.includes(filter) ? "bg-[#87CEEB] text-white" : "bg-white border border-gray-300 text-gray-700 hover:border-[#87CEEB]"}`}
-                onClick={() => handleFilterToggle(filter)}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
         </div>
+
         <Link
           to="/feed-create"
-          className="bg-[#87CEEB] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-blue-400 transition duration-200 flex items-center cursor-pointer"
+          className="bg-[#87CEEB] text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-400 transition duration-200 no-underline"
         >
-          <i className="fas fa-plus-circle mr-2"></i>
-          착용샷 올리기
+          + 피드 작성
         </Link>
       </div>
 
-      {/* 메인 콘텐츠 */}
+      {/* 일상 피드 */}
       {activeTab === "all" && (
-        <>
-          {/* 피드 그리드 */}
+        <div className="mb-8">
           <FeedList
-            feeds={[...feedPosts, ...localFeeds].filter(f => f.feedType === 'all')}
-            onFeedClick={handleOpenModal}
-            onLikeClick={feed => handleLike(feed.id)}
+            feeds={feedPosts.filter((f) => f.feedType === "DAILY")}
+            onFeedClick={handleFeedClick}
+            onLikeClick={(feed) => handleLike(feed.id)}
             likedPosts={likedPosts}
           />
-          {/* 더 보기 버튼 */}
-          <div className="text-center mb-10">
-            {hasMore ? (
-              <button
-                onClick={handleLoadMore}
-                className={`bg-white border border-[#87CEEB] text-[#87CEEB] px-6 py-3 rounded-lg font-medium hover:bg-blue-50 transition duration-200 cursor-pointer ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <div className="flex items-center">
-                    <i className="fas fa-spinner fa-spin mr-2"></i>
-                    로딩중...
-                  </div>
-                ) : (
-                  <>
-                    더 보기 <i className="fas fa-chevron-down ml-1"></i>
-                  </>
-                )}
-              </button>
-            ) : (
-              <p className="text-gray-500 text-sm">더 이상 게시물이 없습니다</p>
-            )}
-          </div>
-        </>
+        </div>
       )}
 
       {/* 이벤트 피드 */}
       {activeTab === "event" && (
         <div className="mb-8">
+          {/* 이벤트 정보 카드 */}
           {events.map((event) => (
-            <div key={event.id} className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
-              <img src={event.image} alt={event.title} className="w-full h-48 object-cover" />
-              <div className="p-4">
-                <h2 className="text-lg font-bold text-gray-800 mb-2">{event.title}</h2>
-                <p className="text-sm text-gray-600 mb-2">{event.description}</p>
-                <div className="flex gap-4 text-xs text-gray-500 mb-2">
-                  <span>구매기간: {event.purchasePeriod}</span>
-                  <span>투표기간: {event.votePeriod}</span>
-                  <span>발표일: {event.announcementDate}</span>
+            <div key={event.id} className="bg-white rounded-lg shadow-sm p-6 mb-6">
+              <div className="flex items-start mb-4">
+                <img
+                  src={event.image}
+                  alt={event.title}
+                  className="w-24 h-24 rounded-lg object-cover mr-4"
+                />
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">
+                    {event.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {event.description}
+                  </p>
+                  <div className="flex gap-4 text-xs text-gray-500 mb-2">
+                    <span>구매기간: {event.purchasePeriod}</span>
+                    <span>투표기간: {event.votePeriod}</span>
+                    <span>발표일: {event.announcementDate}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    {event.rewards.map((reward, idx) => (
+                      <span
+                        key={idx}
+                        className="bg-[#87CEEB] bg-opacity-10 px-2 py-1 rounded text-[#87CEEB] font-bold"
+                      >
+                        {reward.rank}위: {reward.reward}
+                      </span>
+                    ))}
+                  </div>
+                  <button className="mt-4 bg-[#87CEEB] text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-400 transition duration-200 cursor-pointer">
+                    이벤트 참여하기
+                  </button>
                 </div>
-                <div className="flex gap-2">
-                  {event.rewards.map((reward, idx) => (
-                    <span key={idx} className="bg-[#87CEEB] bg-opacity-10 px-2 py-1 rounded text-[#87CEEB] font-bold">
-                      {reward.rank}위: {reward.reward}
-                    </span>
-                  ))}
-                </div>
-                <button className="mt-4 bg-[#87CEEB] text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-400 transition duration-200 cursor-pointer">
-                  이벤트 참여하기
-              </button>
               </div>
             </div>
           ))}
+          
           {/* 이벤트 피드용 피드 카드 */}
           <FeedList
-            feeds={[...feedPosts, ...localFeeds].filter(f => f.feedType === 'event')}
-            onFeedClick={handleOpenModal}
+            feeds={feedPosts.filter((f) => f.feedType === "EVENT")}
+            onFeedClick={handleFeedClick}
             onVoteClick={handleVoteCardClick}
-            onLikeClick={feed => handleLike(feed.id)}
+            onLikeClick={(feed) => handleLike(feed.id)}
             likedPosts={likedPosts}
           />
         </div>
@@ -467,100 +410,38 @@ const FeedListPage = () => {
       {/* 랭킹 피드 */}
       {activeTab === "ranking" && (
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">이번 주 베스트 콘텐츠</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-            {/* 샘플 랭킹 피드 */}
-            {[...feedPosts, ...localFeeds, {
-              id: 9999,
-              username: '랭킹왕',
-              level: 5,
-              profileImg: 'https://readdy.ai/api/search-image?query=winner&width=60&height=60',
-              images: ['https://readdy.ai/api/search-image?query=winner&width=400&height=500'],
-              productName: '랭킹 신발',
-              size: 270,
-              gender: '남성',
-              height: 180,
-              description: '이벤트 결과로 선정된 랭킹 피드입니다.',
-              likes: 999,
-              votes: 300,
-              comments: 50,
-              instagramId: 'ranking_king',
-              createdAt: '2025-07-20',
-              isLiked: false,
-              feedType: 'ranking',
-            }].filter(f => f.feedType === 'ranking').map((post, idx) => (
-              <div key={post.id} className="bg-gradient-to-br from-blue-50 to-white rounded-lg p-4 border border-blue-100 relative">
-                {/* 투표완료 뱃지 */}
-                {votedPosts.includes(post.id) && (
-                  <span className="absolute top-3 right-3 bg-[#87CEEB] text-white text-xs font-semibold px-3 py-1 rounded-full shadow">투표완료</span>
-                )}
-                <div className="flex items-center justify-between mb-3">
-                  <span className="bg-[#87CEEB] text-white text-sm px-3 py-1 rounded-full">{post.productName}</span>
-                  <div className="flex items-center">
-                    <i className="fas fa-trophy text-yellow-400 mr-1"></i>
-                    <span className="text-sm font-medium">{idx + 1}위</span>
-                  </div>
-                </div>
-                <div className="relative h-48 rounded-lg overflow-hidden mb-4">
-                  <img src={post.images[0]} alt={post.productName} className="w-full h-full object-cover" />
-                </div>
-                <div className="flex items-center justify-between text-sm text-gray-600">
-                  <div className="flex items-center space-x-3">
-                    <span className="flex items-center">
-                      <i className="fas fa-heart text-red-400 mr-1"></i>
-                      {post.likes}
-                    </span>
-                    <span className="flex items-center">
-                      <i className="fas fa-comment text-[#87CEEB] mr-1"></i>
-                      {post.comments}
-                    </span>
-                    <span className="flex items-center">
-                      <i className="fas fa-vote-yea text-[#87CEEB] mr-1"></i>
-                      투표수: {post.votes}
-                    </span>
-                  </div>
-                  <button className="text-[#87CEEB] hover:text-blue-400 font-medium cursor-pointer">자세히 보기</button>
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* 랭킹 피드용 피드 카드 */}
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">
+            이번 주 베스트 콘텐츠
+          </h2>
+          
           <FeedList
-            feeds={[...feedPosts, ...localFeeds].filter(f => f.feedType === 'ranking')}
-            onFeedClick={handleOpenModal}
-            onLikeClick={feed => handleLike(feed.id)}
+            feeds={feedPosts.filter((f) => f.feedType === "RANKING")}
+            onFeedClick={handleFeedClick}
+            onLikeClick={(feed) => handleLike(feed.id)}
             likedPosts={likedPosts}
           />
         </div>
       )}
 
-      {/* 상세 모달 */}
-      <FeedDetailModal
-        open={!!selectedPost}
-        onClose={handleCloseModal}
-        feed={selectedPost}
-        comments={comments}
-        showComments={showComments}
-        onToggleComments={() => setShowComments(!showComments)}
-        onLike={() => selectedPost && handleLike(selectedPost.id)}
-        liked={selectedPost ? likedPosts.includes(selectedPost.id) : false}
-        onVote={() => setShowVoteModal(true)}
-        voted={selectedPost ? votedPosts.includes(selectedPost.id) : false}
-        onEdit={nickname && selectedPost && selectedPost.username === nickname ? () => {
-          handleCloseModal();
-          navigate(`/feed-create?id=${selectedPost.id}`);
-        } : undefined}
-        showVoteButton={selectedPost?.feedType === 'event'}
-        showEditButton={!!(nickname && selectedPost && selectedPost.username === nickname)}
-        showVoteModal={showVoteModal}
-        onVoteModalClose={() => setShowVoteModal(false)}
-        onVoteConfirm={() => selectedPost && handleVote(selectedPost.id)}
-        showToast={showToast}
-        toastMessage={'투표가 완료되었습니다!'}
-        newComment={newComment}
-        onCommentChange={e => setNewComment(e.target.value)}
-        onCommentSubmit={handleCommentSubmit}
-      />
+      {/* 더보기 버튼 */}
+      {hasMore && (
+        <div className="text-center mt-8">
+          <button
+            onClick={handleLoadMore}
+            disabled={isLoading}
+            className="bg-[#87CEEB] text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-400 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <div className="flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                로딩 중...
+              </div>
+            ) : (
+              "더보기"
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
