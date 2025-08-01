@@ -17,71 +17,6 @@ import {
 
 const AuthForm = styled(BaseAuthForm)`
   gap: 0;
-
-const fadeInUp = keyframes`
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-const slideInLeft = keyframes`
-  from { opacity: 0; transform: translateX(-30px); }
-  to { opacity: 1; transform: translateX(0); }
-`;
-const float = keyframes`
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-`;
-
-const LoginContainer = styled.div`
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  position: relative;
-  overflow: hidden;
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(249,115,22,0.08)" points="0,1000 1000,0 1000,1000"/></svg>');
-    background-size: cover;
-  }
-`;
-const LoginCard = styled.div`
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  padding: 48px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 480px;
-  position: relative;
-  z-index: 2;
-  animation: ${fadeInUp} 0.8s ease-out;
-  @media (max-width: 768px) {
-    padding: 32px 24px;
-    margin: 20px;
-  }
-`;
-const LogoSection = styled.div`
-  text-align: center;
-  margin-bottom: 40px;
-  animation: ${slideInLeft} 0.8s ease-out 0.2s both;
-`;
-const Logo = styled.div`
-  font-size: 2.5rem;
-  font-weight: 900;
-  background: linear-gradient(135deg, #f97316, #ea580c);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 8px;
-  animation: ${float} 3s ease-in-out infinite;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 `;
 
 const AuthFormGroup = styled(BaseAuthFormGroup)`
@@ -100,48 +35,7 @@ const InputIcon = styled.div`
   color: #9ca3af;
   font-size: 1.1rem;
 `;
-const LoginButton = styled.button`
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #f97316, #ea580c);
-  color: white;
-  border: none;
-  border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
-  position: relative;
-  overflow: hidden;
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.2),
-      transparent
-    );
-    transition: left 0.5s;
-  }
-  &:hover {
-    transform: translateY(-3px) scale(1.04);
-    box-shadow: 0 12px 35px rgba(249, 115, 22, 0.4);
-    &::before {
-      left: 100%;
-    }
-  }
-  &:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
+
 const SocialLoginButton = styled.button`
   width: 100%;
   padding: 14px;
