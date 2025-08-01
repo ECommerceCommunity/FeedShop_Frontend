@@ -1051,29 +1051,6 @@ const HomePage: FC = () => {
           </ButtonGroup>
         </Container>
       </CTASection>
-
-      <Footer>
-        <Container>
-          <FooterContent>
-            <FooterBrand>
-              <FooterBrandTitle>FeedShop</FooterBrandTitle>
-              <FooterBrandDescription>
-                스마트한 쇼핑 경험을 위한 최고의 선택. 고객과 비즈니스 모두를
-                위한 혁신적인 플랫폼입니다.
-              </FooterBrandDescription>
-            </FooterBrand>
-            <FooterLinks>
-              <FooterLink href="#">이용약관</FooterLink>
-              <FooterLink href="#">개인정보처리방침</FooterLink>
-              <FooterLink href="#">고객센터</FooterLink>
-              <FooterLink href="#">문의하기</FooterLink>
-            </FooterLinks>
-          </FooterContent>
-          <FooterCopyright>
-            <p>&copy; 2025 FeedShop. All rights reserved.</p>
-          </FooterCopyright>
-        </Container>
-      </Footer>
     </HomeContainer>
   );
 };
