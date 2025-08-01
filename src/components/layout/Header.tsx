@@ -36,8 +36,6 @@ const HeaderContainer = styled.header`
   height: 60px;
   background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
   box-shadow: 0 4px 20px rgba(249, 115, 22, 0.2);
-  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-  box-shadow: 0 4px 20px rgba(249, 115, 22, 0.2);
   display: flex;
   align-items: center;
   padding: 0 20px;
@@ -116,7 +114,6 @@ const MenuButton = styled.button`
 const Logo = styled(Link)`
   font-size: 24px;
   font-weight: 800;
-  font-weight: 800;
   color: white;
   text-decoration: none;
   margin-right: 40px;
@@ -169,7 +166,6 @@ const NavLink = styled(Link)`
   font-weight: 500;
   padding: 8px 16px;
   border-radius: 12px;
-  border-radius: 12px;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -187,14 +183,12 @@ const NavLink = styled(Link)`
       90deg,
       transparent,
       rgba(249, 115, 22, 0.3),
-      rgba(249, 115, 22, 0.3),
       transparent
     );
     transition: left 0.5s;
   }
 
   &:hover {
-    background: rgba(249, 115, 22, 0.2);
     background: rgba(249, 115, 22, 0.2);
     color: white;
     transform: translateY(-2px);
@@ -309,19 +303,7 @@ const SearchInput = styled.input`
 `;
 
 const SearchButton = styled.button`
-const SearchButton = styled.button`
   position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: linear-gradient(135deg, #f97316, #ea580c);
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
@@ -383,7 +365,6 @@ const SearchButton = styled.button`
 `;
 
 const UserSection = styled.div`
-const UserSection = styled.div`
   display: flex;
   align-items: center;
   gap: 20px;
@@ -428,8 +409,6 @@ const UserInfo = styled.div`
   cursor: pointer;
   padding: 8px 12px;
   border-radius: 20px;
-  padding: 8px 12px;
-  border-radius: 20px;
   transition: all 0.3s ease;
   background: rgba(249, 115, 22, 0.1);
   border: 1px solid rgba(249, 115, 22, 0.2);
@@ -440,8 +419,6 @@ const UserInfo = styled.div`
   z-index: 0; /* 드롭다운보다 낮게 */
 
   &:hover {
-    background: rgba(249, 115, 22, 0.2);
-    border-color: rgba(249, 115, 22, 0.4);
     background: rgba(249, 115, 22, 0.2);
     border-color: rgba(249, 115, 22, 0.4);
     transform: translateY(-2px);
@@ -498,7 +475,6 @@ const UserAvatar = styled.div`
   height: 32px;
   border-radius: 50%;
   background: linear-gradient(135deg, #f97316, #ea580c);
-  background: linear-gradient(135deg, #f97316, #ea580c);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -516,7 +492,6 @@ const UserAvatar = styled.div`
 `;
 
 const UserName = styled.span`
-  color: white;
   color: white;
   font-weight: 500;
   font-size: 14px;
@@ -541,13 +516,7 @@ const DropdownMenu = styled.div`
   margin-top: 8px;
   background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
   border: 1px solid rgba(249, 115, 22, 0.2);
-  margin-top: 8px;
-  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-  border: 1px solid rgba(249, 115, 22, 0.2);
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  min-width: 200px;
-  overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   min-width: 200px;
   overflow: hidden;
@@ -580,25 +549,18 @@ const DropdownItem = styled(Link)`
   display: flex;
   align-items: center;
   gap: 12px;
-  gap: 12px;
   padding: 12px 16px;
-  color: rgba(255, 255, 255, 0.9);
   color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  font-weight: 500;
   transition: all 0.3s ease;
-  position: relative;
-  z-index: 2;
   position: relative;
   z-index: 2;
 
   &:hover {
     background: rgba(249, 115, 22, 0.2);
-    background: rgba(249, 115, 22, 0.2);
     color: white;
-    transform: translateX(4px);
     transform: translateX(4px);
   }
 
@@ -613,31 +575,21 @@ const DropdownButton = styled.button`
   display: flex;
   align-items: center;
   gap: 12px;
-  gap: 12px;
   padding: 12px 16px;
-  width: 100%;
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.9);
   width: 100%;
   background: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.9);
   font-size: 14px;
   font-weight: 500;
-  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  position: relative;
-  z-index: 2;
   position: relative;
   z-index: 2;
 
   &:hover {
     background: rgba(239, 68, 68, 0.2);
-    background: rgba(239, 68, 68, 0.2);
     color: white;
-    transform: translateX(4px);
     transform: translateX(4px);
   }
 
@@ -936,13 +888,11 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
           </UserMenu>
         ) : (
           <LoginButton to="/login">
-          <LoginButton to="/login">
             <i
               className="fas fa-sign-in-alt"
               style={{ marginRight: "8px" }}
             ></i>
             로그인
-          </LoginButton>
           </LoginButton>
         )}
       </UserSection>
