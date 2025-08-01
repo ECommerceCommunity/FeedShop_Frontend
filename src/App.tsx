@@ -43,7 +43,8 @@ const StatsDashboardPage = lazy(
 const StoreHomePage = lazy(() => import("./pages/stores/StoreHomePage"));
 const CartPage = lazy(() => import("./pages/cart/CartPage"));
 const PaymentPage = lazy(() => import("./pages/order/PaymentPage"));
-const OrdersPage = lazy(() => import("./pages/order/OrdersPage"));
+const SellerOrdersPage = lazy(() => import("./pages/order/SellerOrdersPage"));
+const UserOrdersPage = lazy(() => import("./pages/order/UserOrdersPage"));
 const CheckoutPage = lazy(() => import("./pages/order/CheckoutPage"));
 const WishListPage = lazy(() => import("./pages/cart/WishListPage"));
 const RecentViewPage = lazy(() => import("./pages/cart/RecentViewPage"));
@@ -98,7 +99,15 @@ const App: FC = () => {
                 path="/orders"
                 element={
                   <UserProtectedRoute requireUserRole={true}>
-                    <OrdersPage />
+                    <SellerOrdersPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-orders"
+                element={
+                  <UserProtectedRoute requireUserRole={true}>
+                    <UserOrdersPage />
                   </UserProtectedRoute>
                 }
               />

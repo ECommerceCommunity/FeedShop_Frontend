@@ -5,21 +5,21 @@ import { CartItem } from "../../types/cart"; // 장바구니 아이템 타입
 import { toUrl } from "../../utils/common/images"; // 이미지 URL 변환 함수
 // 스타일 컴포넌트들
 import {
-  CartItemCard,    // 장바구니 아이템 카드 컨테이너
-  ItemCheckbox,    // 아이템 선택 체크박스
-  ItemImage,       // 상품 이미지
-  ItemInfo,        // 상품 정보 컨테이너
-  ItemDetails,     // 상품 상세 정보 영역
-  ItemName,        // 상품 이름
-  ItemOption,      // 상품 옵션 (사이즈, 색상)
-  ItemPrice,       // 가격 정보 컨테이너
-  DiscountPrice,   // 할인된 가격
-  OriginalPrice,   // 원래 가격 (할인 전)
-  ItemControls,    // 수량 조절 및 삭제 버튼 영역
-  QuantityControls,// 수량 조절 컨트롤
-  QuantityButton,  // 수량 증감 버튼
-  QuantityInput,   // 수량 직접 입력 필드
-  RemoveButton,    // 아이템 삭제 버튼
+  CartItemCard, // 장바구니 아이템 카드 컨테이너
+  ItemCheckbox, // 아이템 선택 체크박스
+  ItemImage, // 상품 이미지
+  ItemInfo, // 상품 정보 컨테이너
+  ItemDetails, // 상품 상세 정보 영역
+  ItemName, // 상품 이름
+  ItemOption, // 상품 옵션 (사이즈, 색상)
+  ItemPrice, // 가격 정보 컨테이너
+  DiscountPrice, // 할인된 가격
+  OriginalPrice, // 원래 가격 (할인 전)
+  ItemControls, // 수량 조절 및 삭제 버튼 영역
+  QuantityControls, // 수량 조절 컨트롤
+  QuantityButton, // 수량 증감 버튼
+  QuantityInput, // 수량 직접 입력 필드
+  RemoveButton, // 아이템 삭제 버튼
 } from "../../pages/cart/CartPage.styles";
 
 /**
@@ -36,7 +36,7 @@ interface CartItemComponentProps {
 
 /**
  * 장바구니 개별 아이템 컴포넌트
- * 
+ *
  * 기능:
  * - 상품 이미지, 이름, 옵션 정보 표시
  * - 할인 가격 및 원가 표시 (할인이 있는 경우)
@@ -44,17 +44,17 @@ interface CartItemComponentProps {
  * - 수량 증감 및 직접 입력 (1~5개 제한)
  * - 아이템 삭제 버튼
  * - 이미지 로드 실패 시 기본 이미지로 대체
- * 
+ *
  * 사용되는 곳:
  * - CartPage의 장바구니 아이템 목록
  */
 export const CartItemComponent: React.FC<CartItemComponentProps> = ({
-  item,            // 장바구니 아이템 데이터
-  isSelected,      // 현재 선택 상태
-  onSelect,        // 선택/해제 핸들러
-  onQuantityChange,// 수량 변경 핸들러
-  onRemove,        // 삭제 핸들러
-  formatPrice,     // 가격 포맷팅 함수
+  item, // 장바구니 아이템 데이터
+  isSelected, // 현재 선택 상태
+  onSelect, // 선택/해제 핸들러
+  onQuantityChange, // 수량 변경 핸들러
+  onRemove, // 삭제 핸들러
+  formatPrice, // 가격 포맷팅 함수
 }) => {
   return (
     <CartItemCard>
@@ -69,8 +69,7 @@ export const CartItemComponent: React.FC<CartItemComponentProps> = ({
         src={toUrl(item.imageUrl)} // 이미지 URL 변환
         alt={item.productName}
         onError={(e) => {
-          // 이미지 로드 실패 시 기본 이미지로 대체
-          e.currentTarget.src = "/placeholder-image.jpg";
+          e.currentTarget.style.visibility = "hidden";
         }}
       />
 
@@ -80,13 +79,13 @@ export const CartItemComponent: React.FC<CartItemComponentProps> = ({
         <ItemDetails>
           {/* 상품 이름 */}
           <ItemName>{item.productName}</ItemName>
-          
+
           {/* 상품 옵션 (사이즈, 색상) */}
           <ItemOption>
             사이즈: {item.optionDetails?.size?.replace("SIZE_", "")} | 색상:{" "}
             {item.optionDetails?.color}
           </ItemOption>
-          
+
           {/* 가격 정보 */}
           <ItemPrice>
             {/* 할인된 가격 (메인 가격) */}
@@ -111,7 +110,7 @@ export const CartItemComponent: React.FC<CartItemComponentProps> = ({
             >
               -
             </QuantityButton>
-            
+
             {/* 수량 직접 입력 필드 */}
             <QuantityInput
               type="number"
@@ -122,7 +121,7 @@ export const CartItemComponent: React.FC<CartItemComponentProps> = ({
               min="1"
               max="5" // 최대 수량 5개 제한
             />
-            
+
             {/* 수량 증가 버튼 */}
             <QuantityButton
               onClick={() =>

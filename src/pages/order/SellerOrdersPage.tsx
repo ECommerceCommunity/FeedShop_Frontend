@@ -8,7 +8,7 @@ import { toUrl } from "utils/common/images"; // 이미지 URL 변환 유틸리�
 /**
  * 주문 상태 타입 정의
  * - ORDERED: 주문완료
- * - SHIPPED: 배송중  
+ * - SHIPPED: 배송중
  * - DELIVERED: 배송완료
  * - CANCELLED: 취소
  * - RETURNED: 반품
@@ -34,11 +34,11 @@ const orderStatusList: { key: OrderStatus; label: string }[] = [
 
 // 주문 상태별 배지 색상 정의
 const statusColors: Record<string, string> = {
-  ORDERED: "#eab308",    // 노란색 (주문완료)
-  SHIPPED: "#6366f1",    // 보라색 (배송중)
-  DELIVERED: "#22c55e",  // 초록색 (배송완료)
-  CANCELLED: "#ef4444",  // 빨간색 (취소)
-  RETURNED: "#64748b",   // 회색 (반품)
+  ORDERED: "#eab308", // 노란색 (주문완료)
+  SHIPPED: "#6366f1", // 보라색 (배송중)
+  DELIVERED: "#22c55e", // 초록색 (배송완료)
+  CANCELLED: "#ef4444", // 빨간색 (취소)
+  RETURNED: "#64748b", // 회색 (반품)
 };
 
 // 주문 상태 한글 레이블 매핑
@@ -335,26 +335,25 @@ const BulkUpdateButton = styled.button<{ disabled?: boolean }>`
   }
 `;
 
-
 /**
  * 판매자용 주문 관리 페이지 컴포넌트
- * 
+ *
  * 기능:
  * - 판매자의 모든 주문 목록 조회 및 관리
  * - 주문 상태별 필터링 (전체, 주문완료, 배송중, 배송완료, 취소, 반품)
  * - 주문번호 및 상품명으로 검색
  * - 주문 상태 일괄 변경 (여러 주문 선택 후 상태 변경)
  * - 페이지네이션을 통한 대용량 데이터 처리
- * 
+ *
  * API 사용:
  * - OrderService.getSellerOrders(): 판매자 주문 목록 조회
  * - OrderService.updateOrderStatus(): 주문 상태 변경
- * 
+ *
  * 라우팅:
  * - SellerMyPage에서 "주문/배송관리" 클릭 시 표시
  * - 독립적인 페이지로도 접근 가능
  */
-const OrdersPage: React.FC = () => {
+const SellerOrdersPage: React.FC = () => {
   // 페이지네이션 관련 상태
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 (1부터 시작)
   const [orders, setOrders] = useState<OrderListItem[]>([]); // 현재 페이지의 주문 목록
@@ -364,10 +363,12 @@ const OrdersPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null); // 에러 메시지
   const [totalPages, setTotalPages] = useState(0); // 전체 페이지 수
   const [totalElements, setTotalElements] = useState(0); // 전체 주문 수
-  
+
   // 일괄 처리 관련 상태
   const [selectedOrders, setSelectedOrders] = useState<Set<number>>(new Set()); // 선택된 주문 ID들
-  const [bulkStatusChange, setBulkStatusChange] = useState<OrderStatus | "">(""); // 일괄 변경할 상태
+  const [bulkStatusChange, setBulkStatusChange] = useState<OrderStatus | "">(
+    ""
+  ); // 일괄 변경할 상태
   const [isUpdating, setIsUpdating] = useState(false); // 상태 변경 중 여부
   const [allOrders, setAllOrders] = useState<OrderListItem[]>([]); // 상태별 카운트 계산용 전체 주문
   const itemsPerPage = 10; // 페이지당 표시할 주문 수
@@ -456,7 +457,7 @@ const OrdersPage: React.FC = () => {
    */
   const getOrderCountByStatus = (status: OrderStatus): number => {
     if (status === "ALL") return allOrders.length; // 전체는 모든 주문 개수
-    return allOrders.filter(order => order.status === status).length; // 특정 상태 주문 개수
+    return allOrders.filter((order) => order.status === status).length; // 특정 상태 주문 개수
   };
 
   /**
@@ -496,35 +497,37 @@ const OrdersPage: React.FC = () => {
    */
   const handleBulkStatusUpdate = async () => {
     if (!bulkStatusChange || selectedOrders.size === 0) return;
-    
+
     try {
       setIsUpdating(true);
       setError(null);
-      
+
       // 선택된 모든 주문의 상태를 병렬로 업데이트
-      const updatePromises = Array.from(selectedOrders).map(orderId => 
-        OrderService.updateOrderStatus(orderId, bulkStatusChange as Exclude<OrderStatus, "ALL">)
+      const updatePromises = Array.from(selectedOrders).map((orderId) =>
+        OrderService.updateOrderStatus(
+          orderId,
+          bulkStatusChange as Exclude<OrderStatus, "ALL">
+        )
       );
-      
+
       await Promise.all(updatePromises);
-      
+
       // 로컬 상태 업데이트 (UI 즉시 반영)
-      setOrders(prevOrders => 
-        prevOrders.map(order => 
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
           selectedOrders.has(order.orderId)
             ? { ...order, status: bulkStatusChange as OrderStatus }
             : order
         )
       );
-      
+
       // 선택 상태 초기화
       setSelectedOrders(new Set());
       setBulkStatusChange("");
-      
+
       // 서버에서 최신 데이터 다시 로드 (카운트 업데이트 포함)
       await fetchOrders(currentPage - 1, filter);
       await fetchAllOrders();
-      
     } catch (error: any) {
       console.error("Failed to bulk update order status:", error);
       setError("일괄 상태 변경에 실패했습니다.");
@@ -624,7 +627,7 @@ const OrdersPage: React.FC = () => {
                           }
                         />
                       </TableCell>
-                      
+
                       {/* 주문 정보 (주문번호, 주문일자) */}
                       <TableCell>
                         <OrderId>#{order.orderId}</OrderId>
@@ -632,7 +635,7 @@ const OrdersPage: React.FC = () => {
                           {new Date(order.orderedAt).toLocaleDateString()}
                         </OrderDate>
                       </TableCell>
-                      
+
                       {/* 상품 정보 (이미지, 이름, 수량, 가격) */}
                       <TableCell>
                         {order.items.map((item, index) => (
@@ -644,8 +647,7 @@ const OrdersPage: React.FC = () => {
                               src={toUrl(item.imageUrl)}
                               alt={item.productName}
                               onError={(e) => {
-                                // 이미지 로드 실패 시 기본 이미지로 대체
-                                e.currentTarget.src = "/placeholder-image.jpg";
+                                e.currentTarget.style.visibility = "hidden";
                               }}
                             />
                             <ProductInfo>
@@ -658,12 +660,12 @@ const OrdersPage: React.FC = () => {
                           </ProductItem>
                         ))}
                       </TableCell>
-                      
+
                       {/* 최종 결제 금액 */}
                       <TableCell align="right" width={120}>
                         {order.finalPrice.toLocaleString()}원
                       </TableCell>
-                      
+
                       {/* 주문 상태 배지 (읽기 전용) */}
                       <TableCell align="center" width={150}>
                         <StatusBadge status={order.status}>
@@ -684,7 +686,7 @@ const OrdersPage: React.FC = () => {
           <SelectedInfo>
             {selectedOrders.size > 0 && `${selectedOrders.size}개 주문 선택됨`}
           </SelectedInfo>
-          
+
           {/* 일괄 상태 변경 드롭다운 */}
           <BulkStatusSelect
             value={bulkStatusChange}
@@ -700,7 +702,7 @@ const OrdersPage: React.FC = () => {
                 </option>
               ))}
           </BulkStatusSelect>
-          
+
           {/* 일괄 변경 적용 버튼 */}
           <BulkUpdateButton
             onClick={handleBulkStatusUpdate}
@@ -748,4 +750,4 @@ const OrdersPage: React.FC = () => {
   );
 };
 
-export default OrdersPage;
+export default SellerOrdersPage;

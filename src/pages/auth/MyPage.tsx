@@ -1,38 +1,38 @@
-import React from "react";
-import { Routes, Route, Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Routes, Route, Link } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import AddressManagementPage from "./AddressManagementPage";
 import CouponsPage from "./CouponsPage"; // CouponsPage import 추가
+import UserOrdersPage from "pages/order/UserOrdersPage";
+import MyRecentOrders from "components/order/MyRecentOrders";
+import { OrderService } from "api/orderService";
+import { OrderListItem } from "types/order";
 
 // 예시 데이터 (향후 API 연동 필요)
 const user = {
   name: "홍길동",
   profileImg: "https://i.pravatar.cc/150?img=32",
-  recentOrders: [
-    {
-      id: 1,
-      thumbnail: "https://picsum.photos/seed/picsum/200/300",
-      name: "트렌디 셔츠",
-      date: "2025-07-28",
-      status: "배송 완료",
-    },
-    {
-      id: 2,
-      thumbnail: "https://picsum.photos/seed/picsum/200/300",
-      name: "여름 팬츠",
-      date: "2025-07-25",
-      status: "처리 중",
-    },
-  ],
   feedCount: 12,
   wishlistCount: 5,
   couponCount: 3,
 };
 
 const feeds = [
-  { id: 1, image: "https://picsum.photos/seed/feed1/300/200", title: "OOTD #1" },
-  { id: 2, image: "https://picsum.photos/seed/feed2/300/200", title: "OOTD #2" },
-  { id: 3, image: "https://picsum.photos/seed/feed3/300/200", title: "OOTD #3" },
+  {
+    id: 1,
+    image: "https://picsum.photos/seed/feed1/300/200",
+    title: "OOTD #1",
+  },
+  {
+    id: 2,
+    image: "https://picsum.photos/seed/feed2/300/200",
+    title: "OOTD #2",
+  },
+  {
+    id: 3,
+    image: "https://picsum.photos/seed/feed3/300/200",
+    title: "OOTD #3",
+  },
 ];
 
 // 애니메이션
@@ -182,52 +182,6 @@ const SectionTitle = styled.h3`
   margin-bottom: 1.5rem;
 `;
 
-const OrdersList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const OrderItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 1rem;
-  border-radius: 12px;
-`;
-
-const OrderThumbnail = styled.img`
-  width: 64px;
-  height: 64px;
-  border-radius: 8px;
-  object-fit: cover;
-`;
-
-const OrderInfo = styled.div`
-  flex: 1;
-`;
-
-const OrderName = styled.p`
-  font-weight: 600;
-  margin: 0;
-`;
-
-const OrderDate = styled.p`
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-`;
-
-const OrderStatus = styled.span`
-  background: #f97316;
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-`;
-
 const FeedCarousel = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -262,60 +216,67 @@ const FeedTitle = styled.div`
   font-weight: 500;
 `;
 
-const MyPageDashboard = () => (
-  <>
-    <DashboardGrid>
-      <Card>
-        <CardTitle>최근 주문</CardTitle>
-        <CardValue>{user.recentOrders.length}</CardValue>
-      </Card>
-      <Card>
-        <CardTitle>내 피드</CardTitle>
-        <CardValue>{user.feedCount}</CardValue>
-      </Card>
-      <Card>
-        <CardTitle>위시리스트</CardTitle>
-        <CardValue>{user.wishlistCount}</CardValue>
-      </Card>
-      <Card>
-        <CardTitle>쿠폰</CardTitle>
-        <CardValue>{user.couponCount}</CardValue>
-      </Card>
-    </DashboardGrid>
+const MyPageDashboard = () => {
+  const [orders, setOrders] = useState<OrderListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    <Section>
-      <SectionTitle>최근 주문 내역</SectionTitle>
-      <OrdersList>
-        {user.recentOrders.map((order) => (
-          <OrderItem key={order.id}>
-            <OrderThumbnail src={order.thumbnail} alt={order.name} />
-            <OrderInfo>
-              <OrderName>{order.name}</OrderName>
-              <OrderDate>{order.date}</OrderDate>
-            </OrderInfo>
-            <OrderStatus>{order.status}</OrderStatus>
-          </OrderItem>
-        ))}
-      </OrdersList>
-    </Section>
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const response = await OrderService.getOrders(0, 5); // 최신 5개 주문만 가져오기
+        setOrders(response.content);
+      } catch (error: any) {
+        console.error("주문 목록 조회 실패:", error);
+        setError("주문 목록을 불러오는데 실패했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    <Section>
-      <SectionTitle>내 피드</SectionTitle>
-      <FeedCarousel>
-        {feeds.map((feed) => (
-          <FeedCard key={feed.id}>
-            <FeedImg src={feed.image} alt={feed.title} />
-            <FeedTitle>{feed.title}</FeedTitle>
-          </FeedCard>
-        ))}
-      </FeedCarousel>
-    </Section>
-  </>
-);
+    fetchOrders();
+  }, []);
+
+  return (
+    <>
+      <DashboardGrid>
+        <Card>
+          <CardTitle>최근 주문</CardTitle>
+          <CardValue>{loading ? "-" : orders.length}</CardValue>
+        </Card>
+        <Card>
+          <CardTitle>내 피드</CardTitle>
+          <CardValue>{user.feedCount}</CardValue>
+        </Card>
+        <Card>
+          <CardTitle>위시리스트</CardTitle>
+          <CardValue>{user.wishlistCount}</CardValue>
+        </Card>
+        <Card>
+          <CardTitle>쿠폰</CardTitle>
+          <CardValue>{user.couponCount}</CardValue>
+        </Card>
+      </DashboardGrid>
+
+      <MyRecentOrders maxItems={5} />
+
+      <Section>
+        <SectionTitle>내 피드</SectionTitle>
+        <FeedCarousel>
+          {feeds.map((feed) => (
+            <FeedCard key={feed.id}>
+              <FeedImg src={feed.image} alt={feed.title} />
+              <FeedTitle>{feed.title}</FeedTitle>
+            </FeedCard>
+          ))}
+        </FeedCarousel>
+      </Section>
+    </>
+  );
+};
 
 function MyPage() {
-  const navigate = useNavigate();
-
   return (
     <Container>
       <MainLayout>
@@ -331,7 +292,7 @@ function MyPage() {
             <NavItem to="/mypage">
               <i className="fas fa-tachometer-alt"></i> 대시보드
             </NavItem>
-            <NavItem to="/orders">
+            <NavItem to="/my-orders">
               <i className="fas fa-box"></i> 주문내역
             </NavItem>
             <NavItem to="/my-feed">
@@ -340,10 +301,14 @@ function MyPage() {
             <NavItem to="/wishlist">
               <i className="fas fa-heart"></i> 위시리스트
             </NavItem>
-            <NavItem to="/mypage/coupons"> {/* 경로 수정 */}
+            <NavItem to="/mypage/coupons">
+              {" "}
+              {/* 경로 수정 */}
               <i className="fas fa-ticket-alt"></i> 쿠폰/포인트
             </NavItem>
-            <NavItem to="/mypage/settings"> {/* 경로 수정 */}
+            <NavItem to="/mypage/settings">
+              {" "}
+              {/* 경로 수정 */}
               <i className="fas fa-cog"></i> 설정
             </NavItem>
           </NavMenu>
@@ -352,7 +317,7 @@ function MyPage() {
           <Routes>
             <Route index element={<MyPageDashboard />} />
             <Route path="settings" element={<AddressManagementPage />} />
-            <Route path="coupons" element={<CouponsPage />} /> {/* 라우트 추가 */}
+            <Route path="coupons" element={<CouponsPage />} />
           </Routes>
         </MainContent>
       </MainLayout>

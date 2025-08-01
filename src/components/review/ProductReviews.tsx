@@ -319,7 +319,7 @@ export const ProductReviews: React.FC<ProductReviewsProps> = ({
                       src={productImage || review.userImage}
                       alt={review.userName}
                       onError={(e) => {
-                        e.currentTarget.src = "/placeholder-avatar.jpg";
+                        e.currentTarget.style.visibility = "hidden";
                       }}
                     />
                     <UserDetails>
