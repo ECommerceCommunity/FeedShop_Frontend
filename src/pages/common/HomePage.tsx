@@ -848,7 +848,7 @@ const HomePage: FC = () => {
                       관리자 대시보드
                     </PrimaryButton>
                   ) : (
-                    <PrimaryButton to="/store-home">
+                    <PrimaryButton to="/products">
                       <i
                         className="fas fa-shopping-bag"
                         style={{ marginRight: "8px" }}
