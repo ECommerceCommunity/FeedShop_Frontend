@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import UserProtectedRoute from "components/UserProtectedRoute";
-import { toUrl } from "utils/images";
+import { toUrl } from "utils/common/images";
 import { WishListItem } from "types/cart";
 
 // 스타일드 컴포넌트들

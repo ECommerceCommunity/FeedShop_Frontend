@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { RecentViewItem } from "types/cart";
 import styled from "styled-components";
-import { getRecentViewItems } from "utils/recentview";
+import { getRecentViewItems } from "utils/cart/recentview";
 import Warning from "components/modal/Warning";
 import { useNavigate } from "react-router-dom";
-import { toUrl } from "utils/images";
+import { toUrl } from "utils/common/images";
 
 const PageWrapper = styled.div`
   min-height: 100vh;

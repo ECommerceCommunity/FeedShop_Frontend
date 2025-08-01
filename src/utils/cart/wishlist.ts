@@ -1,6 +1,6 @@
 import { WishListItem } from "types/cart";
 import { getCartData } from "./cart";
-import { toUrl } from "./images";
+import { toUrl } from "../common/images";
 
 export const addToWishList = (id: number) => {
   const existing = localStorage.getItem("wishlist");

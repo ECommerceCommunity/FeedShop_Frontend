@@ -2,7 +2,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
-import { login, validateEmail } from "../../utils/auth";
+import { login, validateEmail } from "../../utils/auth/auth";
 import axios from "axios";
 
 const fadeInUp = keyframes`

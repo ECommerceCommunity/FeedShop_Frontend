@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import * as echarts from "echarts";
+import OrdersPage from "../order/OrdersPage";
 
 const SellerMyPage: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState("dashboard");
@@ -194,17 +195,21 @@ const SellerMyPage: React.FC = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-8">
-          <div className="max-w-7xl mx-auto">
-            {/* Dashboard Header */}
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                대시보드
-              </h2>
-              <p className="text-gray-600">
-                스마트한 쇼핑 경험을 위한 최고의 선택
-              </p>
-            </div>
+        <main className="flex-1">
+          {activeMenu === "orders" ? (
+            <OrdersPage />
+          ) : (
+            <div className="p-8">
+              <div className="max-w-7xl mx-auto">
+                {/* Dashboard Header */}
+                <div className="mb-8">
+                  <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                    대시보드
+                  </h2>
+                  <p className="text-gray-600">
+                    스마트한 쇼핑 경험을 위한 최고의 선택
+                  </p>
+                </div>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -454,7 +459,9 @@ const SellerMyPage: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>

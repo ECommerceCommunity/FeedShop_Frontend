@@ -1,4 +1,4 @@
-import { Discount } from "../types/order";
+import { Discount } from "../../types/order";
 export const isDiscountValid = (
   discount?: Discount
 ): discount is Discount & { discount_type: "정률" | "정액" } => {

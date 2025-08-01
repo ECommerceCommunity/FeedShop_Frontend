@@ -1,471 +1,751 @@
-import { CSSProperties, useEffect, useState } from "react";
-import { Order } from "types/order";
+import React, { useEffect, useState } from "react";
+import styled from "styled-components";
+// 타입 정의
+import { OrderListItem } from "types/order"; // 주문 아이템 타입
+import { OrderService } from "api/orderService"; // 주문 관련 API 서비스
+import { toUrl } from "utils/common/images"; // 이미지 URL 변환 유틸리티
 
-const orderStatusList = [
+/**
+ * 주문 상태 타입 정의
+ * - ORDERED: 주문완료
+ * - SHIPPED: 배송중  
+ * - DELIVERED: 배송완료
+ * - CANCELLED: 취소
+ * - RETURNED: 반품
+ * - ALL: 전체 (필터용)
+ */
+type OrderStatus =
+  | "ORDERED"
+  | "SHIPPED"
+  | "DELIVERED"
+  | "CANCELLED"
+  | "RETURNED"
+  | "ALL";
+
+// 주문 상태 목록 (필터 버튼에 사용)
+const orderStatusList: { key: OrderStatus; label: string }[] = [
   { key: "ALL", label: "전체" },
-  { key: "ORDERED", label: "배송준비중" },
+  { key: "ORDERED", label: "주문완료" },
   { key: "SHIPPED", label: "배송중" },
   { key: "DELIVERED", label: "배송완료" },
-  { key: "CANCELED", label: "취소" },
+  { key: "CANCELLED", label: "취소" },
   { key: "RETURNED", label: "반품" },
 ];
 
+// 주문 상태별 배지 색상 정의
 const statusColors: Record<string, string> = {
-  ORDERED: "#eab308",
-  SHIPPED: "#6366f1",
-  DELIVERED: "#22c55e",
-  CANCELED: "#ef4444",
-  RETURNED: "#64748b",
+  ORDERED: "#eab308",    // 노란색 (주문완료)
+  SHIPPED: "#6366f1",    // 보라색 (배송중)
+  DELIVERED: "#22c55e",  // 초록색 (배송완료)
+  CANCELLED: "#ef4444",  // 빨간색 (취소)
+  RETURNED: "#64748b",   // 회색 (반품)
 };
 
+// 주문 상태 한글 레이블 매핑
 const statusLabels: Record<string, string> = {
-  ORDERED: "배송준비중",
+  ORDERED: "주문완료",
   SHIPPED: "배송중",
   DELIVERED: "배송완료",
-  CANCELED: "취소",
+  CANCELLED: "취소",
   RETURNED: "반품",
 };
 
-const headerCellStyle = (
-  align: "left" | "right" | "center" = "left",
-  width?: number
-): CSSProperties => ({
-  textAlign: align,
-  padding: "16px 12px",
-  borderBottom: "1px solid #e5e7eb",
-  width,
-});
+// Styled Components
+const Container = styled.div`
+  background: #f7fafc;
+  min-height: 100vh;
+  padding: 40px 0;
+`;
 
-const bodyCellStyle = (
-  align: "left" | "right" | "center" = "left",
-  width?: number
-): CSSProperties => ({
-  textAlign: align,
-  padding: "18px 12px",
-  verticalAlign: "top",
-  width,
-});
+const Content = styled.div`
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 20px;
+`;
 
-export default function OrdersPage() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [filter, setFilter] = useState("ALL");
-  const [search, setSearch] = useState("");
-  const [statusChange, setStatusChange] = useState<Record<string, string>>({});
-  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
-  const [allStatusChange, setAllStatusChange] = useState("");
-  const itemsPerPage = 10;
+const Header = styled.div`
+  margin-bottom: 32px;
+`;
 
-  useEffect(() => {
-    const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-    setOrders(orders);
-  }, []);
+const Title = styled.h1`
+  font-weight: 700;
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: #1f2937;
+`;
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filter, search]);
+const Subtitle = styled.p`
+  color: #64748b;
+  font-size: 16px;
+  margin: 0;
+`;
 
-  const filtered = orders.filter((order) => {
-    const matchStatus = filter === "ALL" || order.status === filter;
-    const matchSearch =
-      search === "" ||
-      String(order.orderId).includes(search) ||
-      order.shippingInfo.recipientName.includes(search) ||
-      order.items.some((item) => item.productName.includes(search));
-    return matchStatus && matchSearch;
-  });
+const FilterContainer = styled.div`
+  display: flex;
+  gap: 18px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+`;
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedOrders = filtered.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+const FilterButton = styled.button<{ active: boolean }>`
+  font-weight: 600;
+  font-size: 15px;
+  color: ${(props) => (props.active ? "#3b82f6" : "#64748b")};
+  background: ${(props) => (props.active ? "#e0f2fe" : "none")};
+  border: none;
+  border-radius: 8px;
+  padding: 7px 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 
-  const applyStatusChange = () => {
-    const ordersAfterIndividualChanges = orders.map((order) =>
-      statusChange[order.orderId]
-        ? { ...order, status: statusChange[order.orderId] }
-        : order
-    );
+  &:hover {
+    background: ${(props) => (props.active ? "#e0f2fe" : "#f1f5f9")};
+  }
+`;
 
-    const finalOrders = ordersAfterIndividualChanges.map((order) =>
-      selectedOrders.has(String(order.orderId)) && allStatusChange
-        ? { ...order, status: allStatusChange }
-        : order
-    );
+const CountBadge = styled.span`
+  font-weight: 400;
+  color: #a3a3a3;
+  font-size: 14px;
+  margin-left: 4px;
+`;
 
-    setOrders(finalOrders);
-    localStorage.setItem("orders", JSON.stringify(finalOrders));
+const SearchContainer = styled.div`
+  margin-bottom: 18px;
+`;
 
-    setStatusChange({});
-    setSelectedOrders(new Set());
-    setAllStatusChange("");
+const SearchInput = styled.input`
+  width: 100%;
+  max-width: 420px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 15px;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+`;
+
+const TableCard = styled.div`
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px #e0e7ef;
+  overflow: hidden;
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+`;
+
+const TableHeader = styled.thead`
+  background: #f3f6fa;
+  font-weight: 600;
+  font-size: 15px;
+`;
+
+const TableHeaderCell = styled.th<{ align?: string; width?: number }>`
+  text-align: ${(props) => props.align || "left"};
+  padding: 16px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  width: ${(props) => (props.width ? `${props.width}px` : "auto")};
+`;
+
+const TableBody = styled.tbody``;
+
+const TableRow = styled.tr`
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 15px;
+
+  &:hover {
+    background: #f9fafb;
+  }
+`;
+
+const TableCell = styled.td<{ align?: string; width?: number }>`
+  text-align: ${(props) => props.align || "left"};
+  padding: 18px 12px;
+  vertical-align: top;
+  width: ${(props) => (props.width ? `${props.width}px` : "auto")};
+`;
+
+const OrderId = styled.div`
+  font-weight: 600;
+  color: #3b82f6;
+  margin-bottom: 4px;
+`;
+
+const OrderDate = styled.div`
+  color: #64748b;
+  font-size: 14px;
+`;
+
+const CustomerName = styled.div`
+  margin-bottom: 4px;
+`;
+
+const CustomerPhone = styled.div`
+  color: #64748b;
+  font-size: 14px;
+`;
+
+const ProductItem = styled.div<{ isLast: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: ${(props) => (props.isLast ? "0" : "12px")};
+`;
+
+const ProductImage = styled.img`
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #f3f6fa;
+`;
+
+const ProductInfo = styled.div``;
+
+const ProductName = styled.div`
+  font-weight: 500;
+  margin-bottom: 2px;
+`;
+
+const ProductDetails = styled.div`
+  color: #64748b;
+  font-size: 14px;
+`;
+
+const PriceInfo = styled.div`
+  font-size: 12px;
+  color: #ef4444;
+  margin-top: 2px;
+`;
+
+const StatusBadge = styled.span<{ status: string }>`
+  background: ${(props) => statusColors[props.status] || "#64748b"};
+  color: #fff;
+  border-radius: 8px;
+  padding: 4px 14px;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-block;
+`;
+
+const EmptyState = styled.td`
+  text-align: center;
+  padding: 48px;
+  color: #a3a3a3;
+  font-size: 17px;
+`;
+
+const LoadingState = styled.div`
+  text-align: center;
+  padding: 48px;
+  color: #64748b;
+  font-size: 16px;
+`;
+
+const ErrorState = styled.div`
+  text-align: center;
+  padding: 48px;
+  color: #ef4444;
+  font-size: 16px;
+`;
+
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+`;
+
+const PaginationButton = styled.button<{
+  active?: boolean;
+  disabled?: boolean;
+}>`
+  padding: 8px 12px;
+  border-radius: 6px;
+  background-color: ${(props) => (props.active ? "#6366f1" : "#e5e7eb")};
+  color: ${(props) => (props.active ? "#fff" : "#1f2937")};
+  border: none;
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
+  font-weight: 500;
+  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: ${(props) => (props.active ? "#5856eb" : "#d1d5db")};
+  }
+`;
+
+const BulkActionsContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+`;
+
+const SelectedInfo = styled.div`
+  color: #64748b;
+  font-size: 14px;
+`;
+
+const BulkStatusSelect = styled.select`
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 15px;
+  min-width: 180px;
+  background: white;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+`;
+
+const BulkUpdateButton = styled.button<{ disabled?: boolean }>`
+  background: ${(props) => (props.disabled ? "#9ca3af" : "#6366f1")};
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #5856eb;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+`;
+
+
+/**
+ * 판매자용 주문 관리 페이지 컴포넌트
+ * 
+ * 기능:
+ * - 판매자의 모든 주문 목록 조회 및 관리
+ * - 주문 상태별 필터링 (전체, 주문완료, 배송중, 배송완료, 취소, 반품)
+ * - 주문번호 및 상품명으로 검색
+ * - 주문 상태 일괄 변경 (여러 주문 선택 후 상태 변경)
+ * - 페이지네이션을 통한 대용량 데이터 처리
+ * 
+ * API 사용:
+ * - OrderService.getSellerOrders(): 판매자 주문 목록 조회
+ * - OrderService.updateOrderStatus(): 주문 상태 변경
+ * 
+ * 라우팅:
+ * - SellerMyPage에서 "주문/배송관리" 클릭 시 표시
+ * - 독립적인 페이지로도 접근 가능
+ */
+const OrdersPage: React.FC = () => {
+  // 페이지네이션 관련 상태
+  const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 (1부터 시작)
+  const [orders, setOrders] = useState<OrderListItem[]>([]); // 현재 페이지의 주문 목록
+  const [filter, setFilter] = useState<OrderStatus>("ALL"); // 선택된 상태 필터
+  const [search, setSearch] = useState(""); // 검색어
+  const [loading, setLoading] = useState(true); // 로딩 상태
+  const [error, setError] = useState<string | null>(null); // 에러 메시지
+  const [totalPages, setTotalPages] = useState(0); // 전체 페이지 수
+  const [totalElements, setTotalElements] = useState(0); // 전체 주문 수
+  
+  // 일괄 처리 관련 상태
+  const [selectedOrders, setSelectedOrders] = useState<Set<number>>(new Set()); // 선택된 주문 ID들
+  const [bulkStatusChange, setBulkStatusChange] = useState<OrderStatus | "">(""); // 일괄 변경할 상태
+  const [isUpdating, setIsUpdating] = useState(false); // 상태 변경 중 여부
+  const [allOrders, setAllOrders] = useState<OrderListItem[]>([]); // 상태별 카운트 계산용 전체 주문
+  const itemsPerPage = 10; // 페이지당 표시할 주문 수
+
+  /**
+   * 상태별 카운트 계산을 위해 모든 주문을 가져오는 함수
+   * 필터 버튼 옆에 표시되는 숫자(배송중 3개, 배송완료 5개 등)를 위해 필요
+   */
+  const fetchAllOrders = async () => {
+    try {
+      // 상태 필터 없이 모든 주문을 가져와서 카운트 계산
+      const response = await OrderService.getSellerOrders(0, 1000); // 큰 숫자로 전체 조회
+      setAllOrders(response.content);
+    } catch (error: any) {
+      console.error("Failed to fetch all orders:", error);
+    }
   };
 
-  const handleSelectOrder = (orderId: string, checked: boolean) => {
+  /**
+   * 페이지별 주문 목록을 가져오는 함수
+   * @param page - 페이지 번호 (0부터 시작)
+   * @param status - 필터링할 주문 상태 (선택사항)
+   */
+  const fetchOrders = async (page: number = 0, status?: OrderStatus) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // "ALL" 필터는 undefined로 전달하여 모든 상태 조회
+      const statusParam = status === "ALL" ? undefined : status;
+      const response = await OrderService.getSellerOrders(
+        page,
+        itemsPerPage,
+        statusParam
+      );
+
+      setOrders(response.content); // 주문 목록 설정
+      setTotalPages(response.totalPages); // 총 페이지 수 설정
+      setTotalElements(response.totalElements); // 총 주문 수 설정
+    } catch (error: any) {
+      console.error("Failed to fetch orders:", error);
+      setError("주문 목록을 불러오는데 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 초기 데이터 로드
+  useEffect(() => {
+    fetchOrders(0, filter); // 첫 페이지 주문 목록 로드
+    fetchAllOrders(); // 카운트 계산용 전체 주문 로드
+  }, []);
+
+  // 필터 변경 시 첫 페이지부터 다시 로드
+  useEffect(() => {
+    fetchOrders(0, filter);
+  }, [filter]);
+
+  // 페이지 변경 시 해당 페이지 데이터 로드
+  useEffect(() => {
+    fetchOrders(currentPage - 1, filter); // API는 0부터 시작하므로 -1
+  }, [currentPage]);
+
+  // 필터 변경 시 페이지를 1로 초기화
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter]);
+
+  /**
+   * 검색어를 기준으로 주문 목록을 필터링
+   * 주문번호 또는 상품명에서 검색어를 찾음
+   */
+  const filteredOrders = search
+    ? orders.filter((order) => {
+        return (
+          String(order.orderId).includes(search) || // 주문번호로 검색
+          order.items.some((item) => item.productName.includes(search)) // 상품명으로 검색
+        );
+      })
+    : orders;
+
+  /**
+   * 특정 상태의 주문 개수를 반환하는 함수
+   * 필터 버튼 옆에 표시되는 카운트 계산용
+   * @param status - 카운트할 주문 상태
+   */
+  const getOrderCountByStatus = (status: OrderStatus): number => {
+    if (status === "ALL") return allOrders.length; // 전체는 모든 주문 개수
+    return allOrders.filter(order => order.status === status).length; // 특정 상태 주문 개수
+  };
+
+  /**
+   * 개별 주문 선택/해제 처리 함수
+   * @param orderId - 선택할 주문 ID
+   * @param checked - 선택 여부 (true: 선택, false: 해제)
+   */
+  const handleSelectOrder = (orderId: number, checked: boolean) => {
     const newSelected = new Set(selectedOrders);
     if (checked) {
-      newSelected.add(orderId);
+      newSelected.add(orderId); // 주문 ID를 선택 목록에 추가
     } else {
-      newSelected.delete(orderId);
+      newSelected.delete(orderId); // 주문 ID를 선택 목록에서 제거
     }
     setSelectedOrders(newSelected);
   };
 
+  /**
+   * 전체 주문 선택/해제 처리 함수
+   * 테이블 헤더의 체크박스 클릭 시 호출
+   * @param checked - 전체 선택 여부
+   */
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      // 현재 페이지의 모든 주문 ID를 선택
+      const allOrderIds = new Set(filteredOrders.map((order) => order.orderId));
+      setSelectedOrders(allOrderIds);
+    } else {
+      // 모든 선택 해제
+      setSelectedOrders(new Set());
+    }
+  };
+
+  /**
+   * 선택된 주문들의 상태를 일괄 변경하는 함수
+   * 여러 주문을 한 번에 같은 상태로 변경할 때 사용
+   */
+  const handleBulkStatusUpdate = async () => {
+    if (!bulkStatusChange || selectedOrders.size === 0) return;
+    
+    try {
+      setIsUpdating(true);
+      setError(null);
+      
+      // 선택된 모든 주문의 상태를 병렬로 업데이트
+      const updatePromises = Array.from(selectedOrders).map(orderId => 
+        OrderService.updateOrderStatus(orderId, bulkStatusChange as Exclude<OrderStatus, "ALL">)
+      );
+      
+      await Promise.all(updatePromises);
+      
+      // 로컬 상태 업데이트 (UI 즉시 반영)
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          selectedOrders.has(order.orderId)
+            ? { ...order, status: bulkStatusChange as OrderStatus }
+            : order
+        )
+      );
+      
+      // 선택 상태 초기화
+      setSelectedOrders(new Set());
+      setBulkStatusChange("");
+      
+      // 서버에서 최신 데이터 다시 로드 (카운트 업데이트 포함)
+      await fetchOrders(currentPage - 1, filter);
+      await fetchAllOrders();
+      
+    } catch (error: any) {
+      console.error("Failed to bulk update order status:", error);
+      setError("일괄 상태 변경에 실패했습니다.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // 메인 렌더링: 주문 관리 페이지 UI
   return (
-    <div
-      style={{ background: "#f7fafc", minHeight: "100vh", padding: "40px 0" }}
-    >
-      <div style={{ maxWidth: 1300, margin: "0 auto", padding: "0 20px" }}>
-        <div style={{ fontWeight: 700, fontSize: 28, marginBottom: 8 }}>
-          주문 관리
-        </div>
-        <div style={{ color: "#64748b", fontSize: 16, marginBottom: 32 }}>
-          주문 상태를 변경하고 관리할 수 있습니다.
-        </div>
+    <Container>
+      <Content>
+        {/* 페이지 헤더 */}
+        <Header>
+          <Title>주문 관리</Title>
+          <Subtitle>사용자들의 주문 내역을 확인할 수 있습니다.</Subtitle>
+        </Header>
 
-        {/* 상태 필터 */}
-        <div
-          style={{
-            display: "flex",
-            gap: 18,
-            marginBottom: 18,
-            flexWrap: "wrap",
-          }}
-        >
-          {orderStatusList.map((s) => (
-            <button
-              key={s.key}
-              onClick={() => setFilter(s.key)}
-              style={{
-                fontWeight: 600,
-                fontSize: 15,
-                color: filter === s.key ? "#3b82f6" : "#64748b",
-                background: filter === s.key ? "#e0f2fe" : "none",
-                border: "none",
-                borderRadius: 8,
-                padding: "7px 18px",
-                cursor: "pointer",
-              }}
+        {/* 주문 상태별 필터 버튼들 */}
+        <FilterContainer>
+          {orderStatusList.map((status) => (
+            <FilterButton
+              key={status.key}
+              active={filter === status.key} // 현재 선택된 필터 하이라이트
+              onClick={() => setFilter(status.key)} // 필터 변경
             >
-              {s.label}{" "}
-              <span style={{ fontWeight: 400, color: "#a3a3a3", fontSize: 14 }}>
-                {s.key === "ALL"
-                  ? orders.length
-                  : orders.filter((o) => o.status === s.key).length}
-              </span>
-            </button>
+              {status.label}
+              {/* 각 상태별 주문 개수 표시 */}
+              <CountBadge>{getOrderCountByStatus(status.key)}</CountBadge>
+            </FilterButton>
           ))}
-        </div>
+        </FilterContainer>
 
-        {/* 검색 */}
-        <div style={{ marginBottom: 18 }}>
-          <input
+        {/* 검색 입력 필드 */}
+        <SearchContainer>
+          <SearchInput
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="주문번호, 고객명 또는 상품명으로 검색"
-            style={{
-              width: "100%",
-              maxWidth: 420,
-              padding: "10px 16px",
-              borderRadius: 8,
-              border: "1px solid #d1d5db",
-              fontSize: 15,
-            }}
+            onChange={(e) => setSearch(e.target.value)} // 실시간 검색
+            placeholder="주문번호 또는 상품명으로 검색"
           />
-        </div>
+        </SearchContainer>
 
-        {/* 테이블 카드 */}
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: 12,
-            boxShadow: "0 2px 12px #e0e7ef",
-            padding: 0,
-            overflow: "auto",
-          }}
-        >
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              minWidth: 1000,
-              textAlign: "left",
-            }}
-          >
-            <thead
-              style={{ background: "#f3f6fa", fontWeight: 600, fontSize: 15 }}
-            >
-              <tr>
-                <th style={headerCellStyle("center", 48)}>
-                  <input
-                    type="checkbox"
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedOrders(
-                          new Set(paginatedOrders.map((o) => String(o.orderId)))
-                        );
-                      } else {
-                        setSelectedOrders(new Set());
-                      }
-                    }}
-                    checked={
-                      paginatedOrders.length > 0 &&
-                      paginatedOrders.every((o) =>
-                        selectedOrders.has(String(o.orderId))
-                      )
-                    }
-                  />
-                </th>
-                <th style={headerCellStyle("left")}>주문 정보</th>
-                <th style={headerCellStyle("left")}>고객 정보</th>
-                <th style={headerCellStyle("left")}>상품 정보</th>
-                <th style={headerCellStyle("right")}>결제 금액</th>
-                <th style={headerCellStyle("center")}>주문 상태</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedOrders.length === 0 ? (
+        {/* 주문 목록 테이블 */}
+        <TableCard>
+          {loading ? (
+            // 로딩 중일 때 표시
+            <LoadingState>주문 목록을 불러오는 중...</LoadingState>
+          ) : error ? (
+            // 에러 발생 시 표시
+            <ErrorState>{error}</ErrorState>
+          ) : (
+            <Table>
+              {/* 테이블 헤더 */}
+              <TableHeader>
                 <tr>
-                  <td
-                    colSpan={6}
-                    style={{
-                      textAlign: "center",
-                      padding: 48,
-                      color: "#a3a3a3",
-                      fontSize: 17,
-                    }}
-                  >
-                    주문이 없습니다.
-                  </td>
+                  {/* 전체 선택 체크박스 */}
+                  <TableHeaderCell align="center" width={48}>
+                    <input
+                      type="checkbox"
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      checked={
+                        filteredOrders.length > 0 &&
+                        filteredOrders.every((order) =>
+                          selectedOrders.has(order.orderId)
+                        )
+                      }
+                    />
+                  </TableHeaderCell>
+                  <TableHeaderCell align="left">주문 정보</TableHeaderCell>
+                  <TableHeaderCell align="left">상품 정보</TableHeaderCell>
+                  <TableHeaderCell align="right" width={120}>
+                    결제 금액
+                  </TableHeaderCell>
+                  <TableHeaderCell align="center" width={150}>
+                    주문 상태
+                  </TableHeaderCell>
                 </tr>
-              ) : (
-                paginatedOrders.map((order) => (
-                  <tr
-                    key={order.orderId}
-                    style={{ borderBottom: "1px solid #f1f5f9", fontSize: 15 }}
-                  >
-                    <td style={bodyCellStyle("center", 48)}>
-                      <input
-                        type="checkbox"
-                        checked={selectedOrders.has(String(order.orderId))}
-                        onChange={(e) =>
-                          handleSelectOrder(
-                            String(order.orderId),
-                            e.target.checked
-                          )
-                        }
-                      />
-                    </td>
-                    <td style={bodyCellStyle()}>
-                      <div style={{ fontWeight: 600, color: "#3b82f6" }}>
-                        {order.orderId}
-                      </div>
-                      <div
-                        style={{
-                          color: "#64748b",
-                          fontSize: 14,
-                        }}
-                      >
-                        {order.orderedAt}
-                      </div>
-                    </td>
-                    <td style={bodyCellStyle()}>
-                      <div>{order.shippingInfo.recipientName}</div>
-                      <div style={{ color: "#64748b", fontSize: 14 }}>
-                        {order.shippingInfo.recipientPhone}
-                      </div>
-                    </td>
-                    <td style={bodyCellStyle()}>
-                      {order.items.map((item, index) => (
-                        <div
-                          key={item.id}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 12,
-                            marginBottom:
-                              index < order.items.length - 1 ? 12 : 0,
-                          }}
-                        >
-                          <img
-                            src={item.imageUrl}
-                            alt={item.productName}
-                            style={{
-                              width: 38,
-                              height: 38,
-                              borderRadius: 8,
-                              objectFit: "cover",
-                              background: "#f3f6fa",
-                            }}
-                          />
-                          <div>
-                            <div style={{ fontWeight: 500 }}>
-                              {item.productName}
-                            </div>
-                            <div style={{ color: "#64748b", fontSize: 14 }}>
-                              {item.size} / {item.quantity}개
-                            </div>
-                            {item.discount > 0 && (
-                              <div style={{ fontSize: 12, color: "#ef4444" }}>
-                                {item.productPrice.toLocaleString()}원 →{" "}
-                                {item.discountPrice.toLocaleString()}원 (-
-                                {item.discount.toLocaleString()}원)
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </td>
-                    <td style={bodyCellStyle("right", 120)}>
-                      {order.totalPrice.toLocaleString()}원
-                    </td>
-                    <td style={bodyCellStyle("center", 120)}>
-                      <span
-                        style={{
-                          background: statusColors[order.status] || "#64748b",
-                          color: "#fff",
-                          borderRadius: 8,
-                          padding: "4px 14px",
-                          fontWeight: 600,
-                          fontSize: 14,
-                          display: "inline-block",
-                        }}
-                      >
-                        {statusLabels[order.status] || order.status}
-                      </span>
-                    </td>
+              </TableHeader>
+              {/* 테이블 본문 */}
+              <TableBody>
+                {filteredOrders.length === 0 ? (
+                  // 주문이 없을 때 빈 상태 표시
+                  <tr>
+                    <EmptyState colSpan={5}>주문이 없습니다.</EmptyState>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  // 주문 목록을 테이블 행으로 렌더링
+                  filteredOrders.map((order) => (
+                    <TableRow key={order.orderId}>
+                      {/* 개별 주문 선택 체크박스 */}
+                      <TableCell align="center" width={48}>
+                        <input
+                          type="checkbox"
+                          checked={selectedOrders.has(order.orderId)}
+                          onChange={(e) =>
+                            handleSelectOrder(order.orderId, e.target.checked)
+                          }
+                        />
+                      </TableCell>
+                      
+                      {/* 주문 정보 (주문번호, 주문일자) */}
+                      <TableCell>
+                        <OrderId>#{order.orderId}</OrderId>
+                        <OrderDate>
+                          {new Date(order.orderedAt).toLocaleDateString()}
+                        </OrderDate>
+                      </TableCell>
+                      
+                      {/* 상품 정보 (이미지, 이름, 수량, 가격) */}
+                      <TableCell>
+                        {order.items.map((item, index) => (
+                          <ProductItem
+                            key={item.productId}
+                            isLast={index === order.items.length - 1} // 마지막 아이템은 마진 제거
+                          >
+                            <ProductImage
+                              src={toUrl(item.imageUrl)}
+                              alt={item.productName}
+                              onError={(e) => {
+                                // 이미지 로드 실패 시 기본 이미지로 대체
+                                e.currentTarget.src = "/placeholder-image.jpg";
+                              }}
+                            />
+                            <ProductInfo>
+                              <ProductName>{item.productName}</ProductName>
+                              <ProductDetails>
+                                수량: {item.quantity}개 | 가격:{" "}
+                                {item.totalPrice.toLocaleString()}원
+                              </ProductDetails>
+                            </ProductInfo>
+                          </ProductItem>
+                        ))}
+                      </TableCell>
+                      
+                      {/* 최종 결제 금액 */}
+                      <TableCell align="right" width={120}>
+                        {order.finalPrice.toLocaleString()}원
+                      </TableCell>
+                      
+                      {/* 주문 상태 배지 (읽기 전용) */}
+                      <TableCell align="center" width={150}>
+                        <StatusBadge status={order.status}>
+                          {statusLabels[order.status] || order.status}
+                        </StatusBadge>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </TableCard>
 
-        {/* 상태 변경 */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            gap: 12,
-            marginTop: 18,
-            flexWrap: "wrap",
-          }}
-        >
-          <div style={{ color: "#64748b", fontSize: 14 }}>
+        {/* 일괄 처리 액션 영역 */}
+        <BulkActionsContainer>
+          {/* 선택된 주문 개수 표시 */}
+          <SelectedInfo>
             {selectedOrders.size > 0 && `${selectedOrders.size}개 주문 선택됨`}
-          </div>
-          <select
-            value={allStatusChange}
-            onChange={(e) => setAllStatusChange(e.target.value)}
-            style={{
-              padding: "8px 14px",
-              borderRadius: 8,
-              border: "1px solid #d1d5db",
-              fontSize: 15,
-              minWidth: 150,
-            }}
+          </SelectedInfo>
+          
+          {/* 일괄 상태 변경 드롭다운 */}
+          <BulkStatusSelect
+            value={bulkStatusChange}
+            onChange={(e) => setBulkStatusChange(e.target.value as OrderStatus)}
+            disabled={selectedOrders.size === 0} // 선택된 주문이 없으면 비활성화
           >
             <option value="">선택한 주문 상태 변경</option>
             {orderStatusList
-              .filter((s) => s.key !== "ALL")
-              .map((s) => (
-                <option key={s.key} value={s.key}>
-                  {s.label}
+              .filter((status) => status.key !== "ALL") // "전체" 옵션은 제외
+              .map((status) => (
+                <option key={status.key} value={status.key}>
+                  {status.label}
                 </option>
               ))}
-          </select>
-          <button
-            onClick={applyStatusChange}
+          </BulkStatusSelect>
+          
+          {/* 일괄 변경 적용 버튼 */}
+          <BulkUpdateButton
+            onClick={handleBulkStatusUpdate}
             disabled={
-              Object.keys(statusChange).length === 0 &&
-              (selectedOrders.size === 0 || !allStatusChange)
+              selectedOrders.size === 0 || !bulkStatusChange || isUpdating
             }
-            style={{
-              background:
-                Object.keys(statusChange).length > 0 ||
-                (selectedOrders.size > 0 && allStatusChange)
-                  ? "#6366f1"
-                  : "#9ca3af",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              padding: "10px 24px",
-              fontWeight: 600,
-              fontSize: 16,
-              cursor:
-                Object.keys(statusChange).length > 0 ||
-                (selectedOrders.size > 0 && allStatusChange)
-                  ? "pointer"
-                  : "not-allowed",
-            }}
           >
-            변경 적용
-          </button>
-        </div>
+            {isUpdating ? "변경 중..." : "변경 적용"}
+          </BulkUpdateButton>
+        </BulkActionsContainer>
 
+        {/* 페이지네이션 (총 페이지가 1보다 클 때만 표시) */}
         {totalPages > 1 && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 8,
-              marginTop: 32,
-              flexWrap: "wrap",
-            }}
-          >
-            <button
+          <PaginationContainer>
+            {/* 이전 페이지 버튼 */}
+            <PaginationButton
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              style={{
-                padding: "8px 12px",
-                borderRadius: 6,
-                backgroundColor: "#e5e7eb",
-                border: "none",
-                cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                opacity: currentPage === 1 ? 0.5 : 1,
-                fontWeight: 500,
-              }}
+              disabled={currentPage === 1} // 첫 페이지에서는 비활성화
             >
               이전
-            </button>
+            </PaginationButton>
 
+            {/* 페이지 번호 버튼들 */}
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
+              <PaginationButton
                 key={page}
+                active={currentPage === page} // 현재 페이지 하이라이트
                 onClick={() => setCurrentPage(page)}
-                style={{
-                  padding: "8px 12px",
-                  borderRadius: 6,
-                  backgroundColor: currentPage === page ? "#6366f1" : "#e5e7eb",
-                  color: currentPage === page ? "#fff" : "#1f2937",
-                  border: "none",
-                  cursor: "pointer",
-                  fontWeight: 500,
-                }}
               >
                 {page}
-              </button>
+              </PaginationButton>
             ))}
 
-            <button
+            {/* 다음 페이지 버튼 */}
+            <PaginationButton
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              style={{
-                padding: "8px 12px",
-                borderRadius: 6,
-                backgroundColor: "#e5e7eb",
-                border: "none",
-                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                opacity: currentPage === totalPages ? 0.5 : 1,
-                fontWeight: 500,
-              }}
+              disabled={currentPage === totalPages} // 마지막 페이지에서는 비활성화
             >
               다음
-            </button>
-          </div>
+            </PaginationButton>
+          </PaginationContainer>
         )}
-      </div>
-    </div>
+      </Content>
+    </Container>
   );
-}
+};
+
+export default OrdersPage;

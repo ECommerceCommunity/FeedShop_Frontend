@@ -47,7 +47,13 @@ export interface OrderItem {
 
 export interface OrderListItem {
   orderId: number;
-  status: "ORDERED" | "SHIPPED" | "DELIVERED" | "CANCELLED" | "RETURNED";
+  status:
+    | "ORDERED"
+    | "SHIPPED"
+    | "DELIVERED"
+    | "CANCELLED"
+    | "RETURNED"
+    | "ALL";
   orderedAt: string;
   currency: string;
   deliveryFee: number;

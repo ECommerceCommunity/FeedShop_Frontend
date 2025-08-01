@@ -1,5 +1,5 @@
-import axiosInstance from "../api/axios";
-import { ImageUploadResponse, ApiResponse } from "../types/feed";
+import axiosInstance from "../../api/axios";
+import { ImageUploadResponse, ApiResponse } from "../../types/feed";
 
 /**
  * 단일 이미지 파일을 서버에 업로드합니다
@@ -13,26 +13,26 @@ export const uploadSingleImage = async (
 ): Promise<ImageUploadResponse> => {
   try {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
     if (sortOrder !== undefined) {
-      formData.append('sortOrder', sortOrder.toString());
+      formData.append("sortOrder", sortOrder.toString());
     }
 
     const response = await axiosInstance.post<ApiResponse<ImageUploadResponse>>(
-      '/api/images/upload',
+      "/api/images/upload",
       formData,
       {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       }
     );
 
     return response.data.data;
   } catch (error: any) {
-    console.error('이미지 업로드 실패:', error);
+    console.error("이미지 업로드 실패:", error);
     throw new Error(
-      error.response?.data?.message || '이미지 업로드에 실패했습니다.'
+      error.response?.data?.message || "이미지 업로드에 실패했습니다."
     );
   }
 };
@@ -53,8 +53,8 @@ export const uploadMultipleImages = async (
     const results = await Promise.all(uploadPromises);
     return results;
   } catch (error: any) {
-    console.error('다중 이미지 업로드 실패:', error);
-    throw new Error('이미지 업로드에 실패했습니다.');
+    console.error("다중 이미지 업로드 실패:", error);
+    throw new Error("이미지 업로드에 실패했습니다.");
   }
 };
 
@@ -64,21 +64,21 @@ export const uploadMultipleImages = async (
  * @returns Blob 객체
  */
 export const dataURLToBlob = (dataURL: string): Blob => {
-  if (typeof dataURL !== 'string' || !dataURL.startsWith('data:')) {
-    throw new Error('잘못된 데이터 URL 형식입니다.');
+  if (typeof dataURL !== "string" || !dataURL.startsWith("data:")) {
+    throw new Error("잘못된 데이터 URL 형식입니다.");
   }
-  const arr = dataURL.split(',');
+  const arr = dataURL.split(",");
   // 엄격한 MIME 타입 추출 및 예외 처리
   const mimeMatch = arr[0].match(/^data:([a-zA-Z0-9\/+\-.]+);base64$/);
-  const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+  const mime = mimeMatch ? mimeMatch[1] : "application/octet-stream";
   if (!arr[1]) {
-    throw new Error('Base64 데이터가 존재하지 않습니다.');
+    throw new Error("Base64 데이터가 존재하지 않습니다.");
   }
   let bstr;
   try {
     bstr = atob(arr[1]);
   } catch (e) {
-    throw new Error('Base64 디코딩에 실패했습니다.');
+    throw new Error("Base64 디코딩에 실패했습니다.");
   }
   let n = bstr.length;
   const u8arr = new Uint8Array(n);
@@ -110,11 +110,11 @@ export const validateImageFile = (
   maxSizeInMB: number = 5
 ): { isValid: boolean; error?: string } => {
   // 파일 타입 검사
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
   if (!allowedTypes.includes(file.type)) {
     return {
       isValid: false,
-      error: 'JPG, PNG, WEBP 형식의 이미지만 업로드 가능합니다.',
+      error: "JPG, PNG, WEBP 형식의 이미지만 업로드 가능합니다.",
     };
   }
 
@@ -142,10 +142,10 @@ export const createImagePreview = (file: File): Promise<string> => {
       if (e.target?.result) {
         resolve(e.target.result as string);
       } else {
-        reject(new Error('이미지 미리보기 생성에 실패했습니다.'));
+        reject(new Error("이미지 미리보기 생성에 실패했습니다."));
       }
     };
-    reader.onerror = () => reject(new Error('파일 읽기에 실패했습니다.'));
+    reader.onerror = () => reject(new Error("파일 읽기에 실패했습니다."));
     reader.readAsDataURL(file);
   });
 };
@@ -165,10 +165,10 @@ export const uploadBase64Images = async (
     );
 
     const uploadResults = await uploadMultipleImages(files);
-    return uploadResults.map(result => result.imageUrl);
+    return uploadResults.map((result) => result.imageUrl);
   } catch (error: any) {
-    console.error('Base64 이미지 업로드 실패:', error);
-    throw new Error('이미지 업로드에 실패했습니다.');
+    console.error("Base64 이미지 업로드 실패:", error);
+    throw new Error("이미지 업로드에 실패했습니다.");
   }
 };
 
@@ -185,8 +185,8 @@ export const compressImage = (
   maxWidth: number = 1200
 ): Promise<File> => {
   return new Promise((resolve, reject) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     const img = new Image();
 
     img.onload = () => {
@@ -208,7 +208,7 @@ export const compressImage = (
             });
             resolve(compressedFile);
           } else {
-            reject(new Error('이미지 압축에 실패했습니다.'));
+            reject(new Error("이미지 압축에 실패했습니다."));
           }
         },
         file.type,
@@ -216,7 +216,7 @@ export const compressImage = (
       );
     };
 
-    img.onerror = () => reject(new Error('이미지 로드에 실패했습니다.'));
+    img.onerror = () => reject(new Error("이미지 로드에 실패했습니다."));
     img.src = URL.createObjectURL(file);
   });
-}; 
+};

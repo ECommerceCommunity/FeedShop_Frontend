@@ -1,4 +1,4 @@
-import { ApiError } from '../types/feed';
+import { ApiError } from "../../types/feed";
 
 /**
  * API 에러 응답을 분석하여 사용자 친화적인 메시지를 반환합니다
@@ -6,13 +6,13 @@ import { ApiError } from '../types/feed';
 export const getErrorMessage = (error: any): string => {
   // 네트워크 에러
   if (!error.response) {
-    if (error.code === 'NETWORK_ERROR') {
-      return '네트워크 연결을 확인해주세요.';
+    if (error.code === "NETWORK_ERROR") {
+      return "네트워크 연결을 확인해주세요.";
     }
-    if (error.code === 'ECONNABORTED') {
-      return '요청 시간이 초과되었습니다. 다시 시도해주세요.';
+    if (error.code === "ECONNABORTED") {
+      return "요청 시간이 초과되었습니다. 다시 시도해주세요.";
     }
-    return '네트워크 오류가 발생했습니다.';
+    return "네트워크 오류가 발생했습니다.";
   }
 
   const status = error.response.status;
@@ -26,27 +26,27 @@ export const getErrorMessage = (error: any): string => {
   // HTTP 상태 코드별 기본 메시지
   switch (status) {
     case 400:
-      return '잘못된 요청입니다. 입력 정보를 확인해주세요.';
+      return "잘못된 요청입니다. 입력 정보를 확인해주세요.";
     case 401:
-      return '로그인이 필요합니다.';
+      return "로그인이 필요합니다.";
     case 403:
-      return '권한이 없습니다.';
+      return "권한이 없습니다.";
     case 404:
-      return '요청한 정보를 찾을 수 없습니다.';
+      return "요청한 정보를 찾을 수 없습니다.";
     case 409:
-      return '이미 처리된 요청입니다.';
+      return "이미 처리된 요청입니다.";
     case 422:
-      return '입력 데이터가 유효하지 않습니다.';
+      return "입력 데이터가 유효하지 않습니다.";
     case 429:
-      return '너무 많은 요청을 보냈습니다. 잠시 후 다시 시도해주세요.';
+      return "너무 많은 요청을 보냈습니다. 잠시 후 다시 시도해주세요.";
     case 500:
-      return '서버 오류가 발생했습니다. 관리자에게 문의해주세요.';
+      return "서버 오류가 발생했습니다. 관리자에게 문의해주세요.";
     case 502:
     case 503:
     case 504:
-      return '서버가 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.';
+      return "서버가 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.";
     default:
-      return '알 수 없는 오류가 발생했습니다.';
+      return "알 수 없는 오류가 발생했습니다.";
   }
 };
 
@@ -61,7 +61,11 @@ export const isAuthError = (error: any): boolean => {
  * 네트워크 에러인지 확인합니다
  */
 export const isNetworkError = (error: any): boolean => {
-  return !error.response || error.code === 'NETWORK_ERROR' || error.code === 'ECONNABORTED';
+  return (
+    !error.response ||
+    error.code === "NETWORK_ERROR" ||
+    error.code === "ECONNABORTED"
+  );
 };
 
 /**
@@ -82,7 +86,11 @@ export const isClientError = (error: any): boolean => {
  * 재시도 가능한 에러인지 확인합니다
  */
 export const isRetryableError = (error: any): boolean => {
-  return isNetworkError(error) || isServerError(error) || error.response?.status === 429;
+  return (
+    isNetworkError(error) ||
+    isServerError(error) ||
+    error.response?.status === 429
+  );
 };
 
 /**
@@ -99,10 +107,10 @@ export const logError = (error: any, context?: string) => {
     timestamp: new Date().toISOString(),
   };
 
-  console.error('API Error:', errorInfo);
+  console.error("API Error:", errorInfo);
 
   // 프로덕션 환경에서는 에러 모니터링 서비스로 전송
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === "production") {
     // 예: Sentry, LogRocket 등으로 전송
     // Sentry.captureException(error, { extra: errorInfo });
   }
@@ -117,7 +125,7 @@ export const handleApiError = (
     context?: string;
     showToast?: boolean;
     redirectOnAuth?: boolean;
-    onToast?: (message: string, type: 'error' | 'warning') => void;
+    onToast?: (message: string, type: "error" | "warning") => void;
     onRedirect?: (path: string) => void;
   } = {}
 ) => {
@@ -137,15 +145,15 @@ export const handleApiError = (
 
   // 토스트 메시지 표시
   if (showToast && onToast) {
-    const type = isClientError(error) ? 'warning' : 'error';
+    const type = isClientError(error) ? "warning" : "error";
     onToast(message, type);
   }
 
   // 인증 에러 시 로그인 페이지로 리다이렉트
   if (isAuthError(error) && redirectOnAuth && onRedirect) {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setTimeout(() => {
-      onRedirect('/login');
+      onRedirect("/login");
     }, 1500);
   }
 
@@ -202,7 +210,7 @@ export const retryApiCall = async <T>(
 
       // 재시도 전 대기
       const waitTime = backoff ? delay * Math.pow(2, attempt) : delay;
-      await new Promise(resolve => setTimeout(resolve, waitTime));
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
     }
   }
 
@@ -224,4 +232,4 @@ export const createErrorInfo = (error: any, errorInfo?: any) => {
     userAgent: navigator.userAgent,
     url: window.location.href,
   };
-}; 
+};

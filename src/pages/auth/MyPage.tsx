@@ -1,7 +1,9 @@
 import { FC, useEffect, useState } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
-import { Order } from "types/order";
+import { OrderListItem } from "types/order";
+import { OrderService } from "api/orderService";
+import { toUrl } from "utils/common/images";
 
 const MyPageContainer = styled.div`
   max-width: 1200px;
@@ -102,6 +104,45 @@ const OrderContent = styled.div`
   margin-bottom: 12px;
 `;
 
+const ProductItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const ProductImage = styled.img`
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  flex-shrink: 0;
+`;
+
+const ProductInfo = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const ProductName = styled.div`
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const ProductDetails = styled.div`
+  font-size: 12px;
+  color: #6b7280;
+`;
+
 const OrderNumber = styled.span`
   font-weight: bold;
   color: #333;
@@ -138,7 +179,10 @@ const OrderStatus = styled.span<{ status: string }>`
 `;
 
 const MyPage: FC = () => {
-  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+  const [recentOrders, setRecentOrders] = useState<OrderListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   // 임시 사용자 데이터
   const user = {
     name: "홍길동",
@@ -146,25 +190,24 @@ const MyPage: FC = () => {
   };
 
   useEffect(() => {
-    try {
-      const ordersData = localStorage.getItem("orders");
-      if (!ordersData) {
-        setRecentOrders([]);
-        return;
-      }
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const orders: Order[] = JSON.parse(ordersData);
-      const userOrders = orders
-        .sort(
-          (a: Order, b: Order) =>
-            new Date(b.orderedAt).getTime() - new Date(a.orderedAt).getTime()
-        )
-        .slice(0, 5);
-      setRecentOrders(userOrders);
-    } catch (error) {
-      console.error("Failed to load orders from localStorage:", error);
-      setRecentOrders([]);
-    }
+        // 최근 5개 주문만 가져오기
+        const orderResponse = await OrderService.getOrders(0, 5);
+        setRecentOrders(orderResponse.content);
+      } catch (error: any) {
+        console.error("Failed to load orders:", error);
+        setError("주문 내역을 불러오는데 실패했습니다.");
+        setRecentOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
   }, []);
   return (
     <MyPageContainer>
@@ -196,28 +239,51 @@ const MyPage: FC = () => {
       <RecentOrders>
         <SectionTitle>최근 주문</SectionTitle>
         <OrderList>
-          {recentOrders.length === 0 ? (
+          {loading ? (
+            <p>주문 내역을 불러오는 중...</p>
+          ) : error ? (
+            <p style={{ color: "#e74c3c" }}>{error}</p>
+          ) : recentOrders.length === 0 ? (
             <p>최근 주문 내역이 없습니다.</p>
           ) : (
             recentOrders.map((order) => (
               <OrderItem key={order.orderId}>
                 <OrderHeader>
-                  <OrderNumber>주문번호: {order.orderId}</OrderNumber>
                   <OrderDate>
                     {new Date(order.orderedAt).toLocaleDateString()}
                   </OrderDate>
-                </OrderHeader>
-                <div>
-                  <OrderContent>
-                    {order.items.map((item, index) => (
-                      <div key={`${order.orderId}-${index}`}>
-                        {item.productName}
-                      </div>
-                    ))}
-                  </OrderContent>
                   <OrderStatus status={convertStatus(order.status)}>
                     {convertStatus(order.status)}
                   </OrderStatus>
+                </OrderHeader>
+                <OrderContent>
+                  {order.items.map((item, index) => (
+                    <ProductItem key={`${order.orderId}-${index}`}>
+                      <ProductImage
+                        src={toUrl(item.imageUrl)}
+                        alt={item.productName}
+                        onError={(e) => {
+                          e.currentTarget.src = "/placeholder-image.jpg";
+                        }}
+                      />
+                      <ProductInfo>
+                        <ProductName>{item.productName}</ProductName>
+                        <ProductDetails>
+                          수량: {item.quantity}개 | 가격:{" "}
+                          {item.totalPrice.toLocaleString()}원
+                        </ProductDetails>
+                      </ProductInfo>
+                    </ProductItem>
+                  ))}
+                </OrderContent>
+                <div
+                  style={{
+                    marginTop: "8px",
+                    fontWeight: "bold",
+                    color: "#3b82f6",
+                  }}
+                >
+                  총 금액: {order.finalPrice.toLocaleString()}원
                 </div>
               </OrderItem>
             ))
@@ -228,7 +294,9 @@ const MyPage: FC = () => {
   );
 };
 
-const convertStatus = (status: string) => {
+const convertStatus = (
+  status: "ORDERED" | "SHIPPED" | "DELIVERED" | "CANCELLED" | "RETURNED" | "ALL"
+) => {
   switch (status) {
     case "ORDERED":
       return "주문완료";

@@ -1,4 +1,4 @@
-import { Discount } from "../types/order";
+import { Discount } from "../../types/order";
 
 export const getDiscountPrice = (
   originalPrice: number,

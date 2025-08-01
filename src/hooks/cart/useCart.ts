@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { CartService } from "../api/cartService";
-import { useAuth } from "../contexts/AuthContext";
+import { CartService } from "../../api/cartService";
+import { useAuth } from "../../contexts/AuthContext";
 
 /**
  * 장바구니 상태 관리 훅
