@@ -3,15 +3,35 @@ import { Routes, Route, Link } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import AddressManagementPage from "./AddressManagementPage";
 import CouponsPage from "./CouponsPage"; // CouponsPage import 추가
-import UserOrdersPage from "pages/order/UserOrdersPage";
 import MyRecentOrders from "components/order/MyRecentOrders";
 import { OrderService } from "api/orderService";
 import { OrderListItem } from "types/order";
+import MyPosts from "./MyPosts";
+import MyComments from "./MyComments";
+import { useAuth } from "../../contexts/AuthContext";
 
-// 예시 데이터 (향후 API 연동 필요)
-const user = {
-  name: "홍길동",
-  profileImg: "https://i.pravatar.cc/150?img=32",
+const myPageTempData = {
+  recentOrders: [
+    {
+      id: 1,
+      thumbnail: "https://picsum.photos/seed/picsum/200/300",
+      name: "트렌디 셔츠",
+      date: "2025-07-28",
+      status: "배송 완료",
+    },
+    {
+      id: 2,
+      thumbnail: "https://picsum.photos/seed/picsum/200/300",
+      name: "여름 팬츠",
+      date: "2025-07-25",
+      status: "처리 중",
+    },
+  ],
+  feeds: [
+    { id: 1, image: "https://picsum.photos/300/200", title: "여행룩 추천" },
+    { id: 2, image: "https://picsum.photos/300/200", title: "오늘의 코디" },
+    { id: 3, image: "https://picsum.photos/300/200", title: "나들이 데이트룩" },
+  ],
   feedCount: 12,
   wishlistCount: 5,
   couponCount: 3,
@@ -217,6 +237,8 @@ const FeedTitle = styled.div`
 `;
 
 const MyPageDashboard = () => {
+  // useAuth()에서 가져온 user 객체는 로그인 여부 확인용으로만 사용합니다.
+  const { user } = useAuth();
   const [orders, setOrders] = useState<OrderListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -228,7 +250,6 @@ const MyPageDashboard = () => {
         const response = await OrderService.getOrders(0, 5); // 최신 5개 주문만 가져오기
         setOrders(response.content);
       } catch (error: any) {
-        console.error("주문 목록 조회 실패:", error);
         setError("주문 목록을 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
@@ -238,6 +259,12 @@ const MyPageDashboard = () => {
     fetchOrders();
   }, []);
 
+  // 로그인 상태가 아니라면 렌더링하지 않거나 메시지를 보여줍니다.
+  if (!user) {
+    return <div>로그인이 필요합니다.</div>;
+  }
+
+  // 임시 데이터로 화면을 구성합니다.
   return (
     <>
       <DashboardGrid>
@@ -247,15 +274,15 @@ const MyPageDashboard = () => {
         </Card>
         <Card>
           <CardTitle>내 피드</CardTitle>
-          <CardValue>{user.feedCount}</CardValue>
+          <CardValue>{myPageTempData.feedCount}</CardValue>
         </Card>
         <Card>
           <CardTitle>위시리스트</CardTitle>
-          <CardValue>{user.wishlistCount}</CardValue>
+          <CardValue>{myPageTempData.wishlistCount}</CardValue>
         </Card>
         <Card>
           <CardTitle>쿠폰</CardTitle>
-          <CardValue>{user.couponCount}</CardValue>
+          <CardValue>{myPageTempData.couponCount}</CardValue>
         </Card>
       </DashboardGrid>
 
@@ -264,7 +291,7 @@ const MyPageDashboard = () => {
       <Section>
         <SectionTitle>내 피드</SectionTitle>
         <FeedCarousel>
-          {feeds.map((feed) => (
+          {myPageTempData.feeds.map((feed) => (
             <FeedCard key={feed.id}>
               <FeedImg src={feed.image} alt={feed.title} />
               <FeedTitle>{feed.title}</FeedTitle>
@@ -277,13 +304,23 @@ const MyPageDashboard = () => {
 };
 
 function MyPage() {
+  const { user } = useAuth();
+
+  if (!user) {
+    // 2. user가 null이면 로딩 메시지를 보여주거나
+    //    로그인 페이지로 리디렉션하는 로직을 추가합니다.
+    //    navigate('/login');
+    return <div>로그인이 필요합니다.</div>;
+  }
+
   return (
     <Container>
       <MainLayout>
         <Sidebar>
           <ProfileCard>
-            <ProfileImg src={user.profileImg} alt="프로필" />
-            <WelcomeMessage>안녕하세요, {user.name}님!</WelcomeMessage>
+            {/* <ProfileImg src={user.profileImg} alt="프로필" /> */}
+            <ProfileImg src="https://i.pravatar.cc/150?img=32" alt="프로필" />
+            <WelcomeMessage>안녕하세요, {user.nickname}님!</WelcomeMessage>
             <EditProfileLink to="/profile-settings">
               프로필 관리
             </EditProfileLink>
@@ -302,13 +339,15 @@ function MyPage() {
               <i className="fas fa-heart"></i> 위시리스트
             </NavItem>
             <NavItem to="/mypage/coupons">
-              {" "}
-              {/* 경로 수정 */}
               <i className="fas fa-ticket-alt"></i> 쿠폰/포인트
             </NavItem>
+            <NavItem to="/mypage/posts">
+              <i className="fas fa-pen-square"></i> 내가 작성한 게시글
+            </NavItem>
+            <NavItem to="/mypage/comments">
+              <i className="fas fa-comment"></i> 내가 작성한 댓글
+            </NavItem>
             <NavItem to="/mypage/settings">
-              {" "}
-              {/* 경로 수정 */}
               <i className="fas fa-cog"></i> 설정
             </NavItem>
           </NavMenu>
@@ -316,6 +355,8 @@ function MyPage() {
         <MainContent>
           <Routes>
             <Route index element={<MyPageDashboard />} />
+            <Route path="posts" element={<MyPosts />} />
+            <Route path="comments" element={<MyComments />} />
             <Route path="settings" element={<AddressManagementPage />} />
             <Route path="coupons" element={<CouponsPage />} />
           </Routes>

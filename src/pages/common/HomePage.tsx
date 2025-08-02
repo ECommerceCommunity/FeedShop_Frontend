@@ -669,7 +669,7 @@ const CTASubtitle = styled.p`
   z-index: 2;
 `;
 
-const CTAButton = styled.button`
+const CTAButton = styled(Link)`
   background: linear-gradient(135deg, #f97316, #ea580c, #dc2626);
   color: white;
   border: none;
@@ -683,6 +683,10 @@ const CTAButton = styled.button`
   position: relative;
   z-index: 2;
   overflow: hidden;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
   &::before {
     content: "";
@@ -844,7 +848,7 @@ const HomePage: FC = () => {
                       관리자 대시보드
                     </PrimaryButton>
                   ) : (
-                    <PrimaryButton to="/store-home">
+                    <PrimaryButton to="/products">
                       <i
                         className="fas fa-shopping-bag"
                         style={{ marginRight: "8px" }}
@@ -998,13 +1002,13 @@ const HomePage: FC = () => {
               <>
                 {user.userType === "admin" ? (
                   <>
-                    <CTAButton>
-                      <i
-                        className="fas fa-chart-line"
-                        style={{ marginRight: "8px" }}
-                      ></i>
-                      관리자 대시보드
-                    </CTAButton>
+                    <CTAButton to="/admin-dashboard">
+                    <i
+                      className="fas fa-chart-line"
+                      style={{ marginRight: "8px" }}
+                    ></i>
+                    관리자 대시보드
+                  </CTAButton>
                     <SecondaryButton to="/store-home">
                       <i
                         className="fas fa-store"
@@ -1014,12 +1018,12 @@ const HomePage: FC = () => {
                     </SecondaryButton>
                   </>
                 ) : (
-                  <CTAButton>
+                  <CTAButton to="/become-seller">
                     <i
                       className="fas fa-user-shield"
                       style={{ marginRight: "8px" }}
                     ></i>
-                    관리자 전환하기
+                    판매자 되기
                   </CTAButton>
                 )}
                 <SecondaryButton to="/products">
@@ -1032,7 +1036,7 @@ const HomePage: FC = () => {
               </>
             ) : (
               <>
-                <CTAButton>
+                <CTAButton to="/login">
                   <i
                     className="fas fa-sign-in-alt"
                     style={{ marginRight: "8px" }}
@@ -1051,29 +1055,6 @@ const HomePage: FC = () => {
           </ButtonGroup>
         </Container>
       </CTASection>
-
-      <Footer>
-        <Container>
-          <FooterContent>
-            <FooterBrand>
-              <FooterBrandTitle>FeedShop</FooterBrandTitle>
-              <FooterBrandDescription>
-                스마트한 쇼핑 경험을 위한 최고의 선택. 고객과 비즈니스 모두를
-                위한 혁신적인 플랫폼입니다.
-              </FooterBrandDescription>
-            </FooterBrand>
-            <FooterLinks>
-              <FooterLink href="#">이용약관</FooterLink>
-              <FooterLink href="#">개인정보처리방침</FooterLink>
-              <FooterLink href="#">고객센터</FooterLink>
-              <FooterLink href="#">문의하기</FooterLink>
-            </FooterLinks>
-          </FooterContent>
-          <FooterCopyright>
-            <p>&copy; 2025 FeedShop. All rights reserved.</p>
-          </FooterCopyright>
-        </Container>
-      </Footer>
     </HomeContainer>
   );
 };
