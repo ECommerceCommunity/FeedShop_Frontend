@@ -133,17 +133,17 @@ export default function LoginPage() {
       if (!isEmailValid) throw new Error("올바른 이메일 형식을 입력해주세요.");
 
       const recaptchaToken = await executeRecaptcha('login_submit');
-      console.log('생성된 reCAPTCHA 토큰:', recaptchaToken);
+      // console.log('생성된 reCAPTCHA 토큰:', recaptchaToken);
 
       if (!recaptchaToken) {
         throw new Error("reCAPTCHA 인증에 실패했습니다. 다시 시도해주세요.");
       }
 
       const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
-      console.log('로그인 요청 전송:', {
-        url: `${baseURL}/api/auth/login`,
-        data: { email, password, recaptchaToken }
-      });
+      // console.log('로그인 요청 전송:', {
+      //   url: `${baseURL}/api/auth/login`,
+      //   data: { email, password, recaptchaToken }
+      // });
 
       const response = await axios.post(`${baseURL}/api/auth/login`, {
         email,
@@ -152,7 +152,7 @@ export default function LoginPage() {
       });
 
       // --- 로그인 성공 시 추가된 로직 ---
-      console.log('로그인 성공 응답:', response.data);
+      // console.log('로그인 성공 응답:', response.data);
       const loginData = response.data.data;
       if (loginData && loginData.token) {
         // authLogin 함수를 3개의 인자를 받도록 수정
