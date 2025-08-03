@@ -102,7 +102,6 @@ export default function FindAccountPage() {
           phoneNumber: phone,
         },
       });
-      console.log(response);
 
       // API 응답 데이터가 배열임을 가정하고 처리
       const apiResponse = response.data;
