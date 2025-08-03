@@ -20,7 +20,6 @@ export class OrderService {
       );
       return response.data.data;
     } catch (error: any) {
-      console.log("주문 생성 실패:", error);
       throw error;
     }
   }
@@ -49,7 +48,6 @@ export class OrderService {
       );
       return response.data.data;
     } catch (error: any) {
-      console.error("주문 목록 조회 실패:", error);
       throw error;
     }
   }
@@ -62,7 +60,6 @@ export class OrderService {
       );
       return response.data.data;
     } catch (error: any) {
-      console.error("주문 상세 조회 실패:", error);
       throw error;
     }
   }
@@ -75,7 +72,6 @@ export class OrderService {
       >("/api/users/orders/items");
       return response.data.data.items;
     } catch (error: any) {
-      console.error("구매 상품 목록 조회 실패:", error);
       throw error;
     }
   }
@@ -104,7 +100,6 @@ export class OrderService {
       );
       return response.data.data;
     } catch (error: any) {
-      console.error("판매자 주문 목록 조회 실패:", error);
       throw error;
     }
   }
@@ -120,7 +115,6 @@ export class OrderService {
       >(`/api/seller/orders/${orderId}/status`, { status });
       return response.data.data;
     } catch (error: any) {
-      console.error("주문 상태 변경 실패", error);
       throw error;
     }
   }
