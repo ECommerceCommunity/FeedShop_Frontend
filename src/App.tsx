@@ -9,6 +9,7 @@ import theme from "./theme";
 // 보호 라우트 컴포넌트 임포트
 import SellerProtectedRoute from "./components/SellerProtectedRoute";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
+import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 
 // 페이지 컴포넌트들
 const HomePage = lazy(() => import("./pages/common/HomePage"));
@@ -19,6 +20,7 @@ const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const SignUp = lazy(() => import("./pages/auth/SignUp"));
 const FindAccountPage = lazy(() => import("./pages/auth/FindAccountPage"));
 const FindPasswordPage = lazy(() => import("./pages/auth/FindPasswordPage"));
+const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage"));
 const PrivacyPolicy = lazy(() => import("./pages/common/PrivacyPolicy"));
 const ProductUploadPage = lazy(
   () => import("./pages/products/registerProduct/RegisterProductPage")
@@ -49,102 +51,115 @@ const ProfileSettingsPage = lazy(
   () => import("./pages/auth/ProfileSettingsPage")
 );
 const FeedListPage = lazy(() => import("./pages/feed/FeedListPage"));
+const FeedDetailPage = lazy(() => import("./pages/feed/FeedDetailPage"));
 const FeedCreatePage = lazy(() => import("./pages/feed/FeedCreatePage"));
 const FeedEditPage = lazy(() => import("./pages/feed/FeedEditPage"));
 const MyFeedPage = lazy(() => import("./pages/feed/MyFeedPage"));
 const EventListPage = lazy(() => import("./pages/event/EventListPage"));
 const EventCreatePage = lazy(() => import("./pages/event/EventCreatePage"));
-const EventDetailPage = lazy(() => import("./pages/event/EventDetailPage"));
 const EventEditPage = lazy(() => import("./pages/event/EventEditPage"));
 const EventResultPage = lazy(() => import("./pages/event/EventResultPage"));
 const BecomeSellerPage = lazy(() => import("./pages/seller/BecomeSellerPage"));
 const SellerMyPage = lazy(() => import("./pages/seller/SellerMyPage"));
 
+const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY || '';
+
+// reCAPTCHA 키가 설정되었는지 확인
+if (!RECAPTCHA_SITE_KEY) {
+  // 개발 환경에서만 경고를 띄웁니다.
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn('reCAPTCHA site key is not defined. Please check your .env file.');
+  }
+}
+
 const App: FC = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <AuthProvider>
-        <ScrollToTop />
-        <Suspense fallback={<div>로딩중...</div>}>
-          <Routes>
-            {/* Layout이 필요한 페이지들 */}
-            <Route element={<Layout />}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/products" element={<ProductsPage />} />
-              <Route path="/products/:id" element={<ProductDetailPage />} />
-              <Route path="/mypage/*" element={<MyPage />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/product/upload" element={<ProductUploadPage />} />
-              <Route path="/products/edit/:id" element={<ProductEditPage />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/reviews" element={<ReviewsPage />} />
-              <Route path="/report-manage" element={<ReportManagePage />} />
-              <Route path="/user-manage" element={<UserManagePage />} />
-              <Route
-                path="/admin-dashboard"
-                element={
-                  <AdminProtectedRoute redirectPath="/">
-                    {" "}
-                    {/* admin만 허용, 아니면 메인으로 리디렉션 */}
-                    <AdminDashboardPage />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route
-                path="/stats-dashboard" // 통계 대시보드 경로
-                element={
-                  <AdminProtectedRoute redirectPath="/">
-                    {" "}
-                    {/* admin만 허용, 아니면 메인으로 리디렉션 */}
-                    <StatsDashboardPage />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route path="/store-home" element={<StoreHomePage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/orders" element={<OrdersPage />} />
-              <Route path="/payment" element={<PaymentPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/wishlist" element={<WishListPage />} />
-              <Route path="/recentview" element={<RecentViewPage />} />
-              <Route path="/reviews/edit" element={<ReviewEditPage />} />
-              <Route
-                path="/profile-settings"
-                element={<ProfileSettingsPage />}
-              />
-              <Route path="/feed-list" element={<FeedListPage />} />
-              <Route path="/feed-create" element={<FeedCreatePage />} />
-              <Route path="/feed-edit" element={<FeedEditPage />} />
-              <Route path="/my-feed" element={<MyFeedPage />} />
-              <Route path="/event-list" element={<EventListPage />} />
-              <Route path="/events/create" element={<EventCreatePage />} />
-              <Route path="/events/:id" element={<EventDetailPage />} />
-              <Route path="/events/edit/:id" element={<EventEditPage />} />
-              <Route path="/events/result" element={<EventResultPage />} />
-              <Route path="/become-seller" element={<BecomeSellerPage />} />
-              <Route
-                path="/seller-mypage"
-                element={
-                  <SellerProtectedRoute
-                    allowedUserType="seller"
-                    redirectPath="/"
-                  >
-                    <SellerMyPage />
-                  </SellerProtectedRoute>
-                }
-              />
-            </Route>
+    <GoogleReCaptchaProvider reCaptchaKey={RECAPTCHA_SITE_KEY}>
+      <ThemeProvider theme={theme}>
+        <AuthProvider>
+          <ScrollToTop />
+          <Suspense fallback={<div>로딩중...</div>}>
+            <Routes>
+              {/* Layout이 필요한 페이지들 */}
+              <Route element={<Layout />}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/products" element={<ProductsPage />} />
+                <Route path="/products/:id" element={<ProductDetailPage />} />
+                <Route path="/mypage/*" element={<MyPage />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/product/upload" element={<ProductUploadPage />} />
+                <Route path="/products/edit/:id" element={<ProductEditPage />} />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/reviews" element={<ReviewsPage />} />
+                <Route path="/report-manage" element={<ReportManagePage />} />
+                <Route path="/user-manage" element={<UserManagePage />} />
+                <Route
+                  path="/admin-dashboard"
+                  element={
+                    <AdminProtectedRoute redirectPath="/">
+                      {" "}
+                      {/* admin만 허용, 아니면 메인으로 리디렉션 */}
+                      <AdminDashboardPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/stats-dashboard" // 통계 대시보드 경로
+                  element={
+                    <AdminProtectedRoute redirectPath="/">
+                      {" "}
+                      {/* admin만 허용, 아니면 메인으로 리디렉션 */}
+                      <StatsDashboardPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route path="/store-home" element={<StoreHomePage />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/orders" element={<OrdersPage />} />
+                <Route path="/payment" element={<PaymentPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/wishlist" element={<WishListPage />} />
+                <Route path="/recentview" element={<RecentViewPage />} />
+                <Route path="/reviews/edit" element={<ReviewEditPage />} />
+                <Route
+                  path="/profile-settings"
+                  element={<ProfileSettingsPage />}
+                />
+                <Route path="/feed-list" element={<FeedListPage />} />
+                <Route path="/feed/:id" element={<FeedDetailPage />} />
+                <Route path="/feed-create" element={<FeedCreatePage />} />
+                <Route path="/feed-edit" element={<FeedEditPage />} />
+                <Route path="/my-feed" element={<MyFeedPage />} />
+                <Route path="/event-list" element={<EventListPage />} />
+                <Route path="/events/create" element={<EventCreatePage />} />
+                <Route path="/events/edit/:id" element={<EventEditPage />} />
+                <Route path="/events/result" element={<EventResultPage />} />
+                <Route path="/become-seller" element={<BecomeSellerPage />} />
+                <Route
+                  path="/seller-mypage"
+                  element={
+                    <SellerProtectedRoute
+                      allowedUserType="seller"
+                      redirectPath="/"
+                    >
+                      <SellerMyPage />
+                    </SellerProtectedRoute>
+                  }
+                />
+              </Route>
 
-            {/* Layout 없이 보여야 하는 페이지들 */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/find-account" element={<FindAccountPage />} />
-            <Route path="/find-password" element={<FindPasswordPage />} />
-          </Routes>
-        </Suspense>
-      </AuthProvider>
-    </ThemeProvider>
+              {/* Layout 없이 보여야 하는 페이지들 */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/find-account" element={<FindAccountPage />} />
+              <Route path="/find-password" element={<FindPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+            </Routes>
+          </Suspense>
+        </AuthProvider>
+      </ThemeProvider>
+    </GoogleReCaptchaProvider>
   );
 };
 
