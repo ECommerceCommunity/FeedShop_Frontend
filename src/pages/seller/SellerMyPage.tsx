@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import * as echarts from "echarts";
 import SellerOrdersPage from "../order/SellerOrdersPage";
+import SellerProductManagePage from "./SellerProductManagePage";
 
 const SellerMyPage: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState("dashboard");
@@ -198,6 +199,8 @@ const SellerMyPage: React.FC = () => {
         <main className="flex-1">
           {activeMenu === "orders" ? (
             <SellerOrdersPage />
+          ) : activeMenu === "products" ? (
+            <SellerProductManagePage />
           ) : (
             <div className="p-8">
               <div className="max-w-7xl mx-auto">
