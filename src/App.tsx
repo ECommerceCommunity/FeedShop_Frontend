@@ -12,6 +12,7 @@ import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import UserProtectedRoute from "./components/UserProtectedRoute";
 
+
 // 페이지 컴포넌트들
 const HomePage = lazy(() => import("./pages/common/HomePage"));
 const ProductsPage = lazy(() => import("./pages/products/Lists"));
