@@ -2,7 +2,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
-import { validateEmail } from "../../utils/auth";
+import { validateEmail } from "../../utils/auth/auth";
 import axios from "axios";
 import {
   AuthCard,
@@ -261,12 +261,8 @@ export default function LoginPage() {
             marginBottom: "16px",
           }}
         >
-          <AuthLink to="/find-account">
-            계정 찾기
-          </AuthLink>
-          <AuthLink to="/find-password">
-            비밀번호 찾기
-          </AuthLink>
+          <AuthLink to="/find-account">계정 찾기</AuthLink>
+          <AuthLink to="/find-password">비밀번호 찾기</AuthLink>
         </div>
 
         <SignUpLink to="/signup">
