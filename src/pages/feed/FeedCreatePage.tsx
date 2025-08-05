@@ -128,9 +128,7 @@ const FeedCreatePage: React.FC = () => {
     const fetchAvailableEvents = async () => {
       try {
         setEventsLoading(true);
-        console.log("이벤트 목록 조회 시작...");
         const events = await EventService.getFeedAvailableEvents();
-        console.log("이벤트 목록 조회 성공:", events);
         setAvailableEvents(events);
       } catch (error: any) {
         console.error("이벤트 목록 조회 실패:", error);
@@ -426,11 +424,7 @@ const FeedCreatePage: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {/* 디버깅 정보 */}
-                <div className="text-xs text-gray-500 mb-2">
-                  로딩 상태: {eventsLoading ? '로딩중' : '완료'} | 
-                  이벤트 개수: {availableEvents.length}개
-                </div>
+
                 
                 <select
                   value={selectedEventId || ""}
@@ -448,7 +442,6 @@ const FeedCreatePage: React.FC = () => {
                 {availableEvents.length === 0 && (
                   <div className="text-gray-500 text-sm">
                     <p>현재 참여 가능한 이벤트가 없습니다.</p>
-                    <p className="text-xs mt-1">디버깅: 이벤트 데이터가 로드되지 않았습니다.</p>
                   </div>
                 )}
               </div>

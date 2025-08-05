@@ -100,11 +100,8 @@ class EventService {
    */
   async getFeedAvailableEvents(): Promise<FeedEventDto[]> {
     try {
-      console.log('피드 생성용 이벤트 목록 조회 시작...');
       // 백엔드에서 직접 배열을 반환하므로 ApiResponse 래퍼 없이 받기
       const response = await axiosInstance.get<EventSummaryDto[]>('/api/events/feed-available');
-      
-      console.log('백엔드 응답:', response.data);
       
       // 백엔드에서 반환하는 EventSummaryDto를 FeedEventDto로 변환
       const events: FeedEventDto[] = response.data.map(event => ({
@@ -117,16 +114,13 @@ class EventService {
         isDeleted: event.isDeleted
       }));
       
-      console.log('변환된 이벤트 목록:', events);
       return events;
       
     } catch (error: any) {
       console.error('이벤트 목록 조회 실패:', error);
-      console.error('에러 상세:', error.response?.data);
       
       // 백엔드 연결 실패시 빈 배열 반환
       if (!error.response || error.code === 'NETWORK_ERROR') {
-        console.warn('백엔드 연결 실패 - 빈 배열 반환');
         return [];
       }
       
