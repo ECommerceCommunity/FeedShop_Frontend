@@ -97,11 +97,16 @@ class EventService {
 
   /**
    * 피드 생성용 이벤트 목록 조회 (진행중인 이벤트만)
+   * 백엔드 캐싱과 연동하여 성능 최적화
    */
   async getFeedAvailableEvents(): Promise<FeedEventDto[]> {
     try {
-      // 백엔드에서 직접 배열을 반환하므로 ApiResponse 래퍼 없이 받기
-      const response = await axiosInstance.get<EventSummaryDto[]>('/api/events/feed-available');
+      // 캐시 헤더 추가로 브라우저 캐싱 활용
+      const response = await axiosInstance.get<EventSummaryDto[]>('/api/events/feed-available', {
+        headers: {
+          'Cache-Control': 'max-age=300', // 5분간 브라우저 캐시
+        }
+      });
       
       // 백엔드에서 반환하는 EventSummaryDto를 FeedEventDto로 변환
       const events: FeedEventDto[] = response.data.map(event => ({
@@ -114,15 +119,15 @@ class EventService {
         isDeleted: event.isDeleted
       }));
       
-      return events;
+             return events;
       
     } catch (error: any) {
       console.error('이벤트 목록 조회 실패:', error);
       
-      // 백엔드 연결 실패시 빈 배열 반환
-      if (!error.response || error.code === 'NETWORK_ERROR') {
-        return [];
-      }
+             // 백엔드 연결 실패시 빈 배열 반환
+       if (!error.response || error.code === 'NETWORK_ERROR') {
+         return [];
+       }
       
       throw error;
     }

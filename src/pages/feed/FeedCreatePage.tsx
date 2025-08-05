@@ -90,9 +90,10 @@ const FeedCreatePage: React.FC = () => {
   >([]);
   const [productsLoading, setProductsLoading] = useState(true);
 
-  // 🔧 백엔드 연동: 이벤트 목록
+  // 🔧 백엔드 연동: 이벤트 목록 (캐싱 최적화)
   const [availableEvents, setAvailableEvents] = useState<FeedEventDto[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
+  const [eventsCacheTime, setEventsCacheTime] = useState<number>(0);
 
   // UI 상태
   const [isLoading, setIsLoading] = useState(false);
@@ -127,11 +128,21 @@ const FeedCreatePage: React.FC = () => {
   useEffect(() => {
     const fetchAvailableEvents = async () => {
       try {
-        setEventsLoading(true);
-        const events = await EventService.getFeedAvailableEvents();
-        setAvailableEvents(events);
+        // 캐시 시간 확인 (5분 = 300초)
+        const now = Date.now();
+        const cacheExpiry = 5 * 60 * 1000; // 5분
+        
+                 // 캐시가 유효한 경우 재사용
+         if (eventsCacheTime > 0 && (now - eventsCacheTime) < cacheExpiry && availableEvents.length > 0) {
+           return;
+         }
+        
+                 setEventsLoading(true);
+         const events = await EventService.getFeedAvailableEvents();
+         setAvailableEvents(events);
+        setEventsCacheTime(now);
       } catch (error: any) {
-        console.error("이벤트 목록 조회 실패:", error);
+                 console.error("이벤트 목록 조회 실패:", error);
         setAvailableEvents([]);
       } finally {
         setEventsLoading(false);
@@ -424,7 +435,7 @@ const FeedCreatePage: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-4">
-
+                
                 
                 <select
                   value={selectedEventId || ""}
