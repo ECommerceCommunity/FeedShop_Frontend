@@ -21,7 +21,6 @@ export class CartService {
       >("/api/users/cart/items", itemData);
       return response.data.data;
     } catch (error: any) {
-      console.error("장바구니 추가 실패:", error);
       const message =
         error.response?.data?.message || "장바구니 추가에 실패했습니다.";
       throw new Error(message);
@@ -36,7 +35,6 @@ export class CartService {
       );
       return response.data.data;
     } catch (error: any) {
-      console.error("장바구니 조회 실패:", error);
       const message =
         error.response?.data?.message || "장바구니 조회에 실패했습니다.";
       throw new Error(message);
@@ -54,7 +52,6 @@ export class CartService {
         updateData
       );
     } catch (error: any) {
-      console.error("장바구니 수정 실패:", error);
       const message =
         error.response?.data?.message || "장바구니 수정에 실패했습니다.";
       throw new Error(message);
@@ -68,7 +65,6 @@ export class CartService {
         `/api/users/cart/items/${cartItemId}`
       );
     } catch (error: any) {
-      console.error("장바구니 삭제 실패:", error);
       throw error;
     }
   }

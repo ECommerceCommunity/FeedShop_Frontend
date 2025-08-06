@@ -169,7 +169,6 @@ const App: FC = () => {
                     </UserProtectedRoute>
                   }
                 />
-
                 {/* 피드 관련 페이지들 */}
                 <Route path="/feed-list" element={<FeedListPage />} />
                 <Route path="/feed/:id" element={<FeedDetailPage />} />
@@ -197,7 +196,6 @@ const App: FC = () => {
                     </UserProtectedRoute>
                   }
                 />
-
                 {/* 이벤트 관련 페이지들 */}
                 <Route path="/event-list" element={<EventListPage />} />
                 <Route
