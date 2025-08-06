@@ -4,6 +4,7 @@ import styled, { keyframes } from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import { FormEvent } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import CategoryModal from "../modal/CategoryModal";
 
 // 애니메이션 정의
 const slideDown = keyframes`
@@ -196,6 +197,55 @@ const NavLink = styled(Link)`
     &::before {
       left: 100%;
     }
+  }
+`;
+
+// 카테고리 버튼 스타일드 컴포넌트 (NavLink와 동일한 스타일)
+const CategoryButton = styled.button`
+  color: rgba(255, 255, 255, 0.9);
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  z-index: 2;
+  white-space: nowrap;
+  cursor: pointer;
+  font-family: inherit;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(249, 115, 22, 0.3),
+      transparent
+    );
+    transition: left 0.5s;
+  }
+
+  &:hover {
+    background: rgba(249, 115, 22, 0.2);
+    color: white;
+    transform: translateY(-2px);
+
+    &::before {
+      left: 100%;
+    }
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.4);
   }
 `;
 
@@ -759,6 +809,7 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const { user, logout } = useAuth();
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -791,6 +842,17 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
     navigate("/");
   };
 
+  // 카테고리 모달 열기 핸들러
+  const handleCategoryClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsCategoryModalOpen(true);
+  };
+
+  // 카테고리 모달 닫기 핸들러
+  const closeCategoryModal = () => {
+    setIsCategoryModalOpen(false);
+  };
+
   const getInitials = (name: string) => {
     if (!name || name.trim() === "") return "?";
     return name
@@ -812,10 +874,10 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
           <i className="fas fa-shopping-bag" style={{ marginRight: "8px" }}></i>
           상품
         </NavLink>
-        <NavLink to="/categories">
+        <CategoryButton onClick={handleCategoryClick} type="button">
           <i className="fas fa-th-large" style={{ marginRight: "8px" }}></i>
           카테고리
-        </NavLink>
+        </CategoryButton>
         <NavLink to="/event-list">
           <i className="fas fa-gift" style={{ marginRight: "8px" }}></i>
           이벤트
@@ -896,6 +958,10 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
           </LoginButton>
         )}
       </UserSection>
+      <CategoryModal
+        isOpen={isCategoryModalOpen}
+        onClose={closeCategoryModal}
+      />
     </HeaderContainer>
   );
 };
