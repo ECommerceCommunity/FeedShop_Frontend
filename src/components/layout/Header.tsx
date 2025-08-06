@@ -850,7 +850,7 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
             {showUserMenu && (
               <DropdownMenu>
                 {user && user.userType === "admin" ? (
-                  <DropdownItem to="/admin-dashboard">
+                  <DropdownItem to="/admin/dashboard">
                     <i className="fas fa-chart-line"></i>
                     관리자 대시보드
                   </DropdownItem>
