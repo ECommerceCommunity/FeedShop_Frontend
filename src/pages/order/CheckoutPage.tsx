@@ -1,193 +1,114 @@
-import styled from "styled-components";
-import { FC, useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { Order } from "types/types";
-import Fail from "components/modal/Fail";
+import React, { useState } from "react";
+// 모달 컴포넌트
+import Fail from "../../components/modal/Fail"; // 에러 알림 모달
+// 주문 관련 커스텀 훅
+import { useOrderDetail } from "../../hooks/order/useOrderDetail"; // 주문 상세 정보 관리 훅
+// 유틸리티 함수들
+import { formatPrice, getStatusText } from "../../utils/order/orderHelpers"; // 가격 포맷팅 및 상태 텍스트 변환
+// 주문 완료 페이지 UI 컴포넌트들
+import { OrderSuccess } from "../../components/order/OrderSuccess"; // 주문 성공 메시지 및 적립 포인트 표시
+import { OrderInfo } from "../../components/order/OrderInfo"; // 주문 기본 정보 (주문일자, 상태 등)
+import { ShippingInfo } from "../../components/order/ShippingInfo"; // 배송 정보 표시
+import { OrderItems } from "../../components/order/OrderItems"; // 주문한 상품 목록 표시
+import { ThankYouMessage } from "../../components/order/ThankYouMessage"; // 감사 메시지 및 내 페이지 이동 버튼
+import { ErrorState } from "../../components/order/ErrorState"; // 에러 상태 표시 컴포넌트
+import { LoadingState } from "../../components/order/LoadingState"; // 로딩 상태 표시 컴포넌트
+// 스타일 컴포넌트
+import { Container } from "./CheckoutPage.styles";
 
-const Container = styled.div`
-  max-width: 960px;
-  margin: 60px auto;
-  padding: 40px;
-  background: #f9fafb;
-  border-radius: 12px;
-`;
+/**
+ * 주문 완료 페이지 컴포넌트
+ * 
+ * 기능:
+ * - 주문 완료 후 결제 성공 메시지 표시
+ * - 적립된 포인트 정보 표시
+ * - 주문 정보 요약 (주문일자, 상태 등)
+ * - 배송 정보 표시 (배송지, 연락처 등)
+ * - 주문한 상품 목록 및 가격 정보 표시
+ * - 마이페이지로 이동할 수 있는 버튼 제공
+ * 
+ * 라우팅:
+ * - PaymentPage에서 결제 완료 후 자동 이동
+ * - URL에 주문 정보가 state로 전달됨
+ * - "주문내역 확인" 버튼 클릭 시 MyPage로 이동
+ * 
+ * 사용되는 커스텀 훅:
+ * - useOrderDetail: 전달받은 주문 정보를 처리하고 관리
+ */
+const CheckoutPage: React.FC = () => {
+  // 에러 모달 표시 여부 (현재 사용되지 않음, 향후 확장 가능)
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  
+  // 주문 상세 정보 관리 훅
+  const { orderDetail, loading, error } = useOrderDetail();
 
-const Card = styled.div`
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 32px;
-  margin-bottom: 32px;
-`;
-
-const SectionTitle = styled.h2`
-  font-size: 20px;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 20px;
-  border-bottom: 2px solid #f3f4f6;
-  padding-bottom: 8px;
-`;
-
-const InfoRow = styled.div`
-  margin-bottom: 12px;
-  font-size: 16px;
-  color: #374151;
-`;
-
-const Bold = styled.span`
-  font-weight: 600;
-  color: #111827;
-`;
-
-const ProductList = styled.ul`
-  padding-left: 20px;
-  margin: 0;
-`;
-
-const ProductItem = styled.li`
-  margin-bottom: 8px;
-  font-size: 15px;
-  color: #374151;
-`;
-
-const TotalSummary = styled.div`
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #e5e7eb;
-`;
-
-const TotalRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  font-size: 16px;
-  margin-bottom: 8px;
-`;
-
-const TotalAmount = styled.div`
-  font-size: 20px;
-  font-weight: 700;
-  color: #3b82f6;
-  text-align: right;
-  margin-top: 12px;
-`;
-
-const ThankYou = styled.div`
-  text-align: center;
-  margin-top: 40px;
-  font-size: 16px;
-  color: #4b5563;
-`;
-
-const CheckoutPage: FC = () => {
-  const location = useLocation();
-  const [showAccessModal, setShowAccessModal] = useState(false);
-  const [orderInfo, setOrderInfo] = useState<Order | null>(null);
-  const orderId = location.state?.orderId;
-
-  useEffect(() => {
-    const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-    const order = orders.find((order: any) => orderId === order.orderId);
-    setOrderInfo(order);
-  }, [orderId]);
-
-  if (orderInfo === null) {
-    return null;
+  // 주문 정보 로딩 중일 때 로딩 스피너 표시
+  if (loading) {
+    return (
+      <Container>
+        <LoadingState />
+      </Container>
+    );
   }
 
+  // 주문 정보 로드 중 에러 발생 시 에러 메시지 표시
+  if (error) {
+    return (
+      <Container>
+        <ErrorState icon="❌" title="오류가 발생했습니다" message={error} />
+      </Container>
+    );
+  }
+
+  // 주문 정보가 없을 때 (라우팅 오류 등) 안내 메시지 표시
+  if (!orderDetail) {
+    return (
+      <Container>
+        <ErrorState
+          icon="🚫"
+          title="주문 정보를 찾을 수 없습니다"
+          message="주문이 정상적으로 처리되지 않았을 수 있습니다."
+        />
+      </Container>
+    );
+  }
+
+  // 메인 렌더링: 주문 완료 페이지 UI
   return (
     <>
-      {showAccessModal && (
+      {/* 에러 모달 (현재 미사용, 향후 확장 가능) */}
+      {showErrorModal && (
         <Fail
-          title="접근 실패"
-          message="잘못된 접근입니다."
-          onClose={() => setShowAccessModal(false)}
+          title="알림"
+          message="주문 정보를 불러오는데 실패했습니다."
+          onClose={() => setShowErrorModal(false)}
         />
       )}
+
       <Container>
-        <Card>
-          <SectionTitle>배송 정보</SectionTitle>
-          <InfoRow>
-            <Bold>수령인:</Bold> {orderInfo.shippingInfo.recipientName}
-          </InfoRow>
-          <InfoRow>
-            <Bold>연락처:</Bold> {orderInfo.shippingInfo.recipientPhone}
-          </InfoRow>
-          <InfoRow>
-            <Bold>주소:</Bold> ({orderInfo.shippingInfo.postalCode}){" "}
-            {orderInfo.shippingInfo.deliveryAddress}{" "}
-            {orderInfo.shippingInfo.detailDeliveryAddress}
-          </InfoRow>
-          <InfoRow>
-            <Bold>요청사항:</Bold>{" "}
-            {orderInfo.shippingInfo.deliveryMessage || "없음"}
-          </InfoRow>
-        </Card>
+        {/* 주문 성공 메시지 및 적립 포인트 표시 */}
+        <OrderSuccess
+          earnedPoints={orderDetail.earnedPoints} // 이번 주문으로 적립된 포인트
+          formatPrice={formatPrice}
+        />
 
-        <Card>
-          <SectionTitle>주문 상품</SectionTitle>
-          <ProductList>
-            {orderInfo.items.map((item) => (
-              <ProductItem key={item.id}>
-                {item.name} / {item.price.toLocaleString()}원 / {item.option} ×{" "}
-                {item.quantity}개
-              </ProductItem>
-            ))}
-          </ProductList>
-        </Card>
+        {/* 주문 기본 정보 (주문일자, 상태 등) */}
+        <OrderInfo 
+          orderDetail={orderDetail} 
+          getStatusText={getStatusText} // 주문 상태를 한글로 변환
+        />
 
-        <Card>
-          <SectionTitle>결제 정보</SectionTitle>
-          <InfoRow>
-            <Bold>결제 수단:</Bold> {orderInfo.paymentInfo.paymentMethod}
-          </InfoRow>
-          {orderInfo.paymentInfo.paymentMethod === "카드" && (
-            <>
-              <InfoRow>
-                <Bold>카드 번호:</Bold> {orderInfo.paymentInfo.cardNumber}
-              </InfoRow>
-              <InfoRow>
-                <Bold>유효 기간:</Bold> {orderInfo.paymentInfo.cardExpiry}
-              </InfoRow>
-            </>
-          )}
+        {/* 배송 정보 (배송지, 연락처, 배송 요청사항) */}
+        <ShippingInfo shippingInfo={orderDetail.shippingInfo} />
 
-          <TotalSummary>
-            <TotalRow>
-              <span>배송비</span>
-              <span>
-                {orderInfo.deliveryFee === 0
-                  ? "무료"
-                  : `${orderInfo.deliveryFee?.toLocaleString()}원`}
-              </span>
-            </TotalRow>
-            <TotalRow>
-              <span>사용한 포인트</span>
-              <span>-{(orderInfo.usedPoints ?? 0).toLocaleString()}원</span>
-            </TotalRow>
-            <TotalRow>
-              <span>총 결제 금액</span>
-              <span>{orderInfo.totalPrice?.toLocaleString()}원</span>
-            </TotalRow>
-            <TotalAmount>
-              {orderInfo.totalPrice?.toLocaleString()}원 결제 완료
-            </TotalAmount>
-            <TotalRow style={{ marginTop: 12 }}>
-              <span style={{ fontSize: 14, color: "#6b7280" }}>
-                적립 예정 포인트
-              </span>
-              <span style={{ fontSize: 14, fontWeight: 600 }}>
-                {orderInfo.earnedPoints?.toLocaleString() ?? 0}P
-              </span>
-            </TotalRow>
-          </TotalSummary>
-        </Card>
+        {/* 주문한 상품 목록 및 가격 정보 */}
+        <OrderItems 
+          items={orderDetail.items} // 주문 상품 목록
+          formatPrice={formatPrice}
+        />
 
-        <ThankYou>
-          주문이 정상적으로 완료되었습니다. 🎉
-          <br />
-          마이페이지에서 배송 현황을 확인하실 수 있습니다.
-        </ThankYou>
+        {/* 감사 메시지 및 마이페이지 이동 버튼 */}
+        <ThankYouMessage />
       </Container>
     </>
   );

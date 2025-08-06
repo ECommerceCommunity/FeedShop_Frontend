@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { RecentViewItem } from "types/types";
+import { RecentViewItem } from "types/cart";
 import styled from "styled-components";
-import { getRecentViewItems } from "utils/recentview";
+import { getRecentViewItems } from "utils/cart/recentview";
 import Warning from "components/modal/Warning";
 import { useNavigate } from "react-router-dom";
+import { toUrl } from "utils/common/images";
 
 const PageWrapper = styled.div`
   min-height: 100vh;
@@ -197,11 +198,13 @@ const RecentViewPage: React.FC = () => {
 
     const loadWishlist = () => {
       try {
-        const currentWishlist = JSON.parse(localStorage.getItem('wishlist') ?? '[]');
+        const currentWishlist = JSON.parse(
+          localStorage.getItem("wishlist") ?? "[]"
+        );
         const wishlistIds = currentWishlist.map((item: any) => item.id);
         setWishlistItems(wishlistIds);
       } catch (error) {
-        console.log('위시리스트 로드 중 오류 : ', error);
+        console.log("위시리스트 로드 중 오류 : ", error);
         setWishlistItems([]);
       }
     };
@@ -212,10 +215,12 @@ const RecentViewPage: React.FC = () => {
   const formatViewdAt = (viewedAt: string) => {
     const date = new Date(viewedAt);
     const now = new Date();
-    const differenceInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    const differenceInMinutes = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60)
+    );
 
     if (differenceInMinutes < 1) {
-      return '방금 전';
+      return "방금 전";
     } else if (differenceInMinutes < 60) {
       return `${differenceInMinutes}분 전`;
     } else if (differenceInMinutes < 24 * 60) {
@@ -235,12 +240,16 @@ const RecentViewPage: React.FC = () => {
   };
 
   const toggleWishlist = (item: RecentViewItem) => {
-    const currentWishlist = JSON.parse(localStorage.getItem('wishlist') ?? '[]');
+    const currentWishlist = JSON.parse(
+      localStorage.getItem("wishlist") ?? "[]"
+    );
     const isCurrentWishlist = wishlistItems.includes(item.id);
 
     if (isCurrentWishlist) {
-      const updateWishlist = currentWishlist.filter((wishItem: any) => wishItem.id !== item.id);
-      localStorage.setItem('wishlist', JSON.stringify(updateWishlist));
+      const updateWishlist = currentWishlist.filter(
+        (wishItem: any) => wishItem.id !== item.id
+      );
+      localStorage.setItem("wishlist", JSON.stringify(updateWishlist));
       setWishlistItems((prev) => prev.filter((id) => id !== item.id));
     } else {
       const wishItem = {
@@ -248,17 +257,18 @@ const RecentViewPage: React.FC = () => {
         name: item.name,
         originalPrice: item.originalPrice,
         discountPrice: item.discountPrice,
-        discountRate: item.discountRate,
+        discountType: item.discountType,
+        discountValue: item.discountValue,
         category: item.category,
         image: item.image,
         addedAt: new Date().toISOString(),
-      }
+      };
 
       const updatedWishlist = [...currentWishlist, wishItem];
       localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
       setWishlistItems((prev) => [...prev, item.id]);
     }
-  }
+  };
 
   const onClickRemove = (id: number) => {
     setRemoveItemId(id);
@@ -336,9 +346,15 @@ const RecentViewPage: React.FC = () => {
               {recentViewItems.map((item) => (
                 <Card key={item.id}>
                   <ImageWrapper>
-                    <ProductImage src={item.image} alt={item.name} />
-                    {item.discountRate > 0 && (
-                      <Badge>{item.discountRate}% 할인</Badge>
+                    <ProductImage src={toUrl(item.image)} alt={item.name} />
+                    {item.discountValue > 0 && (
+                      <Badge>
+                        {item.discountValue}
+                        {item.discountType === "RATE_DISCOUNT"
+                          ? "%"
+                          : "원"}{" "}
+                        할인
+                      </Badge>
                     )}
                     <DeleteIcon onClick={() => onClickRemove(item.id)}>
                       <i className="fa-solid fa-xmark"></i>
@@ -351,7 +367,7 @@ const RecentViewPage: React.FC = () => {
                       <FinalPrice>
                         {item.discountPrice.toLocaleString()}원
                       </FinalPrice>
-                      {item.discountRate > 0 && (
+                      {item.discountValue > 0 && (
                         <OriginalPrice>
                           {item.originalPrice.toLocaleString()}원
                         </OriginalPrice>
@@ -369,7 +385,13 @@ const RecentViewPage: React.FC = () => {
                         $isWishlisted={wishlistItems.includes(item.id)}
                         onClick={() => toggleWishlist(item)}
                       >
-                        <i className={wishlistItems.includes(item.id) ? "fa-solid fa-heart" : "fa-regular fa-heart"}></i>
+                        <i
+                          className={
+                            wishlistItems.includes(item.id)
+                              ? "fa-solid fa-heart"
+                              : "fa-regular fa-heart"
+                          }
+                        ></i>
                       </WishButton>
                     </ButtonRow>
                   </CardContent>

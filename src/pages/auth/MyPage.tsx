@@ -1,21 +1,36 @@
-import React from "react";
-import { Routes, Route, Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Routes, Route, Link, useLocation } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import AddressManagementPage from "./AddressManagementPage";
 import CouponsPage from "./CouponsPage";
+import MyRecentOrders from "components/order/MyRecentOrders";
+import { OrderService } from "api/orderService";
+import { OrderListItem } from "types/order";
 import MyPosts from "./MyPosts";
 import MyComments from "./MyComments";
-import {useAuth} from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 const myPageTempData = {
   recentOrders: [
-    { id: 1, thumbnail: 'https://picsum.photos/seed/picsum/200/300', name: '트렌디 셔츠', date: '2025-07-28', status: '배송 완료' },
-    { id: 2, thumbnail: 'https://picsum.photos/seed/picsum/200/300', name: '여름 팬츠', date: '2025-07-25', status: '처리 중' },
+    {
+      id: 1,
+      thumbnail: "https://picsum.photos/seed/picsum/200/300",
+      name: "트렌디 셔츠",
+      date: "2025-07-28",
+      status: "배송 완료",
+    },
+    {
+      id: 2,
+      thumbnail: "https://picsum.photos/seed/picsum/200/300",
+      name: "여름 팬츠",
+      date: "2025-07-25",
+      status: "처리 중",
+    },
   ],
   feeds: [
-    { id: 1, image: 'https://picsum.photos/300/200', title: '여행룩 추천' },
-    { id: 2, image: 'https://picsum.photos/300/200', title: '오늘의 코디' },
-    { id: 3, image: 'https://picsum.photos/300/200', title: '나들이 데이트룩' },
+    { id: 1, image: "https://picsum.photos/300/200", title: "여행룩 추천" },
+    { id: 2, image: "https://picsum.photos/300/200", title: "오늘의 코디" },
+    { id: 3, image: "https://picsum.photos/300/200", title: "나들이 데이트룩" },
   ],
   feedCount: 12,
   wishlistCount: 5,
@@ -23,9 +38,21 @@ const myPageTempData = {
 };
 
 const feeds = [
-  { id: 1, image: "https://picsum.photos/seed/feed1/300/200", title: "OOTD #1" },
-  { id: 2, image: "https://picsum.photos/seed/feed2/300/200", title: "OOTD #2" },
-  { id: 3, image: "https://picsum.photos/seed/feed3/300/200", title: "OOTD #3" },
+  {
+    id: 1,
+    image: "https://picsum.photos/seed/feed1/300/200",
+    title: "OOTD #1",
+  },
+  {
+    id: 2,
+    image: "https://picsum.photos/seed/feed2/300/200",
+    title: "OOTD #2",
+  },
+  {
+    id: 3,
+    image: "https://picsum.photos/seed/feed3/300/200",
+    title: "OOTD #3",
+  },
 ];
 
 // 애니메이션
@@ -175,52 +202,6 @@ const SectionTitle = styled.h3`
   margin-bottom: 1.5rem;
 `;
 
-const OrdersList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const OrderItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 1rem;
-  border-radius: 12px;
-`;
-
-const OrderThumbnail = styled.img`
-  width: 64px;
-  height: 64px;
-  border-radius: 8px;
-  object-fit: cover;
-`;
-
-const OrderInfo = styled.div`
-  flex: 1;
-`;
-
-const OrderName = styled.p`
-  font-weight: 600;
-  margin: 0;
-`;
-
-const OrderDate = styled.p`
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-`;
-
-const OrderStatus = styled.span`
-  background: #f97316;
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-`;
-
 const FeedCarousel = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -255,10 +236,28 @@ const FeedTitle = styled.div`
   font-weight: 500;
 `;
 
-
 const MyPageDashboard = () => {
   // useAuth()에서 가져온 user 객체는 로그인 여부 확인용으로만 사용합니다.
   const { user } = useAuth();
+  const [orders, setOrders] = useState<OrderListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const response = await OrderService.getOrders(0, 5); // 최신 5개 주문만 가져오기
+        setOrders(response.content);
+      } catch (error: any) {
+        setError("주문 목록을 불러오는데 실패했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
 
   // 로그인 상태가 아니라면 렌더링하지 않거나 메시지를 보여줍니다.
   if (!user) {
@@ -271,7 +270,7 @@ const MyPageDashboard = () => {
       <DashboardGrid>
         <Card>
           <CardTitle>최근 주문</CardTitle>
-          <CardValue>{myPageTempData.recentOrders.length}</CardValue>
+          <CardValue>{loading ? "-" : orders.length}</CardValue>
         </Card>
         <Card>
           <CardTitle>내 피드</CardTitle>
@@ -287,21 +286,7 @@ const MyPageDashboard = () => {
         </Card>
       </DashboardGrid>
 
-      <Section>
-        <SectionTitle>최근 주문 내역</SectionTitle>
-        <OrdersList>
-          {myPageTempData.recentOrders.map((order) => (
-            <OrderItem key={order.id}>
-              <OrderThumbnail src={order.thumbnail} alt={order.name} />
-              <OrderInfo>
-                <OrderName>{order.name}</OrderName>
-                <OrderDate>{order.date}</OrderDate>
-              </OrderInfo>
-              <OrderStatus>{order.status}</OrderStatus>
-            </OrderItem>
-          ))}
-        </OrdersList>
-      </Section>
+      <MyRecentOrders maxItems={5} />
 
       <Section>
         <SectionTitle>내 피드</SectionTitle>
@@ -318,25 +303,38 @@ const MyPageDashboard = () => {
   );
 };
 
-
 function MyPage() {
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const location = useLocation();
 
-  const {user} = useAuth();
-
-   if (!user) {
-    // 2. user가 null이면 로딩 메시지를 보여주거나
-    //    로그인 페이지로 리디렉션하는 로직을 추가합니다.
-    //    navigate('/login');
+  if (!user) {
     return <div>로그인이 필요합니다.</div>;
   }
+
+  // 현재 경로에 따라 렌더링할 컴포넌트 결정
+  const renderContent = () => {
+    const pathname = location.pathname;
+
+    if (pathname === "/mypage" || pathname === "/mypage/") {
+      return <MyPageDashboard />;
+    } else if (pathname === "/mypage/posts") {
+      return <MyPosts />;
+    } else if (pathname === "/mypage/comments") {
+      return <MyComments />;
+    } else if (pathname === "/mypage/settings") {
+      return <AddressManagementPage />;
+    } else if (pathname === "/mypage/coupons") {
+      return <CouponsPage />;
+    }
+
+    return <MyPageDashboard />;
+  };
 
   return (
     <Container>
       <MainLayout>
         <Sidebar>
           <ProfileCard>
-            {/* <ProfileImg src={user.profileImg} alt="프로필" /> */}
             <ProfileImg src="https://i.pravatar.cc/150?img=32" alt="프로필" />
             <WelcomeMessage>안녕하세요, {user.nickname}님!</WelcomeMessage>
             <EditProfileLink to="/profile-settings">
@@ -344,10 +342,13 @@ function MyPage() {
             </EditProfileLink>
           </ProfileCard>
           <NavMenu>
-            <NavItem to="/mypage">
+            <NavItem
+              to="/mypage"
+              className={location.pathname === "/mypage" ? "active" : ""}
+            >
               <i className="fas fa-tachometer-alt"></i> 대시보드
             </NavItem>
-            <NavItem to="/orders">
+            <NavItem to="/my-orders">
               <i className="fas fa-box"></i> 주문내역
             </NavItem>
             <NavItem to="/my-feed">
@@ -356,29 +357,39 @@ function MyPage() {
             <NavItem to="/wishlist">
               <i className="fas fa-heart"></i> 위시리스트
             </NavItem>
-            <NavItem to="/mypage/coupons">
+            <NavItem
+              to="/mypage/coupons"
+              className={
+                location.pathname === "/mypage/coupons" ? "active" : ""
+              }
+            >
               <i className="fas fa-ticket-alt"></i> 쿠폰/포인트
             </NavItem>
-            <NavItem to="/mypage/posts">
+            <NavItem
+              to="/mypage/posts"
+              className={location.pathname === "/mypage/posts" ? "active" : ""}
+            >
               <i className="fas fa-pen-square"></i> 내가 작성한 게시글
             </NavItem>
-            <NavItem to="/mypage/comments">
+            <NavItem
+              to="/mypage/comments"
+              className={
+                location.pathname === "/mypage/comments" ? "active" : ""
+              }
+            >
               <i className="fas fa-comment"></i> 내가 작성한 댓글
             </NavItem>
-            <NavItem to="/mypage/settings">
+            <NavItem
+              to="/mypage/settings"
+              className={
+                location.pathname === "/mypage/settings" ? "active" : ""
+              }
+            >
               <i className="fas fa-cog"></i> 설정
             </NavItem>
           </NavMenu>
         </Sidebar>
-        <MainContent>
-          <Routes>
-            <Route index element={<MyPageDashboard />} />
-            <Route path="posts" element={<MyPosts />} />
-            <Route path="comments" element={<MyComments />} />
-            <Route path="settings" element={<AddressManagementPage />} />
-            <Route path="coupons" element={<CouponsPage />} />
-          </Routes>
-        </MainContent>
+        <MainContent>{renderContent()}</MainContent>
       </MainLayout>
     </Container>
   );
