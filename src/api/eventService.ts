@@ -20,6 +20,7 @@ export interface EventSummaryDto {
   type: string;
   deletedAt?: string | null;
   isDeleted?: boolean;
+  isParticipatable?: boolean; // 백엔드에서 추가된 참여 가능 여부 필드
 }
 
 export interface ApiResponse<T> {
@@ -58,6 +59,7 @@ export interface EventDto {
   imageUrl?: string;
   createdBy?: string;
   createdAt?: string;
+  isParticipatable?: boolean; // 백엔드에서 추가된 참여 가능 여부 필드
 }
 
 export interface EventCreateRequestDto {

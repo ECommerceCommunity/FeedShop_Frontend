@@ -121,18 +121,40 @@ const FeedListPage = () => {
         const deletedAt = event.deletedAt || event.deleted_at;
         const isDeleted = deletedAt !== null && deletedAt !== undefined && deletedAt !== '';
         
-        // 이벤트 시작일과 종료일 확인
+        // 백엔드에서 제공하는 참여 가능 여부 확인 (우선순위)
+        const isParticipatable = event.isParticipatable;
+        
+        // 백엔드에서 isParticipatable 필드를 제공하는 경우 해당 값 사용
+        if (isParticipatable !== undefined) {
+          const isActive = isParticipatable && !isDeleted;
+          
+          console.log(`이벤트 ${event.eventId || event.id} 필터링 결과 (백엔드 기준):`, {
+            title: event.title,
+            isParticipatable,
+            isDeleted,
+            isActive
+          });
+          
+          return isActive;
+        }
+        
+        // 백엔드에서 isParticipatable 필드를 제공하지 않는 경우 프론트엔드에서 계산
         const eventStartDate = new Date(event.eventStartDate);
         const eventEndDate = new Date(event.eventEndDate);
         
+        // 종료일을 다음날 자정으로 설정하여 당일까지 이벤트가 유효하도록 함
+        const adjustedEndDate = new Date(eventEndDate);
+        adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
+        
         // 현재 날짜가 이벤트 기간 안에 있고, 삭제되지 않은 이벤트만
-        const isInProgress = currentDate >= eventStartDate && currentDate <= eventEndDate;
+        const isInProgress = currentDate >= eventStartDate && currentDate < adjustedEndDate;
         const isActive = isInProgress && !isDeleted;
         
-        console.log(`이벤트 ${event.eventId || event.id} 필터링 결과:`, {
+        console.log(`이벤트 ${event.eventId || event.id} 필터링 결과 (프론트엔드 계산):`, {
           title: event.title,
           eventStartDate: event.eventStartDate,
           eventEndDate: event.eventEndDate,
+          adjustedEndDate: adjustedEndDate.toISOString(),
           currentDate: currentDate.toISOString(),
           isInProgress,
           isDeleted,
