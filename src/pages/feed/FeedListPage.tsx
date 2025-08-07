@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedList from "../../components/feed/FeedList";
 import FeedService from "../../api/feedService";
+import { EventDto } from "../../api/eventService";
+import axiosInstance from "../../api/axios";
 import { FeedPost, FeedListParams } from "../../types/feed";
 
 // 더미 데이터 생성 함수 (백엔드 연동 실패시 fallback용)
@@ -54,36 +56,7 @@ const generateDummyFeed = (id: number): FeedPost => ({
   isLiked: false,
 });
 
-const events = [
-  {
-    id: 1,
-    title: "여름 스타일 챌린지",
-    description: "여름 시즌 베스트 코디를 공유하고 투표에 참여하세요!",
-    purchasePeriod: "2025.06.25 - 2025.07.07",
-    votePeriod: "2025.07.08 - 2025.07.14",
-    announcementDate: "2025.07.15",
-    image: "https://readdy.ai/api/search-image?query=summer%20fashion%20event%20promotional%20image&width=600&height=300&seq=event1&orientation=landscape",
-    rewards: [
-      { rank: 1, reward: "전액 환급 또는 한정판 상품" },
-      { rank: 2, reward: "50,000원 쿠폰" },
-      { rank: 3, reward: "30,000원 쿠폰" },
-    ],
-  },
-  {
-    id: 2,
-    title: "가을 트렌드 페스티벌",
-    description: "다가오는 가을, 트렌디한 스타일을 공유하고 특별한 혜택을 받아가세요!",
-    purchasePeriod: "2025.08.01 - 2025.08.15",
-    votePeriod: "2025.08.16 - 2025.08.22",
-    announcementDate: "2025.08.23",
-    image: "https://readdy.ai/api/search-image?query=autumn%20fashion%20event%20promotional%20image&width=600&height=300&seq=event2&orientation=landscape",
-    rewards: [
-      { rank: 1, reward: "100만원 상당 브랜드 상품권" },
-      { rank: 2, reward: "30만원 상당 브랜드 상품권" },
-      { rank: 3, reward: "10만원 상당 브랜드 상품권" },
-    ],
-  },
-];
+// 더미 이벤트 데이터 제거 - 백엔드에서 가져옴
 
 const FeedListPage = () => {
   const [activeTab, setActiveTab] = useState("all");
@@ -104,8 +77,81 @@ const FeedListPage = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
+  // 🔧 백엔드 연동: 이벤트 데이터
+  const [events, setEvents] = useState<EventDto[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // 🔧 백엔드에서 이벤트 목록 가져오기
+  const fetchEvents = async () => {
+    try {
+      setEventsLoading(true);
+      
+      // EventListPage와 동일한 방식으로 API 호출
+      const params: any = {
+        page: 1, // 백엔드는 1-based pagination 사용
+        size: 10,
+        sort: "createdAt,desc" // 최신순
+      };
+      
+      // 상태 필터링 제거 - 모든 이벤트를 가져온 후 프론트엔드에서 날짜 기준으로 필터링
+      
+      const response = await axiosInstance.get('/api/events/all', { params });
+      
+      // EventListPage와 동일한 방식으로 데이터 추출
+      const eventsData = response.data.content || [];
+      
+      // 디버깅을 위한 임시 로그
+      console.log('전체 이벤트 데이터:', eventsData);
+      eventsData.forEach((event: any, index: number) => {
+        console.log(`이벤트 ${index + 1}:`, {
+          id: event.eventId || event.id,
+          title: event.title,
+          status: event.status,
+          deletedAt: event.deletedAt || event.deleted_at
+        });
+      });
+      
+      // 현재 날짜 기준으로 이벤트 기간 안에 진행중인 이벤트만 필터링
+      const currentDate = new Date();
+      const activeEvents = eventsData.filter((event: any) => {
+        // 삭제 여부 확인
+        const deletedAt = event.deletedAt || event.deleted_at;
+        const isDeleted = deletedAt !== null && deletedAt !== undefined && deletedAt !== '';
+        
+        // 이벤트 시작일과 종료일 확인
+        const eventStartDate = new Date(event.eventStartDate);
+        const eventEndDate = new Date(event.eventEndDate);
+        
+        // 현재 날짜가 이벤트 기간 안에 있고, 삭제되지 않은 이벤트만
+        const isInProgress = currentDate >= eventStartDate && currentDate <= eventEndDate;
+        const isActive = isInProgress && !isDeleted;
+        
+        console.log(`이벤트 ${event.eventId || event.id} 필터링 결과:`, {
+          title: event.title,
+          eventStartDate: event.eventStartDate,
+          eventEndDate: event.eventEndDate,
+          currentDate: currentDate.toISOString(),
+          isInProgress,
+          isDeleted,
+          isActive
+        });
+        
+        return isActive;
+      });
+      
+      console.log('최종 활성 이벤트 개수:', activeEvents.length);
+      
+      setEvents(activeEvents);
+    } catch (error: any) {
+      console.error('이벤트 목록 조회 실패:', error);
+      setEvents([]);
+    } finally {
+      setEventsLoading(false);
+    }
+  };
 
   // 🔧 백엔드에서 피드 목록 가져오기
   const fetchFeeds = async (page: number = 1, feedType?: string) => {
@@ -161,6 +207,7 @@ const FeedListPage = () => {
     };
 
     loadInitialData();
+    fetchEvents(); // 이벤트 데이터도 함께 가져오기
   }, [activeTab, sortBy]);
 
   const handleFilterToggle = (filter: string) => {
@@ -231,6 +278,17 @@ const FeedListPage = () => {
   // FeedList에서 투표하기 버튼 클릭 시 상세 페이지로 이동
   const handleVoteCardClick = (feed: FeedPost) => {
     navigate(`/feed/${feed.id}`);
+  };
+
+  // 이벤트 참여하기 버튼 클릭 시 피드 생성 페이지로 이동
+  const handleEventParticipate = (eventId: number) => {
+    // 선택한 이벤트 정보를 피드 생성 페이지로 전달
+    navigate('/feed-create', { 
+      state: { 
+        selectedEventId: eventId,
+        fromEventList: true 
+      } 
+    });
   };
 
   if (initialLoading) {
@@ -358,43 +416,63 @@ const FeedListPage = () => {
       {activeTab === "event" && (
         <div className="mb-8">
           {/* 이벤트 정보 카드 */}
-          {events.map((event) => (
-            <div key={event.id} className="bg-white rounded-lg shadow-sm p-6 mb-6">
-              <div className="flex items-start mb-4">
-                <img
-                  src={event.image}
-                  alt={event.title}
-                  className="w-24 h-24 rounded-lg object-cover mr-4"
-                />
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">
-                    {event.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {event.description}
-                  </p>
-                  <div className="flex gap-4 text-xs text-gray-500 mb-2">
-                    <span>구매기간: {event.purchasePeriod}</span>
-                    <span>투표기간: {event.votePeriod}</span>
-                    <span>발표일: {event.announcementDate}</span>
+          {eventsLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+              <p className="text-gray-500 mt-2">이벤트를 불러오는 중...</p>
+            </div>
+          ) : events.length > 0 ? (
+            events.map((event) => (
+              <div key={event.eventId} className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div className="flex items-start mb-4">
+                  <img
+                    src={event.imageUrl || "https://readdy.ai/api/search-image?query=event%20promotional%20image&width=600&height=300&seq=event"}
+                    alt={event.title}
+                    className="w-24 h-24 rounded-lg object-cover mr-4"
+                  />
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">
+                      {event.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {event.description}
+                    </p>
+                    <div className="flex gap-4 text-xs text-gray-500 mb-2">
+                      <span>구매기간: {event.purchasePeriod || `${event.purchaseStartDate} - ${event.purchaseEndDate}`}</span>
+                      <span>투표기간: {event.votePeriod || `${event.eventStartDate} - ${event.eventEndDate}`}</span>
+                      <span>발표일: {event.announcementDate}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      {typeof event.rewards === 'string' ? (
+                        <span className="bg-[#87CEEB] bg-opacity-10 px-2 py-1 rounded text-[#87CEEB] font-bold">
+                          {event.rewards}
+                        </span>
+                      ) : (
+                        event.rewards.map((reward, idx) => (
+                          <span
+                            key={idx}
+                            className="bg-[#87CEEB] bg-opacity-10 px-2 py-1 rounded text-[#87CEEB] font-bold"
+                          >
+                            {reward.rank}위: {reward.reward}
+                          </span>
+                        ))
+                      )}
+                    </div>
+                    <button 
+                      onClick={() => handleEventParticipate(event.eventId)}
+                      className="mt-4 bg-[#87CEEB] text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-400 transition duration-200 cursor-pointer"
+                    >
+                      이벤트 참여하기
+                    </button>
                   </div>
-                  <div className="flex gap-2">
-                    {event.rewards.map((reward, idx) => (
-                      <span
-                        key={idx}
-                        className="bg-[#87CEEB] bg-opacity-10 px-2 py-1 rounded text-[#87CEEB] font-bold"
-                      >
-                        {reward.rank}위: {reward.reward}
-                      </span>
-                    ))}
-                  </div>
-                  <button className="mt-4 bg-[#87CEEB] text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-400 transition duration-200 cursor-pointer">
-                    이벤트 참여하기
-                  </button>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">현재 진행 중인 이벤트가 없습니다.</p>
             </div>
-          ))}
+          )}
           
           {/* 이벤트 피드용 피드 카드 */}
           <FeedList
