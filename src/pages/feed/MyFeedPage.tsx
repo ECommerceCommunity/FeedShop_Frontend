@@ -243,9 +243,9 @@ const MyFeedPage = () => {
         return;
       }
       
-             // 임시로 eventId를 1로 설정 (실제로는 피드에서 eventId를 가져와야 함)
-       const voteRequest: FeedVoteRequest = { eventId: 1 };
-       const voteResult = await FeedService.voteFeed(postId, voteRequest);
+      // 임시로 eventId를 1로 설정 (실제로는 피드에서 eventId를 가져와야 함)
+      const voteRequest: FeedVoteRequest = { eventId: 1 };
+      const voteResult = await FeedService.voteFeed(postId, voteRequest);
       
       setVotedPosts([...votedPosts, postId]);
 

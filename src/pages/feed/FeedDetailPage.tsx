@@ -28,8 +28,12 @@ const FeedDetailPage = () => {
       }
 
       try {
+        setLoading(true);
+        console.log(`피드 ${id} 조회 시작`);
+        
         // 백엔드 API 연동
         const feedData = await FeedService.getFeed(parseInt(id));
+        console.log('피드 데이터:', feedData);
         setFeed(feedData);
         
         // 댓글도 API로 가져오기 (추후 구현)
