@@ -202,18 +202,18 @@ const MyFeedPage = () => {
     if (!postId || votedPosts.includes(postId)) return;
     
     try {
-              // 해당 피드 찾기
-        const targetFeed = feedPosts.find(post => post.id === postId);
-        if (!targetFeed || targetFeed.feedType !== 'EVENT') {
-          alert("투표할 수 있는 이벤트 피드가 아닙니다.");
-          return;
-        }
-        
-        // 임시로 eventId를 1로 설정 (실제로는 피드에서 eventId를 가져와야 함)
-        const voteRequest: FeedVoteRequest = { eventId: targetFeed.event?.id || 1 };
-        const voteResult = await FeedService.voteFeed(postId, voteRequest);
-        
-        setVotedPosts([...votedPosts, postId]);
+      // 해당 피드 찾기
+      const targetFeed = feedPosts.find(post => post.id === postId);
+      if (!targetFeed || targetFeed.feedType !== 'EVENT') {
+        alert("투표할 수 있는 이벤트 피드가 아닙니다.");
+        return;
+      }
+      
+      // 임시로 eventId를 1로 설정 (실제로는 피드에서 eventId를 가져와야 함)
+      const voteRequest: FeedVoteRequest = { eventId: targetFeed.event?.id || 1 };
+      const voteResult = await FeedService.voteFeed(postId, voteRequest);
+      
+      setVotedPosts([...votedPosts, postId]);
 
         // 실제 피드 데이터의 투표 수 업데이트
         setFeedPosts((prev) =>
