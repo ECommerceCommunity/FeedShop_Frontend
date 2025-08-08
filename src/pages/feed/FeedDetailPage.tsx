@@ -23,13 +23,15 @@ const FeedDetailPage = () => {
   useEffect(() => {
     const fetchFeed = async () => {
       if (!id) {
+        console.log('ID가 없어서 피드 목록으로 이동');
         navigate('/feeds');
         return;
       }
 
       try {
         setLoading(true);
-        console.log(`피드 ${id} 조회 시작`);
+        console.log(`피드 ${id} 조회 시작 (타입: ${typeof id})`);
+        console.log(`parseInt(${id}) = ${parseInt(id)}`);
         
         // 백엔드 API 연동
         const feedData = await FeedService.getFeed(parseInt(id));

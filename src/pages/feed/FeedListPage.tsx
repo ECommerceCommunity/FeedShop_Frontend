@@ -176,21 +176,6 @@ const FeedListPage = () => {
       
     } catch (error: any) {
       console.error('피드 목록 조회 실패:', error);
-      
-      // 백엔드 연결 실패시 더미 데이터 사용
-      if (error.code === 'NETWORK_ERROR' || error.response?.status >= 500) {
-        console.warn('백엔드 서버 연결 실패 - 더미 데이터 사용');
-        const dummyFeeds = Array.from({ length: postsPerPage }, (_, i) => 
-          generateDummyFeed((page - 1) * postsPerPage + i + 1)
-        );
-        
-        return {
-          feeds: dummyFeeds,
-          hasMore: page < 3,
-          totalPages: 3
-        };
-      }
-      
       return { feeds: [], hasMore: false, totalPages: 0 };
     }
   };
@@ -234,7 +219,11 @@ const FeedListPage = () => {
 
   // 피드 상세 페이지로 이동
   const handleFeedClick = (feed: FeedPost) => {
-    navigate(`/feed/${feed.id}`);
+    console.log('피드 클릭됨:', feed);
+    console.log('피드 ID:', feed.id, '타입:', typeof feed.id);
+    const url = `/feed/${feed.id}`;
+    console.log('이동할 URL:', url);
+    navigate(url);
   };
 
   // 🔧 백엔드 연동 버전: 좋아요 토글
