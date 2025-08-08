@@ -1,59 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FeedList from "../../components/feed/FeedList";
 import FeedDetailModal from "../../components/feed/FeedDetailModal";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
-import { FeedVoteRequest } from "../../types/feed";
+import { FeedVoteRequest, FeedPost } from "../../types/feed";
 
-// 임시 피드 데이터 (기존 목록페이지 (1).tsx 참고)
-const initialFeedPosts = Array.from({ length: 6 }, (_, index) => ({
-  id: index + 1,
-  username: "나",
-  level: 4,
-  profileImg: `https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=60&height=60&seq=myprofile${
-    index + 1
-  }&orientation=squarish`,
-  images: [
-    `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20trendy%20outfit&width=400&height=500&seq=mypost${
-      index + 1
-    }&orientation=portrait`,
-    `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20casual%20outfit&width=400&height=500&seq=mypost${
-      index + 1
-    }a&orientation=portrait`,
-  ],
-  productName: [
-    "트렌디 데님 자켓",
-    "캐주얼 니트 원피스",
-    "베이직 코튼 티셔츠",
-    "스트라이프 셔츠",
-    "미니멀 블레이저",
-    "린넨 와이드 팬츠",
-  ][index],
-  size: [
-    220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290,
-    295, 300,
-  ][getSecureRandomInt(0, 17)],
-  gender: "여성",
-  height: 165,
-  description: [
-    "데일리로 입기 좋은 데님 자켓이에요. 다양한 스타일링이 가능해요.",
-    "편안하면서도 스타일리시한 니트 원피스예요.",
-    "베이직한 디자인으로 활용도가 높은 티셔츠입니다.",
-    "세련된 스트라이프 패턴의 셔츠로 포인트 주기 좋아요.",
-    "깔끔한 핏의 블레이저로 포멀한 스타일링이 가능해요.",
-    "시원한 린넨 소재의 와이드 팬츠입니다.",
-  ][index],
-  likes: getSecureRandomInt(50, 250),
-  votes: getSecureRandomInt(10, 60),
-  comments: getSecureRandomInt(5, 25),
-  instagramId: "my_fashion",
-  createdAt: new Date(2025, 5, 30 - index).toISOString().split("T")[0],
-  isLiked: false,
-  type: ["일상", "이벤트", "랭킹"][getSecureRandomInt(0, 3)],
-}));
-
-type FeedPost = (typeof initialFeedPosts)[0];
 type Comment = {
   id: number;
   username: string;
@@ -63,70 +15,90 @@ type Comment = {
   createdAt: string;
 };
 
-function getSecureRandomInt(min: number, max: number): number {
-  const array = new Uint32Array(1);
-  window.crypto.getRandomValues(array);
-  return min + (array[0] % (max - min));
-}
-
 const MyFeedPage = () => {
   const { user } = useAuth();
-  const [feedPosts, setFeedPosts] = useState(initialFeedPosts);
-
-  // 게시물/좋아요 수는 feedPosts에서 계산
-  const feedCount = feedPosts.length;
-  const totalLikes = feedPosts.reduce(
-    (sum: number, post: FeedPost) => sum + post.likes,
-    0
-  );
-  const followerCount = 324;
-  const followingCount = 156;
   const navigate = useNavigate();
 
-  // 상세 모달 상태
+  // 상태 관리
+  const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedPost, setSelectedPost] = useState<FeedPost | null>(null);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: 1,
-      username: "패션리스타",
-      level: 3,
-      profileImg:
-        "https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=40&height=40&seq=comment1&orientation=squarish",
-      content: "정말 예쁘네요! 저도 이런 스타일 도전해보고 싶어요.",
-      createdAt: "2025-06-14 10:30",
-    },
-    {
-      id: 2,
-      username: "스타일마스터",
-      level: 4,
-      profileImg:
-        "https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=40&height=40&seq=comment2&orientation=squarish",
-      content: "데님 자켓 핏이 너무 좋아요! 어디 제품인지 궁금합니다.",
-      createdAt: "2025-06-14 11:15",
-    },
-  ]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [likedPosts, setLikedPosts] = useState<number[]>([]);
+  const [votedPosts, setVotedPosts] = useState<number[]>([]);
+  const [showVoteModal, setShowVoteModal] = useState(false);
+  const [showVoteToast, setShowVoteToast] = useState(false);
 
   // 탭/정렬 상태
   const [activeTab, setActiveTab] = useState<
-    "all" | "일상" | "이벤트" | "랭킹"
+    "all" | "DAILY" | "EVENT" | "RANKING"
   >("all");
   const [sortBy, setSortBy] = useState<"latest" | "popular">("latest");
+
+  // 데이터 로드 함수
+  const loadMyFeeds = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // API 파라미터 구성
+      const params: any = {
+        page: 0,
+        size: 50, // 충분한 데이터 로드
+        sort: sortBy
+        // userId는 백엔드에서 JWT 토큰을 통해 자동으로 처리
+      };
+
+      // 탭 필터링
+      if (activeTab !== "all") {
+        params.feedType = activeTab;
+      }
+
+      const response = await FeedService.getMyFeeds(params);
+      setFeedPosts(response.content || []);
+    } catch (error: any) {
+      console.error('마이피드 로드 실패:', error);
+      
+      if (error.response?.status === 401) {
+        setError("로그인이 필요합니다.");
+        navigate('/login');
+      } else {
+        setError(error.response?.data?.message || "피드 목록을 불러오는데 실패했습니다.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    if (user) {
+      loadMyFeeds();
+    }
+  }, [user, activeTab, sortBy]);
+
+  // 통계 계산
+  const feedCount = feedPosts.length;
+  const totalLikes = feedPosts.reduce(
+    (sum: number, post: FeedPost) => sum + (post.likeCount || 0),
+    0
+  );
+  const followerCount = 324; // TODO: 백엔드 API 연동 필요
+  const followingCount = 156; // TODO: 백엔드 API 연동 필요
 
   // filteredFeeds: 탭/정렬에 따라 feedPosts를 필터링/정렬
   const filteredFeeds = feedPosts
     .filter((post: FeedPost) =>
-      activeTab === "all" ? true : post.type === activeTab
+      activeTab === "all" ? true : post.feedType === activeTab
     )
     .sort((a: FeedPost, b: FeedPost) => {
       if (sortBy === "latest") {
-        return (
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       } else {
-        return b.likes - a.likes;
+        return (b.likeCount || 0) - (a.likeCount || 0);
       }
     });
 
@@ -151,11 +123,11 @@ const MyFeedPage = () => {
       }
 
       // 실제 피드 데이터의 좋아요 수 업데이트
-      setFeedPosts((prev) =>
-        prev.map((post) =>
-          post.id === postId ? { ...post, likes: likeResult.likeCount } : post
-        )
-      );
+              setFeedPosts((prev) =>
+          prev.map((post) =>
+            post.id === postId ? { ...post, likeCount: likeResult.likeCount } : post
+          )
+        );
       
     } catch (error: any) {
       console.error('좋아요 실패:', error);
@@ -174,7 +146,6 @@ const MyFeedPage = () => {
     if (!window.confirm("정말로 이 피드를 삭제하시겠습니까?")) return;
     
     try {
-      // 🔧 백엔드 API 연동 버전
       await FeedService.deleteFeed(postId);
       
       // ✅ API 성공 후 로컬 상태 업데이트
@@ -206,13 +177,12 @@ const MyFeedPage = () => {
   // 댓글 등록
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newComment.trim()) {
+    if (newComment.trim() && selectedPost) {
       const newCommentObj = {
         id: comments.length + 1,
-        username: "나",
-        level: 2,
-        profileImg:
-          "https://readdy.ai/api/search-image?query=casual%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=40&height=40&seq=myprofile&orientation=squarish",
+                 username: user?.nickname || "나",
+         level: 2, // 기본값 사용
+         profileImg: "https://readdy.ai/api/search-image?query=casual%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=40&height=40&seq=myprofile&orientation=squarish",
         content: newComment,
         createdAt: new Date().toLocaleString(),
       };
@@ -227,34 +197,30 @@ const MyFeedPage = () => {
     setShowComments(false);
   };
 
-  // 투표 모달 상태
-  const [showVoteModal, setShowVoteModal] = useState(false);
-  const [votedPosts, setVotedPosts] = useState<number[]>([]);
-
   // 투표 처리 (백엔드 API 연동)
   const handleVote = async (postId: number) => {
     if (!postId || votedPosts.includes(postId)) return;
     
     try {
-      // 해당 피드 찾기
-      const targetFeed = feedPosts.find(post => post.id === postId);
-      if (!targetFeed || targetFeed.type !== '이벤트') {
-        alert("투표할 수 있는 이벤트 피드가 아닙니다.");
-        return;
-      }
-      
-             // 임시로 eventId를 1로 설정 (실제로는 피드에서 eventId를 가져와야 함)
-       const voteRequest: FeedVoteRequest = { eventId: 1 };
-       const voteResult = await FeedService.voteFeed(postId, voteRequest);
-      
-      setVotedPosts([...votedPosts, postId]);
+              // 해당 피드 찾기
+        const targetFeed = feedPosts.find(post => post.id === postId);
+        if (!targetFeed || targetFeed.feedType !== 'EVENT') {
+          alert("투표할 수 있는 이벤트 피드가 아닙니다.");
+          return;
+        }
+        
+        // 임시로 eventId를 1로 설정 (실제로는 피드에서 eventId를 가져와야 함)
+        const voteRequest: FeedVoteRequest = { eventId: targetFeed.event?.id || 1 };
+        const voteResult = await FeedService.voteFeed(postId, voteRequest);
+        
+        setVotedPosts([...votedPosts, postId]);
 
-      // 실제 피드 데이터의 투표 수 업데이트
-      setFeedPosts((prev) =>
-        prev.map((post) =>
-          post.id === postId ? { ...post, votes: voteResult.voteCount } : post
-        )
-      );
+        // 실제 피드 데이터의 투표 수 업데이트
+        setFeedPosts((prev) =>
+          prev.map((post) =>
+            post.id === postId ? { ...post, participantVoteCount: voteResult.voteCount } : post
+          )
+        );
       
     } catch (error: any) {
       console.error('투표 실패:', error);
@@ -288,17 +254,47 @@ const MyFeedPage = () => {
   };
 
   // 투표 모달 표시 여부
-  const showVoteButton = selectedPost?.type === "이벤트";
+  const showVoteButton = selectedPost?.feedType === "EVENT";
 
   // 투표 모달 수정 버튼 여부
   const showEditButton = !!(
     user?.nickname &&
     selectedPost &&
-    selectedPost.username === user.nickname
+    selectedPost.user.nickname === user.nickname
   );
 
-  // 투표 모달 표시 토스트
-  const [showVoteToast, setShowVoteToast] = useState(false);
+  // 로딩 상태 표시
+  if (loading) {
+    return (
+      <div className="p-5">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#87CEEB]"></div>
+          <span className="ml-3 text-gray-600">피드를 불러오는 중...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 상태 표시
+  if (error) {
+    return (
+      <div className="p-5">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <div className="text-red-600 mb-4">
+            <i className="fas fa-exclamation-triangle text-2xl mb-2"></i>
+            <p className="text-lg font-medium">오류가 발생했습니다</p>
+          </div>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={loadMyFeeds}
+            className="bg-[#87CEEB] text-white px-6 py-2 rounded-lg hover:bg-blue-400 transition duration-200"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-5">
@@ -306,7 +302,7 @@ const MyFeedPage = () => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
           <div className="flex items-center mb-4 md:mb-0">
             <img
-              src="https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=120&height=120&seq=myprofile"
+              src={"https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=120&height=120&seq=myprofile"}
               alt="My Profile"
               className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg"
             />
@@ -339,17 +335,22 @@ const MyFeedPage = () => {
         {/* 내 피드 모아보기 탭/정렬 */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
           <div className="flex gap-2 mb-2 md:mb-0">
-            {["all", "일상", "이벤트", "랭킹"].map((tab) => (
+            {[
+              { key: "all", label: "전체" },
+              { key: "DAILY", label: "일상" },
+              { key: "EVENT", label: "이벤트" },
+              { key: "RANKING", label: "랭킹" }
+            ].map((tab) => (
               <button
-                key={tab}
+                key={tab.key}
                 className={`px-4 py-2 rounded-full text-sm font-medium border transition ${
-                  activeTab === tab
+                  activeTab === tab.key
                     ? "bg-[#87CEEB] text-white border-[#87CEEB]"
                     : "bg-white text-gray-600 border-gray-300 hover:border-[#87CEEB]"
                 }`}
-                onClick={() => setActiveTab(tab as any)}
+                onClick={() => setActiveTab(tab.key as any)}
               >
-                {tab === "all" ? "전체" : tab}
+                {tab.label}
               </button>
             ))}
           </div>
@@ -390,8 +391,25 @@ const MyFeedPage = () => {
         </div>
       </div>
 
-      {/* 피드 리스트 렌더링 부분을 아래처럼 대체 */}
-      <FeedList feeds={filteredFeeds} onFeedClick={handleFeedClick} />
+      {/* 피드 리스트 렌더링 */}
+      {feedPosts.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-gray-400 mb-4">
+            <i className="fas fa-camera text-6xl mb-4"></i>
+            <p className="text-xl font-medium">아직 피드가 없습니다</p>
+            <p className="text-gray-500 mt-2">첫 번째 피드를 올려보세요!</p>
+          </div>
+          <button
+            onClick={() => navigate("/feed-create")}
+            className="bg-[#87CEEB] text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-400 transition duration-200"
+          >
+            <i className="fas fa-plus-circle mr-2"></i>
+            피드 올리기
+          </button>
+        </div>
+      ) : (
+        <FeedList feeds={filteredFeeds} onFeedClick={handleFeedClick} />
+      )}
 
       {/* 상세 모달 */}
       <FeedDetailModal
@@ -408,19 +426,19 @@ const MyFeedPage = () => {
         onEdit={
           user?.nickname &&
           selectedPost &&
-          selectedPost.username === user.nickname
+          selectedPost.user.nickname === user.nickname
             ? () => {
                 handleCloseModal();
                 navigate(`/feed-edit?id=${selectedPost.id}`);
               }
             : undefined
         }
-        showVoteButton={selectedPost?.type === "이벤트"}
+        showVoteButton={selectedPost?.feedType === "EVENT"}
         showEditButton={
           !!(
             user?.nickname &&
             selectedPost &&
-            selectedPost.username === user.nickname
+            selectedPost.user.nickname === user.nickname
           )
         }
         showVoteModal={showVoteModal}
