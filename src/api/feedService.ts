@@ -365,12 +365,61 @@ export class FeedService {
    */
   static async getMyFeeds(params: FeedListParams = {}): Promise<FeedListResponse> {
     try {
-      const response = await axiosInstance.get<ApiResponse<FeedListResponse>>(
+      const response = await axiosInstance.get<ApiResponse<any>>(
         '/api/feeds/my',
         { params }
       );
       const apiResponse = response.data;
-      return apiResponse.data;
+
+      // 백엔드 응답을 프론트엔드 타입에 맞게 변환
+      const transformedFeeds = (apiResponse.data.content || []).map((backendFeed: BackendFeedPost) => ({
+        id: backendFeed.feedId,
+        title: backendFeed.title,
+        content: backendFeed.content,
+        instagramId: backendFeed.instagramId,
+        feedType: backendFeed.feedType,
+        likeCount: backendFeed.likeCount,
+        commentCount: backendFeed.commentCount,
+        participantVoteCount: backendFeed.participantVoteCount,
+        user: {
+          id: backendFeed.userId,
+          nickname: backendFeed.userNickname,
+          level: backendFeed.userLevel,
+          profileImg: backendFeed.userProfileImg,
+          gender: backendFeed.userGender,
+          height: backendFeed.userHeight,
+        },
+        orderItem: {
+          id: backendFeed.orderItemId,
+          productName: backendFeed.productName,
+          size: backendFeed.productSize,
+        },
+        event: backendFeed.eventId && backendFeed.eventTitle && backendFeed.eventStartDate && backendFeed.eventEndDate ? {
+          id: backendFeed.eventId,
+          title: backendFeed.eventTitle,
+          description: backendFeed.eventDescription,
+          startDate: backendFeed.eventStartDate,
+          endDate: backendFeed.eventEndDate,
+        } : undefined,
+        images: backendFeed.imageUrls?.map((url: string, index: number) => ({
+          id: index + 1,
+          imageUrl: url,
+          sortOrder: index,
+        })) || [],
+        hashtags: backendFeed.hashtags?.map((tag: string, index: number) => ({
+          id: index + 1,
+          tag: tag,
+        })) || [],
+        isLiked: backendFeed.isLiked,
+        isVoted: backendFeed.isVoted,
+        createdAt: backendFeed.createdAt,
+        updatedAt: backendFeed.updatedAt,
+      }));
+
+      return {
+        ...apiResponse.data,
+        content: transformedFeeds,
+      };
     } catch (error: any) {
       console.error('내 피드 목록 조회 실패:', error);
       throw error;
