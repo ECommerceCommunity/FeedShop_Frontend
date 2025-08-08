@@ -882,6 +882,10 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
           <i className="fas fa-gift" style={{ marginRight: "8px" }}></i>
           이벤트
         </NavLink>
+        <NavLink to="/feeds">
+          <i className="fas fa-clone" style={{ marginRight: "8px" }}></i>
+          피드
+        </NavLink>
       </Nav>
 
       <SearchSection>

@@ -170,7 +170,7 @@ const App: FC = () => {
                   }
                 />
                 {/* 피드 관련 페이지들 */}
-                <Route path="/feed-list" element={<FeedListPage />} />
+                <Route path="/feeds" element={<FeedListPage />} />
                 <Route path="/feed/:id" element={<FeedDetailPage />} />
                 <Route
                   path="/feed-create"

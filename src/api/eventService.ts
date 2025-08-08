@@ -20,6 +20,7 @@ export interface EventSummaryDto {
   type: string;
   deletedAt?: string | null;
   isDeleted?: boolean;
+  isParticipatable?: boolean; // 백엔드에서 추가된 참여 가능 여부 필드
 }
 
 export interface ApiResponse<T> {
@@ -58,6 +59,7 @@ export interface EventDto {
   imageUrl?: string;
   createdBy?: string;
   createdAt?: string;
+  isParticipatable?: boolean; // 백엔드에서 추가된 참여 가능 여부 필드
 }
 
 export interface EventCreateRequestDto {
@@ -144,8 +146,14 @@ class EventService {
     keyword?: string;
   }): Promise<EventListResponse> {
     try {
+      console.log('이벤트 목록 API 호출 파라미터:', params);
       const response = await axiosInstance.get('/api/events/all', { params });
-      return response.data.data || { content: [], totalPages: 0, totalElements: 0, last: true, first: true, size: 10, number: 0 };
+      console.log('이벤트 목록 API 응답:', response.data);
+      
+      const result = response.data.data || response.data || { content: [], totalPages: 0, totalElements: 0, last: true, first: true, size: 10, number: 0 };
+      console.log('파싱된 이벤트 목록:', result);
+      
+      return result;
     } catch (error) {
       console.error('이벤트 목록 조회 실패:', error);
       throw error;
