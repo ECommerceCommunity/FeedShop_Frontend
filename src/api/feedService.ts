@@ -263,6 +263,44 @@ export class FeedService {
   }
 
   /**
+   * 피드를 좋아요한 사용자 목록을 조회합니다
+   */
+  static async getFeedLikes(
+    feedId: number
+  ): Promise<Array<{ userId?: number; nickname: string; profileImg?: string }>> {
+    try {
+      const url = `/api/feeds/${feedId}/likes`;
+      const response = await axiosInstance.get<ApiResponse<any>>(url);
+
+      const raw = response.data?.data;
+
+      // 다양한 백엔드 응답 형태를 방어적으로 처리
+      const items = Array.isArray(raw)
+        ? raw
+        : Array.isArray(raw?.content)
+        ? raw.content
+        : [];
+
+      return items.map((item: any) => {
+        // 가능한 필드 케이스 대응
+        const nickname = item?.nickname || item?.userNickname || item?.name || String(item);
+        return {
+          userId: item?.userId || item?.id,
+          nickname,
+          profileImg: item?.profileImg || item?.userProfileImg,
+        };
+      });
+    } catch (error: any) {
+      console.error('좋아요 사용자 목록 조회 실패:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+      throw error;
+    }
+  }
+
+  /**
    * 피드에 투표합니다
    */
   static async voteFeed(feedId: number, voteData: FeedVoteRequest): Promise<VoteResponse> {

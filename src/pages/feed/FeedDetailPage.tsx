@@ -14,6 +14,9 @@ const FeedDetailPage = () => {
   const [newComment, setNewComment] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [liked, setLiked] = useState(false);
+  const [likeUsersOpen, setLikeUsersOpen] = useState(false);
+  const [likeUsers, setLikeUsers] = useState<Array<{ userId?: number; nickname: string; profileImg?: string }>>([]);
+  const [likeUsersLoading, setLikeUsersLoading] = useState(false);
   const [voted, setVoted] = useState(false);
   const [showVoteModal, setShowVoteModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -80,6 +83,22 @@ const FeedDetailPage = () => {
       setToastMessage("좋아요 처리에 실패했습니다.");
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
+    }
+  };
+
+  const openLikeUsers = async () => {
+    if (!feed) return;
+    try {
+      setLikeUsersLoading(true);
+      const list = await FeedService.getFeedLikes(feed.id);
+      setLikeUsers(list);
+      setLikeUsersOpen(true);
+    } catch (e) {
+      setToastMessage('좋아요한 사용자 목록을 불러오지 못했습니다.');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    } finally {
+      setLikeUsersLoading(false);
     }
   };
 
@@ -348,7 +367,9 @@ const FeedDetailPage = () => {
                   }`}
                 >
                   <i className={`fas fa-heart mr-2 ${liked ? 'text-red-500' : ''}`}></i>
-                  <span>{feed.likeCount || 0}</span>
+                  <button className="underline decoration-dotted" onClick={openLikeUsers}>
+                    {feed.likeCount || 0}
+                  </button>
                 </button>
                 
                 <div className="flex items-center text-gray-500">
@@ -455,6 +476,38 @@ const FeedDetailPage = () => {
           <div className="flex items-center">
             <i className="fas fa-check-circle mr-1"></i>
             <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {/* 좋아요 사용자 목록 모달 */}
+      {likeUsersOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg w-full max-w-sm mx-4 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-bold">좋아요한 사용자</h3>
+              <button className="text-gray-500" onClick={() => setLikeUsersOpen(false)}>
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            {likeUsersLoading ? (
+              <div className="py-6 text-center text-gray-500">불러오는 중...</div>
+            ) : likeUsers.length === 0 ? (
+              <div className="py-6 text-center text-gray-500">아직 좋아요한 사용자가 없습니다.</div>
+            ) : (
+              <ul className="max-h-72 overflow-y-auto divide-y">
+                {likeUsers.map((u, idx) => (
+                  <li key={idx} className="flex items-center gap-3 py-2">
+                    <img
+                      src={u.profileImg || 'https://via.placeholder.com/40'}
+                      alt={u.nickname}
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                    <span className="text-sm text-gray-800">{u.nickname}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       )}
