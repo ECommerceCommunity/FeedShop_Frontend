@@ -21,12 +21,14 @@ const ProfileSettingsPage: FC = () => {
     birthDate: "",
     gender: "MALE",
     height: undefined,
+    weight: undefined,
     footSize: undefined,
     profileImageUrl: "",
   });
 
   const [originalProfile, setOriginalProfile] =
     useState<UserProfileData | null>(null);
+  const [imageLoadError, setImageLoadError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 프로필 정보 로드
@@ -41,6 +43,7 @@ const ProfileSettingsPage: FC = () => {
         console.log("프로필 이미지 URL:", profileData.profileImageUrl);
         setProfileInfo(profileData);
         setOriginalProfile(profileData);
+        setImageLoadError(false); // 새 프로필 로드 시 이미지 에러 상태 초기화
       } catch (err: any) {
         console.error("프로필 로드 실패:", err);
 
@@ -106,6 +109,7 @@ const ProfileSettingsPage: FC = () => {
         ...prev,
         profileImageUrl: convertMockUrlToCdnUrl(result.profileImageUrl),
       }));
+      setImageLoadError(false); // 새 이미지 업로드 시 에러 상태 초기화
       setSuccess("프로필 이미지가 업로드되었습니다.");
     } catch (err: any) {
       console.error("이미지 업로드 실패:", err);
@@ -132,6 +136,7 @@ const ProfileSettingsPage: FC = () => {
       ...prev,
       profileImageUrl: "",
     }));
+    setImageLoadError(false); // 이미지 제거 시 에러 상태 초기화
   };
 
   const handleSave = async () => {
@@ -157,6 +162,7 @@ const ProfileSettingsPage: FC = () => {
       );
       setProfileInfo(updatedProfile);
       setOriginalProfile(updatedProfile);
+      setImageLoadError(false); // 프로필 저장 후 이미지 에러 상태 초기화
       setSuccess("프로필 정보가 성공적으로 저장되었습니다! 🎉");
 
       // 성공 메시지를 3초 후 자동으로 제거
@@ -184,6 +190,7 @@ const ProfileSettingsPage: FC = () => {
   const handleCancel = () => {
     if (originalProfile) {
       setProfileInfo(originalProfile);
+      setImageLoadError(false); // 취소 시 이미지 에러 상태 초기화
     }
   };
 
@@ -242,25 +249,25 @@ const ProfileSettingsPage: FC = () => {
                 <div className="relative w-32 h-32 mb-4">
                   <img
                     src={
-                      convertMockUrlToCdnUrl(
-                        profileInfo.profileImageUrl || ""
-                      ) ||
-                      "https://via.placeholder.com/128x128/374151/9CA3AF?text=프로필"
+                      imageLoadError || !profileInfo.profileImageUrl
+                        ? "https://via.placeholder.com/128x128/374151/9CA3AF?text=프로필"
+                        : convertMockUrlToCdnUrl(profileInfo.profileImageUrl)
                     }
                     alt="프로필"
                     className="w-full h-full rounded-full object-cover border-4 border-gray-700 shadow-md"
                     onError={(e) => {
-                      console.log("이미지 로드 실패:", e.currentTarget.src);
-                      e.currentTarget.src =
-                        "https://via.placeholder.com/128x128/374151/9CA3AF?text=프로필";
+                      if (!imageLoadError) {
+                        console.log("이미지 로드 실패:", e.currentTarget.src);
+                        setImageLoadError(true);
+                      }
                     }}
                     onLoad={() => {
-                      console.log(
-                        "이미지 로드 성공:",
-                        convertMockUrlToCdnUrl(
-                          profileInfo.profileImageUrl || ""
-                        )
-                      );
+                      if (profileInfo.profileImageUrl && !imageLoadError) {
+                        console.log(
+                          "이미지 로드 성공:",
+                          convertMockUrlToCdnUrl(profileInfo.profileImageUrl)
+                        );
+                      }
                     }}
                   />
                   <button
@@ -309,6 +316,19 @@ const ProfileSettingsPage: FC = () => {
                     value={profileInfo.height || ""}
                     onChange={handleNumberChange}
                     placeholder="170"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    몸무게 (kg)
+                  </label>
+                  <input
+                    type="number"
+                    name="footSize"
+                    value={profileInfo.weight || ""}
+                    onChange={handleNumberChange}
+                    placeholder="65"
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>

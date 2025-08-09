@@ -11,6 +11,7 @@ export interface UserProfileData {
   birthDate?: string;
   gender?: "MALE" | "FEMALE" | "OTHER";
   height?: number;
+  weight?: number;
   footSize?: number;
   profileImageUrl?: string;
 }
@@ -22,6 +23,7 @@ export interface UpdateUserProfileRequest {
   birthDate?: string;
   gender?: "MALE" | "FEMALE" | "OTHER";
   height?: number;
+  weight?: number;
   footSize?: number;
   profileImageUrl?: string;
 }
@@ -55,6 +57,7 @@ export const UserProfileService = {
         birthDate: backendData.birthDate || "",
         gender: backendData.gender || "MALE",
         height: backendData.height,
+        weight: backendData.weight,
         footSize: backendData.footSize,
         profileImageUrl: backendData.profileImageUrl || "",
       };
@@ -94,6 +97,7 @@ export const UserProfileService = {
         birthDate: "1990-01-01",
         gender: "MALE",
         height: 170,
+        weight: 65,
         footSize: 260,
         profileImageUrl: "",
       };
