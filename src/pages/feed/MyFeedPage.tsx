@@ -132,13 +132,10 @@ const MyFeedPage = () => {
 
   // 좋아요 토글 (백엔드 API 연동)
   const handleLike = async (postId: number) => {
-    console.log('handleLike 호출됨, postId:', postId);
     if (!postId) return;
     
     try {
-      console.log('FeedService.likeFeed 호출 시작');
       const likeResult = await FeedService.likeFeed(postId);
-      console.log('likeResult:', likeResult);
       
       // 백엔드 응답에 따라 좋아요 상태 업데이트
       let updatedLikedPosts: number[];
