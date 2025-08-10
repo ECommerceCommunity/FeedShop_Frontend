@@ -47,22 +47,24 @@ const FeedCard: React.FC<FeedCardProps> = ({
       <div className="flex justify-between items-center text-xs text-gray-400 mt-auto">
         {feed.user?.nickname && <span>{feed.user.nickname}</span>}
         {feed.createdAt && <span>{new Date(feed.createdAt).toLocaleDateString()}</span>}
-        <button
-          className="flex items-center gap-1 focus:outline-none"
-          onClick={e => { e.stopPropagation(); onLikeClick && onLikeClick(); }}
-          disabled={liked}
-        >
-          <i className={`fas fa-heart ${liked ? 'text-red-500' : 'text-gray-300'}`}></i> 
+        <div className="flex items-center gap-1">
+          <button
+            className="flex items-center focus:outline-none"
+            onClick={e => { e.stopPropagation(); onLikeClick && onLikeClick(); }}
+            disabled={liked}
+          >
+            <i className={`fas fa-heart ${liked ? 'text-red-500' : 'text-gray-300'}`}></i>
+          </button>
           <span 
             onClick={e => { 
               e.stopPropagation(); 
               onLikeCountClick && onLikeCountClick(); 
             }}
-            className="cursor-pointer hover:text-[#87CEEB]"
+            className="cursor-pointer hover:text-[#87CEEB] ml-1"
           >
             {typeof likes === 'number' ? likes : feed.likeCount}
           </span>
-        </button>
+        </div>
       </div>
       {feed.feedType === 'EVENT' && (
         <button
