@@ -69,18 +69,27 @@ const FeedDetailPage = () => {
     if (!feed) return;
     
     try {
-      // 백엔드 API 연동 (추후 구현)
-      // const likeResult = await FeedService.likeFeed(feed.id);
-      // setLiked(likeResult.liked);
-      // setFeed(prev => prev ? { ...prev, likeCount: likeResult.likeCount } : null);
+      const likeResult = await FeedService.likeFeed(feed.id);
+      setLiked(likeResult.liked);
+      setFeed(prev => prev ? { ...prev, likeCount: likeResult.likeCount } : null);
       
-      setToastMessage("좋아요 기능은 추후 구현 예정입니다.");
+      const message = likeResult.liked ? "좋아요가 추가되었습니다!" : "좋아요가 취소되었습니다!";
+      setToastMessage(message);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
       
     } catch (error: any) {
       console.error('좋아요 실패:', error);
-      setToastMessage("좋아요 처리에 실패했습니다.");
+      
+      if (error.response?.status === 401) {
+        setToastMessage("로그인이 필요합니다.");
+        setTimeout(() => navigate('/login'), 2000);
+      } else if (error.response?.status === 404) {
+        setToastMessage("피드를 찾을 수 없습니다.");
+      } else {
+        setToastMessage(error.response?.data?.message || "좋아요 처리에 실패했습니다.");
+      }
+      
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     }
@@ -93,8 +102,15 @@ const FeedDetailPage = () => {
       const list = await FeedService.getFeedLikes(feed.id);
       setLikeUsers(list);
       setLikeUsersOpen(true);
-    } catch (e) {
-      setToastMessage('좋아요한 사용자 목록을 불러오지 못했습니다.');
+    } catch (error: any) {
+      console.error('좋아요 사용자 목록 조회 실패:', error);
+      
+      if (error.response?.status === 404) {
+        setToastMessage('피드를 찾을 수 없습니다.');
+      } else {
+        setToastMessage('좋아요한 사용자 목록을 불러오지 못했습니다.');
+      }
+      
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
     } finally {
@@ -367,9 +383,15 @@ const FeedDetailPage = () => {
                   }`}
                 >
                   <i className={`fas fa-heart mr-2 ${liked ? 'text-red-500' : ''}`}></i>
-                  <button className="underline decoration-dotted" onClick={openLikeUsers}>
+                  <span 
+                    className="underline decoration-dotted cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openLikeUsers();
+                    }}
+                  >
                     {feed.likeCount || 0}
-                  </button>
+                  </span>
                 </button>
                 
                 <div className="flex items-center text-gray-500">

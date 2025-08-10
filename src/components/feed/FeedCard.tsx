@@ -20,11 +20,20 @@ interface FeedCardProps {
   onClick?: () => void;
   onVoteClick?: () => void;
   onLikeClick?: () => void;
+  onLikeCountClick?: () => void; // 좋아요 수 클릭 이벤트 추가
   liked?: boolean;
   likes?: number;
 }
 
-const FeedCard: React.FC<FeedCardProps> = ({ feed, onClick, onVoteClick, onLikeClick, liked, likes }) => {
+const FeedCard: React.FC<FeedCardProps> = ({ 
+  feed, 
+  onClick, 
+  onVoteClick, 
+  onLikeClick, 
+  onLikeCountClick, // 좋아요 수 클릭 핸들러 추가
+  liked, 
+  likes 
+}) => {
   const imageUrl = feed.images && feed.images.length > 0 ? feed.images[0].imageUrl : 'https://via.placeholder.com/300x400?text=No+Image';
   
   return (
@@ -43,7 +52,16 @@ const FeedCard: React.FC<FeedCardProps> = ({ feed, onClick, onVoteClick, onLikeC
           onClick={e => { e.stopPropagation(); onLikeClick && onLikeClick(); }}
           disabled={liked}
         >
-          <i className={`fas fa-heart ${liked ? 'text-red-500' : 'text-gray-300'}`}></i> {typeof likes === 'number' ? likes : feed.likeCount}
+          <i className={`fas fa-heart ${liked ? 'text-red-500' : 'text-gray-300'}`}></i> 
+          <span 
+            onClick={e => { 
+              e.stopPropagation(); 
+              onLikeCountClick && onLikeCountClick(); 
+            }}
+            className="cursor-pointer hover:text-[#87CEEB]"
+          >
+            {typeof likes === 'number' ? likes : feed.likeCount}
+          </span>
         </button>
       </div>
       {feed.feedType === 'EVENT' && (

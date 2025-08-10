@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedList from "../../components/feed/FeedList";
+import LikedUsersModal from "../../components/feed/LikedUsersModal"; // LikedUsersModal import 추가
 import FeedService from "../../api/feedService";
 import { EventDto } from "../../api/eventService";
 import axiosInstance from "../../api/axios";
@@ -76,6 +77,10 @@ const FeedListPage = () => {
   const [likedPosts, setLikedPosts] = useState<number[]>([]);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+
+  // 좋아요 사용자 모달 상태
+  const [showLikedUsersModal, setShowLikedUsersModal] = useState(false);
+  const [likedUsers, setLikedUsers] = useState<{ id: number; nickname: string; profileImg?: string; }[]>([]);
 
   // 🔧 백엔드 연동: 이벤트 데이터
   const [events, setEvents] = useState<EventDto[]>([]);
@@ -208,6 +213,13 @@ const FeedListPage = () => {
       setInitialLoading(true);
       const result = await fetchFeeds(1, activeTab);
       setFeedPosts(result.feeds);
+      
+      // 각 피드의 isLiked 상태를 likedPosts 배열에 반영
+      const likedFeedIds = result.feeds
+        .filter(feed => feed.isLiked)
+        .map(feed => feed.id);
+      setLikedPosts(likedFeedIds);
+      
       setHasMore(result.hasMore);
       setCurrentPage(1);
       setInitialLoading(false);
@@ -234,6 +246,13 @@ const FeedListPage = () => {
     const result = await fetchFeeds(nextPage, activeTab);
     
     setFeedPosts([...feedPosts, ...result.feeds]);
+    
+    // 새로 로드된 피드들의 좋아요 상태를 likedPosts 배열에 추가
+    const newLikedFeedIds = result.feeds
+      .filter(feed => feed.isLiked)
+      .map(feed => feed.id);
+    setLikedPosts(prev => [...prev, ...newLikedFeedIds]);
+    
     setHasMore(result.hasMore);
     setCurrentPage(nextPage);
     setIsLoading(false);
@@ -257,13 +276,18 @@ const FeedListPage = () => {
       
       // 백엔드 응답에 따라 좋아요 상태 업데이트
       if (likeResult.liked) {
-        setLikedPosts([...likedPosts, postId]);
+        setLikedPosts(prev => [...prev, postId]);
       } else {
-        setLikedPosts(likedPosts.filter(id => id !== postId));
+        setLikedPosts(prev => prev.filter(id => id !== postId));
       }
       
+      // 피드 목록에서도 isLiked 상태 업데이트
       setFeedPosts((prev) =>
-        prev.map((p) => (p.id === postId ? { ...p, likeCount: likeResult.likeCount } : p))
+        prev.map((p) => (p.id === postId ? { 
+          ...p, 
+          likeCount: likeResult.likeCount,
+          isLiked: likeResult.liked 
+        } : p))
       );
       
       const message = likeResult.liked ? "좋아요가 추가되었습니다!" : "좋아요가 취소되었습니다!";
@@ -277,6 +301,8 @@ const FeedListPage = () => {
       if (error.response?.status === 401) {
         setToastMessage("로그인이 필요합니다.");
         setTimeout(() => navigate('/login'), 2000);
+      } else if (error.response?.status === 404) {
+        setToastMessage("피드를 찾을 수 없습니다.");
       } else {
         setToastMessage(error.response?.data?.message || "좋아요 처리에 실패했습니다.");
       }
@@ -289,6 +315,26 @@ const FeedListPage = () => {
   // FeedList에서 투표하기 버튼 클릭 시 상세 페이지로 이동
   const handleVoteCardClick = (feed: FeedPost) => {
     navigate(`/feed/${feed.id}`);
+  };
+
+  // 좋아요 수 클릭 시 좋아요한 사용자 목록 표시
+  const handleLikeCountClick = async (feed: FeedPost) => {
+    try {
+      const users = await FeedService.getFeedLikes(feed.id);
+      // userId를 id로 매핑
+      const mappedUsers = users.map(user => ({
+        id: user.userId || 0,
+        nickname: user.nickname,
+        profileImg: user.profileImg
+      }));
+      setLikedUsers(mappedUsers);
+      setShowLikedUsersModal(true);
+    } catch (error) {
+      console.error('좋아요한 사용자 목록 조회 실패:', error);
+      setToastMessage("좋아요한 사용자 목록을 불러오는데 실패했습니다.");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    }
   };
 
   // 이벤트 참여하기 버튼 클릭 시 피드 생성 페이지로 이동
@@ -418,6 +464,7 @@ const FeedListPage = () => {
             feeds={feedPosts.filter((f) => f.feedType === "DAILY")}
             onFeedClick={handleFeedClick}
             onLikeClick={(feed) => handleLike(feed.id)}
+            onLikeCountClick={handleLikeCountClick}
             likedPosts={likedPosts}
           />
         </div>
@@ -491,6 +538,7 @@ const FeedListPage = () => {
             onFeedClick={handleFeedClick}
             onVoteClick={handleVoteCardClick}
             onLikeClick={(feed) => handleLike(feed.id)}
+            onLikeCountClick={handleLikeCountClick}
             likedPosts={likedPosts}
           />
         </div>
@@ -507,6 +555,7 @@ const FeedListPage = () => {
             feeds={feedPosts.filter((f) => f.feedType === "RANKING")}
             onFeedClick={handleFeedClick}
             onLikeClick={(feed) => handleLike(feed.id)}
+            onLikeCountClick={handleLikeCountClick}
             likedPosts={likedPosts}
           />
         </div>
@@ -530,6 +579,14 @@ const FeedListPage = () => {
             )}
           </button>
         </div>
+      )}
+
+      {/* 좋아요 사용자 모달 */}
+      {showLikedUsersModal && (
+        <LikedUsersModal
+          users={likedUsers}
+          onClose={() => setShowLikedUsersModal(false)}
+        />
       )}
     </div>
   );

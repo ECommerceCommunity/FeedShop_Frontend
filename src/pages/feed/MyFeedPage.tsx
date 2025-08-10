@@ -123,11 +123,11 @@ const MyFeedPage = () => {
       }
 
       // 실제 피드 데이터의 좋아요 수 업데이트
-              setFeedPosts((prev) =>
-          prev.map((post) =>
-            post.id === postId ? { ...post, likeCount: likeResult.likeCount } : post
-          )
-        );
+      setFeedPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId ? { ...post, likeCount: likeResult.likeCount } : post
+        )
+      );
       
     } catch (error: any) {
       console.error('좋아요 실패:', error);
@@ -135,6 +135,8 @@ const MyFeedPage = () => {
       if (error.response?.status === 401) {
         alert("로그인이 필요합니다.");
         navigate('/login');
+      } else if (error.response?.status === 404) {
+        alert("피드를 찾을 수 없습니다.");
       } else {
         alert(error.response?.data?.message || "좋아요 처리에 실패했습니다.");
       }
@@ -262,6 +264,20 @@ const MyFeedPage = () => {
     selectedPost &&
     selectedPost.user.nickname === user.nickname
   );
+
+  // 좋아요 사용자 목록 조회
+  const handleShowLikeUsers = async () => {
+    if (!selectedPost) return;
+    
+    try {
+      const likeUsers = await FeedService.getFeedLikes(selectedPost.id);
+      // TODO: 좋아요 사용자 목록 모달 표시 로직 구현
+      console.log('좋아요 사용자 목록:', likeUsers);
+    } catch (error: any) {
+      console.error('좋아요 사용자 목록 조회 실패:', error);
+      alert('좋아요한 사용자 목록을 불러오지 못했습니다.');
+    }
+  };
 
   // 로딩 상태 표시
   if (loading) {
@@ -449,6 +465,7 @@ const MyFeedPage = () => {
         newComment={newComment}
         onCommentChange={(e) => setNewComment(e.target.value)}
         onCommentSubmit={handleCommentSubmit}
+        onShowLikeUsers={handleShowLikeUsers}
       />
     </div>
   );

@@ -23,6 +23,7 @@ interface FeedDetailModalProps {
   newComment: string;
   onCommentChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onCommentSubmit: (e: React.FormEvent) => void;
+  onShowLikeUsers?: () => void;
 }
 
 const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
@@ -47,6 +48,7 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
   newComment,
   onCommentChange,
   onCommentSubmit,
+  onShowLikeUsers,
 }) => {
   if (!open || !feed) return null;
   const heroImage = feed.images && feed.images.length > 0 ? feed.images[0].imageUrl : 'https://via.placeholder.com/600x800?text=No+Image';
@@ -107,10 +109,17 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                 <button
                   className={`flex items-center cursor-pointer focus:outline-none ${liked ? 'text-red-500' : 'text-gray-500 hover:text-[#87CEEB]'}`}
                   onClick={onLike}
-                  disabled={liked}
                 >
                   <i className={`fas fa-heart mr-2 ${liked ? 'text-red-500' : ''}`}></i>
-                  <span>{feed.likeCount || 0}</span>
+                  <span 
+                    className="underline decoration-dotted cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onShowLikeUsers?.();
+                    }}
+                  >
+                    {feed.likeCount || 0}
+                  </span>
                 </button>
                 <button
                   className="flex items-center text-gray-500 hover:text-[#87CEEB] cursor-pointer"

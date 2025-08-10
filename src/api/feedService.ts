@@ -252,7 +252,7 @@ export class FeedService {
   static async likeFeed(feedId: number): Promise<LikeResponse> {
     try {
       const response = await axiosInstance.post<ApiResponse<LikeResponse>>(
-        `/api/feeds/${feedId}/like`
+        `/api/feeds/${feedId}/likes/toggle`
       );
       const apiResponse = response.data;
       return apiResponse.data;
@@ -297,6 +297,27 @@ export class FeedService {
         data: error.response?.data,
       });
       throw error;
+    }
+  }
+
+  /**
+   * 현재 로그인한 사용자가 좋아요한 피드 목록을 조회합니다
+   */
+  static async getMyLikedFeeds(): Promise<number[]> {
+    try {
+      const response = await axiosInstance.get<ApiResponse<{ feedId: number }[]>>(
+        '/api/feeds/my-likes'
+      );
+      
+      if (response.data.success) {
+        return response.data.data.map(item => item.feedId);
+      } else {
+        return [];
+      }
+    } catch (error: any) {
+      console.error('내 좋아요 피드 목록 조회 실패:', error);
+      // 에러가 발생해도 빈 배열 반환 (로그인하지 않은 경우 등)
+      return [];
     }
   }
 
