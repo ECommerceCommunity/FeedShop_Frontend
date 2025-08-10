@@ -190,6 +190,24 @@ const EventListPage = () => {
 
   // 이벤트 상태를 동적으로 계산하는 함수
   const calculateEventStatus = (event: EventDto): EventStatus => {
+    // 백엔드에서 isParticipatable 필드를 제공하는 경우 해당 정보 활용
+    if (event.isParticipatable !== undefined) {
+      if (event.isParticipatable) {
+        return 'ONGOING'; // 참여 가능한 이벤트는 진행중
+      } else {
+        // 종료일이 지났거나 시작일이 아직인 경우 판단
+        const now = new Date();
+        const eventStart = event.eventStartDate ? new Date(event.eventStartDate) : null;
+        
+        if (eventStart && now < eventStart) {
+          return 'UPCOMING'; // 시작일 이전
+        } else {
+          return 'ENDED'; // 종료됨
+        }
+      }
+    }
+    
+    // 백엔드에서 isParticipatable 필드를 제공하지 않는 경우 기존 로직 사용
     const now = new Date();
     const eventStart = event.eventStartDate ? new Date(event.eventStartDate) : null;
     const eventEnd = event.eventEndDate ? new Date(event.eventEndDate) : null;
