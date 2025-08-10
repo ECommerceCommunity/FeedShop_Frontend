@@ -13,6 +13,7 @@ export interface UserProfileData {
   height?: number;
   weight?: number;
   footSize?: number;
+  footWidth?: "NARROW" | "NORMAL" | "WIDE";
   profileImageUrl?: string;
 }
 

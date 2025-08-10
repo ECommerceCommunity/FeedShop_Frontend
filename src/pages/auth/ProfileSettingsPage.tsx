@@ -22,6 +22,7 @@ const ProfileSettingsPage: FC = () => {
     gender: "MALE",
     height: undefined,
     weight: undefined,
+    footWidth: "NORMAL",
     footSize: undefined,
     profileImageUrl: "",
   });
@@ -345,6 +346,25 @@ const ProfileSettingsPage: FC = () => {
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
+              </div>
+              <div>
+                <label
+                  htmlFor="footWidth"
+                  className="block text-sm font-medium text-gray-400 mb-1"
+                >
+                  발 너비
+                </label>
+                <select
+                  id="footWidth"
+                  name="footWidth"
+                  value={profileInfo.footWidth || "NORMAL"}
+                  onChange={handleProfileChange}
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                >
+                  <option value="NARROW">좁음</option>
+                  <option value="NORMAL">보통</option>
+                  <option value="WIDE">넓음</option>
+                </select>
               </div>
             </section>
           </div>
