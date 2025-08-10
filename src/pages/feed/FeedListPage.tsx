@@ -214,11 +214,21 @@ const FeedListPage = () => {
       const result = await fetchFeeds(1, activeTab);
       setFeedPosts(result.feeds);
       
-      // 각 피드의 isLiked 상태를 likedPosts 배열에 반영
-      const likedFeedIds = result.feeds
+      // localStorage에서 저장된 좋아요 상태 복원
+      const savedLikedPosts = localStorage.getItem('likedPosts');
+      const savedLikedPostsArray = savedLikedPosts ? JSON.parse(savedLikedPosts) : [];
+      
+      // 백엔드에서 받은 isLiked 상태와 localStorage의 상태를 병합
+      const backendLikedIds = result.feeds
         .filter(feed => feed.isLiked)
         .map(feed => feed.id);
-      setLikedPosts(likedFeedIds);
+      
+      // 중복 제거하여 합치기
+      const mergedLikedPosts = Array.from(new Set([...savedLikedPostsArray, ...backendLikedIds]));
+      setLikedPosts(mergedLikedPosts);
+      
+      // localStorage 업데이트
+      localStorage.setItem('likedPosts', JSON.stringify(mergedLikedPosts));
       
       setHasMore(result.hasMore);
       setCurrentPage(1);
@@ -251,7 +261,12 @@ const FeedListPage = () => {
     const newLikedFeedIds = result.feeds
       .filter(feed => feed.isLiked)
       .map(feed => feed.id);
-    setLikedPosts(prev => [...prev, ...newLikedFeedIds]);
+    
+    const updatedLikedPosts = [...likedPosts, ...newLikedFeedIds];
+    setLikedPosts(updatedLikedPosts);
+    
+    // localStorage 업데이트
+    localStorage.setItem('likedPosts', JSON.stringify(updatedLikedPosts));
     
     setHasMore(result.hasMore);
     setCurrentPage(nextPage);
@@ -275,11 +290,17 @@ const FeedListPage = () => {
       const likeResult = await FeedService.likeFeed(postId);
       
       // 백엔드 응답에 따라 좋아요 상태 업데이트
+      let updatedLikedPosts: number[];
       if (likeResult.liked) {
-        setLikedPosts(prev => [...prev, postId]);
+        updatedLikedPosts = [...likedPosts, postId];
+        setLikedPosts(updatedLikedPosts);
       } else {
-        setLikedPosts(prev => prev.filter(id => id !== postId));
+        updatedLikedPosts = likedPosts.filter(id => id !== postId);
+        setLikedPosts(updatedLikedPosts);
       }
+      
+      // localStorage 업데이트
+      localStorage.setItem('likedPosts', JSON.stringify(updatedLikedPosts));
       
       // 피드 목록에서도 isLiked 상태 업데이트
       setFeedPosts((prev) =>

@@ -69,6 +69,8 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     localStorage.removeItem("nickname");
     localStorage.removeItem("token");
     localStorage.removeItem("userType");
+    // 로그아웃 시 좋아요 상태도 정리
+    localStorage.removeItem("likedPosts");
   };
 
   const updateUserType = (userType: "admin" | "seller" | "user") => {
