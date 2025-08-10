@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FeedList from "../../components/feed/FeedList";
 import FeedDetailModal from "../../components/feed/FeedDetailModal";
+import LikedUsersModal from "../../components/feed/LikedUsersModal"; // LikedUsersModal import 추가
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
 import { FeedVoteRequest, FeedPost } from "../../types/feed";
@@ -31,6 +32,10 @@ const MyFeedPage = () => {
   const [votedPosts, setVotedPosts] = useState<number[]>([]);
   const [showVoteModal, setShowVoteModal] = useState(false);
   const [showVoteToast, setShowVoteToast] = useState(false);
+  
+  // 좋아요 사용자 모달 상태
+  const [showLikedUsersModal, setShowLikedUsersModal] = useState(false);
+  const [likedUsers, setLikedUsers] = useState<{ id: number; nickname: string; profileImg?: string; }[]>([]);
 
   // 탭/정렬 상태
   const [activeTab, setActiveTab] = useState<
@@ -59,6 +64,23 @@ const MyFeedPage = () => {
 
       const response = await FeedService.getMyFeeds(params);
       setFeedPosts(response.content || []);
+      
+      // localStorage에서 저장된 좋아요 상태 복원
+      const savedLikedPosts = localStorage.getItem('likedPosts');
+      const savedLikedPostsArray = savedLikedPosts ? JSON.parse(savedLikedPosts) : [];
+      
+      // 백엔드에서 받은 isLiked 상태와 localStorage의 상태를 병합
+      const backendLikedIds = response.content
+        .filter((feed: FeedPost) => feed.isLiked)
+        .map((feed: FeedPost) => feed.id);
+      
+      // 중복 제거하여 합치기
+      const mergedLikedPosts = Array.from(new Set([...savedLikedPostsArray, ...backendLikedIds]));
+      setLikedPosts(mergedLikedPosts);
+      
+      // localStorage 업데이트
+      localStorage.setItem('likedPosts', JSON.stringify(mergedLikedPosts));
+      
     } catch (error: any) {
       console.error('마이피드 로드 실패:', error);
       
@@ -116,18 +138,37 @@ const MyFeedPage = () => {
       const likeResult = await FeedService.likeFeed(postId);
       
       // 백엔드 응답에 따라 좋아요 상태 업데이트
+      let updatedLikedPosts: number[];
       if (likeResult.liked) {
-        setLikedPosts([...likedPosts, postId]);
+        updatedLikedPosts = [...likedPosts, postId];
+        setLikedPosts(updatedLikedPosts);
       } else {
-        setLikedPosts(likedPosts.filter(id => id !== postId));
+        updatedLikedPosts = likedPosts.filter(id => id !== postId);
+        setLikedPosts(updatedLikedPosts);
       }
+      
+      // localStorage 업데이트
+      localStorage.setItem('likedPosts', JSON.stringify(updatedLikedPosts));
 
-      // 실제 피드 데이터의 좋아요 수 업데이트
+      // 실제 피드 데이터의 좋아요 수와 isLiked 상태 업데이트
       setFeedPosts((prev) =>
         prev.map((post) =>
-          post.id === postId ? { ...post, likeCount: likeResult.likeCount } : post
+          post.id === postId ? { 
+            ...post, 
+            likeCount: likeResult.likeCount,
+            isLiked: likeResult.liked 
+          } : post
         )
       );
+      
+      // selectedPost도 업데이트 (모달에서 좋아요 클릭 시)
+      if (selectedPost && selectedPost.id === postId) {
+        setSelectedPost({
+          ...selectedPost,
+          likeCount: likeResult.likeCount,
+          isLiked: likeResult.liked
+        });
+      }
       
     } catch (error: any) {
       console.error('좋아요 실패:', error);
@@ -265,17 +306,38 @@ const MyFeedPage = () => {
     selectedPost.user.nickname === user.nickname
   );
 
-  // 좋아요 사용자 목록 조회
+  // 좋아요 사용자 목록 조회 (모달에서 사용)
   const handleShowLikeUsers = async () => {
     if (!selectedPost) return;
     
     try {
-      const likeUsers = await FeedService.getFeedLikes(selectedPost.id);
-      // TODO: 좋아요 사용자 목록 모달 표시 로직 구현
-      console.log('좋아요 사용자 목록:', likeUsers);
+      const users = await FeedService.getFeedLikes(selectedPost.id);
+      setLikedUsers(users.map(user => ({
+        id: user.userId || 0,
+        nickname: user.nickname,
+        profileImg: user.profileImg
+      })));
+      setShowLikedUsersModal(true);
     } catch (error: any) {
       console.error('좋아요 사용자 목록 조회 실패:', error);
       alert('좋아요한 사용자 목록을 불러오지 못했습니다.');
+    }
+  };
+
+  // 좋아요 수 클릭 시 좋아요한 사용자 목록 표시
+  const handleLikeCountClick = async (feed: FeedPost) => {
+    try {
+      const users = await FeedService.getFeedLikes(feed.id);
+      const mappedUsers = users.map(user => ({
+        id: user.userId || 0,
+        nickname: user.nickname,
+        profileImg: user.profileImg
+      }));
+      setLikedUsers(mappedUsers);
+      setShowLikedUsersModal(true);
+    } catch (error) {
+      console.error('좋아요한 사용자 목록 조회 실패:', error);
+      alert("좋아요한 사용자 목록을 불러오는데 실패했습니다.");
     }
   };
 
@@ -424,7 +486,13 @@ const MyFeedPage = () => {
           </button>
         </div>
       ) : (
-        <FeedList feeds={filteredFeeds} onFeedClick={handleFeedClick} />
+        <FeedList 
+          feeds={filteredFeeds} 
+          onFeedClick={handleFeedClick}
+          onLikeClick={(feed) => handleLike(feed.id)}
+          onLikeCountClick={handleLikeCountClick}
+          likedPosts={likedPosts}
+        />
       )}
 
       {/* 상세 모달 */}
@@ -467,6 +535,14 @@ const MyFeedPage = () => {
         onCommentSubmit={handleCommentSubmit}
         onShowLikeUsers={handleShowLikeUsers}
       />
+
+      {/* 좋아요 사용자 모달 */}
+      {showLikedUsersModal && (
+        <LikedUsersModal
+          users={likedUsers}
+          onClose={() => setShowLikedUsersModal(false)}
+        />
+      )}
     </div>
   );
 };
