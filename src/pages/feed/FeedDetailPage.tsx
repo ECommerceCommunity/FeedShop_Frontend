@@ -26,20 +26,34 @@ const FeedDetailPage = () => {
   useEffect(() => {
     const fetchFeed = async () => {
       if (!id) {
-        console.log('ID가 없어서 피드 목록으로 이동');
         navigate('/feeds');
         return;
       }
 
       try {
         setLoading(true);
-        console.log(`피드 ${id} 조회 시작 (타입: ${typeof id})`);
-        console.log(`parseInt(${id}) = ${parseInt(id)}`);
         
         // 백엔드 API 연동
         const feedData = await FeedService.getFeed(parseInt(id));
-        console.log('피드 데이터:', feedData);
         setFeed(feedData);
+        
+        // localStorage에서 저장된 좋아요 상태 복원
+        const savedLikedPosts = localStorage.getItem('likedPosts');
+        const savedLikedPostsArray = savedLikedPosts ? JSON.parse(savedLikedPosts) : [];
+        
+        // 백엔드에서 받은 isLiked 상태와 localStorage의 상태를 병합
+        const isLikedFromBackend = feedData.isLiked || false;
+        const isLikedFromStorage = savedLikedPostsArray.includes(feedData.id);
+        
+        // 둘 중 하나라도 true면 좋아요 상태로 설정
+        const finalLikedState = isLikedFromBackend || isLikedFromStorage;
+        setLiked(finalLikedState);
+        
+        // localStorage에 추가 (아직 없다면)
+        if (finalLikedState && !savedLikedPostsArray.includes(feedData.id)) {
+          const updatedLikedPosts = [...savedLikedPostsArray, feedData.id];
+          localStorage.setItem('likedPosts', JSON.stringify(updatedLikedPosts));
+        }
         
         // 댓글도 API로 가져오기 (추후 구현)
         // const commentsData = await FeedService.getComments(parseInt(id));
@@ -72,6 +86,19 @@ const FeedDetailPage = () => {
       const likeResult = await FeedService.likeFeed(feed.id);
       setLiked(likeResult.liked);
       setFeed(prev => prev ? { ...prev, likeCount: likeResult.likeCount } : null);
+      
+      // localStorage 업데이트
+      const savedLikedPosts = localStorage.getItem('likedPosts');
+      const savedLikedPostsArray = savedLikedPosts ? JSON.parse(savedLikedPosts) : [];
+      
+      let updatedLikedPosts: number[];
+      if (likeResult.liked) {
+        updatedLikedPosts = [...savedLikedPostsArray, feed.id];
+      } else {
+        updatedLikedPosts = savedLikedPostsArray.filter((postId: number) => postId !== feed.id);
+      }
+      
+      localStorage.setItem('likedPosts', JSON.stringify(updatedLikedPosts));
       
       const message = likeResult.liked ? "좋아요가 추가되었습니다!" : "좋아요가 취소되었습니다!";
       setToastMessage(message);
