@@ -2351,7 +2351,7 @@ const AdminDashboardPage: FC = () => {
                 </SidebarLink>
               </SidebarItem>
               <SidebarItem>
-                <SidebarLink onClick={() => navigate("/store-home")}>
+                <SidebarLink onClick={() => navigate("/store")}>
                   <SidebarIcon className="fas fa-store sidebar-icon"></SidebarIcon>
                   <SidebarText $isOpen={sidebarOpen}>가게 관리</SidebarText>
                 </SidebarLink>
