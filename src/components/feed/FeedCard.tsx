@@ -51,7 +51,6 @@ const FeedCard: React.FC<FeedCardProps> = ({
           <button
             className="flex items-center focus:outline-none"
             onClick={e => { e.stopPropagation(); onLikeClick && onLikeClick(); }}
-            disabled={liked}
           >
             <i className={`fas fa-heart ${liked ? 'text-red-500' : 'text-gray-300'}`}></i>
           </button>

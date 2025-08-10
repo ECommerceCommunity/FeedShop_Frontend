@@ -32,7 +32,7 @@ const FeedList: React.FC<FeedListProps> = ({
           onLikeClick={() => onLikeClick?.(feed)}
           onLikeCountClick={() => onLikeCountClick?.(feed)} // 좋아요 수 클릭 이벤트 전달
           liked={likedPosts?.includes(feed.id)}
-          likes={feed.likes}
+          likes={feed.likeCount}
         />
       ))}
     </div>
