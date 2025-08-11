@@ -32,10 +32,8 @@ export const convertMockUrlToCdnUrl = (url: string): string => {
 
   // mock-gcp-bucket URL을 실제 CDN URL로 변환
   if (url.includes("mock-gcp-bucket")) {
-    return url.replace(
-      "https://mock-gcp-bucket",
-      "https://dev.cdn-feedshop.store"
-    );
+    const baseUrl = getImageBaseUrl();
+    return url.replace("https://mock-gcp-bucket", baseUrl);
   }
 
   return url;
