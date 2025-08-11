@@ -9,10 +9,11 @@ export interface UserProfileData {
   nickname: string;
   phone: string;
   birthDate?: string;
-  gender?: "MALE" | "FEMALE" | "OTHER";
+  gender?: "MALE" | "FEMALE";
   height?: number;
   weight?: number;
   footSize?: number;
+  footWidth?: "NARROW" | "NORMAL" | "WIDE";
   profileImageUrl?: string;
 }
 
@@ -21,10 +22,11 @@ export interface UpdateUserProfileRequest {
   nickname?: string;
   phone?: string;
   birthDate?: string;
-  gender?: "MALE" | "FEMALE" | "OTHER";
+  gender?: "MALE" | "FEMALE";
   height?: number;
   weight?: number;
   footSize?: number;
+  footWidth?: "NARROW" | "NORMAL" | "WIDE";
   profileImageUrl?: string;
 }
 
@@ -59,6 +61,7 @@ export const UserProfileService = {
         height: backendData.height,
         weight: backendData.weight,
         footSize: backendData.footSize,
+        footWidth: backendData.footWidth || "NORMAL",
         profileImageUrl: backendData.profileImageUrl || "",
       };
 
@@ -87,9 +90,16 @@ export const UserProfileService = {
 
       console.log("매핑된 데이터:", mappedData);
       return mappedData;
-    } catch (error) {
+    } catch (error: any) {
       console.error("프로필 조회 실패:", error);
-      // 임시 데이터 반환 (백엔드 API가 완성될 때까지)
+
+      // 프로덕션 환경에서는 에러를 그대로 전파
+      if (process.env.NODE_ENV === "production") {
+        throw error;
+      }
+
+      // 개발 환경에서만 임시 데이터 반환
+      console.warn("개발 환경: 임시 프로필 데이터를 반환합니다.");
       return {
         name: "홍길동",
         nickname: "쇼핑러버",
@@ -99,6 +109,7 @@ export const UserProfileService = {
         height: 170,
         weight: 65,
         footSize: 260,
+        footWidth: "NORMAL",
         profileImageUrl: "",
       };
     }
@@ -119,7 +130,9 @@ export const UserProfileService = {
         birthDate: profileData.birthDate || null,
         gender: profileData.gender || "MALE",
         height: profileData.height || null,
+        weight: profileData.weight || null, // weight 필드 추가
         footSize: profileData.footSize || null,
+        footWidth: profileData.footWidth || "NORMAL", // footWidth 필드 추가
         profileImageUrl:
           convertMockUrlToCdnUrl(profileData.profileImageUrl || "") || null,
       };

@@ -24,6 +24,7 @@ interface AuthContextType {
   ) => void;
   logout: () => void;
   updateUserType: (userType: "seller" | "admin" | "user") => void;
+  handleUnauthorized: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -74,8 +75,17 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("nickname");
+    localStorage.removeItem("name"); // name도 제거
     localStorage.removeItem("token");
     localStorage.removeItem("userType");
+  };
+
+  // 401 에러 시 자동 로그아웃 처리
+  const handleUnauthorized = () => {
+    console.log("401 에러 감지: 자동 로그아웃 처리");
+    logout();
+    // 로그인 페이지로 리다이렉트
+    window.location.href = "/login";
   };
 
   const updateUserType = (userType: "admin" | "seller" | "user") => {
@@ -92,7 +102,9 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUserType }}>
+    <AuthContext.Provider
+      value={{ user, login, logout, updateUserType, handleUnauthorized }}
+    >
       {children}
     </AuthContext.Provider>
   );
