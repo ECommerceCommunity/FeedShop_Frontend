@@ -9,7 +9,7 @@ export interface UserProfileData {
   nickname: string;
   phone: string;
   birthDate?: string;
-  gender?: "MALE" | "FEMALE" | "OTHER";
+  gender?: "MALE" | "FEMALE";
   height?: number;
   weight?: number;
   footSize?: number;
@@ -22,7 +22,7 @@ export interface UpdateUserProfileRequest {
   nickname?: string;
   phone?: string;
   birthDate?: string;
-  gender?: "MALE" | "FEMALE" | "OTHER";
+  gender?: "MALE" | "FEMALE";
   height?: number;
   weight?: number;
   footSize?: number;

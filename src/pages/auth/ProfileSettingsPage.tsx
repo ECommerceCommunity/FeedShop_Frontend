@@ -360,10 +360,16 @@ const ProfileSettingsPage: FC = () => {
 
             {/* 신체 정보 */}
             <section className="bg-gray-800 p-6 rounded-2xl shadow-lg">
-              <h2 className="text-xl font-bold text-white mb-4">신체 정보</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center">
+                <i className="fas fa-ruler-combined text-orange-500 mr-2"></i>
+                신체 정보
+              </h2>
+
+              {/* 신체 정보 그리드 */}
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="bg-gray-700 p-3 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-xs font-medium text-gray-400 mb-1 flex items-center">
+                    <i className="fas fa-arrows-alt-v text-orange-400 mr-1"></i>
                     키 (cm)
                   </label>
                   <input
@@ -372,24 +378,28 @@ const ProfileSettingsPage: FC = () => {
                     value={profileInfo.height || ""}
                     onChange={handleNumberChange}
                     placeholder="170"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white text-sm"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
+
+                <div className="bg-gray-700 p-3 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-xs font-medium text-gray-400 mb-1 flex items-center">
+                    <i className="fas fa-weight text-orange-400 mr-1"></i>
                     몸무게 (kg)
                   </label>
                   <input
                     type="number"
-                    name="weight" // ✅ 올바른 name 속성으로 수정
+                    name="weight"
                     value={profileInfo.weight || ""}
                     onChange={handleNumberChange}
                     placeholder="65"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white text-sm"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
+
+                <div className="bg-gray-700 p-3 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-xs font-medium text-gray-400 mb-1 flex items-center">
+                    <i className="fas fa-shoe-prints text-orange-400 mr-1"></i>
                     발 사이즈 (mm)
                   </label>
                   <input
@@ -398,28 +408,34 @@ const ProfileSettingsPage: FC = () => {
                     value={profileInfo.footSize || ""}
                     onChange={handleNumberChange}
                     placeholder="260"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white text-sm"
                   />
                 </div>
+
+                <div className="bg-gray-700 p-3 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-xs font-medium text-gray-400 mb-1 flex items-center">
+                    <i className="fas fa-expand-arrows-alt text-orange-400 mr-1"></i>
+                    발 너비
+                  </label>
+                  <select
+                    name="footWidth"
+                    value={profileInfo.footWidth || "NORMAL"}
+                    onChange={handleProfileChange}
+                    className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white text-sm"
+                  >
+                    <option value="NARROW">좁음</option>
+                    <option value="NORMAL">보통</option>
+                    <option value="WIDE">넓음</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label
-                  htmlFor="footWidth"
-                  className="block text-sm font-medium text-gray-400 mb-1"
-                >
-                  발 너비
-                </label>
-                <select
-                  id="footWidth"
-                  name="footWidth"
-                  value={profileInfo.footWidth || "NORMAL"}
-                  onChange={handleProfileChange}
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                >
-                  <option value="NARROW">좁음</option>
-                  <option value="NORMAL">보통</option>
-                  <option value="WIDE">넓음</option>
-                </select>
+
+              {/* 신체 정보 요약 */}
+              <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 p-3 rounded-lg border border-orange-500/20">
+                <p className="text-xs text-gray-400 text-center">
+                  <i className="fas fa-info-circle text-orange-400 mr-1"></i>
+                  신체 정보는 의류 및 신발 추천에 활용됩니다
+                </p>
               </div>
             </section>
           </div>
@@ -427,112 +443,108 @@ const ProfileSettingsPage: FC = () => {
           {/* Right Column - 상세 정보 */}
           <div className="lg:col-span-2 space-y-8">
             <section className="bg-gray-800 p-8 rounded-2xl shadow-lg">
-              <h2 className="text-2xl font-bold text-white mb-6">기본 정보</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-400 mb-1"
-                  >
+              <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+                <i className="fas fa-user-edit text-orange-500 mr-3"></i>
+                기본 정보
+              </h2>
+
+              {/* 필수 정보 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="bg-gray-700 p-4 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center">
+                    <i className="fas fa-user text-orange-400 mr-2"></i>
                     이름 *
                   </label>
                   <input
                     type="text"
-                    id="name"
                     name="name"
                     value={profileInfo.name}
                     onChange={handleProfileChange}
                     placeholder="홍길동"
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-3 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
                   />
                 </div>
-                <div>
-                  <label
-                    htmlFor="nickname"
-                    className="block text-sm font-medium text-gray-400 mb-1"
-                  >
+
+                <div className="bg-gray-700 p-4 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center">
+                    <i className="fas fa-at text-orange-400 mr-2"></i>
                     닉네임 *
                   </label>
                   <input
                     type="text"
-                    id="nickname"
                     name="nickname"
                     value={profileInfo.nickname}
                     onChange={handleProfileChange}
                     placeholder="쇼핑러버"
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-3 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
                   />
                 </div>
-                <div>
-                  <label
-                    htmlFor="phone"
-                    className="block text-sm font-medium text-gray-400 mb-1"
-                  >
+
+                <div className="bg-gray-700 p-4 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center">
+                    <i className="fas fa-phone text-orange-400 mr-2"></i>
                     전화번호 *
                   </label>
                   <input
                     type="tel"
-                    id="phone"
                     name="phone"
                     value={profileInfo.phone}
                     onChange={handleProfileChange}
                     placeholder="010-1234-5678"
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-3 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
                   />
                 </div>
-                <div>
-                  <label
-                    htmlFor="birthDate"
-                    className="block text-sm font-medium text-gray-400 mb-1"
-                  >
+
+                <div className="bg-gray-700 p-4 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center">
+                    <i className="fas fa-birthday-cake text-orange-400 mr-2"></i>
                     생년월일
                   </label>
                   <input
                     type="date"
-                    id="birthDate"
                     name="birthDate"
                     value={profileInfo.birthDate || ""}
                     onChange={handleProfileChange}
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-3 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
                   />
                 </div>
-                <div>
-                  <label
-                    htmlFor="gender"
-                    className="block text-sm font-medium text-gray-400 mb-1"
-                  >
+
+                <div className="bg-gray-700 p-4 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center">
+                    <i className="fas fa-venus-mars text-orange-400 mr-2"></i>
                     성별
                   </label>
                   <select
-                    id="gender"
                     name="gender"
                     value={profileInfo.gender || "MALE"}
                     onChange={handleProfileChange}
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-3 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
                   >
                     <option value="MALE">남성</option>
                     <option value="FEMALE">여성</option>
-                    <option value="OTHER">기타</option>
                   </select>
                 </div>
               </div>
-            </section>
 
-            {/* 정보 안내 */}
-            <section className="bg-gray-800 p-6 rounded-2xl shadow-lg">
-              <h2 className="text-xl font-bold text-white mb-4">정보 안내</h2>
-              <div className="space-y-3 text-sm text-gray-400">
-                <div className="flex items-start">
-                  <i className="fas fa-info-circle text-orange-500 mt-1 mr-2"></i>
-                  <p>닉네임은 2자 이상이어야 합니다.</p>
-                </div>
-                <div className="flex items-start">
-                  <i className="fas fa-info-circle text-orange-500 mt-1 mr-2"></i>
-                  <p>전화번호는 10-11자리 숫자만 입력 가능합니다.</p>
-                </div>
-                <div className="flex items-start">
-                  <i className="fas fa-info-circle text-orange-500 mt-1 mr-2"></i>
-                  <p>신체 정보는 의류 및 신발 추천에 활용됩니다.</p>
+              {/* 정보 안내 */}
+              <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 p-4 rounded-xl border border-orange-500/20">
+                <h3 className="text-sm font-semibold text-orange-400 mb-2 flex items-center">
+                  <i className="fas fa-info-circle mr-2"></i>
+                  입력 가이드
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-gray-400">
+                  <div className="flex items-center">
+                    <i className="fas fa-check text-green-400 mr-2"></i>
+                    닉네임은 2자 이상
+                  </div>
+                  <div className="flex items-center">
+                    <i className="fas fa-check text-green-400 mr-2"></i>
+                    전화번호 10-11자리
+                  </div>
+                  <div className="flex items-center">
+                    <i className="fas fa-check text-green-400 mr-2"></i>
+                    신체 정보는 선택사항
+                  </div>
                 </div>
               </div>
             </section>
