@@ -13,8 +13,10 @@ interface FeedDetailModalProps {
   onVote?: () => void;
   voted?: boolean;
   onEdit?: () => void;
+  onDelete?: () => void;
   showVoteButton?: boolean;
   showEditButton?: boolean;
+  showDeleteButton?: boolean; // optional; defaults to showEditButton when undefined
   showVoteModal?: boolean;
   onVoteModalClose?: () => void;
   onVoteConfirm?: () => void;
@@ -37,8 +39,10 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
   onVote,
   voted,
   onEdit,
+  onDelete,
   showVoteButton,
   showEditButton,
+  showDeleteButton,
   showVoteModal,
   onVoteModalClose,
   onVoteConfirm,
@@ -50,6 +54,7 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
 }) => {
   if (!open || !feed) return null;
   const heroImage = feed.images && feed.images.length > 0 ? feed.images[0].imageUrl : 'https://via.placeholder.com/600x800?text=No+Image';
+  const canShowDelete = (showDeleteButton ?? showEditButton) && !!onDelete;
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
@@ -139,6 +144,14 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                     수정
                   </button>
                 )}
+                {canShowDelete && (
+                  <button
+                    className="px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition text-sm font-medium"
+                    onClick={onDelete}
+                  >
+                    삭제
+                  </button>
+                )}
               </div>
             </div>
             {/* 투표 확인 모달 */}
@@ -169,7 +182,7 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
               <div className="fixed bottom-4 right-4 bg-[#87CEEB] text-white px-6 py-3 rounded-lg shadow-lg z-[70] animate-fade-in-up">
                 <div className="flex items-center">
                   <i className="fas fa-check-circle mr-2"></i>
-                  <span>{toastMessage || '투표가 완료되었습니다!'}</span>
+                  <span>{toastMessage || '처리가 완료되었습니다.'}</span>
                 </div>
               </div>
             )}
