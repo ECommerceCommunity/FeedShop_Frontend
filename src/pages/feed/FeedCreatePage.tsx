@@ -468,8 +468,7 @@ const FeedCreatePage: React.FC = () => {
                       </span>
                     </div>
                   </div>
-                )}
-                
+                )} 
                 <select
                   value={selectedEventId || ""}
                   onChange={(e) => setSelectedEventId(e.target.value || null)}

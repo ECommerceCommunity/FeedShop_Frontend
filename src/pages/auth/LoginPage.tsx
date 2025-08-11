@@ -14,7 +14,7 @@ import {
   AuthLink,
   ErrorMessage,
 } from "../../components/auth/AuthCard";
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 const AuthForm = styled(BaseAuthForm)`
   gap: 0;
@@ -120,11 +120,11 @@ export default function LoginPage() {
 
     if (!isRecaptchaReady || !executeRecaptcha) {
       // alert()를 setError로 변경
-      setError('reCAPTCHA 로딩 중입니다. 잠시 후 다시 시도해주세요.');
+      setError("reCAPTCHA 로딩 중입니다. 잠시 후 다시 시도해주세요.");
       setLoading(false);
       return;
     }
-    console.log('reCAPTCHA가 준비되었습니다.');
+    console.log("reCAPTCHA가 준비되었습니다.");
 
     setError("");
     setLoading(true);
@@ -132,7 +132,7 @@ export default function LoginPage() {
     try {
       if (!isEmailValid) throw new Error("올바른 이메일 형식을 입력해주세요.");
 
-      const recaptchaToken = await executeRecaptcha('login_submit');
+      const recaptchaToken = await executeRecaptcha("login_submit");
       // console.log('생성된 reCAPTCHA 토큰:', recaptchaToken);
 
       if (!recaptchaToken) {
@@ -155,26 +155,33 @@ export default function LoginPage() {
       // console.log('로그인 성공 응답:', response.data);
       const loginData = response.data.data;
       if (loginData && loginData.token) {
-        // authLogin 함수를 3개의 인자를 받도록 수정
-        authLogin(loginData.nickname, loginData.role, loginData.token);
+        // authLogin 함수를 4개의 인자를 받도록 수정 (name 추가)
+        authLogin(
+          loginData.nickname,
+          loginData.name || loginData.nickname,
+          loginData.role,
+          loginData.token
+        );
         navigate("/");
       } else {
         throw new Error("로그인 응답 형식이 올바르지 않습니다.");
       }
       // --- 추가된 로직 끝 ---
-
     } catch (err: any) {
-      console.error("로그인 에러:", err.response ? err.response.data : err.message);
+      console.error(
+        "로그인 에러:",
+        err.response ? err.response.data : err.message
+      );
       // alert()를 setError로 변경
-      const errorMessage = err.response && err.response.data && err.response.data.message
-        ? err.response.data.message
-        : "로그인 중 알 수 없는 오류가 발생했습니다.";
+      const errorMessage =
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "로그인 중 알 수 없는 오류가 발생했습니다.";
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <AuthCard title="FeedShop" subtitle="스마트한 쇼핑 경험을 위한 최고의 선택">
