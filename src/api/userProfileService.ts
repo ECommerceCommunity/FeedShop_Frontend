@@ -175,21 +175,22 @@ export const UserProfileService = {
 
       console.log("이미지 업로드 응답:", response.data);
 
-      // 백엔드에서 이미지 URL을 직접 반환하므로 그대로 사용
-      // URL이 상대 경로인 경우 baseURL과 결합
+      // 백엔드에서 반환된 URL을 환경에 맞는 CDN URL로 변환
       let imageUrl = response.data;
+
+      // mock-gcp-bucket URL을 실제 CDN URL로 변환
+      if (imageUrl && imageUrl.includes("mock-gcp-bucket")) {
+        imageUrl = convertMockUrlToCdnUrl(imageUrl);
+        console.log("업로드 후 CDN URL로 변환됨:", imageUrl);
+      }
+
+      // URL이 상대 경로인 경우 baseURL과 결합
       if (imageUrl && !imageUrl.startsWith("http")) {
         const baseURL =
           process.env.REACT_APP_API_URL || "https://localhost:8443";
         imageUrl = `${baseURL}${
           imageUrl.startsWith("/") ? "" : "/"
         }${imageUrl}`;
-      }
-
-      // mock-gcp-bucket URL을 실제 CDN URL로 변환
-      if (imageUrl && imageUrl.includes("mock-gcp-bucket")) {
-        imageUrl = convertMockUrlToCdnUrl(imageUrl);
-        console.log("업로드 후 CDN URL로 변환됨:", imageUrl);
       }
 
       console.log("최종 이미지 URL:", imageUrl);
