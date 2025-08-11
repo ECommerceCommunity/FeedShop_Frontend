@@ -35,8 +35,16 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // 토큰이 만료되었거나 유효하지 않은 경우
+      console.log("401 에러 감지: 토큰 제거 및 로그인 페이지 리다이렉트");
       localStorage.removeItem("token");
-      window.location.href = "/login";
+      localStorage.removeItem("nickname");
+      localStorage.removeItem("name");
+      localStorage.removeItem("userType");
+
+      // 현재 페이지가 로그인 페이지가 아닌 경우에만 리다이렉트
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }

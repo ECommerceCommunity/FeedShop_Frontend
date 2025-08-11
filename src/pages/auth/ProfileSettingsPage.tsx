@@ -8,7 +8,7 @@ import {
 import { convertMockUrlToCdnUrl } from "../../utils/common/images";
 
 const ProfileSettingsPage: FC = () => {
-  const { user } = useAuth();
+  const { user, handleUnauthorized } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +35,11 @@ const ProfileSettingsPage: FC = () => {
   // 프로필 정보 로드
   useEffect(() => {
     const loadProfile = async () => {
-      if (!user) return;
+      if (!user) {
+        console.log("사용자 정보 없음: 로그인 페이지로 리다이렉트");
+        window.location.href = "/login";
+        return;
+      }
 
       try {
         setLoading(true);
@@ -48,10 +52,15 @@ const ProfileSettingsPage: FC = () => {
       } catch (err: any) {
         console.error("프로필 로드 실패:", err);
 
-        // 더 구체적인 에러 메시지 표시
+        // 401 에러 시 자동 로그아웃 처리
         if (err.response?.status === 401) {
-          setError("로그인이 만료되었습니다. 다시 로그인해주세요.");
-        } else if (err.response?.status === 500) {
+          console.log("프로필 로드 중 401 에러: 자동 로그아웃 처리");
+          handleUnauthorized();
+          return;
+        }
+
+        // 더 구체적인 에러 메시지 표시
+        if (err.response?.status === 500) {
           setError("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
         } else {
           setError("프로필 정보를 불러오는데 실패했습니다.");
@@ -62,7 +71,7 @@ const ProfileSettingsPage: FC = () => {
     };
 
     loadProfile();
-  }, [user]);
+  }, [user, handleUnauthorized]);
 
   // 변경사항 감지
   const hasChanges = () => {
@@ -91,6 +100,44 @@ const ProfileSettingsPage: FC = () => {
     const { name, value } = e.target;
     const numValue = value === "" ? undefined : parseInt(value);
     setProfileInfo((prev: UserProfileData) => ({ ...prev, [name]: numValue }));
+  };
+
+  // 데이터 검증 함수 추가
+  const validateProfileData = (
+    data: UserProfileData
+  ): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+
+    // 필수 필드 검증
+    if (!data.name || data.name.trim().length < 2) {
+      errors.push("이름은 2자 이상 입력해주세요.");
+    }
+
+    if (!data.nickname || data.nickname.trim().length < 2) {
+      errors.push("닉네임은 2자 이상 입력해주세요.");
+    }
+
+    if (
+      !data.phone ||
+      !/^[0-9-]{10,11}$/.test(data.phone.replace(/[^0-9-]/g, ""))
+    ) {
+      errors.push("전화번호는 10-11자리 숫자로 입력해주세요.");
+    }
+
+    // 신체 정보 범위 검증
+    if (data.height && (data.height < 100 || data.height > 250)) {
+      errors.push("키는 100cm ~ 250cm 범위로 입력해주세요.");
+    }
+
+    if (data.weight && (data.weight < 30 || data.weight > 200)) {
+      errors.push("몸무게는 30kg ~ 200kg 범위로 입력해주세요.");
+    }
+
+    if (data.footSize && (data.footSize < 200 || data.footSize > 350)) {
+      errors.push("발 사이즈는 200mm ~ 350mm 범위로 입력해주세요.");
+    }
+
+    return { isValid: errors.length === 0, errors };
   };
 
   const handleProfileImageClick = () => {
@@ -123,7 +170,9 @@ const ProfileSettingsPage: FC = () => {
       } else if (err.response?.status === 413) {
         setError("이미지 파일이 너무 큽니다. 5MB 이하의 파일을 사용해주세요.");
       } else if (err.response?.status === 401) {
-        setError("로그인이 만료되었습니다. 다시 로그인해주세요.");
+        console.log("이미지 업로드 중 401 에러: 자동 로그아웃 처리");
+        handleUnauthorized();
+        return;
       } else {
         setError("이미지 업로드에 실패했습니다. 다시 시도해주세요.");
       }
@@ -145,6 +194,13 @@ const ProfileSettingsPage: FC = () => {
       setSaving(true);
       setError(null);
 
+      // 데이터 검증
+      const validation = validateProfileData(profileInfo);
+      if (!validation.isValid) {
+        setError(validation.errors.join("\n"));
+        return;
+      }
+
       const updateData: UpdateUserProfileRequest = {
         name: profileInfo.name,
         nickname: profileInfo.nickname,
@@ -152,6 +208,7 @@ const ProfileSettingsPage: FC = () => {
         birthDate: profileInfo.birthDate,
         gender: profileInfo.gender,
         height: profileInfo.height,
+        weight: profileInfo.weight, // weight 필드 추가
         footSize: profileInfo.footSize,
         profileImageUrl: convertMockUrlToCdnUrl(
           profileInfo.profileImageUrl || ""
@@ -177,7 +234,9 @@ const ProfileSettingsPage: FC = () => {
       if (err.response?.status === 400) {
         setError("입력한 정보가 올바르지 않습니다. 필수 항목을 확인해주세요.");
       } else if (err.response?.status === 401) {
-        setError("로그인이 만료되었습니다. 다시 로그인해주세요.");
+        console.log("프로필 저장 중 401 에러: 자동 로그아웃 처리");
+        handleUnauthorized();
+        return;
       } else if (err.response?.status === 500) {
         setError("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
       } else {
@@ -197,14 +256,10 @@ const ProfileSettingsPage: FC = () => {
 
   // 사용자가 로그인하지 않은 경우
   if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">로그인이 필요합니다</h1>
-          <p className="text-gray-400">프로필 설정을 위해 로그인해주세요.</p>
-        </div>
-      </div>
-    );
+    console.log("사용자 정보 없음: 로그인 페이지로 리다이렉트");
+    // 즉시 리다이렉트
+    window.location.href = "/login";
+    return null; // 리다이렉트 중에는 아무것도 렌더링하지 않음
   }
 
   if (loading) {
@@ -326,7 +381,7 @@ const ProfileSettingsPage: FC = () => {
                   </label>
                   <input
                     type="number"
-                    name="footSize"
+                    name="weight" // ✅ 올바른 name 속성으로 수정
                     value={profileInfo.weight || ""}
                     onChange={handleNumberChange}
                     placeholder="65"
