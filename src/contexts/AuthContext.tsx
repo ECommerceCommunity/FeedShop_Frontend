@@ -6,6 +6,7 @@ import {
   ReactNode,
   FC,
 } from "react";
+import FeedService from "../api/feedService";
 
 interface User {
   nickname: string;
@@ -57,7 +58,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     setIsInitialized(true);
   }, []);
 
-  const login = (
+  const login = async (
     nickname: string,
     name: string,
     userType: "admin" | "seller" | "user",
@@ -70,6 +71,16 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     localStorage.setItem("name", name);
     localStorage.setItem("userType", userTypeLower);
     localStorage.setItem("token", token);
+
+    // 로그인 후 사용자가 좋아요한 피드 목록을 가져와서 localStorage에 저장
+    try {
+      const likedFeedIds = await FeedService.getMyLikedFeeds();
+      localStorage.setItem("likedPosts", JSON.stringify(likedFeedIds));
+    } catch (error) {
+      console.error("좋아요한 피드 목록 조회 실패:", error);
+      // 에러가 발생해도 빈 배열로 초기화
+      localStorage.setItem("likedPosts", JSON.stringify([]));
+    }
   };
 
   const logout = () => {
@@ -78,8 +89,8 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     localStorage.removeItem("name"); // name도 제거
     localStorage.removeItem("token");
     localStorage.removeItem("userType");
-    // 좋아요 상태는 로그아웃해도 유지 (사용자별로 구분하지 않음)
-    // localStorage.removeItem("likedPosts");
+    // 로그아웃 시 좋아요 상태도 정리
+    localStorage.removeItem("likedPosts");
   };
 
   // 401 에러 시 자동 로그아웃 처리
