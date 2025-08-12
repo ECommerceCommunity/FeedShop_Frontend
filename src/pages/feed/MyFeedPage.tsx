@@ -6,6 +6,7 @@ import LikedUsersModal from "../../components/feed/LikedUsersModal";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
 import { FeedVoteRequest, FeedPost } from "../../types/feed";
+import { useLikedPosts } from "../../hooks/useLikedPosts";
 
 type Comment = {
   id: number;
@@ -28,10 +29,12 @@ const MyFeedPage = () => {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
-  const [likedPosts, setLikedPosts] = useState<number[]>([]);
   const [votedPosts, setVotedPosts] = useState<number[]>([]);
   const [showVoteModal, setShowVoteModal] = useState(false);
   const [showVoteToast, setShowVoteToast] = useState(false);
+  
+  // 좋아요 상태
+  const { likedPosts, updateLikedPosts, isLiked } = useLikedPosts();
   
   // 좋아요 사용자 모달 상태
   const [showLikedUsersModal, setShowLikedUsersModal] = useState(false);
@@ -76,7 +79,7 @@ const MyFeedPage = () => {
       
       // 중복 제거하여 합치기
       const mergedLikedPosts = Array.from(new Set([...savedLikedPostsArray, ...backendLikedIds]));
-      setLikedPosts(mergedLikedPosts);
+      updateLikedPosts(mergedLikedPosts);
       
       // localStorage 업데이트
       localStorage.setItem('likedPosts', JSON.stringify(mergedLikedPosts));
@@ -101,6 +104,14 @@ const MyFeedPage = () => {
       loadMyFeeds();
     }
   }, [user, activeTab, sortBy]);
+
+  // 사용자 로그아웃 시 좋아요 상태 초기화
+  useEffect(() => {
+    if (!user) {
+      updateLikedPosts([]);
+      localStorage.removeItem('likedPosts');
+    }
+  }, [user]);
 
   // 통계 계산
   const feedCount = feedPosts.length;
@@ -138,18 +149,8 @@ const MyFeedPage = () => {
       const likeResult = await FeedService.likeFeed(postId);
       
       // 백엔드 응답에 따라 좋아요 상태 업데이트
-      let updatedLikedPosts: number[];
-      if (likeResult.liked) {
-        updatedLikedPosts = [...likedPosts, postId];
-        setLikedPosts(updatedLikedPosts);
-      } else {
-        updatedLikedPosts = likedPosts.filter(id => id !== postId);
-        setLikedPosts(updatedLikedPosts);
-      }
+      updateLikedPosts(isLiked(postId) ? likedPosts.filter(id => id !== postId) : [...likedPosts, postId]);
       
-      // localStorage 업데이트
-      localStorage.setItem('likedPosts', JSON.stringify(updatedLikedPosts));
-
       // 실제 피드 데이터의 좋아요 수와 isLiked 상태 업데이트
       setFeedPosts((prev) =>
         prev.map((post) =>
@@ -504,7 +505,7 @@ const MyFeedPage = () => {
         showComments={showComments}
         onToggleComments={() => setShowComments(!showComments)}
         onLike={() => selectedPost && handleLike(selectedPost.id)}
-        liked={selectedPost ? likedPosts.includes(selectedPost.id) : false}
+        liked={selectedPost ? isLiked(selectedPost.id) : false}
         onVote={() => setShowVoteModal(true)}
         voted={selectedPost ? votedPosts.includes(selectedPost.id) : false}
         onEdit={(() => {

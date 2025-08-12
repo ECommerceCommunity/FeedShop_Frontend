@@ -50,6 +50,55 @@ interface BackendFeedPost {
 
 export class FeedService {
   /**
+   * 백엔드 피드 데이터를 프론트엔드 타입으로 변환하는 공통 함수
+   */
+  private static transformBackendFeedToFrontend(backendFeed: BackendFeedPost): FeedPost {
+    return {
+      id: backendFeed.feedId,
+      title: backendFeed.title,
+      content: backendFeed.content,
+      instagramId: backendFeed.instagramId,
+      feedType: backendFeed.feedType,
+      likeCount: backendFeed.likeCount,
+      commentCount: backendFeed.commentCount,
+      participantVoteCount: backendFeed.participantVoteCount,
+      user: {
+        id: backendFeed.userId,
+        nickname: backendFeed.userNickname,
+        level: backendFeed.userLevel,
+        profileImg: backendFeed.userProfileImg,
+        gender: backendFeed.userGender,
+        height: backendFeed.userHeight,
+      },
+      orderItem: {
+        id: backendFeed.orderItemId,
+        productName: backendFeed.productName,
+        size: backendFeed.productSize,
+      },
+      event: backendFeed.eventId && backendFeed.eventTitle && backendFeed.eventStartDate && backendFeed.eventEndDate ? {
+        id: backendFeed.eventId,
+        title: backendFeed.eventTitle,
+        description: backendFeed.eventDescription,
+        startDate: backendFeed.eventStartDate,
+        endDate: backendFeed.eventEndDate,
+      } : undefined,
+      images: backendFeed.imageUrls?.map((url: string, index: number) => ({
+        id: index + 1,
+        imageUrl: url,
+        sortOrder: index,
+      })) || [],
+      hashtags: backendFeed.hashtags?.map((tag: string, index: number) => ({
+        id: index + 1,
+        tag: tag,
+      })) || [],
+      isLiked: backendFeed.isLiked,
+      isVoted: backendFeed.isVoted,
+      createdAt: backendFeed.createdAt,
+      updatedAt: backendFeed.updatedAt,
+    };
+  }
+
+  /**
    * 피드 목록을 조회합니다
    */
   static async getFeeds(params: FeedListParams = {}): Promise<FeedListResponse> {
@@ -61,49 +110,9 @@ export class FeedService {
       const apiResponse = response.data;
       
       // 백엔드 응답을 프론트엔드 타입에 맞게 변환
-      const transformedFeeds = apiResponse.data.content.map((backendFeed: BackendFeedPost) => ({
-        id: backendFeed.feedId,
-        title: backendFeed.title,
-        content: backendFeed.content,
-        instagramId: backendFeed.instagramId,
-        feedType: backendFeed.feedType,
-        likeCount: backendFeed.likeCount,
-        commentCount: backendFeed.commentCount,
-        participantVoteCount: backendFeed.participantVoteCount,
-        user: {
-          id: backendFeed.userId,
-          nickname: backendFeed.userNickname,
-          level: backendFeed.userLevel,
-          profileImg: backendFeed.userProfileImg,
-          gender: backendFeed.userGender,
-          height: backendFeed.userHeight,
-        },
-        orderItem: {
-          id: backendFeed.orderItemId,
-          productName: backendFeed.productName,
-          size: backendFeed.productSize,
-        },
-        event: backendFeed.eventId && backendFeed.eventTitle && backendFeed.eventStartDate && backendFeed.eventEndDate ? {
-          id: backendFeed.eventId,
-          title: backendFeed.eventTitle,
-          description: backendFeed.eventDescription,
-          startDate: backendFeed.eventStartDate,
-          endDate: backendFeed.eventEndDate,
-        } : undefined,
-        images: backendFeed.imageUrls?.map((url: string, index: number) => ({
-          id: index + 1,
-          imageUrl: url,
-          sortOrder: index,
-        })) || [],
-        hashtags: backendFeed.hashtags?.map((tag: string, index: number) => ({
-          id: index + 1,
-          tag: tag,
-        })) || [],
-        isLiked: backendFeed.isLiked,
-        isVoted: backendFeed.isVoted,
-        createdAt: backendFeed.createdAt,
-        updatedAt: backendFeed.updatedAt,
-      }));
+      const transformedFeeds = apiResponse.data.content.map((backendFeed: BackendFeedPost) => 
+        this.transformBackendFeedToFrontend(backendFeed)
+      );
       
       return {
         ...apiResponse.data,
@@ -135,49 +144,7 @@ export class FeedService {
         const backendData: BackendFeedPost = response.data.data;
         
         // 백엔드 응답을 프론트엔드 타입에 맞게 변환
-        const feedPost: FeedPost = {
-          id: backendData.feedId,
-          title: backendData.title,
-          content: backendData.content,
-          instagramId: backendData.instagramId,
-          feedType: backendData.feedType,
-          likeCount: backendData.likeCount,
-          commentCount: backendData.commentCount,
-          participantVoteCount: backendData.participantVoteCount,
-          user: {
-            id: backendData.userId,
-            nickname: backendData.userNickname,
-            level: backendData.userLevel,
-            profileImg: backendData.userProfileImg,
-            gender: backendData.userGender,
-            height: backendData.userHeight,
-          },
-          orderItem: {
-            id: backendData.orderItemId,
-            productName: backendData.productName,
-            size: backendData.productSize,
-          },
-          event: backendData.eventId && backendData.eventTitle && backendData.eventStartDate && backendData.eventEndDate ? {
-            id: backendData.eventId,
-            title: backendData.eventTitle,
-            description: backendData.eventDescription,
-            startDate: backendData.eventStartDate,
-            endDate: backendData.eventEndDate,
-          } : undefined,
-          images: backendData.images?.map((img: any) => ({
-            id: img.imageId || img.id,
-            imageUrl: img.imageUrl,
-            sortOrder: img.sortOrder || 0,
-          })) || [],
-          hashtags: backendData.hashtags?.map((tag: any) => ({
-            id: tag.tagId || tag.id,
-            tag: tag.tag,
-          })) || [],
-          isLiked: backendData.isLiked,
-          isVoted: backendData.isVoted,
-          createdAt: backendData.createdAt,
-          updatedAt: backendData.updatedAt,
-        };
+        const feedPost: FeedPost = this.transformBackendFeedToFrontend(backendData);
         
         console.log('변환된 피드 데이터:', feedPost);
         return feedPost;
@@ -301,16 +268,17 @@ export class FeedService {
   }
 
   /**
-   * 현재 로그인한 사용자가 좋아요한 피드 목록을 조회합니다
+   * 현재 로그인한 사용자가 좋아요한 피드 ID 목록을 가져옵니다
    */
   static async getMyLikedFeeds(): Promise<number[]> {
     try {
-      const response = await axiosInstance.get<ApiResponse<{ feedId: number }[]>>(
+      const response = await axiosInstance.get<ApiResponse<number[]>>(
         '/api/feeds/my-likes'
       );
       
       if (response.data.success) {
-        return response.data.data.map(item => item.feedId);
+        // 백엔드에서 이미 number[] 형태로 반환하므로 그대로 사용
+        return response.data.data;
       } else {
         return [];
       }
@@ -431,49 +399,9 @@ export class FeedService {
       const apiResponse = response.data;
 
       // 백엔드 응답을 프론트엔드 타입에 맞게 변환
-      const transformedFeeds = (apiResponse.data.content || []).map((backendFeed: BackendFeedPost) => ({
-        id: backendFeed.feedId,
-        title: backendFeed.title,
-        content: backendFeed.content,
-        instagramId: backendFeed.instagramId,
-        feedType: backendFeed.feedType,
-        likeCount: backendFeed.likeCount,
-        commentCount: backendFeed.commentCount,
-        participantVoteCount: backendFeed.participantVoteCount,
-        user: {
-          id: backendFeed.userId,
-          nickname: backendFeed.userNickname,
-          level: backendFeed.userLevel,
-          profileImg: backendFeed.userProfileImg,
-          gender: backendFeed.userGender,
-          height: backendFeed.userHeight,
-        },
-        orderItem: {
-          id: backendFeed.orderItemId,
-          productName: backendFeed.productName,
-          size: backendFeed.productSize,
-        },
-        event: backendFeed.eventId && backendFeed.eventTitle && backendFeed.eventStartDate && backendFeed.eventEndDate ? {
-          id: backendFeed.eventId,
-          title: backendFeed.eventTitle,
-          description: backendFeed.eventDescription,
-          startDate: backendFeed.eventStartDate,
-          endDate: backendFeed.eventEndDate,
-        } : undefined,
-        images: backendFeed.imageUrls?.map((url: string, index: number) => ({
-          id: index + 1,
-          imageUrl: url,
-          sortOrder: index,
-        })) || [],
-        hashtags: backendFeed.hashtags?.map((tag: string, index: number) => ({
-          id: index + 1,
-          tag: tag,
-        })) || [],
-        isLiked: backendFeed.isLiked,
-        isVoted: backendFeed.isVoted,
-        createdAt: backendFeed.createdAt,
-        updatedAt: backendFeed.updatedAt,
-      }));
+      const transformedFeeds = (apiResponse.data.content || []).map((backendFeed: BackendFeedPost) => 
+        this.transformBackendFeedToFrontend(backendFeed)
+      );
 
       return {
         ...apiResponse.data,

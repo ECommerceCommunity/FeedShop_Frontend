@@ -50,7 +50,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
           token: storedToken,
         });
 
-        // 저장된 사용자 정보가 있으면 좋아요한 피드 목록을 백엔드에서 가져오기
+        // 저장된 사용자 정보가 있으면 좋아요한 피드 목록을 백엔드에서 가져오기 (최적화)
         try {
           const likedFeedIds = await FeedService.getMyLikedFeeds();
           localStorage.setItem("likedPosts", JSON.stringify(likedFeedIds));
@@ -87,7 +87,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     localStorage.setItem("userType", userTypeLower);
     localStorage.setItem("token", token);
 
-    // 로그인 후 사용자가 좋아요한 피드 목록을 가져와서 localStorage에 저장
+    // 로그인 후 사용자가 좋아요한 피드 목록을 가져와서 localStorage에 저장 (최적화)
     try {
       const likedFeedIds = await FeedService.getMyLikedFeeds();
       localStorage.setItem("likedPosts", JSON.stringify(likedFeedIds));

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
 import { FeedPost, FeedComment, FeedVoteRequest } from "../../types/feed";
+import { useLikedPosts } from "../../hooks/useLikedPosts";
 
 const FeedDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +24,16 @@ const FeedDetailPage = () => {
   const [toastMessage, setToastMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // 좋아요 상태 관리
+  const { isLiked: isLikedGlobal, updateLikedPosts } = useLikedPosts();
+  
+  // 전역 좋아요 상태와 로컬 상태 동기화
+  useEffect(() => {
+    if (feed) {
+      setLiked(isLikedGlobal(feed.id));
+    }
+  }, [feed, isLikedGlobal]);
+
   useEffect(() => {
     const fetchFeed = async () => {
       if (!id) {
@@ -37,22 +48,19 @@ const FeedDetailPage = () => {
         const feedData = await FeedService.getFeed(parseInt(id));
         setFeed(feedData);
         
-        // localStorage에서 저장된 좋아요 상태 복원
-        const savedLikedPosts = localStorage.getItem('likedPosts');
-        const savedLikedPostsArray = savedLikedPosts ? JSON.parse(savedLikedPosts) : [];
-        
-        // 백엔드에서 받은 isLiked 상태와 localStorage의 상태를 병합
+        // 백엔드에서 받은 isLiked 상태를 우선으로 설정
         const isLikedFromBackend = feedData.isLiked || false;
-        const isLikedFromStorage = savedLikedPostsArray.includes(feedData.id);
+        setLiked(isLikedFromBackend);
         
-        // 둘 중 하나라도 true면 좋아요 상태로 설정
-        const finalLikedState = isLikedFromBackend || isLikedFromStorage;
-        setLiked(finalLikedState);
-        
-        // localStorage에 추가 (아직 없다면)
-        if (finalLikedState && !savedLikedPostsArray.includes(feedData.id)) {
-          const updatedLikedPosts = [...savedLikedPostsArray, feedData.id];
-          localStorage.setItem('likedPosts', JSON.stringify(updatedLikedPosts));
+        // 전역 상태와 동기화 (백엔드 상태 기준)
+        const currentLikedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
+        if (isLikedFromBackend && !currentLikedPosts.includes(feedData.id)) {
+          const updatedLikedPosts = [...currentLikedPosts, feedData.id];
+          updateLikedPosts(updatedLikedPosts);
+        } else if (!isLikedFromBackend && currentLikedPosts.includes(feedData.id)) {
+          // 백엔드에서 좋아요하지 않았다면 전역 상태에서도 제거
+          const updatedLikedPosts = currentLikedPosts.filter((id: number) => id !== feedData.id);
+          updateLikedPosts(updatedLikedPosts);
         }
         
         // 댓글도 API로 가져오기 (추후 구현)
@@ -79,6 +87,13 @@ const FeedDetailPage = () => {
     fetchFeed();
   }, [id, navigate]);
 
+  // 사용자 로그아웃 시 좋아요 상태 초기화
+  useEffect(() => {
+    if (!user) {
+      setLiked(false);
+    }
+  }, [user]);
+
   const handleLike = async () => {
     if (!feed) return;
     
@@ -87,18 +102,20 @@ const FeedDetailPage = () => {
       setLiked(likeResult.liked);
       setFeed(prev => prev ? { ...prev, likeCount: likeResult.likeCount } : null);
       
-      // localStorage 업데이트
-      const savedLikedPosts = localStorage.getItem('likedPosts');
-      const savedLikedPostsArray = savedLikedPosts ? JSON.parse(savedLikedPosts) : [];
-      
+      // 전역 상태 업데이트
+      const currentLikedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
       let updatedLikedPosts: number[];
+      
       if (likeResult.liked) {
-        updatedLikedPosts = [...savedLikedPostsArray, feed.id];
+        // 좋아요 추가
+        updatedLikedPosts = [...currentLikedPosts, feed.id];
       } else {
-        updatedLikedPosts = savedLikedPostsArray.filter((postId: number) => postId !== feed.id);
+        // 좋아요 취소
+        updatedLikedPosts = currentLikedPosts.filter((postId: number) => postId !== feed.id);
       }
       
-      localStorage.setItem('likedPosts', JSON.stringify(updatedLikedPosts));
+      // 전역 상태와 localStorage 동시 업데이트
+      updateLikedPosts(updatedLikedPosts);
       
       const message = likeResult.liked ? "좋아요가 추가되었습니다!" : "좋아요가 취소되었습니다!";
       setToastMessage(message);
