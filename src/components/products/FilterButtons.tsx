@@ -36,8 +36,8 @@ import {
  * FilterButtons 컴포넌트의 Props 인터페이스
  */
 interface FilterButtonsProps {
-  activeFilter: string; // 현재 선택된 필터 값 ("all", "category", "popular")
-  onFilterChange: (filter: string) => void; // 필터 변경 시 호출되는 콜백 함수
+  activeSort: string; // 현재 선택된 정렬 값 ("latest", "popular")
+  onSortChange: (sort: string) => void; // 정렬 변경 시 호출되는 콜백 함수
 }
 
 /**
@@ -49,33 +49,25 @@ interface FilterButtonsProps {
  * 부모 컴포넌트의 필터 변경 핸들러를 호출합니다.
  */
 export const FilterButtons: React.FC<FilterButtonsProps> = ({
-  activeFilter,
-  onFilterChange,
+  activeSort,
+  onSortChange,
 }) => {
   return (
     <FilterSection>
-      {/* "전체" 필터 버튼 - 필터링 없이 모든 상품 표시 */}
+      {/* "최신순" 정렬 버튼 - 최신 등록순으로 정렬 */}
       <FilterButton
-        $active={activeFilter === "all"} // "all" 필터 선택 시 시각적 활성 상태
-        onClick={() => onFilterChange("all")} // 전체 상품 표시를 위한 필터 변경 트리거
+        $active={activeSort === "latest"} // "latest" 정렬 선택 시 시각적 활성 상태
+        onClick={() => onSortChange("latest")} // 최신순 정렬을 위한 정렬 변경 트리거
       >
-        전체
+        최신순(기본)
       </FilterButton>
 
-      {/* "신상품" 필터 버튼 - 최신 상품들 표시 */}
+      {/* "인기순" 정렬 버튼 - 인기순으로 정렬 */}
       <FilterButton
-        $active={activeFilter === "category"} // "category" 필터 선택 시 시각적 활성 상태
-        onClick={() => onFilterChange("category")} // 신상품 표시를 위한 필터 변경 트리거
+        $active={activeSort === "popular"} // "popular" 정렬 선택 시 시각적 활성 상태
+        onClick={() => onSortChange("popular")} // 인기순 정렬을 위한 정렬 변경 트리거
       >
-        신상품
-      </FilterButton>
-
-      {/* "인기상품" 필터 버튼 - 인기 있는 상품들 표시 */}
-      <FilterButton
-        $active={activeFilter === "popular"} // "popular" 필터 선택 시 시각적 활성 상태
-        onClick={() => onFilterChange("popular")} // 인기상품 표시를 위한 필터 변경 트리거
-      >
-        인기상품
+        인기순
       </FilterButton>
     </FilterSection>
   );

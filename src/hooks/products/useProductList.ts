@@ -30,6 +30,7 @@ export const useProductList = (pageSize: number = 9) => {
   const getFilterParamsFromUrl = () => {
     const searchParams = new URLSearchParams(location.search);
     return {
+      q: searchParams.get("q") || undefined, // 검색 키워드 파라미터 추가
       categoryId: searchParams.get("categoryId")
         ? Number(searchParams.get("categoryId"))
         : undefined,
@@ -42,6 +43,7 @@ export const useProductList = (pageSize: number = 9) => {
       storeId: searchParams.get("storeId")
         ? Number(searchParams.get("storeId"))
         : undefined,
+      sort: searchParams.get("sort") || "latest", // 정렬 파라미터 추가
     };
   };
 
@@ -55,19 +57,23 @@ export const useProductList = (pageSize: number = 9) => {
       setError(null); // 이전 에러 초기화
 
       const filterParams = getFilterParamsFromUrl();
-      let response;
+      
+      // 모든 파라미터를 포함한 요청 파라미터 구성
+      const requestParams = {
+        ...filterParams,
+        page,
+        size: pageSize,
+      };
 
-      // 필터 파라미터가 있으면 필터링된 상품 조회, 없으면 일반 상품 조회
-      if (Object.values(filterParams).some((param) => param !== undefined)) {
-        const cleanedParams = Object.fromEntries(
-          Object.entries({ ...filterParams, page, size: pageSize }).filter(
-            ([_, value]) => value !== undefined
-          )
-        );
-        response = await ProductService.getFilteredProducts(cleanedParams);
-      } else {
-        response = await ProductService.getProducts(page, pageSize);
-      }
+      // undefined 값 제거하여 API 호출
+      const cleanedParams = Object.fromEntries(
+        Object.entries(requestParams).filter(
+          ([_, value]) => value !== undefined
+        )
+      );
+
+      console.log("API 호출 파라미터:", cleanedParams); // 디버깅용
+      const response = await ProductService.getFilteredProducts(cleanedParams);
 
       // 성공시 데이터 설정 (빈 배열로 기본값 설정)
       setProducts(response.content || []);
