@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 // 공통 컴포넌트
 import PreparationNotice from "../../components/PreparationNotice"; // 준비중 안내 컴포넌트
 // 상품 관련 커스텀 훅
 import { useProductList } from "../../hooks/products/useProductList"; // 상품 목록 관리 훅
-import { useProductFilter } from "../../hooks/products/useProductFilter"; // 필터링 상태 관리 훅
 // 상품 목록 UI 컴포넌트들
 import { FilterButtons } from "../../components/products/FilterButtons"; // 필터 버튼 그룹
 import { ProductGrid } from "../../components/products/ProductGrid"; // 상품 그리드 레이아웃
@@ -15,6 +15,8 @@ import { LoadingState } from "../../components/products/LoadingState"; // 로딩
 import { formatPrice } from "../../utils/products/listUtils"; // 가격 포맷팅 함수
 // 스타일 컴포넌트
 import { Container, Header, Title } from "./Lists.styles";
+// 카테고리 서비스
+import { CategoryService } from "../../api/categoryService";
 
 /**
  * 상품 목록 페이지 컴포넌트
@@ -30,6 +32,9 @@ import { Container, Header, Title } from "./Lists.styles";
  * - useProductFilter: 필터 상태 관리, 준비중 기능 처리
  */
 const Lists: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   // 상품 목록 데이터와 페이지네이션 관련 상태 및 함수들
   const {
     products,        // 현재 페이지의 상품 목록
@@ -42,25 +47,30 @@ const Lists: React.FC = () => {
     retry,           // 에러 발생 시 재시도 함수
   } = useProductList();
 
-  // 필터링 관련 상태 및 함수들
-  const { 
-    activeFilter,      // 현재 활성화된 필터 (예: 'sneakers', 'sandals')
-    showPreparation,   // 준비중 메시지 표시 여부
-    handleFilterChange // 필터 변경 핸들러
-  } = useProductFilter();
+  // 현재 정렬 방식 가져오기
+  const currentSort = useMemo(() => {
+    const searchParams = new URLSearchParams(location.search);
+    return searchParams.get("sort") || "latest";
+  }, [location.search]);
 
-  // 준비중인 기능에 대한 안내 표시 (필터링 기능 등)
-  if (showPreparation) {
-    return (
-      <Container>
-        <PreparationNotice
-          title="필터 기능 준비중입니다"
-          message="카테고리별 필터링 및 정렬 기능을 준비 중입니다."
-          subMessage="현재는 전체 상품만 조회 가능합니다."
-        />
-      </Container>
-    );
-  }
+  // 정렬 변경 핸들러 - React Router navigate 사용으로 자연스러운 전환
+  const handleSortChange = (sort: string) => {
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set("sort", sort);
+    navigate(`/products?${searchParams.toString()}`);
+  };
+
+  // 페이지 제목을 동적으로 생성
+  const pageTitle = useMemo(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const searchQuery = searchParams.get("q");
+    
+    if (searchQuery) {
+      return `"${searchQuery}" 검색 결과`;
+    }
+    return "전체 상품";
+  }, [location.search]);
+
 
   // 데이터 로딩 중일 때 로딩 스피너 표시
   if (loading) {
@@ -85,16 +95,13 @@ const Lists: React.FC = () => {
     <Container>
       {/* 페이지 제목 */}
       <Header>
-        <Title>전체 상품</Title>
+        <Title>{pageTitle}</Title>
       </Header>
 
-      {/* 필터 버튼들 (카테고리별 필터링) */}
+      {/* 정렬 버튼들 (최신순/인기순) */}
       <FilterButtons
-        activeFilter={activeFilter}
-        onFilterChange={(filter) =>
-          // 필터 변경 시 첫 페이지부터 새로 로드
-          handleFilterChange(filter, () => loadProducts(0))
-        }
+        activeSort={currentSort}
+        onSortChange={handleSortChange}
       />
 
       {/* 상품 목록 또는 빈 상태 표시 */}
