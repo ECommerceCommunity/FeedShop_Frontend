@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FeedList from "../../components/feed/FeedList";
 import FeedDetailModal from "../../components/feed/FeedDetailModal";
-import LikedUsersModal from "../../components/feed/LikedUsersModal"; // LikedUsersModal import 추가
+import LikedUsersModal from "../../components/feed/LikedUsersModal";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
 import { FeedVoteRequest, FeedPost } from "../../types/feed";
