@@ -507,24 +507,21 @@ const MyFeedPage = () => {
         liked={selectedPost ? likedPosts.includes(selectedPost.id) : false}
         onVote={() => setShowVoteModal(true)}
         voted={selectedPost ? votedPosts.includes(selectedPost.id) : false}
-        onEdit={
-          user?.nickname &&
-          selectedPost &&
-          selectedPost.user.nickname === user.nickname
-            ? () => {
-                handleCloseModal();
-                navigate(`/feed-edit?id=${selectedPost.id}`);
-              }
-            : undefined
-        }
+        onEdit={(() => {
+          const isOwner = !!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname);
+          if (!isOwner) return undefined;
+          return () => {
+            handleCloseModal();
+            navigate(`/feed-edit?id=${selectedPost?.id}`);
+          };
+        })()}
+        onDelete={(() => {
+          const isOwner = !!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname);
+          if (!isOwner || !selectedPost) return undefined;
+          return () => handleDelete(selectedPost.id);
+        })()}
         showVoteButton={selectedPost?.feedType === "EVENT"}
-        showEditButton={
-          !!(
-            user?.nickname &&
-            selectedPost &&
-            selectedPost.user.nickname === user.nickname
-          )
-        }
+        showEditButton={!!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname)}
         showVoteModal={showVoteModal}
         onVoteModalClose={() => setShowVoteModal(false)}
         onVoteConfirm={() => selectedPost && handleVote(selectedPost.id)}
