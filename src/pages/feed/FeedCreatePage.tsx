@@ -72,6 +72,10 @@ const FeedCreatePage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // 이벤트 목록에서 전달받은 이벤트 정보
+  const incomingEventId = location.state?.selectedEventId;
+  const fromEventList = location.state?.fromEventList;
+
   // 폼 상태
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -151,6 +155,25 @@ const FeedCreatePage: React.FC = () => {
 
     fetchAvailableEvents();
   }, []);
+
+  // 이벤트 목록에서 전달받은 이벤트 정보 처리
+  useEffect(() => {
+    if (incomingEventId && fromEventList) {
+      // 선택된 이벤트 ID를 상태에 설정
+      setSelectedEventId(incomingEventId.toString());
+      
+      // 이벤트 정보를 가져와서 제목과 내용에 자동 설정
+      const selectedEvent = availableEvents.find(event => event.eventId === incomingEventId);
+      if (selectedEvent) {
+        setTitle(`${selectedEvent.title} 참여 피드`);
+        setContent(`${selectedEvent.title} 이벤트에 참여합니다!`);
+        
+        // 이벤트 관련 해시태그 자동 추가
+        const eventHashtags = ["이벤트참여", selectedEvent.title.replace(/\s+/g, ""), "피드챌린지"];
+        setHashtags(eventHashtags);
+      }
+    }
+  }, [incomingEventId, fromEventList, availableEvents]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -435,8 +458,17 @@ const FeedCreatePage: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                
-                
+                {/* 이벤트 목록에서 넘어온 경우 안내 메시지 */}
+                {fromEventList && incomingEventId && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-center">
+                      <i className="fas fa-info-circle text-blue-500 mr-2"></i>
+                      <span className="text-blue-700 font-medium">
+                        이벤트 참여를 위해 자동으로 이벤트가 선택되었습니다.
+                      </span>
+                    </div>
+                  </div>
+                )} 
                 <select
                   value={selectedEventId || ""}
                   onChange={(e) => setSelectedEventId(e.target.value || null)}

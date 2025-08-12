@@ -1,9 +1,10 @@
 import React from 'react';
+import { FeedPost } from '../../types/feed';
 
 interface FeedDetailModalProps {
   open: boolean;
   onClose: () => void;
-  feed: any;
+  feed: FeedPost | null;
   comments: any[];
   showComments: boolean;
   onToggleComments: () => void;
@@ -12,8 +13,10 @@ interface FeedDetailModalProps {
   onVote?: () => void;
   voted?: boolean;
   onEdit?: () => void;
+  onDelete?: () => void;
   showVoteButton?: boolean;
   showEditButton?: boolean;
+  showDeleteButton?: boolean; // optional; defaults to showEditButton when undefined
   showVoteModal?: boolean;
   onVoteModalClose?: () => void;
   onVoteConfirm?: () => void;
@@ -36,8 +39,10 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
   onVote,
   voted,
   onEdit,
+  onDelete,
   showVoteButton,
   showEditButton,
+  showDeleteButton,
   showVoteModal,
   onVoteModalClose,
   onVoteConfirm,
@@ -48,6 +53,8 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
   onCommentSubmit,
 }) => {
   if (!open || !feed) return null;
+  const heroImage = feed.images && feed.images.length > 0 ? feed.images[0].imageUrl : 'https://via.placeholder.com/600x800?text=No+Image';
+  const canShowDelete = (showDeleteButton ?? showEditButton) && !!onDelete;
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
@@ -61,22 +68,26 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
         <div className="flex flex-col md:flex-row">
           {/* 이미지 */}
           <div className="md:w-1/2">
-            <img src={feed.images[0]} alt={feed.productName} className="w-full h-80 object-cover object-top rounded-l-lg" />
+            <img src={heroImage} alt={feed.title} className="w-full h-80 object-cover object-top rounded-l-lg" />
           </div>
           {/* 상세 정보 */}
           <div className="md:w-1/2 p-6">
             <div className="flex items-center mb-6">
-              <img src={feed.profileImg} alt={feed.username} className="w-12 h-12 rounded-full object-cover mr-3" />
+              <img src={feed.user?.profileImg || 'https://via.placeholder.com/60'} alt={feed.user?.nickname || '사용자'} className="w-12 h-12 rounded-full object-cover mr-3" />
               <div>
                 <div className="flex items-center">
-                  <h3 className="font-medium text-lg">{feed.username}</h3>
-                  <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
-                    <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
-                    <span>Lv.{feed.level}</span>
-                  </div>
+                  <h3 className="font-medium text-lg">{feed.user?.nickname || '사용자'}</h3>
+                  {feed.user?.level && (
+                    <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
+                      <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
+                      <span>Lv.{feed.user.level}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mt-1">
-                  <span>{feed.gender} · {feed.height}cm</span>
+                  {feed.user?.gender && feed.user?.height && (
+                    <span>{feed.user.gender} · {feed.user.height}cm</span>
+                  )}
                   {feed.instagramId && (
                     <a href={`https://instagram.com/${feed.instagramId}`} target="_blank" rel="noopener noreferrer" className="ml-3 text-[#87CEEB] hover:underline cursor-pointer">
                       <i className="fab fa-instagram mr-1"></i>
@@ -87,12 +98,14 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
               </div>
             </div>
             <div className="mb-6">
-              <h2 className="text-xl font-bold mb-2">{feed.productName}</h2>
-              <p className="text-gray-600">신발 사이즈: {feed.size}mm</p>
+              <h2 className="text-xl font-bold mb-2">{feed.title}</h2>
+              {feed.orderItem && (
+                <p className="text-gray-600">신발 사이즈: {feed.orderItem.size}mm</p>
+              )}
             </div>
             <div className="mb-6">
               <h3 className="font-medium mb-2">상품 설명</h3>
-              <p className="text-gray-700 leading-relaxed">{feed.description}</p>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{feed.content}</p>
             </div>
             <div className="flex items-center justify-between border-t border-gray-200 pt-4">
               <div className="flex space-x-6">
@@ -102,14 +115,14 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                   disabled={liked}
                 >
                   <i className={`fas fa-heart mr-2 ${liked ? 'text-red-500' : ''}`}></i>
-                  <span>{feed.likes + (liked ? 1 : 0)}</span>
+                  <span>{feed.likeCount || 0}</span>
                 </button>
                 <button
                   className="flex items-center text-gray-500 hover:text-[#87CEEB] cursor-pointer"
                   onClick={onToggleComments}
                 >
                   <i className="fas fa-comment mr-2"></i>
-                  <span>{feed.comments}</span>
+                  <span>{feed.commentCount || 0}</span>
                 </button>
               </div>
               <div className="flex items-center space-x-2">
@@ -120,7 +133,7 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                     disabled={voted}
                   >
                     <i className="fas fa-vote-yea mr-1"></i>
-                    {voted ? '투표완료' : '투표하기'} {feed.votes}
+                    {voted ? '투표완료' : '투표하기'} {feed.participantVoteCount || 0}
                   </button>
                 )}
                 {showEditButton && (
@@ -129,6 +142,14 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                     onClick={onEdit}
                   >
                     수정
+                  </button>
+                )}
+                {canShowDelete && (
+                  <button
+                    className="px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition text-sm font-medium"
+                    onClick={onDelete}
+                  >
+                    삭제
                   </button>
                 )}
               </div>
@@ -161,7 +182,7 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
               <div className="fixed bottom-4 right-4 bg-[#87CEEB] text-white px-6 py-3 rounded-lg shadow-lg z-[70] animate-fade-in-up">
                 <div className="flex items-center">
                   <i className="fas fa-check-circle mr-2"></i>
-                  <span>{toastMessage || '투표가 완료되었습니다!'}</span>
+                  <span>{toastMessage || '처리가 완료되었습니다.'}</span>
                 </div>
               </div>
             )}
