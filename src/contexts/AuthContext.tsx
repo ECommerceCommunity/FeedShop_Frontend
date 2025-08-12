@@ -78,8 +78,8 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     localStorage.removeItem("name"); // name도 제거
     localStorage.removeItem("token");
     localStorage.removeItem("userType");
-    // 로그아웃 시 좋아요 상태도 정리
-    localStorage.removeItem("likedPosts");
+    // 좋아요 상태는 로그아웃해도 유지 (사용자별로 구분하지 않음)
+    // localStorage.removeItem("likedPosts");
   };
 
   // 401 에러 시 자동 로그아웃 처리
