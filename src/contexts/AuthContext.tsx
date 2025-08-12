@@ -35,27 +35,42 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    const storedNickname = localStorage.getItem("nickname");
-    const storedName = localStorage.getItem("name");
-    const storedToken = localStorage.getItem("token");
-    const storedUserType = localStorage.getItem("userType");
-    // 모든 필수 정보가 있어야 로그인 상태로 인정
-    if (storedToken && storedNickname && storedUserType) {
-      setUser({
-        nickname: storedNickname,
-        name: storedName || storedNickname, // name이 없으면 nickname 사용
-        userType: storedUserType as "admin" | "seller" | "user",
-        token: storedToken,
-      });
-    } else {
-      // 필수 정보가 없으면 로그인 상태가 아니므로 localStorage 정리
-      localStorage.removeItem("nickname");
-      localStorage.removeItem("name");
-      localStorage.removeItem("token");
-      localStorage.removeItem("userType");
-      setUser(null);
-    }
-    setIsInitialized(true);
+    const initializeAuth = async () => {
+      const storedNickname = localStorage.getItem("nickname");
+      const storedName = localStorage.getItem("name");
+      const storedToken = localStorage.getItem("token");
+      const storedUserType = localStorage.getItem("userType");
+      
+      // 모든 필수 정보가 있어야 로그인 상태로 인정
+      if (storedToken && storedNickname && storedUserType) {
+        setUser({
+          nickname: storedNickname,
+          name: storedName || storedNickname, // name이 없으면 nickname 사용
+          userType: storedUserType as "admin" | "seller" | "user",
+          token: storedToken,
+        });
+
+        // 저장된 사용자 정보가 있으면 좋아요한 피드 목록을 백엔드에서 가져오기
+        try {
+          const likedFeedIds = await FeedService.getMyLikedFeeds();
+          localStorage.setItem("likedPosts", JSON.stringify(likedFeedIds));
+        } catch (error) {
+          console.error("초기화 시 좋아요한 피드 목록 조회 실패:", error);
+          // 에러가 발생해도 기존 localStorage 값 유지
+        }
+      } else {
+        // 필수 정보가 없으면 로그인 상태가 아니므로 localStorage 정리
+        localStorage.removeItem("nickname");
+        localStorage.removeItem("name");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userType");
+        localStorage.removeItem("likedPosts");
+        setUser(null);
+      }
+      setIsInitialized(true);
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (
