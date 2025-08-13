@@ -27,14 +27,14 @@ export class ProductService {
 
   // 필터링된 상품 목록 조회 (검색 포함)
   static async getFilteredProducts(params: {
-    q?: string;           // 검색 키워드
+    q?: string; // 검색 키워드
     categoryId?: number;
     minPrice?: number;
     maxPrice?: number;
     page?: number;
     size?: number;
     storeId?: number;
-    sort?: string;        // 정렬 방식
+    sort?: string; // 정렬 방식
   }): Promise<ProductListResponse> {
     try {
       // API 명세서에 따라 /api/products 엔드포인트 사용
