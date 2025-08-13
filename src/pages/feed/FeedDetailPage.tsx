@@ -23,19 +23,13 @@ const FeedDetailPage = () => {
   useEffect(() => {
     const fetchFeed = async () => {
       if (!id) {
-        console.log('ID가 없어서 피드 목록으로 이동');
         navigate('/feeds');
         return;
       }
 
       try {
-        setLoading(true);
-        console.log(`피드 ${id} 조회 시작 (타입: ${typeof id})`);
-        console.log(`parseInt(${id}) = ${parseInt(id)}`);
-        
         // 백엔드 API 연동
         const feedData = await FeedService.getFeed(parseInt(id));
-        console.log('피드 데이터:', feedData);
         setFeed(feedData);
         
         // 댓글도 API로 가져오기 (추후 구현)
@@ -140,19 +134,25 @@ const FeedDetailPage = () => {
 
   const handleDelete = async () => {
     if (!feed || !window.confirm("정말로 이 피드를 삭제하시겠습니까?")) return;
-    
     try {
-      // 백엔드 API 연동 (추후 구현)
-      // await FeedService.deleteFeed(feed.id);
-      
-      setToastMessage("삭제 기능은 추후 구현 예정입니다.");
+      await FeedService.deleteFeed(feed.id);
+      setToastMessage("피드가 삭제되었습니다.");
       setShowToast(true);
-      
+      setTimeout(() => navigate('/feeds'), 1200);
     } catch (error: any) {
       console.error('피드 삭제 실패:', error);
-      setToastMessage("피드 삭제에 실패했습니다.");
+      const status = error?.response?.status;
+      if (status === 401) {
+        setToastMessage("로그인이 필요합니다.");
+      } else if (status === 403) {
+        setToastMessage("본인 피드만 삭제할 수 있습니다.");
+      } else if (status === 404) {
+        setToastMessage("피드를 찾을 수 없거나 이미 삭제되었습니다.");
+      } else {
+        setToastMessage("피드 삭제에 실패했습니다.");
+      }
       setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
+      setTimeout(() => setShowToast(false), 2000);
     }
   };
 
