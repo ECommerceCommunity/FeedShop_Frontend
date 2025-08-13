@@ -87,10 +87,35 @@ export class FeedService {
         imageUrl: url,
         sortOrder: index,
       })) || [],
-      hashtags: backendFeed.hashtags?.map((tag: string, index: number) => ({
-        id: index + 1,
-        tag: tag,
-      })) || [],
+      hashtags: backendFeed.hashtags?.map((tag: any, index: number) => {
+        // 디버깅: 백엔드에서 오는 해시태그 데이터 구조 확인
+        console.log(`해시태그 ${index}:`, tag, typeof tag);
+        
+        // 백엔드에서 hashtags가 문자열 배열인지 객체 배열인지 확인
+        if (typeof tag === 'string') {
+          return {
+            id: index + 1,
+            tag: tag,
+          };
+        } else if (tag && typeof tag === 'object') {
+          // 백엔드에서 {tagId, tag} 형태로 오는 경우
+          const tagId = tag.tagId || tag.id || index + 1;
+          const tagText = tag.tag || String(tag);
+          
+          console.log(`해시태그 변환: ${tagId} -> ${tagText}`);
+          
+          return {
+            id: tagId,
+            tag: tagText,
+          };
+        } else {
+          // 예상치 못한 형태의 데이터는 건너뛰기
+          return {
+            id: index + 1,
+            tag: String(tag),
+          };
+        }
+      }) || [],
       isLiked: backendFeed.isLiked,
       isVoted: backendFeed.isVoted,
       createdAt: backendFeed.createdAt,

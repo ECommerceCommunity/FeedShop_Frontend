@@ -405,14 +405,39 @@ const FeedDetailPage = () => {
             {feed.hashtags && feed.hashtags.length > 0 && (
               <div className="mb-4">
                 <div className="flex flex-wrap gap-2">
-                  {feed.hashtags.map((hashtag) => (
-                    <span
-                      key={hashtag.id}
-                      className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
-                    >
-                      #{hashtag.tag}
-                    </span>
-                  ))}
+                  {feed.hashtags.map((hashtag, index) => {
+                    // 디버깅: 렌더링 시점의 해시태그 데이터 확인
+                    console.log(`렌더링 해시태그 ${index}:`, hashtag, typeof hashtag);
+                    
+                    // hashtag가 객체인지 문자열인지 확인하고 안전하게 처리
+                    let tagText: string;
+                    let key: string | number;
+                    
+                    if (typeof hashtag === 'string') {
+                      tagText = hashtag;
+                      key = index;
+                    } else if (hashtag && typeof hashtag === 'object' && 'tag' in hashtag) {
+                      tagText = hashtag.tag;
+                      key = hashtag.id || index;
+                    } else if (hashtag && typeof hashtag === 'object' && 'tagId' in hashtag) {
+                      // 백엔드에서 {tagId, tag} 형태로 오는 경우
+                      tagText = (hashtag as any).tag;
+                      key = (hashtag as any).tagId || index;
+                    } else {
+                      // 예상치 못한 형태의 데이터는 건너뛰기
+                      console.warn('예상치 못한 해시태그 형태:', hashtag);
+                      return null;
+                    }
+                    
+                    return (
+                      <span
+                        key={key}
+                        className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
+                      >
+                        #{tagText}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             )}
