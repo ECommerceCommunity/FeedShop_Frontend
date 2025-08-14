@@ -235,14 +235,24 @@ export class FeedService {
    */
   static async createFeed(feedData: CreateFeedRequest): Promise<FeedPost> {
     try {
+      console.log('FeedService.createFeed 호출:', feedData);
+      
       const response = await axiosInstance.post<ApiResponse<FeedPost>>(
         '/api/feeds',
         feedData
       );
+      
+      console.log('피드 생성 응답:', response.data);
       const apiResponse = response.data;
       return apiResponse.data;
     } catch (error: any) {
       console.error('피드 생성 실패:', error);
+      console.error('에러 상세:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      });
       throw error;
     }
   }

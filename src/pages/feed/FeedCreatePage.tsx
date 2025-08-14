@@ -270,6 +270,15 @@ const FeedCreatePage: React.FC = () => {
         instagramId: instagramLinked ? instagramId : undefined,
       };
 
+      // 디버깅: 이벤트 참여 정보 확인
+      console.log('피드 생성 데이터:', {
+        selectedEventId,
+        eventId: feedData.eventId,
+        title: feedData.title,
+        content: feedData.content,
+        hashtags: feedData.hashtags
+      });
+
       if (editId) {
         // 수정 모드
         await FeedService.updateFeed(parseInt(editId), feedData);
