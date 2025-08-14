@@ -138,17 +138,22 @@ const FeedCreatePage: React.FC = () => {
         const now = Date.now();
         const cacheExpiry = 5 * 60 * 1000; // 5분
         
-                 // 캐시가 유효한 경우 재사용
-         if (eventsCacheTime > 0 && (now - eventsCacheTime) < cacheExpiry && availableEvents.length > 0) {
-           return;
-         }
+        // 캐시가 유효한 경우 재사용
+        if (eventsCacheTime > 0 && (now - eventsCacheTime) < cacheExpiry && availableEvents.length > 0) {
+          return;
+        }
         
-                 setEventsLoading(true);
-         const events = await EventService.getFeedAvailableEvents();
-         setAvailableEvents(events);
+        setEventsLoading(true);
+        const response = await EventService.getFeedAvailableEvents();
+        
+        // 백엔드 응답 구조에 맞게 처리
+        const events = Array.isArray(response) ? response : [];
+        setAvailableEvents(events);
         setEventsCacheTime(now);
+        
+        console.log('이벤트 목록 조회 성공:', events);
       } catch (error: any) {
-                 console.error("이벤트 목록 조회 실패:", error);
+        console.error("이벤트 목록 조회 실패:", error);
         setAvailableEvents([]);
       } finally {
         setEventsLoading(false);
@@ -161,11 +166,12 @@ const FeedCreatePage: React.FC = () => {
   // 이벤트 목록에서 전달받은 이벤트 정보 처리
   useEffect(() => {
     if (incomingEventId && fromEventList) {
-      // 선택된 이벤트 ID를 상태에 설정
-      setSelectedEventId(incomingEventId.toString());
+      // 선택된 이벤트 ID를 상태에 설정 (숫자로 변환)
+      const eventIdNumber = parseInt(incomingEventId.toString());
+      setSelectedEventId(eventIdNumber.toString());
       
       // 이벤트 정보를 가져와서 제목과 내용에 자동 설정
-      const selectedEvent = availableEvents.find(event => event.eventId === incomingEventId);
+      const selectedEvent = availableEvents.find(event => event.eventId === eventIdNumber);
       if (selectedEvent) {
         setTitle(`${selectedEvent.title} 참여 피드`);
         setContent(`${selectedEvent.title} 이벤트에 참여합니다!`);
@@ -173,6 +179,10 @@ const FeedCreatePage: React.FC = () => {
         // 이벤트 관련 해시태그 자동 추가
         const eventHashtags = ["이벤트참여", selectedEvent.title.replace(/\s+/g, ""), "피드챌린지"];
         setHashtags(eventHashtags);
+        
+        console.log('이벤트 자동 선택 완료:', selectedEvent);
+      } else {
+        console.warn('선택된 이벤트를 찾을 수 없음:', eventIdNumber, availableEvents);
       }
     }
   }, [incomingEventId, fromEventList, availableEvents]);
