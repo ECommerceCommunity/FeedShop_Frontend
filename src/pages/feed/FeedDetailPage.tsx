@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
 import { FeedPost, FeedComment, FeedVoteRequest } from "../../types/feed";
+import { useLikedPosts } from "../../hooks/useLikedPosts";
 
 const FeedDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,11 +15,24 @@ const FeedDetailPage = () => {
   const [newComment, setNewComment] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [liked, setLiked] = useState(false);
+  const [likeUsersOpen, setLikeUsersOpen] = useState(false);
+  const [likeUsers, setLikeUsers] = useState<Array<{ userId?: number; nickname: string; profileImg?: string }>>([]);
+  const [likeUsersLoading, setLikeUsersLoading] = useState(false);
   const [voted, setVoted] = useState(false);
   const [showVoteModal, setShowVoteModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // 좋아요 상태 관리
+  const { isLiked: isLikedGlobal, updateLikedPosts, likedPosts } = useLikedPosts();
+  
+  // 전역 좋아요 상태와 로컬 상태 동기화
+  useEffect(() => {
+    if (feed) {
+      setLiked(isLikedGlobal(feed.id));
+    }
+  }, [feed, isLikedGlobal]);
 
   useEffect(() => {
     const fetchFeed = async () => {
@@ -28,9 +42,20 @@ const FeedDetailPage = () => {
       }
 
       try {
+        setLoading(true);
+        
         // 백엔드 API 연동
         const feedData = await FeedService.getFeed(parseInt(id));
         setFeed(feedData);
+        
+        // 백엔드에서 받은 isLiked 상태를 우선으로 설정
+        const isLikedFromBackend = feedData.isLiked || false;
+        setLiked(isLikedFromBackend);
+        
+        // 백엔드 상태를 기준으로 전역 상태 동기화
+        if (isLikedFromBackend) {
+          updateLikedPosts([feedData.id]);
+        }
         
         // 댓글도 API로 가져오기 (추후 구현)
         // const commentsData = await FeedService.getComments(parseInt(id));
@@ -56,24 +81,70 @@ const FeedDetailPage = () => {
     fetchFeed();
   }, [id, navigate]);
 
+  // 사용자 로그아웃 시 좋아요 상태 초기화
+  useEffect(() => {
+    if (!user) {
+      setLiked(false);
+    }
+  }, [user]);
+
   const handleLike = async () => {
     if (!feed) return;
     
     try {
-      // 백엔드 API 연동 (추후 구현)
-      // const likeResult = await FeedService.likeFeed(feed.id);
-      // setLiked(likeResult.liked);
-      // setFeed(prev => prev ? { ...prev, likeCount: likeResult.likeCount } : null);
+      const likeResult = await FeedService.likeFeed(feed.id);
+      setLiked(likeResult.liked);
+      setFeed(prev => prev ? { ...prev, likeCount: likeResult.likeCount } : null);
       
-      setToastMessage("좋아요 기능은 추후 구현 예정입니다.");
+      // 백엔드 응답에 따라 전역 상태 업데이트
+      if (likeResult.liked) {
+        updateLikedPosts([...likedPosts, feed.id]);
+      } else {
+        updateLikedPosts(likedPosts.filter((postId: number) => postId !== feed.id));
+      }
+      
+      const message = likeResult.liked ? "좋아요가 추가되었습니다!" : "좋아요가 취소되었습니다!";
+      setToastMessage(message);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
       
     } catch (error: any) {
       console.error('좋아요 실패:', error);
-      setToastMessage("좋아요 처리에 실패했습니다.");
+      
+      if (error.response?.status === 401) {
+        setToastMessage("로그인이 필요합니다.");
+        setTimeout(() => navigate('/login'), 2000);
+      } else if (error.response?.status === 404) {
+        setToastMessage("피드를 찾을 수 없습니다.");
+      } else {
+        setToastMessage(error.response?.data?.message || "좋아요 처리에 실패했습니다.");
+      }
+      
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
+    }
+  };
+
+  const openLikeUsers = async () => {
+    if (!feed) return;
+    try {
+      setLikeUsersLoading(true);
+      const list = await FeedService.getFeedLikes(feed.id);
+      setLikeUsers(list);
+      setLikeUsersOpen(true);
+    } catch (error: any) {
+      console.error('좋아요 사용자 목록 조회 실패:', error);
+      
+      if (error.response?.status === 404) {
+        setToastMessage('피드를 찾을 수 없습니다.');
+      } else {
+        setToastMessage('좋아요한 사용자 목록을 불러오지 못했습니다.');
+      }
+      
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    } finally {
+      setLikeUsersLoading(false);
     }
   };
 
@@ -320,14 +391,39 @@ const FeedDetailPage = () => {
             {feed.hashtags && feed.hashtags.length > 0 && (
               <div className="mb-4">
                 <div className="flex flex-wrap gap-2">
-                  {feed.hashtags.map((hashtag) => (
-                    <span
-                      key={hashtag.id}
-                      className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
-                    >
-                      #{hashtag.tag}
-                    </span>
-                  ))}
+                  {feed.hashtags.map((hashtag, index) => {
+                    // 디버깅: 렌더링 시점의 해시태그 데이터 확인
+                    console.log(`렌더링 해시태그 ${index}:`, hashtag, typeof hashtag);
+                    
+                    // hashtag가 객체인지 문자열인지 확인하고 안전하게 처리
+                    let tagText: string;
+                    let key: string | number;
+                    
+                    if (typeof hashtag === 'string') {
+                      tagText = hashtag;
+                      key = index;
+                    } else if (hashtag && typeof hashtag === 'object' && 'tag' in hashtag) {
+                      tagText = hashtag.tag;
+                      key = hashtag.id || index;
+                    } else if (hashtag && typeof hashtag === 'object' && 'tagId' in hashtag) {
+                      // 백엔드에서 {tagId, tag} 형태로 오는 경우
+                      tagText = (hashtag as any).tag;
+                      key = (hashtag as any).tagId || index;
+                    } else {
+                      // 예상치 못한 형태의 데이터는 건너뛰기
+                      console.warn('예상치 못한 해시태그 형태:', hashtag);
+                      return null;
+                    }
+                    
+                    return (
+                      <span
+                        key={key}
+                        className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
+                      >
+                        #{tagText}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -348,7 +444,15 @@ const FeedDetailPage = () => {
                   }`}
                 >
                   <i className={`fas fa-heart mr-2 ${liked ? 'text-red-500' : ''}`}></i>
-                  <span>{feed.likeCount || 0}</span>
+                  <span 
+                    className="underline decoration-dotted cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openLikeUsers();
+                    }}
+                  >
+                    {feed.likeCount || 0}
+                  </span>
                 </button>
                 
                 <div className="flex items-center text-gray-500">
@@ -455,6 +559,38 @@ const FeedDetailPage = () => {
           <div className="flex items-center">
             <i className="fas fa-check-circle mr-1"></i>
             <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {/* 좋아요 사용자 목록 모달 */}
+      {likeUsersOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg w-full max-w-sm mx-4 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-bold">좋아요한 사용자</h3>
+              <button className="text-gray-500" onClick={() => setLikeUsersOpen(false)}>
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            {likeUsersLoading ? (
+              <div className="py-6 text-center text-gray-500">불러오는 중...</div>
+            ) : likeUsers.length === 0 ? (
+              <div className="py-6 text-center text-gray-500">아직 좋아요한 사용자가 없습니다.</div>
+            ) : (
+              <ul className="max-h-72 overflow-y-auto divide-y">
+                {likeUsers.map((u, idx) => (
+                  <li key={idx} className="flex items-center gap-3 py-2">
+                    <img
+                      src={u.profileImg || 'https://via.placeholder.com/40'}
+                      alt={u.nickname}
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                    <span className="text-sm text-gray-800">{u.nickname}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       )}
