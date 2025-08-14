@@ -2,6 +2,7 @@ import { ApiResponse } from "types/api";
 import axiosInstance from "./axios";
 import {
   CreateOrderRequest,
+  DirectOrderRequest,
   OrderDetail,
   OrderListResponse,
   OrderResponse,
@@ -9,13 +10,28 @@ import {
 } from "types/order";
 
 export class OrderService {
-  // 주문을 생성한다
+  // 주문을 생성한다 (장바구니 기반)
   static async createOrder(
     orderData: CreateOrderRequest
   ): Promise<OrderResponse> {
     try {
       const response = await axiosInstance.post<ApiResponse<OrderResponse>>(
         "/api/users/orders",
+        orderData
+      );
+      return response.data.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  // 바로 주문을 생성한다 (장바구니를 거치지 않음)
+  static async createDirectOrder(
+    orderData: DirectOrderRequest
+  ): Promise<OrderResponse> {
+    try {
+      const response = await axiosInstance.post<ApiResponse<OrderResponse>>(
+        "/api/users/direct-orders",
         orderData
       );
       return response.data.data;
