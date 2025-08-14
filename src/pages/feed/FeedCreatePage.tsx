@@ -113,7 +113,9 @@ const FeedCreatePage: React.FC = () => {
     const fetchPurchasedProducts = async () => {
       try {
         setProductsLoading(true);
+        console.log('구매 상품 목록 조회 시작');
         const response = await OrderService.getPurchasedProducts();
+        console.log('구매 상품 목록 조회 성공:', response);
         setPurchasedProducts(response);
       } catch (error: any) {
         console.error("구매 상품 목록 조회 실패:", error);
@@ -235,6 +237,15 @@ const FeedCreatePage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log('피드 생성 시도:', {
+      title: title.trim(),
+      content: content.trim(),
+      selectedProductId,
+      selectedEventId,
+      purchasedProducts: purchasedProducts.length,
+      availableEvents: availableEvents.length
+    });
+
     if (!title.trim()) {
       showToastMessage("제목을 입력해주세요.", "error");
       return;
@@ -247,6 +258,7 @@ const FeedCreatePage: React.FC = () => {
 
     // 🔧 백엔드 연동: orderItemId는 필수 필드
     if (!selectedProductId) {
+      console.error('구매 상품이 선택되지 않음');
       showToastMessage("구매 상품을 선택해주세요.", "error");
       return;
     }
