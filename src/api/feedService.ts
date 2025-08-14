@@ -125,12 +125,24 @@ export class FeedService {
 
   /**
    * 피드 목록을 조회합니다
+   * feedType이 있으면 타입별 조회 API를 사용하고, 없으면 전체 조회 API를 사용합니다
    */
   static async getFeeds(params: FeedListParams = {}): Promise<FeedListResponse> {
     try {
+      const { feedType, ...otherParams } = params;
+      
+      let url: string;
+      if (feedType) {
+        // 타입별 조회 API 사용
+        url = `/api/feeds/type/${feedType}`;
+      } else {
+        // 전체 조회 API 사용
+        url = '/api/feeds';
+      }
+      
       const response = await axiosInstance.get<ApiResponse<any>>(
-        '/api/feeds',
-        { params }
+        url,
+        { params: otherParams }
       );
       const apiResponse = response.data;
       
@@ -145,6 +157,32 @@ export class FeedService {
       };
     } catch (error: any) {
       console.error('피드 목록 조회 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 특정 타입의 피드 목록을 조회합니다
+   */
+  static async getFeedsByType(feedType: string, params: Omit<FeedListParams, 'feedType'> = {}): Promise<FeedListResponse> {
+    try {
+      const response = await axiosInstance.get<ApiResponse<any>>(
+        `/api/feeds/type/${feedType}`,
+        { params }
+      );
+      const apiResponse = response.data;
+      
+      // 백엔드 응답을 프론트엔드 타입에 맞게 변환
+      const transformedFeeds = apiResponse.data.content.map((backendFeed: BackendFeedPost) => 
+        this.transformBackendFeedToFrontend(backendFeed)
+      );
+      
+      return {
+        ...apiResponse.data,
+        content: transformedFeeds,
+      };
+    } catch (error: any) {
+      console.error('피드 타입별 목록 조회 실패:', error);
       throw error;
     }
   }
@@ -414,12 +452,24 @@ export class FeedService {
 
   /**
    * 현재 로그인한 사용자의 피드 목록을 조회합니다
+   * feedType이 있으면 타입별 조회 API를 사용하고, 없으면 전체 조회 API를 사용합니다
    */
   static async getMyFeeds(params: FeedListParams = {}): Promise<FeedListResponse> {
     try {
+      const { feedType, ...otherParams } = params;
+      
+      let url: string;
+      if (feedType) {
+        // 타입별 조회 API 사용
+        url = `/api/feeds/my/type/${feedType}`;
+      } else {
+        // 전체 조회 API 사용
+        url = '/api/feeds/my';
+      }
+      
       const response = await axiosInstance.get<ApiResponse<any>>(
-        '/api/feeds/my',
-        { params }
+        url,
+        { params: otherParams }
       );
       const apiResponse = response.data;
 
@@ -435,6 +485,66 @@ export class FeedService {
     } catch (error: any) {
       console.error('내 피드 목록 조회 실패:', error);
       throw error;
+    }
+  }
+
+  /**
+   * 현재 로그인한 사용자의 특정 타입 피드 목록을 조회합니다
+   */
+  static async getMyFeedsByType(feedType: string, params: Omit<FeedListParams, 'feedType'> = {}): Promise<FeedListResponse> {
+    try {
+      const response = await axiosInstance.get<ApiResponse<any>>(
+        `/api/feeds/my/type/${feedType}`,
+        { params }
+      );
+      const apiResponse = response.data;
+
+      // 백엔드 응답을 프론트엔드 타입에 맞게 변환
+      const transformedFeeds = (apiResponse.data.content || []).map((backendFeed: BackendFeedPost) => 
+        this.transformBackendFeedToFrontend(backendFeed)
+      );
+
+      return {
+        ...apiResponse.data,
+        content: transformedFeeds,
+      };
+    } catch (error: any) {
+      console.error('내 피드 타입별 목록 조회 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 현재 로그인한 사용자의 피드 개수를 조회합니다
+   */
+  static async getMyFeedsCount(): Promise<{ totalCount: number; dailyCount: number; eventCount: number; rankingCount: number }> {
+    try {
+      const response = await axiosInstance.get<ApiResponse<{
+        totalCount: number;
+        dailyCount: number;
+        eventCount: number;
+        rankingCount: number;
+      }>>('/api/feeds/my/count');
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        return {
+          totalCount: 0,
+          dailyCount: 0,
+          eventCount: 0,
+          rankingCount: 0
+        };
+      }
+    } catch (error: any) {
+      console.error('내 피드 개수 조회 실패:', error);
+      // 에러가 발생해도 기본값 반환
+      return {
+        totalCount: 0,
+        dailyCount: 0,
+        eventCount: 0,
+        rankingCount: 0
+      };
     }
   }
 
