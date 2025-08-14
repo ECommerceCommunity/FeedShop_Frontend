@@ -50,60 +50,106 @@ interface BackendFeedPost {
 
 export class FeedService {
   /**
+   * 백엔드 피드 데이터를 프론트엔드 타입으로 변환하는 공통 함수
+   */
+  private static transformBackendFeedToFrontend(backendFeed: BackendFeedPost): FeedPost {
+    return {
+      id: backendFeed.feedId,
+      title: backendFeed.title,
+      content: backendFeed.content,
+      instagramId: backendFeed.instagramId,
+      feedType: backendFeed.feedType,
+      likeCount: backendFeed.likeCount,
+      commentCount: backendFeed.commentCount,
+      participantVoteCount: backendFeed.participantVoteCount,
+      user: {
+        id: backendFeed.userId,
+        nickname: backendFeed.userNickname,
+        level: backendFeed.userLevel,
+        profileImg: backendFeed.userProfileImg,
+        gender: backendFeed.userGender,
+        height: backendFeed.userHeight,
+      },
+      orderItem: {
+        id: backendFeed.orderItemId,
+        productName: backendFeed.productName,
+        size: backendFeed.productSize,
+      },
+      event: backendFeed.eventId && backendFeed.eventTitle && backendFeed.eventStartDate && backendFeed.eventEndDate ? {
+        id: backendFeed.eventId,
+        title: backendFeed.eventTitle,
+        description: backendFeed.eventDescription,
+        startDate: backendFeed.eventStartDate,
+        endDate: backendFeed.eventEndDate,
+      } : undefined,
+      images: backendFeed.imageUrls?.map((url: string, index: number) => ({
+        id: index + 1,
+        imageUrl: url,
+        sortOrder: index,
+      })) || [],
+      hashtags: backendFeed.hashtags?.map((tag: any, index: number) => {
+        // 디버깅: 백엔드에서 오는 해시태그 데이터 구조 확인
+        console.log(`해시태그 ${index}:`, tag, typeof tag);
+        
+        // 백엔드에서 hashtags가 문자열 배열인지 객체 배열인지 확인
+        if (typeof tag === 'string') {
+          return {
+            id: index + 1,
+            tag: tag,
+          };
+        } else if (tag && typeof tag === 'object') {
+          // 백엔드에서 {tagId, tag} 형태로 오는 경우
+          const tagId = tag.tagId || tag.id || index + 1;
+          const tagText = tag.tag || String(tag);
+          
+          console.log(`해시태그 변환: ${tagId} -> ${tagText}`);
+          
+          return {
+            id: tagId,
+            tag: tagText,
+          };
+        } else {
+          // 예상치 못한 형태의 데이터는 건너뛰기
+          return {
+            id: index + 1,
+            tag: String(tag),
+          };
+        }
+      }) || [],
+      isLiked: backendFeed.isLiked,
+      isVoted: backendFeed.isVoted,
+      createdAt: backendFeed.createdAt,
+      updatedAt: backendFeed.updatedAt,
+    };
+  }
+
+  /**
    * 피드 목록을 조회합니다
+   * feedType이 있으면 타입별 조회 API를 사용하고, 없으면 전체 조회 API를 사용합니다
    */
   static async getFeeds(params: FeedListParams = {}): Promise<FeedListResponse> {
     try {
+      const { feedType, ...otherParams } = params;
+      
+      let url: string;
+      if (feedType) {
+        // 타입별 조회 API 사용
+        url = `/api/feeds/type/${feedType}`;
+      } else {
+        // 전체 조회 API 사용
+        url = '/api/feeds';
+      }
+      
       const response = await axiosInstance.get<ApiResponse<any>>(
-        '/api/feeds',
-        { params }
+        url,
+        { params: otherParams }
       );
       const apiResponse = response.data;
       
       // 백엔드 응답을 프론트엔드 타입에 맞게 변환
-      const transformedFeeds = apiResponse.data.content.map((backendFeed: BackendFeedPost) => ({
-        id: backendFeed.feedId,
-        title: backendFeed.title,
-        content: backendFeed.content,
-        instagramId: backendFeed.instagramId,
-        feedType: backendFeed.feedType,
-        likeCount: backendFeed.likeCount,
-        commentCount: backendFeed.commentCount,
-        participantVoteCount: backendFeed.participantVoteCount,
-        user: {
-          id: backendFeed.userId,
-          nickname: backendFeed.userNickname,
-          level: backendFeed.userLevel,
-          profileImg: backendFeed.userProfileImg,
-          gender: backendFeed.userGender,
-          height: backendFeed.userHeight,
-        },
-        orderItem: {
-          id: backendFeed.orderItemId,
-          productName: backendFeed.productName,
-          size: backendFeed.productSize,
-        },
-        event: backendFeed.eventId && backendFeed.eventTitle && backendFeed.eventStartDate && backendFeed.eventEndDate ? {
-          id: backendFeed.eventId,
-          title: backendFeed.eventTitle,
-          description: backendFeed.eventDescription,
-          startDate: backendFeed.eventStartDate,
-          endDate: backendFeed.eventEndDate,
-        } : undefined,
-        images: backendFeed.imageUrls?.map((url: string, index: number) => ({
-          id: index + 1,
-          imageUrl: url,
-          sortOrder: index,
-        })) || [],
-        hashtags: backendFeed.hashtags?.map((tag: string, index: number) => ({
-          id: index + 1,
-          tag: tag,
-        })) || [],
-        isLiked: backendFeed.isLiked,
-        isVoted: backendFeed.isVoted,
-        createdAt: backendFeed.createdAt,
-        updatedAt: backendFeed.updatedAt,
-      }));
+      const transformedFeeds = apiResponse.data.content.map((backendFeed: BackendFeedPost) => 
+        this.transformBackendFeedToFrontend(backendFeed)
+      );
       
       return {
         ...apiResponse.data,
@@ -111,6 +157,32 @@ export class FeedService {
       };
     } catch (error: any) {
       console.error('피드 목록 조회 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 특정 타입의 피드 목록을 조회합니다
+   */
+  static async getFeedsByType(feedType: string, params: Omit<FeedListParams, 'feedType'> = {}): Promise<FeedListResponse> {
+    try {
+      const response = await axiosInstance.get<ApiResponse<any>>(
+        `/api/feeds/type/${feedType}`,
+        { params }
+      );
+      const apiResponse = response.data;
+      
+      // 백엔드 응답을 프론트엔드 타입에 맞게 변환
+      const transformedFeeds = apiResponse.data.content.map((backendFeed: BackendFeedPost) => 
+        this.transformBackendFeedToFrontend(backendFeed)
+      );
+      
+      return {
+        ...apiResponse.data,
+        content: transformedFeeds,
+      };
+    } catch (error: any) {
+      console.error('피드 타입별 목록 조회 실패:', error);
       throw error;
     }
   }
@@ -135,49 +207,7 @@ export class FeedService {
         const backendData: BackendFeedPost = response.data.data;
         
         // 백엔드 응답을 프론트엔드 타입에 맞게 변환
-        const feedPost: FeedPost = {
-          id: backendData.feedId,
-          title: backendData.title,
-          content: backendData.content,
-          instagramId: backendData.instagramId,
-          feedType: backendData.feedType,
-          likeCount: backendData.likeCount,
-          commentCount: backendData.commentCount,
-          participantVoteCount: backendData.participantVoteCount,
-          user: {
-            id: backendData.userId,
-            nickname: backendData.userNickname,
-            level: backendData.userLevel,
-            profileImg: backendData.userProfileImg,
-            gender: backendData.userGender,
-            height: backendData.userHeight,
-          },
-          orderItem: {
-            id: backendData.orderItemId,
-            productName: backendData.productName,
-            size: backendData.productSize,
-          },
-          event: backendData.eventId && backendData.eventTitle && backendData.eventStartDate && backendData.eventEndDate ? {
-            id: backendData.eventId,
-            title: backendData.eventTitle,
-            description: backendData.eventDescription,
-            startDate: backendData.eventStartDate,
-            endDate: backendData.eventEndDate,
-          } : undefined,
-          images: backendData.images?.map((img: any) => ({
-            id: img.imageId || img.id,
-            imageUrl: img.imageUrl,
-            sortOrder: img.sortOrder || 0,
-          })) || [],
-          hashtags: backendData.hashtags?.map((tag: any) => ({
-            id: tag.tagId || tag.id,
-            tag: tag.tag,
-          })) || [],
-          isLiked: backendData.isLiked,
-          isVoted: backendData.isVoted,
-          createdAt: backendData.createdAt,
-          updatedAt: backendData.updatedAt,
-        };
+        const feedPost: FeedPost = this.transformBackendFeedToFrontend(backendData);
         
         console.log('변환된 피드 데이터:', feedPost);
         return feedPost;
@@ -205,14 +235,24 @@ export class FeedService {
    */
   static async createFeed(feedData: CreateFeedRequest): Promise<FeedPost> {
     try {
+      console.log('FeedService.createFeed 호출:', feedData);
+      
       const response = await axiosInstance.post<ApiResponse<FeedPost>>(
         '/api/feeds',
         feedData
       );
+      
+      console.log('피드 생성 응답:', response.data);
       const apiResponse = response.data;
       return apiResponse.data;
     } catch (error: any) {
       console.error('피드 생성 실패:', error);
+      console.error('에러 상세:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      });
       throw error;
     }
   }
@@ -252,13 +292,73 @@ export class FeedService {
   static async likeFeed(feedId: number): Promise<LikeResponse> {
     try {
       const response = await axiosInstance.post<ApiResponse<LikeResponse>>(
-        `/api/feeds/${feedId}/like`
+        `/api/feeds/${feedId}/likes/toggle`
       );
       const apiResponse = response.data;
       return apiResponse.data;
     } catch (error: any) {
       console.error('좋아요 실패:', error);
       throw error;
+    }
+  }
+
+  /**
+   * 피드를 좋아요한 사용자 목록을 조회합니다
+   */
+  static async getFeedLikes(
+    feedId: number
+  ): Promise<Array<{ userId?: number; nickname: string; profileImg?: string }>> {
+    try {
+      const url = `/api/feeds/${feedId}/likes`;
+      const response = await axiosInstance.get<ApiResponse<any>>(url);
+
+      const raw = response.data?.data;
+
+      // 다양한 백엔드 응답 형태를 방어적으로 처리
+      const items = Array.isArray(raw)
+        ? raw
+        : Array.isArray(raw?.content)
+        ? raw.content
+        : [];
+
+      return items.map((item: any) => {
+        // 가능한 필드 케이스 대응
+        const nickname = item?.nickname || item?.userNickname || item?.name || String(item);
+        return {
+          userId: item?.userId || item?.id,
+          nickname,
+          profileImg: item?.profileImg || item?.userProfileImg,
+        };
+      });
+    } catch (error: any) {
+      console.error('좋아요 사용자 목록 조회 실패:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * 현재 로그인한 사용자가 좋아요한 피드 ID 목록을 가져옵니다
+   */
+  static async getMyLikedFeeds(): Promise<number[]> {
+    try {
+      const response = await axiosInstance.get<ApiResponse<number[]>>(
+        '/api/feeds/my-likes'
+      );
+      
+      if (response.data.success) {
+        // 백엔드에서 이미 number[] 형태로 반환하므로 그대로 사용
+        return response.data.data;
+      } else {
+        return [];
+      }
+    } catch (error: any) {
+      console.error('내 좋아요 피드 목록 조회 실패:', error);
+      // 에러가 발생해도 빈 배열 반환 (로그인하지 않은 경우 등)
+      return [];
     }
   }
 
@@ -362,59 +462,31 @@ export class FeedService {
 
   /**
    * 현재 로그인한 사용자의 피드 목록을 조회합니다
+   * feedType이 있으면 타입별 조회 API를 사용하고, 없으면 전체 조회 API를 사용합니다
    */
   static async getMyFeeds(params: FeedListParams = {}): Promise<FeedListResponse> {
     try {
+      const { feedType, ...otherParams } = params;
+      
+      let url: string;
+      if (feedType) {
+        // 타입별 조회 API 사용
+        url = `/api/feeds/my/type/${feedType}`;
+      } else {
+        // 전체 조회 API 사용
+        url = '/api/feeds/my';
+      }
+      
       const response = await axiosInstance.get<ApiResponse<any>>(
-        '/api/feeds/my',
-        { params }
+        url,
+        { params: otherParams }
       );
       const apiResponse = response.data;
 
       // 백엔드 응답을 프론트엔드 타입에 맞게 변환
-      const transformedFeeds = (apiResponse.data.content || []).map((backendFeed: BackendFeedPost) => ({
-        id: backendFeed.feedId,
-        title: backendFeed.title,
-        content: backendFeed.content,
-        instagramId: backendFeed.instagramId,
-        feedType: backendFeed.feedType,
-        likeCount: backendFeed.likeCount,
-        commentCount: backendFeed.commentCount,
-        participantVoteCount: backendFeed.participantVoteCount,
-        user: {
-          id: backendFeed.userId,
-          nickname: backendFeed.userNickname,
-          level: backendFeed.userLevel,
-          profileImg: backendFeed.userProfileImg,
-          gender: backendFeed.userGender,
-          height: backendFeed.userHeight,
-        },
-        orderItem: {
-          id: backendFeed.orderItemId,
-          productName: backendFeed.productName,
-          size: backendFeed.productSize,
-        },
-        event: backendFeed.eventId && backendFeed.eventTitle && backendFeed.eventStartDate && backendFeed.eventEndDate ? {
-          id: backendFeed.eventId,
-          title: backendFeed.eventTitle,
-          description: backendFeed.eventDescription,
-          startDate: backendFeed.eventStartDate,
-          endDate: backendFeed.eventEndDate,
-        } : undefined,
-        images: backendFeed.imageUrls?.map((url: string, index: number) => ({
-          id: index + 1,
-          imageUrl: url,
-          sortOrder: index,
-        })) || [],
-        hashtags: backendFeed.hashtags?.map((tag: string, index: number) => ({
-          id: index + 1,
-          tag: tag,
-        })) || [],
-        isLiked: backendFeed.isLiked,
-        isVoted: backendFeed.isVoted,
-        createdAt: backendFeed.createdAt,
-        updatedAt: backendFeed.updatedAt,
-      }));
+      const transformedFeeds = (apiResponse.data.content || []).map((backendFeed: BackendFeedPost) => 
+        this.transformBackendFeedToFrontend(backendFeed)
+      );
 
       return {
         ...apiResponse.data,
@@ -423,6 +495,66 @@ export class FeedService {
     } catch (error: any) {
       console.error('내 피드 목록 조회 실패:', error);
       throw error;
+    }
+  }
+
+  /**
+   * 현재 로그인한 사용자의 특정 타입 피드 목록을 조회합니다
+   */
+  static async getMyFeedsByType(feedType: string, params: Omit<FeedListParams, 'feedType'> = {}): Promise<FeedListResponse> {
+    try {
+      const response = await axiosInstance.get<ApiResponse<any>>(
+        `/api/feeds/my/type/${feedType}`,
+        { params }
+      );
+      const apiResponse = response.data;
+
+      // 백엔드 응답을 프론트엔드 타입에 맞게 변환
+      const transformedFeeds = (apiResponse.data.content || []).map((backendFeed: BackendFeedPost) => 
+        this.transformBackendFeedToFrontend(backendFeed)
+      );
+
+      return {
+        ...apiResponse.data,
+        content: transformedFeeds,
+      };
+    } catch (error: any) {
+      console.error('내 피드 타입별 목록 조회 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 현재 로그인한 사용자의 피드 개수를 조회합니다
+   */
+  static async getMyFeedsCount(): Promise<{ totalCount: number; dailyCount: number; eventCount: number; rankingCount: number }> {
+    try {
+      const response = await axiosInstance.get<ApiResponse<{
+        totalCount: number;
+        dailyCount: number;
+        eventCount: number;
+        rankingCount: number;
+      }>>('/api/feeds/my/count');
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        return {
+          totalCount: 0,
+          dailyCount: 0,
+          eventCount: 0,
+          rankingCount: 0
+        };
+      }
+    } catch (error: any) {
+      console.error('내 피드 개수 조회 실패:', error);
+      // 에러가 발생해도 기본값 반환
+      return {
+        totalCount: 0,
+        dailyCount: 0,
+        eventCount: 0,
+        rankingCount: 0
+      };
     }
   }
 

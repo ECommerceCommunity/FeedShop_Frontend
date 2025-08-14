@@ -18,13 +18,14 @@ interface FeedCardProps {
     participantVoteCount?: number;
   };
   onClick?: () => void;
-  onVoteClick?: () => void;
-  onLikeClick?: () => void;
-  liked?: boolean;
-  likes?: number;
+  children?: React.ReactNode; // 하위 컴포넌트들을 위한 슬롯
 }
 
-const FeedCard: React.FC<FeedCardProps> = ({ feed, onClick, onVoteClick, onLikeClick, liked, likes }) => {
+const FeedCard: React.FC<FeedCardProps> = ({ 
+  feed, 
+  onClick, 
+  children 
+}) => {
   const imageUrl = feed.images && feed.images.length > 0 ? feed.images[0].imageUrl : 'https://via.placeholder.com/300x400?text=No+Image';
   
   return (
@@ -38,22 +39,10 @@ const FeedCard: React.FC<FeedCardProps> = ({ feed, onClick, onVoteClick, onLikeC
       <div className="flex justify-between items-center text-xs text-gray-400 mt-auto">
         {feed.user?.nickname && <span>{feed.user.nickname}</span>}
         {feed.createdAt && <span>{new Date(feed.createdAt).toLocaleDateString()}</span>}
-        <button
-          className="flex items-center gap-1 focus:outline-none"
-          onClick={e => { e.stopPropagation(); onLikeClick && onLikeClick(); }}
-          disabled={liked}
-        >
-          <i className={`fas fa-heart ${liked ? 'text-red-500' : 'text-gray-300'}`}></i> {typeof likes === 'number' ? likes : feed.likeCount}
-        </button>
       </div>
-      {feed.feedType === 'EVENT' && (
-        <button
-          className="mt-3 w-full bg-[#87CEEB] text-white py-2 rounded-lg font-medium hover:bg-blue-400 transition"
-          onClick={e => { e.stopPropagation(); onVoteClick && onVoteClick(); }}
-        >
-          <i className="fas fa-vote-yea mr-1"></i> 투표하기{typeof feed.participantVoteCount === 'number' ? ` (${feed.participantVoteCount})` : ''}
-        </button>
-      )}
+      
+      {/* 하위 컴포넌트들을 위한 슬롯 */}
+      {children}
     </div>
   );
 };
