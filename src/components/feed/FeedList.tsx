@@ -1,13 +1,14 @@
 import React from "react";
 import FeedCard from "./FeedCard";
-import { useAuth } from "../../contexts/AuthContext";
+import FeedLikeButton from "./FeedLikeButton";
+import FeedVoteButton from "./FeedVoteButton";
 
 interface FeedListProps {
   feeds: any[];
   onFeedClick?: (feed: any) => void;
   onVoteClick?: (feed: any) => void;
   onLikeClick?: (feed: any) => void;
-  onLikeCountClick?: (feed: any) => void; // 좋아요 수 클릭 이벤트 추가
+  onLikeCountClick?: (feed: any) => void;
   likedPosts?: number[];
 }
 
@@ -16,7 +17,7 @@ const FeedList: React.FC<FeedListProps> = ({
   onFeedClick,
   onVoteClick,
   onLikeClick,
-  onLikeCountClick, // 좋아요 수 클릭 핸들러 추가
+  onLikeCountClick,
   likedPosts,
 }) => {
   return (
@@ -26,14 +27,25 @@ const FeedList: React.FC<FeedListProps> = ({
           key={feed.id}
           feed={feed}
           onClick={() => onFeedClick?.(feed)}
-          onVoteClick={
-            feed.feedType === "event" ? () => onVoteClick?.(feed) : undefined
-          }
-          onLikeClick={() => onLikeClick?.(feed)}
-          onLikeCountClick={() => onLikeCountClick?.(feed)} // 좋아요 수 클릭 이벤트 전달
-          liked={likedPosts?.includes(feed.id)}
-          likes={feed.likeCount}
-        />
+        >
+          {/* 좋아요 버튼 */}
+          <FeedLikeButton
+            feedId={feed.id}
+            likeCount={feed.likeCount || 0}
+            isLiked={likedPosts?.includes(feed.id) || false}
+            onLikeClick={onLikeClick || (() => {})}
+            onLikeCountClick={onLikeCountClick || (() => {})}
+          />
+          
+          {/* 투표 버튼 (이벤트 피드인 경우만) */}
+          {feed.feedType === 'EVENT' && onVoteClick && (
+            <FeedVoteButton
+              feedId={feed.id}
+              participantVoteCount={feed.participantVoteCount || 0}
+              onVoteClick={onVoteClick}
+            />
+          )}
+        </FeedCard>
       ))}
     </div>
   );

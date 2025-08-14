@@ -18,21 +18,13 @@ interface FeedCardProps {
     participantVoteCount?: number;
   };
   onClick?: () => void;
-  onVoteClick?: () => void;
-  onLikeClick?: () => void;
-  onLikeCountClick?: () => void; // 좋아요 수 클릭 이벤트 추가
-  liked?: boolean;
-  likes?: number;
+  children?: React.ReactNode; // 하위 컴포넌트들을 위한 슬롯
 }
 
 const FeedCard: React.FC<FeedCardProps> = ({ 
   feed, 
   onClick, 
-  onVoteClick, 
-  onLikeClick, 
-  onLikeCountClick, // 좋아요 수 클릭 핸들러 추가
-  liked, 
-  likes 
+  children 
 }) => {
   const imageUrl = feed.images && feed.images.length > 0 ? feed.images[0].imageUrl : 'https://via.placeholder.com/300x400?text=No+Image';
   
@@ -47,32 +39,10 @@ const FeedCard: React.FC<FeedCardProps> = ({
       <div className="flex justify-between items-center text-xs text-gray-400 mt-auto">
         {feed.user?.nickname && <span>{feed.user.nickname}</span>}
         {feed.createdAt && <span>{new Date(feed.createdAt).toLocaleDateString()}</span>}
-        <div className="flex items-center gap-1">
-          <button
-            className="flex items-center focus:outline-none"
-            onClick={e => { e.stopPropagation(); onLikeClick && onLikeClick(); }}
-          >
-            <i className={`fas fa-heart ${liked ? 'text-red-500' : 'text-gray-300'}`}></i>
-          </button>
-          <span 
-            onClick={e => { 
-              e.stopPropagation(); 
-              onLikeCountClick && onLikeCountClick(); 
-            }}
-            className="cursor-pointer hover:text-[#87CEEB] ml-1"
-          >
-            {typeof likes === 'number' ? likes : feed.likeCount}
-          </span>
-        </div>
       </div>
-      {feed.feedType === 'EVENT' && (
-        <button
-          className="mt-3 w-full bg-[#87CEEB] text-white py-2 rounded-lg font-medium hover:bg-blue-400 transition"
-          onClick={e => { e.stopPropagation(); onVoteClick && onVoteClick(); }}
-        >
-          <i className="fas fa-vote-yea mr-1"></i> 투표하기{typeof feed.participantVoteCount === 'number' ? ` (${feed.participantVoteCount})` : ''}
-        </button>
-      )}
+      
+      {/* 하위 컴포넌트들을 위한 슬롯 */}
+      {children}
     </div>
   );
 };
