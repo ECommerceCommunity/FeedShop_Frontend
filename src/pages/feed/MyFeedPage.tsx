@@ -68,21 +68,13 @@ const MyFeedPage = () => {
       const response = await FeedService.getMyFeeds(params);
       setFeedPosts(response.content || []);
       
-      // localStorage에서 저장된 좋아요 상태 복원
-      const savedLikedPosts = localStorage.getItem('likedPosts');
-      const savedLikedPostsArray = savedLikedPosts ? JSON.parse(savedLikedPosts) : [];
-      
-      // 백엔드에서 받은 isLiked 상태와 localStorage의 상태를 병합
+      // 백엔드에서 받은 isLiked 상태만 사용
       const backendLikedIds = response.content
         .filter((feed: FeedPost) => feed.isLiked)
         .map((feed: FeedPost) => feed.id);
       
-      // 중복 제거하여 합치기
-      const mergedLikedPosts = Array.from(new Set([...savedLikedPostsArray, ...backendLikedIds]));
-      updateLikedPosts(mergedLikedPosts);
-      
-      // localStorage 업데이트
-      localStorage.setItem('likedPosts', JSON.stringify(mergedLikedPosts));
+      // 전역 상태 업데이트
+      updateLikedPosts(backendLikedIds);
       
     } catch (error: any) {
       console.error('마이피드 로드 실패:', error);
@@ -109,7 +101,6 @@ const MyFeedPage = () => {
   useEffect(() => {
     if (!user) {
       updateLikedPosts([]);
-      localStorage.removeItem('likedPosts');
     }
   }, [user]);
 

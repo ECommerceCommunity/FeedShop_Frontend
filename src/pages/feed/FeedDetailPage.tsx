@@ -25,7 +25,7 @@ const FeedDetailPage = () => {
   const [loading, setLoading] = useState(true);
 
   // 좋아요 상태 관리
-  const { isLiked: isLikedGlobal, updateLikedPosts } = useLikedPosts();
+  const { isLiked: isLikedGlobal, updateLikedPosts, likedPosts } = useLikedPosts();
   
   // 전역 좋아요 상태와 로컬 상태 동기화
   useEffect(() => {
@@ -52,15 +52,9 @@ const FeedDetailPage = () => {
         const isLikedFromBackend = feedData.isLiked || false;
         setLiked(isLikedFromBackend);
         
-        // 전역 상태와 동기화 (백엔드 상태 기준)
-        const currentLikedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-        if (isLikedFromBackend && !currentLikedPosts.includes(feedData.id)) {
-          const updatedLikedPosts = [...currentLikedPosts, feedData.id];
-          updateLikedPosts(updatedLikedPosts);
-        } else if (!isLikedFromBackend && currentLikedPosts.includes(feedData.id)) {
-          // 백엔드에서 좋아요하지 않았다면 전역 상태에서도 제거
-          const updatedLikedPosts = currentLikedPosts.filter((id: number) => id !== feedData.id);
-          updateLikedPosts(updatedLikedPosts);
+        // 백엔드 상태를 기준으로 전역 상태 동기화
+        if (isLikedFromBackend) {
+          updateLikedPosts([feedData.id]);
         }
         
         // 댓글도 API로 가져오기 (추후 구현)
@@ -102,20 +96,12 @@ const FeedDetailPage = () => {
       setLiked(likeResult.liked);
       setFeed(prev => prev ? { ...prev, likeCount: likeResult.likeCount } : null);
       
-      // 전역 상태 업데이트
-      const currentLikedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-      let updatedLikedPosts: number[];
-      
+      // 백엔드 응답에 따라 전역 상태 업데이트
       if (likeResult.liked) {
-        // 좋아요 추가
-        updatedLikedPosts = [...currentLikedPosts, feed.id];
+        updateLikedPosts([...likedPosts, feed.id]);
       } else {
-        // 좋아요 취소
-        updatedLikedPosts = currentLikedPosts.filter((postId: number) => postId !== feed.id);
+        updateLikedPosts(likedPosts.filter((postId: number) => postId !== feed.id));
       }
-      
-      // 전역 상태와 localStorage 동시 업데이트
-      updateLikedPosts(updatedLikedPosts);
       
       const message = likeResult.liked ? "좋아요가 추가되었습니다!" : "좋아요가 취소되었습니다!";
       setToastMessage(message);

@@ -216,27 +216,12 @@ const FeedListPage = () => {
       setFeedPosts(result.feeds);
       
       // 백엔드에서 받은 isLiked 상태를 기준으로 좋아요 상태 설정
+      // 백엔드에서 좋아요한 피드 ID들만 사용 (백엔드의 isLiked 필드 기반)
       const backendLikedIds = result.feeds
         .filter(feed => feed.isLiked)
         .map(feed => feed.id);
       
-      // 백엔드에서 좋아요하지 않은 피드 ID들
-      const backendNotLikedIds = result.feeds
-        .filter(feed => !feed.isLiked)
-        .map(feed => feed.id);
-      
-      // localStorage에서 현재 저장된 좋아요 상태
-      const savedLikedPosts = localStorage.getItem('likedPosts');
-      const savedLikedPostsArray = savedLikedPosts ? JSON.parse(savedLikedPosts) : [];
-      
-      // 백엔드 상태를 우선으로 하고, 백엔드에 없는 피드들은 localStorage 상태 유지
-      const updatedLikedPosts = [
-        ...backendLikedIds, // 백엔드에서 좋아요한 피드들
-        ...savedLikedPostsArray.filter((id: number) => !backendNotLikedIds.includes(id)) // 백엔드에 없는 피드들 중 localStorage에서 좋아요한 것들
-      ];
-      
-      updateLikedPosts(updatedLikedPosts);
-      localStorage.setItem('likedPosts', JSON.stringify(updatedLikedPosts));
+      updateLikedPosts(backendLikedIds);
       
       setHasMore(result.hasMore);
       setCurrentPage(1);
@@ -251,7 +236,6 @@ const FeedListPage = () => {
   useEffect(() => {
     if (!user) {
       updateLikedPosts([]);
-      localStorage.removeItem('likedPosts');
     }
   }, [user]);
 
@@ -273,23 +257,18 @@ const FeedListPage = () => {
     
     setFeedPosts([...feedPosts, ...result.feeds]);
     
-    // 새로 로드된 피드들의 좋아요 상태를 업데이트
+    // 새로 로드된 피드들의 좋아요 상태를 업데이트 (백엔드 isLiked 필드 기반)
     const newLikedFeedIds = result.feeds
       .filter(feed => feed.isLiked)
       .map(feed => feed.id);
     
-    const newNotLikedFeedIds = result.feeds
-      .filter(feed => !feed.isLiked)
-      .map(feed => feed.id);
-    
-    // 현재 좋아요 상태에서 새로 로드된 피드들의 상태를 업데이트
+    // 현재 좋아요 상태에 새로 로드된 좋아요한 피드들 추가
     const updatedLikedPosts = [
-      ...likedPosts.filter((id: number) => !newNotLikedFeedIds.includes(id)), // 기존 좋아요 상태에서 새로 로드된 피드 중 좋아요하지 않은 것들 제거
+      ...likedPosts.filter((id: number) => !result.feeds.map(f => f.id).includes(id)), // 기존 상태에서 새로 로드된 피드들 제거
       ...newLikedFeedIds // 새로 로드된 피드 중 좋아요한 것들 추가
     ];
     
     updateLikedPosts(updatedLikedPosts);
-    localStorage.setItem('likedPosts', JSON.stringify(updatedLikedPosts));
     
     setHasMore(result.hasMore);
     setCurrentPage(nextPage);
@@ -313,10 +292,11 @@ const FeedListPage = () => {
       const likeResult = await FeedService.likeFeed(postId);
       
       // 백엔드 응답에 따라 좋아요 상태 업데이트
-      updateLikedPosts(likedPosts.includes(postId) ? likedPosts.filter(id => id !== postId) : [...likedPosts, postId]);
-      
-      // localStorage 업데이트
-      localStorage.setItem('likedPosts', JSON.stringify(likedPosts.includes(postId) ? likedPosts.filter(id => id !== postId) : [...likedPosts, postId]));
+      if (likeResult.liked) {
+        updateLikedPosts([...likedPosts, postId]);
+      } else {
+        updateLikedPosts(likedPosts.filter(id => id !== postId));
+      }
       
       // 피드 목록에서도 isLiked 상태 업데이트
       setFeedPosts((prev) =>
