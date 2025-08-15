@@ -34,7 +34,7 @@ import { CategoryService } from "../../api/categoryService";
 const Lists: React.FC = () => {
   const location = useLocation();
   
-  // 상품 목록 데이터와 페이지네이션, 정렬 관련 상태 및 함수들
+  // 상품 목록 데이터와 페이지네이션, 정렬, 필터링 관련 상태 및 함수들
   const {
     products,         // 현재 페이지의 상품 목록
     loading,          // 로딩 상태
@@ -42,9 +42,11 @@ const Lists: React.FC = () => {
     currentPage,      // 현재 페이지 번호 (0부터 시작)
     totalPages,       // 전체 페이지 수
     currentSort,      // 현재 정렬 방식
+    filters,          // 현재 필터 상태
     loadProducts,     // 상품 목록을 다시 로드하는 함수
     handlePageChange, // 페이지 변경 핸들러
     handleSortChange, // 정렬 변경 핸들러
+    handleFiltersChange, // 필터 변경 핸들러
     retry,            // 에러 발생 시 재시도 함수
   } = useProductList();
 
@@ -89,10 +91,12 @@ const Lists: React.FC = () => {
         <Title>{pageTitle}</Title>
       </Header>
 
-      {/* 정렬 버튼들 (최신순, 인기순 정렬) */}
+      {/* 필터 및 정렬 버튼들 */}
       <FilterButtons
         activeSort={currentSort}
         onSortChange={handleSortChange}
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
       />
 
       {/* 상품 목록 또는 빈 상태 표시 */}
