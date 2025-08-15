@@ -54,7 +54,7 @@ export const useProductList = (pageSize: number = 9) => {
   const getFilterParamsFromUrl = () => {
     const searchParams = new URLSearchParams(location.search);
     return {
-      q: searchParams.get("q") || undefined, // 검색 키워드 파라미터 추가
+      q: searchParams.get("q") || undefined,
       categoryId: searchParams.get("categoryId")
         ? Number(searchParams.get("categoryId"))
         : undefined,

@@ -1,7 +1,5 @@
 import React, { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-// 공통 컴포넌트
-import PreparationNotice from "../../components/PreparationNotice"; // 준비중 안내 컴포넌트
 // 상품 관련 커스텀 훅
 import { useProductList } from "../../hooks/products/useProductList"; // 상품 목록 관리 훅
 // 상품 목록 UI 컴포넌트들
@@ -74,8 +72,14 @@ const Lists: React.FC = () => {
     const categoryId = searchParams.get("categoryId");
 
     if (q && q.trim().length > 0) {
-      // 필요시 카테고리도 함께 표시하려면 다음과 같이 확장 가능:
-      // if (categoryId) { ... }
+      // 검색어와 카테고리가 모두 있는 경우
+      if (categoryId) {
+        const category = CategoryService.DEFAULT_CATEGORIES.find(
+          (cat) => cat.categoryId === Number(categoryId)
+        );
+        const categoryName = category ? category.name : "카테고리";
+        return `"${q}" ${categoryName} 검색 결과`;
+      }
       return `"${q}" 검색 결과`;
     }
 
