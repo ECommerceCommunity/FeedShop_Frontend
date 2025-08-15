@@ -156,7 +156,7 @@ export default function LoginPage() {
       const loginData = response.data.data;
       if (loginData && loginData.token) {
         // authLogin 함수를 4개의 인자를 받도록 수정 (name 추가)
-        authLogin(
+        await authLogin(
           loginData.nickname,
           loginData.name || loginData.nickname,
           loginData.role,

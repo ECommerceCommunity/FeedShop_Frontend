@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { OrderService } from "../../api/orderService";
-import { CreateOrderRequest } from "../../types/order";
+import { CreateOrderRequest, DirectOrderRequest } from "../../types/order";
 import {
   validatePhoneNumber,
   validatePostalCode,
@@ -29,6 +29,7 @@ interface PaymentData {
   isAgree: boolean; // 약관 동의 여부
   availablePoints: number; // 사용 가능한 포인트
   isDirectOrder: boolean; // 바로 주문 여부
+  directOrderItems?: any[]; // 바로 주문할 상품 목록 (바로 주문 시에만 사용)
 }
 
 // 훅에 전달받을 props 타입 정의
@@ -215,12 +216,6 @@ export const usePaymentActions = ({
    */
   const handlePayment = async () => {
     try {
-      // 바로 주문은 현재 지원하지 않음 (장바구니를 통해서만 주문 가능)
-      if (paymentData.isDirectOrder) {
-        onError("현재는 장바구니에서 주문만 가능합니다.");
-        return;
-      }
-
       // 입력 데이터 유효성 검사 실행
       validatePaymentData();
       // 결제 처리 중 상태로 변경 (로딩 표시)
@@ -228,39 +223,72 @@ export const usePaymentActions = ({
 
       // 최종 금액 계산
       const totals = calculateTotals();
-      const { shippingInfo, selectedMethod, usePoint, usedPoints } =
-        paymentData;
+      const { shippingInfo, selectedMethod, usePoint, usedPoints } = paymentData;
 
-      // 서버로 전송할 주문 데이터 객체 생성
-      const orderData: CreateOrderRequest = {
-        deliveryAddress: shippingInfo.address,
-        deliveryDetailAddress: shippingInfo.detailAddress,
-        postalCode: shippingInfo.zipcode,
-        recipientName: shippingInfo.name,
-        recipientPhone: shippingInfo.phone,
-        usedPoints: usePoint ? usedPoints : 0, // 포인트 사용 여부에 따라 0 또는 사용할 포인트
-        deliveryMessage: getFinalDeliveryRequest(), // 최종 배송 요청사항 결정
-        deliveryFee: totals.deliveryFee,
-        paymentMethod: selectedMethod,
-        // 카드 결제인 경우에만 카드 정보 포함
-        cardNumber:
-          selectedMethod === "카드" ? shippingInfo.cardNumber : undefined,
-        cardExpiry:
-          selectedMethod === "카드"
-            ? shippingInfo.cardExpiry.replace("/", "") // MM/YY → MMYY 형식으로 변환
-            : undefined,
-        cardCvc: selectedMethod === "카드" ? shippingInfo.cardCvv : undefined,
-      };
+      if (paymentData.isDirectOrder) {
+        // 바로 주문 처리
+        if (!paymentData.directOrderItems || paymentData.directOrderItems.length === 0) {
+          onError("주문할 상품 정보가 없습니다.");
+          return;
+        }
 
-      // 서버에 주문 생성 요청
-      const orderResponse = await OrderService.createOrder(orderData);
+        // 바로 주문 데이터 생성
+        const directOrderData: DirectOrderRequest = {
+          items: paymentData.directOrderItems.map((item) => ({
+            optionId: item.optionId,
+            imageId: item.imageId,
+            quantity: item.quantity,
+          })),
+          deliveryAddress: shippingInfo.address,
+          deliveryDetailAddress: shippingInfo.detailAddress,
+          postalCode: shippingInfo.zipcode,
+          recipientName: shippingInfo.name,
+          recipientPhone: shippingInfo.phone,
+          usedPoints: usePoint ? usedPoints : 0,
+          deliveryMessage: getFinalDeliveryRequest(),
+          deliveryFee: totals.deliveryFee,
+          paymentMethod: selectedMethod,
+          cardNumber: selectedMethod === "카드" ? shippingInfo.cardNumber : undefined,
+          cardExpiry: selectedMethod === "카드" ? shippingInfo.cardExpiry.replace("/", "") : undefined,
+          cardCvc: selectedMethod === "카드" ? shippingInfo.cardCvv : undefined,
+        };
 
-      // 성공 시 주문 완료 페이지로 이동 (주문 ID를 state로 전달)
-      navigate("/checkout", {
-        state: {
-          orderId: orderResponse.orderId,
-        },
-      });
+        // 바로 주문 API 호출
+        const orderResponse = await OrderService.createDirectOrder(directOrderData);
+
+        // 성공 시 주문 완료 페이지로 이동
+        navigate("/checkout", {
+          state: {
+            orderId: orderResponse.orderId,
+          },
+        });
+      } else {
+        // 장바구니 기반 주문 처리
+        const orderData: CreateOrderRequest = {
+          deliveryAddress: shippingInfo.address,
+          deliveryDetailAddress: shippingInfo.detailAddress,
+          postalCode: shippingInfo.zipcode,
+          recipientName: shippingInfo.name,
+          recipientPhone: shippingInfo.phone,
+          usedPoints: usePoint ? usedPoints : 0,
+          deliveryMessage: getFinalDeliveryRequest(),
+          deliveryFee: totals.deliveryFee,
+          paymentMethod: selectedMethod,
+          cardNumber: selectedMethod === "카드" ? shippingInfo.cardNumber : undefined,
+          cardExpiry: selectedMethod === "카드" ? shippingInfo.cardExpiry.replace("/", "") : undefined,
+          cardCvc: selectedMethod === "카드" ? shippingInfo.cardCvv : undefined,
+        };
+
+        // 장바구니 주문 API 호출
+        const orderResponse = await OrderService.createOrder(orderData);
+
+        // 성공 시 주문 완료 페이지로 이동
+        navigate("/checkout", {
+          state: {
+            orderId: orderResponse.orderId,
+          },
+        });
+      }
     } catch (error: any) {
       // 에러 처리: 서버 응답 메시지 → 일반 에러 메시지 → 기본 메시지 순으로 처리
       if (error.response?.data?.message) {
