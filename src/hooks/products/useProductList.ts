@@ -28,7 +28,7 @@ export const useProductList = (pageSize: number = 9) => {
   const [totalPages, setTotalPages] = useState(0);
   // 현재 정렬 방식
   const [currentSort, setCurrentSort] = useState("latest");
-  // 현재 필터 상태 
+  // 현재 필터 상태
   const [filters, setFilters] = useState<ProductFilters>({ sort: "latest" });
 
   // URL에서 초기 필터 상태 설정
@@ -54,7 +54,7 @@ export const useProductList = (pageSize: number = 9) => {
   const getFilterParamsFromUrl = () => {
     const searchParams = new URLSearchParams(location.search);
     return {
-      q: searchParams.get("q") || undefined,
+      q: searchParams.get("q") || undefined, // 검색 키워드 파라미터 추가
       categoryId: searchParams.get("categoryId")
         ? Number(searchParams.get("categoryId"))
         : undefined,
@@ -67,7 +67,7 @@ export const useProductList = (pageSize: number = 9) => {
       storeId: searchParams.get("storeId")
         ? Number(searchParams.get("storeId"))
         : undefined,
-      colors: searchParams.get("colors") 
+      colors: searchParams.get("colors")
         ? searchParams.get("colors")!.split(",")
         : undefined,
       sizes: searchParams.get("sizes")
@@ -76,8 +76,10 @@ export const useProductList = (pageSize: number = 9) => {
       genders: searchParams.get("genders")
         ? searchParams.get("genders")!.split(",")
         : undefined,
-      inStockOnly: searchParams.get("inStockOnly") === "true" ? true : undefined,
-      discountedOnly: searchParams.get("discountedOnly") === "true" ? true : undefined,
+      inStockOnly:
+        searchParams.get("inStockOnly") === "true" ? true : undefined,
+      discountedOnly:
+        searchParams.get("discountedOnly") === "true" ? true : undefined,
       sort: searchParams.get("sort") || "latest",
     };
   };
@@ -88,36 +90,44 @@ export const useProductList = (pageSize: number = 9) => {
    * @param sort 정렬 방식 (기본값: currentSort)
    * @param customFilters 사용자 정의 필터 (선택적)
    */
-  const loadProducts = async (page: number = 0, sort?: string, customFilters?: ProductFilters) => {
+  const loadProducts = async (
+    page: number = 0,
+    sort?: string,
+    customFilters?: ProductFilters
+  ) => {
     try {
       setLoading(true); // 로딩 시작
       setError(null); // 이전 에러 초기화
 
+      // URL 파라미터와 필터 상태를 모두 고려한 파라미터 구성
       const urlParams = getFilterParamsFromUrl();
       const currentFilters = customFilters || filters;
       const sortParam = sort || currentFilters.sort || currentSort;
-      
+
       // 필터 파라미터를 API 형식에 맞게 변환
       const processedFilters = {
         ...urlParams,
         ...currentFilters,
-        page, 
-        size: pageSize, 
-        sort: sortParam 
+        page,
+        size: pageSize,
+        sort: sortParam,
       };
 
       // undefined, null, 빈 문자열, 빈 배열 제거
       const requestParams = Object.fromEntries(
-        Object.entries(processedFilters).filter(([_, value]) => 
-          value !== undefined && 
-          value !== null && 
-          value !== "" && 
-          !(Array.isArray(value) && value.length === 0)
+        Object.entries(processedFilters).filter(
+          ([_, value]) =>
+            value !== undefined &&
+            value !== null &&
+            value !== "" &&
+            !(Array.isArray(value) && value.length === 0)
         )
       );
 
-      
-      
+      // 디버깅용 로그
+      console.log("API 호출 파라미터:", requestParams);
+
+      // API 명세서에 따라 /api/products 엔드포인트에 필터/정렬/페이지 파라미터 전달
       const response = await ProductService.getFilteredProducts(requestParams);
 
       // 성공시 데이터 설정 (빈 배열로 기본값 설정)
@@ -125,7 +135,7 @@ export const useProductList = (pageSize: number = 9) => {
       setTotalPages(response.totalPages || 0);
       setCurrentPage(page);
       setCurrentSort(sortParam);
-      
+
       // 필터 상태 업데이트
       if (customFilters) {
         setFilters(customFilters);
@@ -185,10 +195,11 @@ export const useProductList = (pageSize: number = 9) => {
   // 필터가 변경될 때마다 상품 목록 다시 로드 (URL 변경 포함)
   useEffect(() => {
     // 필터가 초기 상태가 아니거나, 명시적으로 변경된 경우에만 로드
-    const hasFilters = Object.keys(filters).some(key => 
-      key !== 'sort' && filters[key as keyof ProductFilters] !== undefined
+    const hasFilters = Object.keys(filters).some(
+      (key) =>
+        key !== "sort" && filters[key as keyof ProductFilters] !== undefined
     );
-    
+
     if (hasFilters || filters.sort !== "latest") {
       loadProducts(0);
     } else if (Object.keys(filters).length === 1 && filters.sort === "latest") {
