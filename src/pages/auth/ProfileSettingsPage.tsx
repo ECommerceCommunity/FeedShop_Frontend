@@ -162,7 +162,6 @@ const ProfileSettingsPage: FC = () => {
     } catch (err: any) {
       console.error("이미지 업로드 실패:", err);
 
-      // 더 구체적인 에러 메시지 표시
       if (err.response?.status === 400) {
         setError(
           "이미지 형식이 올바르지 않습니다. JPG, PNG 파일을 사용해주세요."
@@ -186,7 +185,7 @@ const ProfileSettingsPage: FC = () => {
       ...prev,
       profileImageUrl: "",
     }));
-    setImageLoadError(false); // 이미지 제거 시 에러 상태 초기화
+    setImageLoadError(false);
   };
 
   const handleSave = async () => {
@@ -220,7 +219,7 @@ const ProfileSettingsPage: FC = () => {
       );
       setProfileInfo(updatedProfile);
       setOriginalProfile(updatedProfile);
-      setImageLoadError(false); // 프로필 저장 후 이미지 에러 상태 초기화
+      setImageLoadError(false);
       setSuccess("프로필 정보가 성공적으로 저장되었습니다! 🎉");
 
       // 성공 메시지를 3초 후 자동으로 제거
