@@ -90,6 +90,21 @@ export interface CategoryFilterParams {
   sort?: string; // 정렬 방식 (latest/popular, 기본값: latest)
 }
 
+export interface Store {
+  storeId: number;
+  storeName: string;
+}
+
+export interface SellerStore {
+  storeId: number;
+  sellerId: number;
+  storeName: string;
+  description: string;
+  logo: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
