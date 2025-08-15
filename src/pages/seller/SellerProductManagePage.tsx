@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ProductService } from "../../api/productService";
-import { CategoryService } from "../../api/categoryService";
 import {
   ProductListItem,
   Category,
@@ -13,19 +12,19 @@ import {
   COLOR_LABELS,
   SIZE_LABELS,
 } from "../../types/products";
-import {
-  Container,
-  Header,
-  Title,
-} from "../products/Lists.styles";
+import { Container, Header, Title } from "../products/Lists.styles";
 import styled from "styled-components";
+import { toUrl } from "utils/common/images";
+import Warning from "../../components/modal/Warning";
 
 // 스타일 컴포넌트들
 const ManagementContainer = styled(Container)`
   padding-top: 80px; // Header 높이만큼 여백 추가
 `;
 
-const ActionButton = styled.button<{ variant?: "primary" | "danger" | "secondary" }>`
+const ActionButton = styled.button<{
+  variant?: "primary" | "danger" | "secondary";
+}>`
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 0.875rem;
@@ -33,8 +32,10 @@ const ActionButton = styled.button<{ variant?: "primary" | "danger" | "secondary
   transition: all 0.2s ease;
   border: 1px solid;
   font-weight: 500;
-  
-  ${props => props.variant === "primary" && `
+
+  ${(props) =>
+    props.variant === "primary" &&
+    `
     background: #3b82f6;
     color: white;
     border-color: #3b82f6;
@@ -44,8 +45,10 @@ const ActionButton = styled.button<{ variant?: "primary" | "danger" | "secondary
       border-color: #2563eb;
     }
   `}
-  
-  ${props => props.variant === "danger" && `
+
+  ${(props) =>
+    props.variant === "danger" &&
+    `
     background: #ef4444;
     color: white;
     border-color: #ef4444;
@@ -56,7 +59,9 @@ const ActionButton = styled.button<{ variant?: "primary" | "danger" | "secondary
     }
   `}
   
-  ${props => props.variant === "secondary" && `
+  ${(props) =>
+    props.variant === "secondary" &&
+    `
     background: white;
     color: #374151;
     border-color: #d1d5db;
@@ -100,7 +105,7 @@ const TableHeaderCell = styled.th`
 
 const TableRow = styled.tr`
   border-bottom: 1px solid #f1f5f9;
-  
+
   &:hover {
     background: #f8fafc;
   }
@@ -217,7 +222,7 @@ const FormRow = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
@@ -248,7 +253,7 @@ const Input = styled.input`
   border-radius: 6px;
   font-size: 0.875rem;
   transition: border-color 0.2s ease;
-  
+
   &:focus {
     outline: none;
     border-color: #3b82f6;
@@ -263,7 +268,7 @@ const Select = styled.select`
   font-size: 0.875rem;
   background: white;
   transition: border-color 0.2s ease;
-  
+
   &:focus {
     outline: none;
     border-color: #3b82f6;
@@ -279,7 +284,7 @@ const TextArea = styled.textarea`
   resize: vertical;
   min-height: 100px;
   transition: border-color 0.2s ease;
-  
+
   &:focus {
     outline: none;
     border-color: #3b82f6;
@@ -304,10 +309,10 @@ const ImageGrid = styled.div`
 `;
 
 const ImageCard = styled.div<{ $isMain?: boolean }>`
-  border: 2px solid ${props => props.$isMain ? '#3b82f6' : '#e5e7eb'};
+  border: 2px solid ${(props) => (props.$isMain ? "#3b82f6" : "#e5e7eb")};
   border-radius: 8px;
   padding: 16px;
-  background: ${props => props.$isMain ? '#eff6ff' : '#f9fafb'};
+  background: ${(props) => (props.$isMain ? "#eff6ff" : "#f9fafb")};
   transition: border-color 0.2s ease;
 `;
 
@@ -322,7 +327,7 @@ const ImagePreview = styled.div`
   margin-bottom: 12px;
   background: white;
   overflow: hidden;
-  
+
   img {
     width: 100%;
     height: 100%;
@@ -345,7 +350,7 @@ const FileButton = styled.button`
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 8px;
-  
+
   &:hover {
     background: #f3f4f6;
     border-color: #9ca3af;
@@ -404,7 +409,7 @@ const RemoveButton = styled.button`
   padding: 4px;
   border-radius: 4px;
   transition: background-color 0.2s ease;
-  
+
   &:hover {
     color: #dc2626;
     background: #fee2e2;
@@ -441,7 +446,7 @@ const LoadingState = styled.div`
   justify-content: center;
   padding: 48px 16px;
   color: #6b7280;
-  
+
   i {
     margin-right: 8px;
   }
@@ -473,22 +478,25 @@ const PaginationButtons = styled.div`
   align-items: center;
 `;
 
-const PaginationButton = styled.button<{ $active?: boolean; $disabled?: boolean }>`
+const PaginationButton = styled.button<{
+  $active?: boolean;
+  $disabled?: boolean;
+}>`
   padding: 8px 12px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  background: ${props => props.$active ? '#3b82f6' : 'white'};
-  color: ${props => props.$active ? 'white' : '#374151'};
+  background: ${(props) => (props.$active ? "#3b82f6" : "white")};
+  color: ${(props) => (props.$active ? "white" : "#374151")};
   font-size: 0.875rem;
-  cursor: ${props => props.$disabled ? 'not-allowed' : 'pointer'};
-  opacity: ${props => props.$disabled ? 0.5 : 1};
+  cursor: ${(props) => (props.$disabled ? "not-allowed" : "pointer")};
+  opacity: ${(props) => (props.$disabled ? 0.5 : 1)};
   transition: all 0.2s ease;
-  
+
   &:hover:not(:disabled) {
-    background: ${props => props.$active ? '#2563eb' : '#f3f4f6'};
-    border-color: ${props => props.$active ? '#2563eb' : '#9ca3af'};
+    background: ${(props) => (props.$active ? "#2563eb" : "#f3f4f6")};
+    border-color: ${(props) => (props.$active ? "#2563eb" : "#9ca3af")};
   }
-  
+
   &:disabled {
     cursor: not-allowed;
   }
@@ -531,59 +539,148 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
   // 사용된 옵션 조합을 추적
   const getUsedCombinations = (): string[] => {
-    return formData.options.map(option => `${option.gender}-${option.color}-${option.size}`);
+    return formData.options.map(
+      (option) => `${option.gender}-${option.color}-${option.size}`
+    );
   };
 
   // 옵션이 이미 사용되었는지 확인
-  const isOptionUsed = (gender: string, color: ColorType, size: SizeType, excludeIndex?: number): boolean => {
+  const isOptionUsed = (
+    gender: string,
+    color: ColorType,
+    size: SizeType,
+    excludeIndex?: number
+  ): boolean => {
     const combination = `${gender}-${color}-${size}`;
-    return formData.options.some((option, index) => 
-      index !== excludeIndex && `${option.gender}-${option.color}-${option.size}` === combination
+    return formData.options.some(
+      (option, index) =>
+        index !== excludeIndex &&
+        `${option.gender}-${option.color}-${option.size}` === combination
     );
   };
 
   // 수정 모드일 때 폼 데이터 초기화
   useEffect(() => {
-    if (editProduct) {
-      setFormData({
-        name: editProduct.name,
-        price: editProduct.price,
-        categoryId: categories[0]?.categoryId || 1,
-        description: "",
-        discountType: "NONE",
-        discountValue: 0,
-        images: [{ url: editProduct.mainImageUrl, isMain: true, displayOrder: 1, type: "MAIN" }],
-        options: [{ gender: "UNISEX", color: "BLACK", size: "SIZE_260", stock: 10 }],
-      });
-    } else {
-      // 새 상품 등록 모드
-      setFormData({
-        name: "",
-        price: 0,
-        categoryId: categories[0]?.categoryId || 1,
-        description: "",
-        discountType: "NONE",
-        discountValue: 0,
-        images: [{ url: "", isMain: true, displayOrder: 1, type: "MAIN" }],
-        options: [{ gender: "UNISEX", color: "BLACK", size: "SIZE_260", stock: 0 }],
-      });
-    }
-    setErrors({});
+    const loadProductDetail = async () => {
+      if (editProduct) {
+        try {
+          // 상품 상세 정보 로드
+          const productDetail = await ProductService.getProduct(editProduct.productId);
+          
+          // 이미지 정보 구성
+          const images: ProductImageRequest[] = productDetail.images.map((img, index) => ({
+            url: img.url,
+            isMain: index === 0 || img.type === "MAIN",
+            displayOrder: index + 1,
+            type: img.type as "MAIN" | "DETAIL",
+            imageId: img.imageId
+          }));
+
+          // 첫 번째 이미지가 없으면 기본 이미지 추가
+          if (images.length === 0) {
+            images.push({
+              url: productDetail.images.length > 0 ? productDetail.images[0].url : "",
+              isMain: true,
+              displayOrder: 1,
+              type: "MAIN" as "MAIN" | "DETAIL",
+              imageId: productDetail.images.length > 0 ? productDetail.images[0].imageId : undefined
+            });
+          }
+
+          // 옵션 정보 구성 - 사이즈 값을 SIZE_ 접두어 형태로 변환
+          const options: ProductOptionRequest[] = productDetail.options.map(option => ({
+            optionId: option.optionId,
+            gender: option.gender,
+            color: option.color as ColorType,
+            size: `SIZE_${option.size}` as SizeType,
+            stock: option.stock
+          }));
+
+          // 할인 타입 변환
+          let discountType: "RATE_DISCOUNT" | "FIXED_DISCOUNT" | "NONE" = "NONE";
+          if (productDetail.discountType === "RATE_DISCOUNT") {
+            discountType = "RATE_DISCOUNT";
+          } else if (productDetail.discountType === "FIXED_DISCOUNT") {
+            discountType = "FIXED_DISCOUNT";
+          }
+
+          setFormData({
+            name: productDetail.name,
+            price: productDetail.price,
+            categoryId: productDetail.categoryType ? 
+              categories.find(cat => cat.type === productDetail.categoryType)?.categoryId || categories[0]?.categoryId || 1 :
+              categories[0]?.categoryId || 1,
+            description: productDetail.description,
+            discountType: discountType,
+            discountValue: productDetail.discountValue || 0,
+            images: images,
+            options: options.length > 0 ? options : [
+              { gender: "UNISEX", color: "BLACK", size: "SIZE_260", stock: 0 }
+            ],
+          });
+        } catch (error) {
+          console.error("상품 상세 정보 로드 실패:", error);
+          // 오류 시 기본값으로 설정
+          setFormData({
+            name: editProduct.name,
+            price: editProduct.price,
+            categoryId: categories[0]?.categoryId || 1,
+            description: "",
+            discountType: "NONE",
+            discountValue: 0,
+            images: [
+              {
+                url: editProduct.mainImageUrl,
+                isMain: true,
+                displayOrder: 1,
+                type: "MAIN",
+              },
+            ],
+            options: [
+              { gender: "UNISEX", color: "BLACK", size: "SIZE_260", stock: 10 },
+            ],
+          });
+        }
+      } else {
+        // 새 상품 등록 모드
+        setFormData({
+          name: "",
+          price: 0,
+          categoryId: categories[0]?.categoryId || 1,
+          description: "",
+          discountType: "NONE",
+          discountValue: 0,
+          images: [{ url: "", isMain: true, displayOrder: 1, type: "MAIN" }],
+          options: [
+            { gender: "UNISEX", color: "BLACK", size: "SIZE_260", stock: 0 },
+          ],
+        });
+      }
+      setErrors({});
+    };
+
+    loadProductDetail();
   }, [editProduct, categories]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) newErrors.name = "상품명을 입력해주세요.";
-    if (formData.price < 1000) newErrors.price = "가격은 1000원 이상이어야 합니다.";
-    if (!formData.description.trim()) newErrors.description = "상품 설명을 입력해주세요.";
-    if (formData.images.length === 0) newErrors.images = "최소 1개의 이미지가 필요합니다.";
-    if (!formData.images.some(img => img.isMain)) newErrors.mainImage = "메인 이미지를 선택해주세요.";
-    if (formData.options.length === 0) newErrors.options = "최소 1개의 옵션이 필요합니다.";
+    if (formData.price < 1000)
+      newErrors.price = "가격은 1000원 이상이어야 합니다.";
+    if (!formData.description.trim())
+      newErrors.description = "상품 설명을 입력해주세요.";
+    if (formData.images.length === 0)
+      newErrors.images = "최소 1개의 이미지가 필요합니다.";
+    if (!formData.images.some((img) => img.isMain))
+      newErrors.mainImage = "메인 이미지를 선택해주세요.";
+    if (formData.options.length === 0)
+      newErrors.options = "최소 1개의 옵션이 필요합니다.";
 
     // 옵션 검증
     formData.options.forEach((option, index) => {
-      if (option.stock < 0) newErrors[`option-${index}-stock`] = "재고는 0 이상이어야 합니다.";
+      if (option.stock < 0)
+        newErrors[`option-${index}-stock`] = "재고는 0 이상이어야 합니다.";
     });
 
     setErrors(newErrors);
@@ -598,14 +695,14 @@ const ProductModal: React.FC<ProductModalProps> = ({
   };
 
   const handleFileSelect = (index: number, file: File) => {
-    if (file && file.type.startsWith('image/')) {
+    if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = (e) => {
         const updatedImages = [...formData.images];
-        updatedImages[index] = { 
-          ...updatedImages[index], 
+        updatedImages[index] = {
+          ...updatedImages[index],
           url: e.target?.result as string,
-          file: file 
+          file: file,
         };
         setFormData({ ...formData, images: updatedImages });
       };
@@ -614,31 +711,41 @@ const ProductModal: React.FC<ProductModalProps> = ({
   };
 
   const addImage = () => {
-    const newDisplayOrder = Math.max(...formData.images.map(img => img.displayOrder)) + 1;
-    setFormData({
-      ...formData,
-      images: [
-        ...formData.images,
-        {
-          url: "",
-          isMain: false,
-          displayOrder: newDisplayOrder,
-          type: "DETAIL",
-        },
-      ],
-    });
+    const newDisplayOrder =
+      Math.max(...formData.images.map((img) => img.displayOrder)) + 1;
+    const newImages: ProductImageRequest[] = [
+      ...formData.images,
+      {
+        url: "",
+        isMain: false,
+        displayOrder: newDisplayOrder,
+        type: "DETAIL" as "MAIN" | "DETAIL",
+      },
+    ];
+    
+    // 첫 번째 이미지는 항상 메인으로 설정
+    if (newImages.length > 0) {
+      newImages[0].isMain = true;
+      newImages.slice(1).forEach(img => img.isMain = false);
+    }
+    
+    setFormData({ ...formData, images: newImages });
   };
 
-  const updateImage = (index: number, field: keyof ProductImageRequest, value: any) => {
+  const updateImage = (
+    index: number,
+    field: keyof ProductImageRequest,
+    value: any
+  ) => {
     const updatedImages = [...formData.images];
-    
+
     // 메인 이미지 설정 시 다른 이미지들의 메인 상태 해제
-    if (field === 'isMain' && value === true) {
+    if (field === "isMain" && value === true) {
       updatedImages.forEach((img, i) => {
         if (i !== index) img.isMain = false;
       });
     }
-    
+
     updatedImages[index] = { ...updatedImages[index], [field]: value };
     setFormData({ ...formData, images: updatedImages });
   };
@@ -646,12 +753,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
   const removeImage = (index: number) => {
     if (formData.images.length > 1) {
       const updatedImages = formData.images.filter((_, i) => i !== index);
-      
-      // 메인 이미지가 삭제되었다면 첫 번째 이미지를 메인으로 설정
-      if (formData.images[index].isMain && updatedImages.length > 0) {
+
+      // 첫 번째 이미지는 항상 메인으로 설정
+      if (updatedImages.length > 0) {
         updatedImages[0].isMain = true;
+        updatedImages.slice(1).forEach(img => img.isMain = false);
       }
-      
+
       setFormData({ ...formData, images: updatedImages });
     }
   };
@@ -664,7 +772,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
     const sizes = Object.keys(SIZE_LABELS) as SizeType[];
 
     let availableOption = null;
-    
+
     for (const gender of genders) {
       for (const color of colors) {
         for (const size of sizes) {
@@ -689,7 +797,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
     }
   };
 
-  const updateOption = (index: number, field: keyof ProductOptionRequest, value: any) => {
+  const updateOption = (
+    index: number,
+    field: keyof ProductOptionRequest,
+    value: any
+  ) => {
     const updatedOptions = [...formData.options];
     updatedOptions[index] = { ...updatedOptions[index], [field]: value };
     setFormData({ ...formData, options: updatedOptions });
@@ -703,20 +815,42 @@ const ProductModal: React.FC<ProductModalProps> = ({
   };
 
   // 사용 가능한 옵션 필터링
-  const getAvailableOptions = (currentIndex: number, field: 'gender' | 'color' | 'size') => {
+  const getAvailableOptions = (
+    currentIndex: number,
+    field: "gender" | "color" | "size"
+  ) => {
     const currentOption = formData.options[currentIndex];
-    
-    if (field === 'gender') {
-      return ['MEN', 'WOMEN', 'UNISEX'].filter(gender => 
-        !isOptionUsed(gender, currentOption.color, currentOption.size, currentIndex)
+
+    if (field === "gender") {
+      return ["MEN", "WOMEN", "UNISEX"].filter(
+        (gender) =>
+          !isOptionUsed(
+            gender,
+            currentOption.color,
+            currentOption.size,
+            currentIndex
+          )
       );
-    } else if (field === 'color') {
-      return Object.keys(COLOR_LABELS).filter(color => 
-        !isOptionUsed(currentOption.gender, color as ColorType, currentOption.size, currentIndex)
+    } else if (field === "color") {
+      return Object.keys(COLOR_LABELS).filter(
+        (color) =>
+          !isOptionUsed(
+            currentOption.gender,
+            color as ColorType,
+            currentOption.size,
+            currentIndex
+          )
       );
-    } else { // size
-      return Object.keys(SIZE_LABELS).filter(size => 
-        !isOptionUsed(currentOption.gender, currentOption.color, size as SizeType, currentIndex)
+    } else {
+      // size
+      return Object.keys(SIZE_LABELS).filter(
+        (size) =>
+          !isOptionUsed(
+            currentOption.gender,
+            currentOption.color,
+            size as SizeType,
+            currentIndex
+          )
       );
     }
   };
@@ -727,9 +861,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
     <Modal onClick={(e) => e.target === e.currentTarget && onClose()}>
       <ModalContent>
         <ModalHeader>
-          <ModalTitle>
-            {editProduct ? "상품 수정" : "상품 등록"}
-          </ModalTitle>
+          <ModalTitle>{editProduct ? "상품 수정" : "상품 등록"}</ModalTitle>
         </ModalHeader>
 
         <ModalBody>
@@ -757,7 +889,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     type="number"
                     value={formData.price}
                     onChange={(e) =>
-                      setFormData({ ...formData, price: Number(e.target.value) })
+                      setFormData({
+                        ...formData,
+                        price: Number(e.target.value),
+                      })
                     }
                     min="1000"
                     placeholder="1000"
@@ -772,11 +907,17 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   <Select
                     value={formData.categoryId}
                     onChange={(e) =>
-                      setFormData({ ...formData, categoryId: Number(e.target.value) })
+                      setFormData({
+                        ...formData,
+                        categoryId: Number(e.target.value),
+                      })
                     }
                   >
                     {categories.map((category) => (
-                      <option key={category.categoryId} value={category.categoryId}>
+                      <option
+                        key={category.categoryId}
+                        value={category.categoryId}
+                      >
                         {category.name}
                       </option>
                     ))}
@@ -790,13 +931,16 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        discountType: e.target.value as "PERCENTAGE" | "AMOUNT" | "NONE",
+                        discountType: e.target.value as
+                          | "RATE_DISCOUNT"
+                          | "FIXED_DISCOUNT"
+                          | "NONE",
                       })
                     }
                   >
                     <option value="NONE">없음</option>
-                    <option value="PERCENTAGE">퍼센트 할인</option>
-                    <option value="AMOUNT">금액 할인</option>
+                    <option value="RATE_DISCOUNT">퍼센트 할인</option>
+                    <option value="FIXED_DISCOUNT">금액 할인</option>
                   </Select>
                 </FormGroup>
               </FormRow>
@@ -808,10 +952,15 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     type="number"
                     value={formData.discountValue}
                     onChange={(e) =>
-                      setFormData({ ...formData, discountValue: Number(e.target.value) })
+                      setFormData({
+                        ...formData,
+                        discountValue: Number(e.target.value),
+                      })
                     }
                     min="0"
-                    placeholder={formData.discountType === "PERCENTAGE" ? "10" : "5000"}
+                    placeholder={
+                      formData.discountType === "RATE_DISCOUNT" ? "10" : "5000"
+                    }
                   />
                 </FormGroup>
               )}
@@ -825,7 +974,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   }
                   placeholder="상품에 대한 자세한 설명을 입력하세요"
                 />
-                {errors.description && <ErrorText>{errors.description}</ErrorText>}
+                {errors.description && (
+                  <ErrorText>{errors.description}</ErrorText>
+                )}
               </FormGroup>
             </FormSection>
 
@@ -837,17 +988,25 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   <ImageCard key={index} $isMain={image.isMain}>
                     <ImagePreview>
                       {image.url ? (
-                        <img src={image.url} alt={`상품 이미지 ${index + 1}`} />
+                        <img
+                          src={toUrl(image.url)}
+                          alt={`상품 이미지 ${index + 1}`}
+                        />
                       ) : (
                         <div style={{ color: "#9ca3af", textAlign: "center" }}>
-                          <i className="fas fa-image" style={{ fontSize: "2rem", marginBottom: "8px" }}></i>
+                          <i
+                            className="fas fa-image"
+                            style={{ fontSize: "2rem", marginBottom: "8px" }}
+                          ></i>
                           <div>이미지를 선택하세요</div>
                         </div>
                       )}
                     </ImagePreview>
-                    
+
                     <FileInput
-                      ref={el => { fileInputRefs.current[index] = el; }}
+                      ref={(el) => {
+                        fileInputRefs.current[index] = el;
+                      }}
                       type="file"
                       accept="image/*"
                       onChange={(e) => {
@@ -855,12 +1014,15 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         if (file) handleFileSelect(index, file);
                       }}
                     />
-                    
+
                     <FileButton
                       type="button"
                       onClick={() => fileInputRefs.current[index]?.click()}
                     >
-                      <i className="fas fa-upload" style={{ marginRight: "8px" }}></i>
+                      <i
+                        className="fas fa-upload"
+                        style={{ marginRight: "8px" }}
+                      ></i>
                       이미지 선택
                     </FileButton>
 
@@ -880,12 +1042,14 @@ const ProductModal: React.FC<ProductModalProps> = ({
                             type="radio"
                             name={`image-type-${index}`}
                             checked={image.type === "DETAIL"}
-                            onChange={() => updateImage(index, "type", "DETAIL")}
+                            onChange={() =>
+                              updateImage(index, "type", "DETAIL")
+                            }
                           />
                           디테일 이미지
                         </RadioLabel>
                       </RadioGroup>
-                      
+
                       {formData.images.length > 1 && (
                         <RemoveButton
                           type="button"
@@ -896,23 +1060,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       )}
                     </ImageTypeRow>
 
-                    <RadioLabel>
-                      <input
-                        type="checkbox"
-                        checked={image.isMain}
-                        onChange={(e) => updateImage(index, "isMain", e.target.checked)}
-                      />
-                      대표 이미지로 설정
-                    </RadioLabel>
                   </ImageCard>
                 ))}
               </ImageGrid>
-              
-              <AddButton
-                type="button"
-                variant="secondary"
-                onClick={addImage}
-              >
+
+              <AddButton type="button" variant="secondary" onClick={addImage}>
                 <i className="fas fa-plus" style={{ marginRight: "8px" }}></i>
                 이미지 추가
               </AddButton>
@@ -936,7 +1088,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       </RemoveButton>
                     )}
                   </OptionHeader>
-                  
+
                   <OptionGrid>
                     <FormGroup>
                       <Label>성별</Label>
@@ -946,14 +1098,18 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           updateOption(index, "gender", e.target.value)
                         }
                       >
-                        {getAvailableOptions(index, 'gender').map(gender => (
+                        {getAvailableOptions(index, "gender").map((gender) => (
                           <option key={gender} value={gender}>
-                            {gender === 'MEN' ? '남성' : gender === 'WOMEN' ? '여성' : '공용'}
+                            {gender === "MEN"
+                              ? "남성"
+                              : gender === "WOMEN"
+                              ? "여성"
+                              : "공용"}
                           </option>
                         ))}
                       </Select>
                     </FormGroup>
-                    
+
                     <FormGroup>
                       <Label>색상</Label>
                       <Select
@@ -962,14 +1118,14 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           updateOption(index, "color", e.target.value)
                         }
                       >
-                        {getAvailableOptions(index, 'color').map(color => (
+                        {getAvailableOptions(index, "color").map((color) => (
                           <option key={color} value={color}>
                             {COLOR_LABELS[color as ColorType]}
                           </option>
                         ))}
                       </Select>
                     </FormGroup>
-                    
+
                     <FormGroup>
                       <Label>사이즈</Label>
                       <Select
@@ -978,14 +1134,14 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           updateOption(index, "size", e.target.value)
                         }
                       >
-                        {getAvailableOptions(index, 'size').map(size => (
+                        {getAvailableOptions(index, "size").map((size) => (
                           <option key={size} value={size}>
                             {SIZE_LABELS[size as SizeType]}
                           </option>
                         ))}
                       </Select>
                     </FormGroup>
-                    
+
                     <FormGroup>
                       <Label>재고 수량</Label>
                       <Input
@@ -1004,12 +1160,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   </OptionGrid>
                 </OptionCard>
               ))}
-              
-              <AddButton
-                type="button"
-                variant="secondary"
-                onClick={addOption}
-              >
+
+              <AddButton type="button" variant="secondary" onClick={addOption}>
                 <i className="fas fa-plus" style={{ marginRight: "8px" }}></i>
                 옵션 추가
               </AddButton>
@@ -1022,11 +1174,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
           <ActionButton type="button" variant="secondary" onClick={onClose}>
             취소
           </ActionButton>
-          <ActionButton
-            type="submit"
-            variant="primary"
-            onClick={handleSubmit}
-          >
+          <ActionButton type="submit" variant="primary" onClick={handleSubmit}>
             {editProduct ? "수정" : "등록"}
           </ActionButton>
         </ModalFooter>
@@ -1042,7 +1190,9 @@ const SellerProductManagePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<ProductListItem | null>(null);
-  
+  const [deleteWarningOpen, setDeleteWarningOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<number | null>(null);
+
   // 페이지네이션 상태
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -1056,7 +1206,7 @@ const SellerProductManagePage: React.FC = () => {
       const response = await ProductService.getSellerProducts(page, pageSize);
       setProducts(response.content || []);
       setTotalPages(response.totalPages || 0);
-      setTotalElements(response.totalElement || 0);
+      setTotalElements(response.totalElements || 0);
       setCurrentPage(page);
     } catch (error) {
       console.error("상품 목록 로드 실패:", error);
@@ -1097,18 +1247,18 @@ const SellerProductManagePage: React.FC = () => {
   const generatePageNumbers = () => {
     const pages = [];
     const maxVisible = 5;
-    
+
     let start = Math.max(0, currentPage - Math.floor(maxVisible / 2));
     let end = Math.min(totalPages - 1, start + maxVisible - 1);
-    
+
     if (end - start + 1 < maxVisible) {
       start = Math.max(0, end - maxVisible + 1);
     }
-    
+
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
-    
+
     return pages;
   };
 
@@ -1142,17 +1292,31 @@ const SellerProductManagePage: React.FC = () => {
     }
   };
 
-  // 상품 삭제
-  const handleDeleteProduct = async (productId: number) => {
-    if (window.confirm("정말로 이 상품을 삭제하시겠습니까?")) {
+  // 상품 삭제 확인 다이얼로그 열기
+  const handleDeleteProduct = (productId: number) => {
+    setProductToDelete(productId);
+    setDeleteWarningOpen(true);
+  };
+
+  // 상품 삭제 실행
+  const confirmDeleteProduct = async () => {
+    if (productToDelete) {
       try {
-        await ProductService.deleteProduct(productId);
+        await ProductService.deleteProduct(productToDelete);
         loadProducts(currentPage); // 현재 페이지 유지하며 목록 새로고침
+        setDeleteWarningOpen(false);
+        setProductToDelete(null);
       } catch (error) {
         console.error("상품 삭제 실패:", error);
         alert("상품 삭제에 실패했습니다.");
       }
     }
+  };
+
+  // 상품 삭제 취소
+  const cancelDeleteProduct = () => {
+    setDeleteWarningOpen(false);
+    setProductToDelete(null);
   };
 
   // 상품 수정 모달 열기
@@ -1192,152 +1356,172 @@ const SellerProductManagePage: React.FC = () => {
       ) : (
         <>
           <TableContainer>
-          {products.length === 0 ? (
-            <EmptyState>
-              <EmptyIcon>
-                <i className="fas fa-box-open"></i>
-              </EmptyIcon>
-              <div style={{ fontSize: "1.125rem", fontWeight: 600, marginBottom: "8px" }}>
-                등록된 상품이 없습니다
-              </div>
-              <div style={{ marginBottom: "16px" }}>
-                첫 번째 상품을 등록해보세요
-              </div>
-            </EmptyState>
-          ) : (
-            <Table>
-              <TableHeader>
-                <tr>
-                  <TableHeaderCell>상품 정보</TableHeaderCell>
-                  <TableHeaderCell>가격</TableHeaderCell>
-                  <TableHeaderCell>스토어</TableHeaderCell>
-                  <TableHeaderCell>관심</TableHeaderCell>
-                  <TableHeaderCell style={{ textAlign: "right" }}>관리</TableHeaderCell>
-                </tr>
-              </TableHeader>
-              <tbody>
-                {products.map((product) => (
-                  <TableRow key={product.productId}>
-                    <TableCell>
-                      <ProductInfo>
-                        <ProductImage
-                          src={product.mainImageUrl}
-                          alt={product.name}
-                          onError={(e) => {
-                            e.currentTarget.src =
-                              "https://via.placeholder.com/64x64?text=No+Image";
+            {products.length === 0 ? (
+              <EmptyState>
+                <EmptyIcon>
+                  <i className="fas fa-box-open"></i>
+                </EmptyIcon>
+                <div
+                  style={{
+                    fontSize: "1.125rem",
+                    fontWeight: 600,
+                    marginBottom: "8px",
+                  }}
+                >
+                  등록된 상품이 없습니다
+                </div>
+                <div style={{ marginBottom: "16px" }}>
+                  첫 번째 상품을 등록해보세요
+                </div>
+              </EmptyState>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <tr>
+                    <TableHeaderCell>상품 정보</TableHeaderCell>
+                    <TableHeaderCell>가격</TableHeaderCell>
+                    <TableHeaderCell>스토어</TableHeaderCell>
+                    <TableHeaderCell>관심</TableHeaderCell>
+                    <TableHeaderCell style={{ textAlign: "right" }}>
+                      관리
+                    </TableHeaderCell>
+                  </tr>
+                </TableHeader>
+                <tbody>
+                  {products.map((product) => (
+                    <TableRow key={product.productId}>
+                      <TableCell>
+                        <ProductInfo>
+                          <ProductImage
+                            src={toUrl(product.mainImageUrl)}
+                            alt={product.name}
+                            onError={(e) => {
+                              e.currentTarget.src = toUrl(
+                                "images/common/no-image.png"
+                              );
+                            }}
+                          />
+                          <ProductDetails>
+                            <ProductName>{product.name}</ProductName>
+                            <ProductId>ID: {product.productId}</ProductId>
+                          </ProductDetails>
+                        </ProductInfo>
+                      </TableCell>
+                      <TableCell>
+                        <PriceInfo>
+                          <Price>₩{product.price.toLocaleString()}</Price>
+                          {product.discountPrice !== product.price && (
+                            <DiscountPrice>
+                              할인: ₩{product.discountPrice.toLocaleString()}
+                            </DiscountPrice>
+                          )}
+                        </PriceInfo>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div
+                            style={{ fontSize: "0.875rem", color: "#1f2937" }}
+                          >
+                            {product.storeName}
+                          </div>
+                          <div
+                            style={{ fontSize: "0.75rem", color: "#6b7280" }}
+                          >
+                            ID: {product.storeId}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
                           }}
-                        />
-                        <ProductDetails>
-                          <ProductName>{product.name}</ProductName>
-                          <ProductId>ID: {product.productId}</ProductId>
-                        </ProductDetails>
-                      </ProductInfo>
-                    </TableCell>
-                    <TableCell>
-                      <PriceInfo>
-                        <Price>₩{product.price.toLocaleString()}</Price>
-                        {product.discountPrice !== product.price && (
-                          <DiscountPrice>
-                            할인: ₩{product.discountPrice.toLocaleString()}
-                          </DiscountPrice>
-                        )}
-                      </PriceInfo>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div style={{ fontSize: "0.875rem", color: "#1f2937" }}>
-                          {product.storeName}
-                        </div>
-                        <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-                          ID: {product.storeId}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                        <i
-                          className="fas fa-heart"
-                          style={{ color: "#ef4444", fontSize: "0.875rem" }}
-                        ></i>
-                        <span style={{ fontSize: "0.875rem" }}>
-                          {product.wishNumber}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <ActionButtons>
-                        <ActionButton
-                          variant="secondary"
-                          onClick={() => handleEditProduct(product)}
                         >
-                          <i className="fas fa-edit"></i>
-                        </ActionButton>
-                        <ActionButton
-                          variant="danger"
-                          onClick={() => handleDeleteProduct(product.productId)}
-                        >
-                          <i className="fas fa-trash"></i>
-                        </ActionButton>
-                      </ActionButtons>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </tbody>
-            </Table>
-          )}
-        </TableContainer>
-        
-        {/* 페이지네이션 */}
-        {products.length > 0 && totalPages > 1 && (
-          <PaginationContainer>
-            <PaginationInfo>
-              총 {totalElements}개 상품 중 {currentPage * pageSize + 1}-{Math.min((currentPage + 1) * pageSize, totalElements)}개 표시
-            </PaginationInfo>
-            <PaginationButtons>
-              <PaginationButton
-                $disabled={currentPage === 0}
-                onClick={() => handlePageChange(0)}
-                disabled={currentPage === 0}
-              >
-                <i className="fas fa-angle-double-left"></i>
-              </PaginationButton>
-              <PaginationButton
-                $disabled={currentPage === 0}
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 0}
-              >
-                <i className="fas fa-angle-left"></i>
-              </PaginationButton>
-              
-              <PageNumbers>
-                {generatePageNumbers().map(page => (
-                  <PaginationButton
-                    key={page}
-                    $active={page === currentPage}
-                    onClick={() => handlePageChange(page)}
-                  >
-                    {page + 1}
-                  </PaginationButton>
-                ))}
-              </PageNumbers>
-              
-              <PaginationButton
-                $disabled={currentPage === totalPages - 1}
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages - 1}
-              >
-                <i className="fas fa-angle-right"></i>
-              </PaginationButton>
-              <PaginationButton
-                $disabled={currentPage === totalPages - 1}
-                onClick={() => handlePageChange(totalPages - 1)}
-                disabled={currentPage === totalPages - 1}
-              >
-                <i className="fas fa-angle-double-right"></i>
-              </PaginationButton>
-            </PaginationButtons>
-          </PaginationContainer>
+                          <i
+                            className="fas fa-heart"
+                            style={{ color: "#ef4444", fontSize: "0.875rem" }}
+                          ></i>
+                          <span style={{ fontSize: "0.875rem" }}>
+                            {product.wishNumber}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <ActionButtons>
+                          <ActionButton
+                            variant="secondary"
+                            onClick={() => handleEditProduct(product)}
+                          >
+                            <i className="fas fa-edit"></i>
+                          </ActionButton>
+                          <ActionButton
+                            variant="danger"
+                            onClick={() => handleDeleteProduct(product.productId)}
+                          >
+                            <i className="fas fa-trash"></i>
+                          </ActionButton>
+                        </ActionButtons>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </tbody>
+              </Table>
+            )}
+          </TableContainer>
+
+          {/* 페이지네이션 */}
+          {products.length > 0 && totalPages > 1 && (
+            <PaginationContainer>
+              <PaginationInfo>
+                총 {totalElements}개 상품 중 {currentPage * pageSize + 1}-
+                {Math.min((currentPage + 1) * pageSize, totalElements)}개 표시
+              </PaginationInfo>
+              <PaginationButtons>
+                <PaginationButton
+                  $disabled={currentPage === 0}
+                  onClick={() => handlePageChange(0)}
+                  disabled={currentPage === 0}
+                >
+                  <i className="fas fa-angle-double-left"></i>
+                </PaginationButton>
+                <PaginationButton
+                  $disabled={currentPage === 0}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 0}
+                >
+                  <i className="fas fa-angle-left"></i>
+                </PaginationButton>
+
+                <PageNumbers>
+                  {generatePageNumbers().map((page) => (
+                    <PaginationButton
+                      key={page}
+                      $active={page === currentPage}
+                      onClick={() => handlePageChange(page)}
+                    >
+                      {page + 1}
+                    </PaginationButton>
+                  ))}
+                </PageNumbers>
+
+                <PaginationButton
+                  $disabled={currentPage === totalPages - 1}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages - 1}
+                >
+                  <i className="fas fa-angle-right"></i>
+                </PaginationButton>
+                <PaginationButton
+                  $disabled={currentPage === totalPages - 1}
+                  onClick={() => handlePageChange(totalPages - 1)}
+                  disabled={currentPage === totalPages - 1}
+                >
+                  <i className="fas fa-angle-double-right"></i>
+                </PaginationButton>
+              </PaginationButtons>
+            </PaginationContainer>
           )}
         </>
       )}
@@ -1352,6 +1536,15 @@ const SellerProductManagePage: React.FC = () => {
         onSave={handleSaveProduct}
         editProduct={editProduct}
         categories={categories}
+      />
+
+      {/* 상품 삭제 확인 모달 */}
+      <Warning
+        open={deleteWarningOpen}
+        title="상품 삭제"
+        message="정말로 이 상품을 삭제하시겠습니까? 삭제된 상품은 복구할 수 없습니다."
+        onConfirm={confirmDeleteProduct}
+        onCancel={cancelDeleteProduct}
       />
     </ManagementContainer>
   );

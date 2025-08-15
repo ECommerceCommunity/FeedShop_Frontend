@@ -57,7 +57,7 @@ export interface CreateProductRequest {
   price: number;
   categoryId: number;
   description: string; // 필수로 변경
-  discountType?: "PERCENTAGE" | "AMOUNT" | "NONE"; // NONE 추가
+  discountType?: "RATE_DISCOUNT" | "FIXED_DISCOUNT" | "NONE"; // API 명세에 맞게 수정
   discountValue?: number;
   images: ProductImageRequest[];
   options: ProductOptionRequest[];
@@ -216,7 +216,7 @@ export interface UpdateProductRequest {
   price?: number;
   categoryId?: number;
   description?: string;
-  discountType?: "PERCENTAGE" | "AMOUNT" | "NONE";
+  discountType?: "RATE_DISCOUNT" | "FIXED_DISCOUNT" | "NONE";
   discountValue?: number;
   images?: ProductImageRequest[];
   options?: ProductOptionRequest[];
@@ -230,6 +230,21 @@ export interface CategoryFilterParams {
   size?: number; // 페이지 크기 (기본값: 20)
   storeId?: number; // 스토어 ID (선택적)
   sort?: string; // 정렬 방식 (latest/popular, 기본값: latest)
+}
+
+export interface Store {
+  storeId: number;
+  storeName: string;
+}
+
+export interface SellerStore {
+  storeId: number;
+  sellerId: number;
+  storeName: string;
+  description: string;
+  logo: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CategoryModalProps {
