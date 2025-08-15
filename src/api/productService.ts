@@ -12,34 +12,38 @@ export class ProductService {
   // 상품 목록 조회
   static async getProducts(
     page: number = 0,
-    size: number = 20
+    size: number = 20,
+    sort: string = "latest"
   ): Promise<ProductListResponse> {
     try {
       const response = await axiosInstance.get<
         ApiResponse<ProductListResponse>
-      >("/api/products", { params: { page, size } });
+      >("/api/products", { params: { page, size, sort } });
       return response.data.data;
     } catch (error: any) {
       throw error;
     }
   }
 
-  // 필터링된 상품 목록 조회
+  // 필터링된 상품 목록 조회 (검색 포함)
   static async getFilteredProducts(params: {
+    q?: string; // 검색 키워드
     categoryId?: number;
     minPrice?: number;
     maxPrice?: number;
     page?: number;
     size?: number;
     storeId?: number;
+    sort?: string; // 정렬 방식
   }): Promise<ProductListResponse> {
     try {
+      // API 명세서에 따라 /api/products 엔드포인트 사용
       const response = await axiosInstance.get<
         ApiResponse<ProductListResponse>
-      >("/api/products/filter", { params });
+      >("/api/products", { params });
       return response.data.data;
     } catch (error: any) {
-      console.error("필터링된 상품 조회 실패:", error);
+      console.error("상품 조회 실패:", error);
       throw error;
     }
   }

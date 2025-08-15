@@ -101,53 +101,54 @@ export const useProductActions = (
 
   /**
    * 바로 주문 처리 함수 (장바구니 경유 없이 바로 결제 페이지로 이동)
-   * 선택된 상품들을 임시로 장바구니에 추가한 뒤 결제 페이지로 이동
-   * 에러 발생 시 임시 추가된 아이템들을 자동으로 삭제하여 롤백
+   * 선택된 상품 정보를 결제 페이지로 직접 전달하여 바로 주문 API를 사용
    * @param onError 에러 발생 시 호출할 콜백 함수
    */
   const handleDirectOrder = async (onError: (message: string) => void) => {
     // 사용자 인증 및 옵션 선택 유효성 검사
     if (!validateUser(onError) || !validateOptions(onError)) return;
 
-    // 임시로 생성된 장바구니 아이템 ID들을 추적 (에러 시 롤백용)
-    const tempCartItemIds: number[] = [];
+    if (!product) {
+      onError("상품 정보를 확인할 수 없습니다.");
+      return;
+    }
 
     try {
       setLoading(true);  // 로딩 상태 시작
 
-      // 선택된 모든 옵션에 대해 임시 장바구니 아이템 생성
-      for (const option of selectedOptions) {
-        const response = await CartService.addCartItem({
+      // 바로 주문을 위한 상품 정보 준비
+      const directOrderItems = selectedOptions.map((option) => {
+        // 선택된 옵션에 해당하는 실제 상품 옵션 찾기
+        const productOption = product.options.find(opt => opt.optionId === option.optionId);
+        
+        return {
           optionId: option.optionId,
-          imageId: product?.images[0].imageId || 1,
+          imageId: product.images?.[0]?.imageId || 1, // 첫 번째 이미지 ID 사용
           quantity: option.quantity,
-        });
-
-        // 생성된 장바구니 아이템 ID를 추적 목록에 추가
-        if (response?.cartItemId) {
-          tempCartItemIds.push(response.cartItemId);
-        }
-      }
+          // 결제 페이지에서 표시할 추가 정보들
+          productId: product.productId,
+          productName: product.name,
+          price: product.price,
+          discountPrice: product.discountPrice,
+          size: productOption?.size || "",
+          color: productOption?.color || "",
+          imageUrl: product.images?.[0]?.url || "",
+        };
+      });
 
       // 결제 페이지로 이동 (바로 주문 정보와 함께)
       navigate("/payment", {
         state: {
-          isDirectOrder: true,              // 바로 주문 플래그
-          tempCartItemIds,                  // 임시 장바구니 아이템 ID 목록
-          originalProductInfo: {            // 원본 상품 정보 (참고용)
-            productId: product?.productId,
-            productName: product?.name,
-            selectedOptions: selectedOptions,
+          isDirectOrder: true,           // 바로 주문 플래그
+          directOrderItems,              // 바로 주문할 상품 정보 목록
+          productInfo: {                 // 추가 상품 정보
+            productId: product.productId,
+            productName: product.name,
+            storeName: product.storeName,
           },
         },
       });
     } catch (error: any) {
-      // 에러 발생 시 임시로 생성된 장바구니 아이템들을 모두 삭제 (롤백)
-      if (tempCartItemIds.length > 0) {
-        for (const cartItemId of tempCartItemIds) {
-          await CartService.removeCartItem(cartItemId);
-        }
-      }
       onError("주문 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
     } finally {
       setLoading(false);  // 성공/실패 관계없이 로딩 상태 해제

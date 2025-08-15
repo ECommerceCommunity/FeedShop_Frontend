@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FeedList from "../../components/feed/FeedList";
 import FeedDetailModal from "../../components/feed/FeedDetailModal";
+import LikedUsersModal from "../../components/feed/LikedUsersModal";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
 import { FeedVoteRequest, FeedPost } from "../../types/feed";
+import { useLikedPosts } from "../../hooks/useLikedPosts";
 
 type Comment = {
   id: number;
@@ -27,10 +29,16 @@ const MyFeedPage = () => {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
-  const [likedPosts, setLikedPosts] = useState<number[]>([]);
   const [votedPosts, setVotedPosts] = useState<number[]>([]);
   const [showVoteModal, setShowVoteModal] = useState(false);
   const [showVoteToast, setShowVoteToast] = useState(false);
+  
+  // 좋아요 상태
+  const { likedPosts, updateLikedPosts, isLiked } = useLikedPosts();
+  
+  // 좋아요 사용자 모달 상태
+  const [showLikedUsersModal, setShowLikedUsersModal] = useState(false);
+  const [likedUsers, setLikedUsers] = useState<{ id: number; nickname: string; profileImg?: string; }[]>([]);
 
   // 탭/정렬 상태
   const [activeTab, setActiveTab] = useState<
@@ -59,6 +67,15 @@ const MyFeedPage = () => {
 
       const response = await FeedService.getMyFeeds(params);
       setFeedPosts(response.content || []);
+      
+      // 백엔드에서 받은 isLiked 상태만 사용
+      const backendLikedIds = response.content
+        .filter((feed: FeedPost) => feed.isLiked)
+        .map((feed: FeedPost) => feed.id);
+      
+      // 전역 상태 업데이트
+      updateLikedPosts(backendLikedIds);
+      
     } catch (error: any) {
       console.error('마이피드 로드 실패:', error);
       
@@ -79,6 +96,13 @@ const MyFeedPage = () => {
       loadMyFeeds();
     }
   }, [user, activeTab, sortBy]);
+
+  // 사용자 로그아웃 시 좋아요 상태 초기화
+  useEffect(() => {
+    if (!user) {
+      updateLikedPosts([]);
+    }
+  }, [user]);
 
   // 통계 계산
   const feedCount = feedPosts.length;
@@ -116,18 +140,27 @@ const MyFeedPage = () => {
       const likeResult = await FeedService.likeFeed(postId);
       
       // 백엔드 응답에 따라 좋아요 상태 업데이트
-      if (likeResult.liked) {
-        setLikedPosts([...likedPosts, postId]);
-      } else {
-        setLikedPosts(likedPosts.filter(id => id !== postId));
+      updateLikedPosts(isLiked(postId) ? likedPosts.filter(id => id !== postId) : [...likedPosts, postId]);
+      
+      // 실제 피드 데이터의 좋아요 수와 isLiked 상태 업데이트
+      setFeedPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId ? { 
+            ...post, 
+            likeCount: likeResult.likeCount,
+            isLiked: likeResult.liked 
+          } : post
+        )
+      );
+      
+      // selectedPost도 업데이트 (모달에서 좋아요 클릭 시)
+      if (selectedPost && selectedPost.id === postId) {
+        setSelectedPost({
+          ...selectedPost,
+          likeCount: likeResult.likeCount,
+          isLiked: likeResult.liked
+        });
       }
-
-      // 실제 피드 데이터의 좋아요 수 업데이트
-              setFeedPosts((prev) =>
-          prev.map((post) =>
-            post.id === postId ? { ...post, likeCount: likeResult.likeCount } : post
-          )
-        );
       
     } catch (error: any) {
       console.error('좋아요 실패:', error);
@@ -135,6 +168,8 @@ const MyFeedPage = () => {
       if (error.response?.status === 401) {
         alert("로그인이 필요합니다.");
         navigate('/login');
+      } else if (error.response?.status === 404) {
+        alert("피드를 찾을 수 없습니다.");
       } else {
         alert(error.response?.data?.message || "좋아요 처리에 실패했습니다.");
       }
@@ -262,6 +297,41 @@ const MyFeedPage = () => {
     selectedPost &&
     selectedPost.user.nickname === user.nickname
   );
+
+  // 좋아요 사용자 목록 조회 (모달에서 사용)
+  const handleShowLikeUsers = async () => {
+    if (!selectedPost) return;
+    
+    try {
+      const users = await FeedService.getFeedLikes(selectedPost.id);
+      setLikedUsers(users.map(user => ({
+        id: user.userId || 0,
+        nickname: user.nickname,
+        profileImg: user.profileImg
+      })));
+      setShowLikedUsersModal(true);
+    } catch (error: any) {
+      console.error('좋아요 사용자 목록 조회 실패:', error);
+      alert('좋아요한 사용자 목록을 불러오지 못했습니다.');
+    }
+  };
+
+  // 좋아요 수 클릭 시 좋아요한 사용자 목록 표시
+  const handleLikeCountClick = async (feed: FeedPost) => {
+    try {
+      const users = await FeedService.getFeedLikes(feed.id);
+      const mappedUsers = users.map(user => ({
+        id: user.userId || 0,
+        nickname: user.nickname,
+        profileImg: user.profileImg
+      }));
+      setLikedUsers(mappedUsers);
+      setShowLikedUsersModal(true);
+    } catch (error) {
+      console.error('좋아요한 사용자 목록 조회 실패:', error);
+      alert("좋아요한 사용자 목록을 불러오는데 실패했습니다.");
+    }
+  };
 
   // 로딩 상태 표시
   if (loading) {
@@ -408,7 +478,13 @@ const MyFeedPage = () => {
           </button>
         </div>
       ) : (
-        <FeedList feeds={filteredFeeds} onFeedClick={handleFeedClick} />
+        <FeedList 
+          feeds={filteredFeeds} 
+          onFeedClick={handleFeedClick}
+          onLikeClick={(feed) => handleLike(feed.id)}
+          onLikeCountClick={handleLikeCountClick}
+          likedPosts={likedPosts}
+        />
       )}
 
       {/* 상세 모달 */}
@@ -420,27 +496,24 @@ const MyFeedPage = () => {
         showComments={showComments}
         onToggleComments={() => setShowComments(!showComments)}
         onLike={() => selectedPost && handleLike(selectedPost.id)}
-        liked={selectedPost ? likedPosts.includes(selectedPost.id) : false}
+        liked={selectedPost ? isLiked(selectedPost.id) : false}
         onVote={() => setShowVoteModal(true)}
         voted={selectedPost ? votedPosts.includes(selectedPost.id) : false}
-        onEdit={
-          user?.nickname &&
-          selectedPost &&
-          selectedPost.user.nickname === user.nickname
-            ? () => {
-                handleCloseModal();
-                navigate(`/feed-edit?id=${selectedPost.id}`);
-              }
-            : undefined
-        }
+        onEdit={(() => {
+          const isOwner = !!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname);
+          if (!isOwner) return undefined;
+          return () => {
+            handleCloseModal();
+            navigate(`/feed-edit?id=${selectedPost?.id}`);
+          };
+        })()}
+        onDelete={(() => {
+          const isOwner = !!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname);
+          if (!isOwner || !selectedPost) return undefined;
+          return () => handleDelete(selectedPost.id);
+        })()}
         showVoteButton={selectedPost?.feedType === "EVENT"}
-        showEditButton={
-          !!(
-            user?.nickname &&
-            selectedPost &&
-            selectedPost.user.nickname === user.nickname
-          )
-        }
+        showEditButton={!!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname)}
         showVoteModal={showVoteModal}
         onVoteModalClose={() => setShowVoteModal(false)}
         onVoteConfirm={() => selectedPost && handleVote(selectedPost.id)}
@@ -449,7 +522,16 @@ const MyFeedPage = () => {
         newComment={newComment}
         onCommentChange={(e) => setNewComment(e.target.value)}
         onCommentSubmit={handleCommentSubmit}
+        onShowLikeUsers={handleShowLikeUsers}
       />
+
+      {/* 좋아요 사용자 모달 */}
+      {showLikedUsersModal && (
+        <LikedUsersModal
+          users={likedUsers}
+          onClose={() => setShowLikedUsersModal(false)}
+        />
+      )}
     </div>
   );
 };

@@ -1,25 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import FeedService from "../../api/feedService";
 
-// 임시 피드 데이터 타입
-interface FeedPost {
-  id: number;
-  username: string;
-  level: number;
-  profileImg: string;
-  images: string[];
-  productName: string;
-  size: string;
-  gender: string;
-  height: number;
-  description: string;
-  likes: number;
-  votes: number;
-  comments: number;
+interface EditForm {
+  title: string;
+  content: string;
   instagramId: string;
-  createdAt: string;
-  isLiked?: boolean;
-  feedType: string;
+  hashtags: string[];
 }
 
 const FeedEditPage = () => {
@@ -28,33 +15,90 @@ const FeedEditPage = () => {
   const searchParams = new URLSearchParams(location.search);
   const feedId = Number(searchParams.get("id"));
 
-  const [form, setForm] = useState<Partial<FeedPost>>({});
+  const [form, setForm] = useState<EditForm>({
+    title: "",
+    content: "",
+    instagramId: "",
+    hashtags: [],
+  });
+  const [hashtagsInput, setHashtagsInput] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
-    // localStorage에서 피드 데이터 불러오기
-    const stored = JSON.parse(localStorage.getItem("localFeeds") || "[]");
-    const target = stored.find((f: FeedPost) => f.id === feedId);
-    if (target) {
-      setForm(target);
+    if (!feedId) {
+      navigate("/feeds");
+      return;
     }
-  }, [feedId]);
+    const fetchDetail = async () => {
+      try {
+        setLoading(true);
+        const detail = await FeedService.getFeed(feedId);
+        setForm({
+          title: detail.title || "",
+          content: detail.content || "",
+          instagramId: detail.instagramId || "",
+          hashtags: (detail.hashtags || []).map((h: any) => h.tag).filter(Boolean),
+        });
+        setHashtagsInput(((detail.hashtags || []).map((h: any) => h.tag).filter(Boolean)).join(" "));
+      } catch (e: any) {
+        setError(e?.response?.data?.message || "피드 정보를 불러오지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDetail();
+  }, [feedId, navigate]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
-    // localStorage에 수정 반영
-    const stored = JSON.parse(localStorage.getItem("localFeeds") || "[]");
-    const updated = stored.map((f: FeedPost) =>
-      f.id === feedId ? { ...f, ...form } : f
-    );
-    localStorage.setItem("localFeeds", JSON.stringify(updated));
-    navigate("/my-feed");
+  const parseHashtags = (raw: string): string[] => {
+    // 공백/콤마/해시 제거 후 중복 제거, 빈값 제거
+    const tokens = raw
+      .split(/[\s,]+/)
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0)
+      .map((t) => (t.startsWith("#") ? t.slice(1) : t));
+    return Array.from(new Set(tokens));
   };
 
-  if (!form.id) return <div className="p-10 text-center">피드 정보를 불러오는 중...</div>;
+  const handleSave = async () => {
+    if (!form.title.trim()) {
+      setError("제목은 필수입니다.");
+      return;
+    }
+    try {
+      setSaving(true);
+      const hashtags = parseHashtags(hashtagsInput);
+      await FeedService.updateFeed(feedId, {
+        title: form.title.trim(),
+        content: form.content,
+        instagramId: form.instagramId,
+        hashtags,
+      });
+      setToastMessage("피드가 수정되었습니다.");
+      setShowToast(true);
+      setTimeout(() => navigate('/feeds'), 1200);
+    } catch (e: any) {
+      setError(e?.response?.data?.message || "피드 수정에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <div className="p-10 text-center">불러오는 중...</div>;
+  if (error) (
+    // 단순 에러 표시
+    console.error(error)
+  );
 
   return (
     <div className="max-w-xl mx-auto p-8">
@@ -62,59 +106,61 @@ const FeedEditPage = () => {
       <div className="space-y-4">
         <input
           className="w-full border rounded px-4 py-2"
-          name="productName"
-          value={form.productName || ""}
+          name="title"
+          value={form.title}
           onChange={handleChange}
-          placeholder="상품명"
-        />
-        <select
-          className="w-full border rounded px-4 py-2"
-          name="size"
-          value={form.size || ""}
-          onChange={handleChange}
-        >
-          <option value="">사이즈 선택</option>
-          {[...Array(17)].map((_, i) => (
-            <option key={i} value={220 + i * 5}>{220 + i * 5}</option>
-          ))}
-        </select>
-        <input
-          className="w-full border rounded px-4 py-2"
-          name="gender"
-          value={form.gender || ""}
-          onChange={handleChange}
-          placeholder="성별"
-        />
-        <input
-          className="w-full border rounded px-4 py-2"
-          name="height"
-          value={form.height || ""}
-          onChange={handleChange}
-          placeholder="키(cm)"
+          placeholder="제목"
+          maxLength={100}
         />
         <textarea
           className="w-full border rounded px-4 py-2"
-          name="description"
-          value={form.description || ""}
+          name="content"
+          value={form.content}
           onChange={handleChange}
-          placeholder="착용 느낌, 스타일링 등"
+          placeholder="내용(최대 2000자)"
+          maxLength={2000}
+          rows={8}
         />
-        {/* 이미지, 기타 정보 등 필요시 추가 */}
+        <input
+          className="w-full border rounded px-4 py-2"
+          name="instagramId"
+          value={form.instagramId}
+          onChange={handleChange}
+          placeholder="인스타그램 ID (선택)"
+        />
+        <input
+          className="w-full border rounded px-4 py-2"
+          name="hashtags"
+          value={hashtagsInput}
+          onChange={(e) => setHashtagsInput(e.target.value)}
+          placeholder="#태그1 #태그2 (공백 또는 콤마로 구분)"
+        />
+        {error && <div className="text-red-500 text-sm">{error}</div>}
         <div className="flex gap-2 mt-4">
           <button
-            className="bg-[#87CEEB] text-white px-6 py-2 rounded hover:bg-blue-400"
+            className="bg-[#87CEEB] text-white px-6 py-2 rounded hover:bg-blue-400 disabled:opacity-60"
             onClick={handleSave}
+            disabled={saving}
           >
-            저장
+            {saving ? "저장 중..." : "저장"}
           </button>
           <button
             className="bg-gray-200 text-gray-700 px-6 py-2 rounded hover:bg-gray-300"
-            onClick={() => navigate("/my-feed")}
+            onClick={() => navigate('/feeds')}
           >
             취소
           </button>
         </div>
       </div>
+
+      {showToast && (
+        <div className="fixed bottom-4 right-4 bg-[#87CEEB] text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up">
+          <div className="flex items-center">
+            <i className="fas fa-check-circle mr-1"></i>
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
