@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ProductService } from "../../api/productService";
 import { ProductListItem } from "types/products";
+import { ProductFilters } from "../../components/products/FilterButtons";
 
 /**
  * 상품 목록 관리 훅
  *
- * 상품 목록 페이지에서 상품 데이터를 페이지네이션과 정렬 기능과 함께 관리합니다.
+ * 상품 목록 페이지에서 상품 데이터를 페이지네이션, 정렬, 필터링 기능과 함께 관리합니다.
  * 로딩, 에러 상태를 포함하여 안전하게 데이터를 처리하고,
- * 페이지 변경, 정렬 변경 및 재시도 기능을 제공합니다.
+ * 페이지 변경, 정렬 변경, 필터 변경 및 재시도 기능을 제공합니다.
  *
  * @param pageSize 페이지당 표시할 상품 수 (기본값: 9)
  */
@@ -27,11 +28,33 @@ export const useProductList = (pageSize: number = 9) => {
   const [totalPages, setTotalPages] = useState(0);
   // 현재 정렬 방식
   const [currentSort, setCurrentSort] = useState("latest");
+  // 현재 필터 상태 
+  const [filters, setFilters] = useState<ProductFilters>({ sort: "latest" });
+
+  // URL에서 초기 필터 상태 설정
+  useEffect(() => {
+    const urlParams = getFilterParamsFromUrl();
+    const initialFilters: ProductFilters = {
+      sort: urlParams.sort || "latest",
+      categoryId: urlParams.categoryId,
+      minPrice: urlParams.minPrice,
+      maxPrice: urlParams.maxPrice,
+      storeId: urlParams.storeId,
+      colors: urlParams.colors,
+      sizes: urlParams.sizes,
+      genders: urlParams.genders,
+      inStockOnly: urlParams.inStockOnly,
+      discountedOnly: urlParams.discountedOnly,
+    };
+    setFilters(initialFilters);
+    setCurrentSort(urlParams.sort || "latest");
+  }, [location.search]);
 
   // URL에서 필터 파라미터 추출
   const getFilterParamsFromUrl = () => {
     const searchParams = new URLSearchParams(location.search);
     return {
+      q: searchParams.get("q") || undefined,
       categoryId: searchParams.get("categoryId")
         ? Number(searchParams.get("categoryId"))
         : undefined,
@@ -44,6 +67,17 @@ export const useProductList = (pageSize: number = 9) => {
       storeId: searchParams.get("storeId")
         ? Number(searchParams.get("storeId"))
         : undefined,
+      colors: searchParams.get("colors") 
+        ? searchParams.get("colors")!.split(",")
+        : undefined,
+      sizes: searchParams.get("sizes")
+        ? searchParams.get("sizes")!.split(",")
+        : undefined,
+      genders: searchParams.get("genders")
+        ? searchParams.get("genders")!.split(",")
+        : undefined,
+      inStockOnly: searchParams.get("inStockOnly") === "true" ? true : undefined,
+      discountedOnly: searchParams.get("discountedOnly") === "true" ? true : undefined,
       sort: searchParams.get("sort") || "latest",
     };
   };
@@ -52,24 +86,37 @@ export const useProductList = (pageSize: number = 9) => {
    * 서버에서 상품 목록을 불러오는 비동기 함수
    * @param page 불러올 페이지 번호 (0부터 시작, 기본값: 0)
    * @param sort 정렬 방식 (기본값: currentSort)
+   * @param customFilters 사용자 정의 필터 (선택적)
    */
-  const loadProducts = async (page: number = 0, sort?: string) => {
+  const loadProducts = async (page: number = 0, sort?: string, customFilters?: ProductFilters) => {
     try {
       setLoading(true); // 로딩 시작
       setError(null); // 이전 에러 초기화
 
-      const filterParams = getFilterParamsFromUrl();
-      const sortParam = sort || filterParams.sort || currentSort;
+      const urlParams = getFilterParamsFromUrl();
+      const currentFilters = customFilters || filters;
+      const sortParam = sort || currentFilters.sort || currentSort;
       
-      // API 명세서에 따라 모든 요청은 /api/products 엔드포인트로 처리
+      // 필터 파라미터를 API 형식에 맞게 변환
+      const processedFilters = {
+        ...urlParams,
+        ...currentFilters,
+        page, 
+        size: pageSize, 
+        sort: sortParam 
+      };
+
+      // undefined, null, 빈 문자열, 빈 배열 제거
       const requestParams = Object.fromEntries(
-        Object.entries({ 
-          ...filterParams, 
-          page, 
-          size: pageSize, 
-          sort: sortParam 
-        }).filter(([_, value]) => value !== undefined && value !== null)
+        Object.entries(processedFilters).filter(([_, value]) => 
+          value !== undefined && 
+          value !== null && 
+          value !== "" && 
+          !(Array.isArray(value) && value.length === 0)
+        )
       );
+
+      
       
       const response = await ProductService.getFilteredProducts(requestParams);
 
@@ -78,6 +125,11 @@ export const useProductList = (pageSize: number = 9) => {
       setTotalPages(response.totalPages || 0);
       setCurrentPage(page);
       setCurrentSort(sortParam);
+      
+      // 필터 상태 업데이트
+      if (customFilters) {
+        setFilters(customFilters);
+      }
     } catch (err: any) {
       console.error("상품 목록 로딩 실패:", err);
       // 에러 발생 시 에러 메시지 설정
@@ -104,7 +156,18 @@ export const useProductList = (pageSize: number = 9) => {
    * @param sort 새로운 정렬 방식
    */
   const handleSortChange = (sort: string) => {
+    const newFilters = { ...filters, sort };
+    setFilters(newFilters);
     loadProducts(0, sort); // 정렬 변경 시 첫 페이지부터 로드
+  };
+
+  /**
+   * 필터 변경을 처리하는 함수
+   * @param newFilters 새로운 필터 상태
+   */
+  const handleFiltersChange = (newFilters: ProductFilters) => {
+    setFilters(newFilters);
+    loadProducts(0, newFilters.sort, newFilters); // 필터 변경 시 첫 페이지부터 로드
   };
 
   /**
@@ -119,10 +182,20 @@ export const useProductList = (pageSize: number = 9) => {
     loadProducts(0);
   }, []);
 
-  // URL이 변경될 때마다 상품 목록 다시 로드
+  // 필터가 변경될 때마다 상품 목록 다시 로드 (URL 변경 포함)
   useEffect(() => {
-    loadProducts(0);
-  }, [location.search]);
+    // 필터가 초기 상태가 아니거나, 명시적으로 변경된 경우에만 로드
+    const hasFilters = Object.keys(filters).some(key => 
+      key !== 'sort' && filters[key as keyof ProductFilters] !== undefined
+    );
+    
+    if (hasFilters || filters.sort !== "latest") {
+      loadProducts(0);
+    } else if (Object.keys(filters).length === 1 && filters.sort === "latest") {
+      // 필터 초기화 시에도 로드 (기본 상태로 복원)
+      loadProducts(0);
+    }
+  }, [filters]);
 
   // 상품 목록 관련 모든 상태와 함수를 반환
   return {
@@ -132,9 +205,11 @@ export const useProductList = (pageSize: number = 9) => {
     currentPage, // 현재 페이지 번호
     totalPages, // 전체 페이지 수
     currentSort, // 현재 정렬 방식
+    filters, // 현재 필터 상태
     loadProducts, // 상품 로드 함수
     handlePageChange, // 페이지 변경 처리 함수
     handleSortChange, // 정렬 변경 처리 함수
+    handleFiltersChange, // 필터 변경 처리 함수
     retry, // 재시도 함수
   };
 };
