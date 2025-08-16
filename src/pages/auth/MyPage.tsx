@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Routes, Route, Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import AddressManagementPage from "./AddressManagementPage";
 import CouponsPage from "./CouponsPage";
@@ -9,6 +9,11 @@ import { OrderListItem } from "types/order";
 import MyPosts from "./MyPosts";
 import MyComments from "./MyComments";
 import { useAuth } from "../../contexts/AuthContext";
+import {
+  UserProfileService,
+  UserProfileData,
+} from "../../api/userProfileService";
+import { convertMockUrlToCdnUrl } from "../../utils/common/images";
 
 const myPageTempData = {
   recentOrders: [
@@ -36,24 +41,6 @@ const myPageTempData = {
   wishlistCount: 5,
   couponCount: 3,
 };
-
-const feeds = [
-  {
-    id: 1,
-    image: "https://picsum.photos/seed/feed1/300/200",
-    title: "OOTD #1",
-  },
-  {
-    id: 2,
-    image: "https://picsum.photos/seed/feed2/300/200",
-    title: "OOTD #2",
-  },
-  {
-    id: 3,
-    image: "https://picsum.photos/seed/feed3/300/200",
-    title: "OOTD #3",
-  },
-];
 
 // 애니메이션
 const fadeInUp = keyframes`
@@ -241,7 +228,6 @@ const MyPageDashboard = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<OrderListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -249,8 +235,8 @@ const MyPageDashboard = () => {
         setLoading(true);
         const response = await OrderService.getOrders(0, 5); // 최신 5개 주문만 가져오기
         setOrders(response.content);
-      } catch (error: any) {
-        setError("주문 목록을 불러오는데 실패했습니다.");
+      } catch (fetchError: any) {
+        console.error("주문 목록을 불러오는데 실패했습니다:", fetchError);
       } finally {
         setLoading(false);
       }
@@ -306,6 +292,26 @@ const MyPageDashboard = () => {
 function MyPage() {
   const { user } = useAuth();
   const location = useLocation();
+  const [profileData, setProfileData] = useState<UserProfileData | null>(null);
+  const [imageLoadError, setImageLoadError] = useState(false);
+
+  // 프로필 정보 로드
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return;
+
+      try {
+        const profile = await UserProfileService.getUserProfile();
+        setProfileData(profile);
+        setImageLoadError(false);
+      } catch (loadError: any) {
+        console.error("프로필 로드 실패:", loadError);
+        // 에러가 발생해도 기본 프로필을 사용
+      }
+    };
+
+    loadProfile();
+  }, [user]);
 
   if (!user) {
     return <div>로그인이 필요합니다.</div>;
@@ -335,8 +341,28 @@ function MyPage() {
       <MainLayout>
         <Sidebar>
           <ProfileCard>
-            <ProfileImg src="https://i.pravatar.cc/150?img=32" alt="프로필" />
-            <WelcomeMessage>안녕하세요, {user.nickname}님!</WelcomeMessage>
+            <ProfileImg
+              src={
+                imageLoadError || !profileData?.profileImageUrl
+                  ? "https://via.placeholder.com/120x120/374151/9CA3AF?text=프로필"
+                  : convertMockUrlToCdnUrl(profileData.profileImageUrl)
+              }
+              alt="프로필"
+              onError={() => {
+                if (!imageLoadError) {
+                  console.log("프로필 이미지 로드 실패");
+                  setImageLoadError(true);
+                }
+              }}
+              onLoad={() => {
+                if (profileData?.profileImageUrl && !imageLoadError) {
+                  console.log("프로필 이미지 로드 성공");
+                }
+              }}
+            />
+            <WelcomeMessage>
+              안녕하세요, {profileData?.nickname || user.nickname}님!
+            </WelcomeMessage>
             <EditProfileLink to="/profile-settings">
               프로필 관리
             </EditProfileLink>
@@ -385,7 +411,7 @@ function MyPage() {
                 location.pathname === "/mypage/settings" ? "active" : ""
               }
             >
-              <i className="fas fa-cog"></i> 설정
+              <i className="fas fa-map-marker-alt"></i> 배송지 설정
             </NavItem>
           </NavMenu>
         </Sidebar>
