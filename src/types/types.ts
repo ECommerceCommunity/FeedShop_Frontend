@@ -1,6 +1,11 @@
 // Event 관련 타입들 추가
 export type EventStatus = "UPCOMING" | "ONGOING" | "ENDED";
-export type EventType = "BATTLE" | "MISSION" | "MULTIPLE" | "REVIEW" | "CHALLENGE";
+export type EventType =
+  | "BATTLE"
+  | "MISSION"
+  | "MULTIPLE"
+  | "REVIEW"
+  | "CHALLENGE";
 export type ParticipationStatus = "PARTICIPATING" | "COMPLETED" | "ELIMINATED";
 export type MatchStatus = "PENDING" | "ONGOING" | "COMPLETED";
 
@@ -58,4 +63,45 @@ export interface BattleMatch {
   createdAt: string;
   startTime?: string;
   endTime?: string;
+}
+
+// Address 관련 타입들 - 백엔드 UserAddress 모델에 맞춤
+export interface Address {
+  id: number;
+  recipientName: string;
+  recipientPhone: string;
+  zipCode: string;
+  addressLine1: string;
+  addressLine2?: string;
+  isDefault: boolean;
+}
+
+export interface AddressRequest {
+  recipientName: string;
+  recipientPhone: string;
+  zipCode: string;
+  addressLine1: string;
+  addressLine2?: string;
+  isDefault?: boolean;
+}
+
+export interface AddressResponse {
+  id: number;
+  recipientName: string;
+  recipientPhone: string;
+  zipCode: string;
+  addressLine1: string;
+  addressLine2?: string;
+  isDefault: boolean;
+}
+
+// 백엔드 응답을 위한 새로운 타입 정의
+export interface BackendAddressResponse {
+  id: number;
+  recipientName: string;
+  recipientPhone: string;
+  zipCode: string;
+  addressLine1: string;
+  addressLine2?: string;
+  is_default: boolean;
 }
