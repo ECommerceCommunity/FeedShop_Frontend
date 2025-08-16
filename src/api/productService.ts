@@ -82,8 +82,18 @@ export class ProductService {
 
       // 상품 정보 (images 필드 제외)
       const { images, ...productInfo } = productData;
+
+      // 백엔드 DTO에 맞는 images 배열 생성
+      const imageRequests = images
+        .filter(img => img.file || img.url) // 유효한 이미지만 필터링
+        .map(img => ({
+          url: img.url,
+          type: img.isMain || img.type === "MAIN" ? "MAIN" : "DETAIL"
+        }));
+
       const productJson = {
         ...productInfo,
+        images: imageRequests, // 백엔드가 기대하는 형태로 전송
         options: productInfo.options.map(option => ({
           gender: option.gender,
           size: option.size.replace('SIZE_', ''), // SIZE_250 -> 250
@@ -113,7 +123,7 @@ export class ProductService {
         }
       });
 
-      // 이미지 파일 추가
+      // 이미지 파일 추가 (파일이 있을 때만)
       mainImageFiles.forEach(file => {
         formData.append("mainImages", file);
       });

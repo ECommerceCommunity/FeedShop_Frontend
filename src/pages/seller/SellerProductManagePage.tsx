@@ -535,6 +535,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [warningOpen, setWarningOpen] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // 사용된 옵션 조합을 추적
@@ -670,10 +672,18 @@ const ProductModal: React.FC<ProductModalProps> = ({
       newErrors.price = "가격은 1000원 이상이어야 합니다.";
     if (!formData.description.trim())
       newErrors.description = "상품 설명을 입력해주세요.";
-    if (formData.images.length === 0)
+
+    // 이미지 검증 로직 수정
+    const validImages = formData.images.filter(img => img.file || img.url);
+    if (validImages.length === 0) {
       newErrors.images = "최소 1개의 이미지가 필요합니다.";
-    if (!formData.images.some((img) => img.isMain))
-      newErrors.mainImage = "메인 이미지를 선택해주세요.";
+    } else {
+      // 유효한 이미지 중에서 메인 이미지 체크
+      if (!validImages.some((img) => img.isMain)) {
+        newErrors.mainImage = "메인 이미지를 선택해주세요.";
+      }
+    }
+
     if (formData.options.length === 0)
       newErrors.options = "최소 1개의 옵션이 필요합니다.";
 
@@ -793,7 +803,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
         options: [...formData.options, availableOption],
       });
     } else {
-      alert("더 이상 추가할 수 있는 옵션 조합이 없습니다.");
+      setWarningMessage("더 이상 추가할 수 있는 옵션 조합이 없습니다.");
+      setWarningOpen(true);
     }
   };
 
@@ -1179,6 +1190,15 @@ const ProductModal: React.FC<ProductModalProps> = ({
           </ActionButton>
         </ModalFooter>
       </ModalContent>
+      
+      {/* Warning Modal */}
+      <Warning
+        open={warningOpen}
+        title="알림"
+        message={warningMessage}
+        onConfirm={() => setWarningOpen(false)}
+        onCancel={() => setWarningOpen(false)}
+      />
     </Modal>
   );
 };
@@ -1192,6 +1212,8 @@ const SellerProductManagePage: React.FC = () => {
   const [editProduct, setEditProduct] = useState<ProductListItem | null>(null);
   const [deleteWarningOpen, setDeleteWarningOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
+  const [errorWarningOpen, setErrorWarningOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // 페이지네이션 상태
   const [currentPage, setCurrentPage] = useState(0);
@@ -1288,7 +1310,8 @@ const SellerProductManagePage: React.FC = () => {
       loadProducts(currentPage); // 현재 페이지 유지하며 목록 새로고침
     } catch (error) {
       console.error("상품 저장 실패:", error);
-      alert("상품 저장에 실패했습니다.");
+      setErrorMessage("상품 저장에 실패했습니다.");
+      setErrorWarningOpen(true);
     }
   };
 
@@ -1308,7 +1331,8 @@ const SellerProductManagePage: React.FC = () => {
         setProductToDelete(null);
       } catch (error) {
         console.error("상품 삭제 실패:", error);
-        alert("상품 삭제에 실패했습니다.");
+        setErrorMessage("상품 삭제에 실패했습니다.");
+        setErrorWarningOpen(true);
       }
     }
   };
@@ -1545,6 +1569,15 @@ const SellerProductManagePage: React.FC = () => {
         message="정말로 이 상품을 삭제하시겠습니까? 삭제된 상품은 복구할 수 없습니다."
         onConfirm={confirmDeleteProduct}
         onCancel={cancelDeleteProduct}
+      />
+      
+      {/* Error Warning Modal */}
+      <Warning
+        open={errorWarningOpen}
+        title="오류"
+        message={errorMessage}
+        onConfirm={() => setErrorWarningOpen(false)}
+        onCancel={() => setErrorWarningOpen(false)}
       />
     </ManagementContainer>
   );
