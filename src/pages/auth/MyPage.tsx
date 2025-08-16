@@ -411,7 +411,7 @@ function MyPage() {
                 location.pathname === "/mypage/settings" ? "active" : ""
               }
             >
-              <i className="fas fa-cog"></i> 설정
+              <i className="fas fa-map-marker-alt"></i> 배송지 설정
             </NavItem>
           </NavMenu>
         </Sidebar>
