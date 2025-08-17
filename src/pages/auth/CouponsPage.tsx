@@ -1,41 +1,9 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-
-// 더미 데이터
-const availableCoupons = [
-  {
-    id: 1,
-    name: "신규가입 15% 할인",
-    description: "전 상품 적용 가능",
-    expiry: "2025-08-31",
-    discount: "15%",
-  },
-  {
-    id: 2,
-    name: "여름 시즌 10,000원 할인",
-    description: "50,000원 이상 구매 시",
-    expiry: "2025-09-15",
-    discount: "10,000원",
-  },
-  {
-    id: 3,
-    name: "VIP 무료배송",
-    description: "배송비 무료",
-    expiry: "2025-12-31",
-    discount: "무료배송",
-  },
-];
-
-const expiredCoupons = [
-  {
-    id: 4,
-    name: "봄맞이 5% 할인",
-    description: "전 상품 적용",
-    expiry: "2025-05-31",
-    discount: "5%",
-  },
-];
+import { useAuth } from "../../contexts/AuthContext";
+import { couponService } from "../../api/couponService";
+import { UserProfileService } from "../../api/userProfileService";
+import { CouponResponse } from "../../types/types";
 
 const Container = styled.div`
   background: rgba(255, 255, 255, 0.05);
@@ -99,8 +67,7 @@ const CouponCard = styled.div<{ isExpired?: boolean }>`
   flex-direction: column;
   justify-content: space-between;
   opacity: ${(props) => (props.isExpired ? 0.6 : 1)};
-  border-left: 5px solid
-    ${(props) => (props.isExpired ? "#718096" : "#f97316")};
+  border-left: 5px solid ${(props) => (props.isExpired ? "#718096" : "#f97316")};
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 `;
 
@@ -146,13 +113,244 @@ const NoCouponsMessage = styled.div`
   color: rgba(255, 255, 255, 0.7);
 `;
 
+// 할인 타입에 따른 할인 표시 함수
+const getDiscountDisplay = (coupon: CouponResponse): string => {
+  if (coupon.freeShipping) {
+    return "무료배송";
+  }
+
+  // 백엔드에서 사용하는 다양한 할인 타입 처리
+  const discountType = coupon.discountType?.toUpperCase();
+
+  if (discountType === "PERCENTAGE" || discountType === "RATE_DISCOUNT") {
+    // 0.3 -> 30%로 변환 (백엔드에서 비율로 보내는 경우)
+    let percentage = coupon.discountValue;
+    if (percentage < 1) {
+      percentage = percentage * 100;
+    }
+    return `${Math.round(percentage)}%`;
+  }
+
+  if (discountType === "FIXED_AMOUNT" || discountType === "AMOUNT_DISCOUNT") {
+    return `${coupon.discountValue.toLocaleString()}원`;
+  }
+
+  // 기본값 - 숫자가 1보다 작으면 퍼센트로 간주
+  if (coupon.discountValue < 1) {
+    const percentage = coupon.discountValue * 100;
+    return `${Math.round(percentage)}%`;
+  } else {
+    return `${coupon.discountValue.toLocaleString()}원`;
+  }
+};
+
+// 날짜 포맷팅 함수
+const formatDate = (dateString: string): string => {
+  return new Date(dateString).toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
 const CouponsPage = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<"available" | "expired">(
     "available"
   );
+  const [coupons, setCoupons] = useState<CouponResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const couponsToDisplay =
-    activeTab === "available" ? availableCoupons : expiredCoupons;
+  // 쿠폰 데이터 로드
+  const loadCoupons = async () => {
+    if (!user) {
+      setError("로그인이 필요합니다.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // 사용자 프로필에서 이메일 가져오기
+      const userProfile = await UserProfileService.getUserProfile();
+
+      if (!userProfile.email) {
+        setError("사용자 이메일 정보를 찾을 수 없습니다.");
+        setLoading(false);
+        return;
+      }
+
+      // 쿠폰 목록 조회
+      const allCoupons = await couponService.getUserCoupons(userProfile.email);
+
+      setCoupons(allCoupons);
+    } catch (err: any) {
+      console.error("쿠폰 로드 실패:", err);
+
+      // 개발 환경에서는 임시 테스트 데이터 사용
+      if (process.env.NODE_ENV === "development") {
+        const testCoupons: CouponResponse[] = [
+          {
+            id: 1,
+            couponCode: "WELCOME15",
+            couponName: "신규가입 15% 할인",
+            discountType: "PERCENTAGE",
+            discountValue: 15,
+            freeShipping: false,
+            issuedAt: "2024-01-01T00:00:00",
+            expiresAt: "2025-12-31T23:59:59",
+            status: "ACTIVE",
+          },
+          {
+            id: 2,
+            couponCode: "FREESHIP",
+            couponName: "무료배송 쿠폰",
+            discountType: "FIXED_AMOUNT",
+            discountValue: 0,
+            freeShipping: true,
+            issuedAt: "2024-01-01T00:00:00",
+            expiresAt: "2025-06-30T23:59:59",
+            status: "ACTIVE",
+          },
+          {
+            id: 3,
+            couponCode: "EXPIRED10",
+            couponName: "만료된 10% 할인",
+            discountType: "PERCENTAGE",
+            discountValue: 10,
+            freeShipping: false,
+            issuedAt: "2024-01-01T00:00:00",
+            expiresAt: "2024-12-31T23:59:59",
+            status: "EXPIRED",
+          },
+        ];
+        setCoupons(testCoupons);
+        setError(null);
+      } else {
+        setError(
+          "쿠폰 정보를 불러오는데 실패했습니다. 에러: " +
+            (err.response?.data?.message || err.message)
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCoupons();
+  }, [user]); // loadCoupons는 user에 의존하므로 user만 의존성에 포함
+
+  // 탭에 따른 쿠폰 필터링
+  const getFilteredCoupons = (): CouponResponse[] => {
+    if (activeTab === "available") {
+      // 백엔드에서 다양한 active 상태값을 사용할 수 있으므로 더 유연하게 처리
+      const activeCoupons = coupons.filter((coupon) => {
+        const status = coupon.status?.toUpperCase();
+        const couponStatus = (coupon as any).couponStatus?.toUpperCase();
+
+        // status나 couponStatus 필드가 있는 경우
+        const statusToCheck = couponStatus || status;
+        if (statusToCheck) {
+          const activeStatuses = ["ACTIVE", "AVAILABLE", "VALID", "UNUSED"];
+          return activeStatuses.includes(statusToCheck);
+        }
+
+        // status 필드가 없는 경우 날짜와 사용 여부로 판단
+        const now = new Date();
+        const expiryDate = new Date(coupon.expiresAt);
+        const isNotExpired = expiryDate > now;
+        const isNotUsed = !coupon.usedAt;
+
+        return isNotExpired && isNotUsed;
+      });
+      return activeCoupons;
+    } else {
+      const expiredCoupons = coupons.filter((coupon) => {
+        const status = coupon.status?.toUpperCase();
+
+        // status 필드가 있는 경우
+        if (status) {
+          const expiredStatuses = ["EXPIRED", "USED", "INVALID", "DISABLED"];
+          return expiredStatuses.includes(status);
+        }
+
+        // status 필드가 없는 경우 날짜와 사용 여부로 판단
+        const now = new Date();
+        const expiryDate = new Date(coupon.expiresAt);
+        const isExpired = expiryDate <= now;
+        const isUsed = !!coupon.usedAt;
+
+        return isExpired || isUsed;
+      });
+      return expiredCoupons;
+    }
+  };
+
+  const couponsToDisplay = getFilteredCoupons();
+
+  const availableCouponsCount = coupons.filter((c) => {
+    const status = c.status?.toUpperCase();
+    if (status) {
+      return ["ACTIVE", "AVAILABLE", "VALID", "UNUSED"].includes(status);
+    }
+    // status가 없으면 날짜와 사용 여부로 판단
+    const now = new Date();
+    const expiryDate = new Date(c.expiresAt);
+    return expiryDate > now && !c.usedAt;
+  }).length;
+
+  const expiredCouponsCount = coupons.filter((c) => {
+    const status = c.status?.toUpperCase();
+    if (status) {
+      return ["EXPIRED", "USED", "INVALID", "DISABLED"].includes(status);
+    }
+    // status가 없으면 날짜와 사용 여부로 판단
+    const now = new Date();
+    const expiryDate = new Date(c.expiresAt);
+    return expiryDate <= now || !!c.usedAt;
+  }).length;
+
+  // 로딩 상태
+  if (loading) {
+    return (
+      <Container>
+        <Title>쿠폰 및 포인트</Title>
+        <NoCouponsMessage>
+          <p>쿠폰 정보를 불러오는 중...</p>
+        </NoCouponsMessage>
+      </Container>
+    );
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <Container>
+        <Title>쿠폰 및 포인트</Title>
+        <NoCouponsMessage>
+          <p style={{ color: "#f87171" }}>{error}</p>
+          <button
+            onClick={loadCoupons}
+            style={{
+              background: "#f97316",
+              color: "white",
+              border: "none",
+              padding: "0.5rem 1rem",
+              borderRadius: "8px",
+              marginTop: "1rem",
+              cursor: "pointer",
+            }}
+          >
+            다시 시도
+          </button>
+        </NoCouponsMessage>
+      </Container>
+    );
+  }
 
   return (
     <Container>
@@ -162,40 +360,96 @@ const CouponsPage = () => {
           isActive={activeTab === "available"}
           onClick={() => setActiveTab("available")}
         >
-          사용 가능한 쿠폰 ({availableCoupons.length})
+          사용 가능한 쿠폰 ({availableCouponsCount})
         </TabButton>
         <TabButton
           isActive={activeTab === "expired"}
           onClick={() => setActiveTab("expired")}
         >
-          만료된 쿠폰 ({expiredCoupons.length})
+          만료된 쿠폰 ({expiredCouponsCount})
         </TabButton>
       </TabContainer>
 
-      {couponsToDisplay.length > 0 ? (
-        <CouponList>
-          {couponsToDisplay.map((coupon) => (
-            <CouponCard key={coupon.id} isExpired={activeTab === "expired"}>
-              <CouponHeader>
-                <CouponName>{coupon.name}</CouponName>
-                <CouponDescription>{coupon.description}</CouponDescription>
-              </CouponHeader>
-              <CouponFooter>
-                <ExpiryDate>~ {coupon.expiry}</ExpiryDate>
-                <Discount>{coupon.discount}</Discount>
-              </CouponFooter>
-            </CouponCard>
-          ))}
-        </CouponList>
-      ) : (
-        <NoCouponsMessage>
-          <p>
-            {activeTab === "available"
-              ? "사용 가능한 쿠폰이 없습니다."
-              : "만료된 쿠폰이 없습니다."}
-          </p>
-        </NoCouponsMessage>
-      )}
+      {(() => {
+        if (couponsToDisplay.length > 0) {
+          return (
+            <CouponList>
+              {couponsToDisplay.map((coupon, index) => {
+                return (
+                  <CouponCard
+                    key={coupon.id}
+                    isExpired={activeTab === "expired"}
+                  >
+                    <CouponHeader>
+                      <CouponName>{coupon.couponName}</CouponName>
+                      <CouponDescription>
+                        {/* 백엔드에서 설명이 있으면 사용, 없으면 자동 생성 */}
+                        {(() => {
+                          // 백엔드에서 설명이 있으면 사용
+                          const backendDescription =
+                            (coupon as any).description ||
+                            (coupon as any).couponDescription;
+                          if (backendDescription) {
+                            return backendDescription;
+                          }
+
+                          // 무료배송인 경우
+                          if (coupon.freeShipping) {
+                            return "배송비 무료";
+                          }
+
+                          // 할인 타입 확인 (더 포괄적으로)
+                          const discountType = coupon.discountType
+                            ?.toString()
+                            .toUpperCase();
+
+                          // 퍼센트 할인 타입들
+                          const percentageTypes = [
+                            "PERCENTAGE",
+                            "RATE_DISCOUNT",
+                            "PERCENT",
+                            "RATE",
+                          ];
+                          let isPercentageDiscount = percentageTypes.some(
+                            (type) => discountType?.includes(type)
+                          );
+
+                          // discountType이 없으면 할인값으로 판단 (0.3 등은 퍼센트)
+                          if (
+                            !discountType &&
+                            coupon.discountValue < 1 &&
+                            coupon.discountValue > 0
+                          ) {
+                            isPercentageDiscount = true;
+                          }
+
+                          return isPercentageDiscount
+                            ? "전 상품 적용"
+                            : "최소 주문금액 적용";
+                        })()}
+                      </CouponDescription>
+                    </CouponHeader>
+                    <CouponFooter>
+                      <ExpiryDate>~ {formatDate(coupon.expiresAt)}</ExpiryDate>
+                      <Discount>{getDiscountDisplay(coupon)}</Discount>
+                    </CouponFooter>
+                  </CouponCard>
+                );
+              })}
+            </CouponList>
+          );
+        } else {
+          return (
+            <NoCouponsMessage>
+              <p>
+                {activeTab === "available"
+                  ? "사용 가능한 쿠폰이 없습니다."
+                  : "만료된 쿠폰이 없습니다."}
+              </p>
+            </NoCouponsMessage>
+          );
+        }
+      })()}
     </Container>
   );
 };
