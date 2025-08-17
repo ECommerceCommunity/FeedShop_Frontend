@@ -245,10 +245,10 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                           {currentUser?.nickname && (comment.user?.nickname || comment.userNickname) === currentUser.nickname && onDeleteComment && (
                             <button
                               onClick={() => onDeleteComment(comment.id)}
-                              className="text-red-500 hover:text-red-700 text-xs"
+                              className="text-red-500 hover:text-red-700 text-xs font-bold"
                               title="댓글 삭제"
                             >
-                              <i className="fas fa-times"></i>
+                              ✕
                             </button>
                           )}
                         </div>

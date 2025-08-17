@@ -571,10 +571,10 @@ const FeedDetailPage = () => {
                         {user?.nickname && (comment.user?.nickname || comment.userNickname) === user.nickname && (
                           <button
                             onClick={() => handleDeleteComment(comment.id)}
-                            className="text-red-500 hover:text-red-700 text-xs"
+                            className="text-red-500 hover:text-red-700 text-xs font-bold"
                             title="댓글 삭제"
                           >
-                            <i className="fas fa-times"></i>
+                            ✕
                           </button>
                         )}
 
