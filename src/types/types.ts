@@ -105,3 +105,40 @@ export interface BackendAddressResponse {
   addressLine2?: string;
   is_default: boolean;
 }
+
+// 쿠폰 관련 타입들
+export type UserCouponStatus = "ACTIVE" | "USED" | "EXPIRED";
+export type DiscountType =
+  | "PERCENTAGE"
+  | "FIXED_AMOUNT"
+  | "RATE_DISCOUNT"
+  | "AMOUNT_DISCOUNT";
+
+export interface CouponResponse {
+  id: number;
+  couponCode: string;
+  couponName: string;
+  discountType: DiscountType;
+  discountValue: number;
+  freeShipping: boolean;
+  issuedAt: string;
+  expiresAt: string;
+  usedAt?: string;
+  status?: UserCouponStatus; // 선택적으로 변경
+  couponStatus?: UserCouponStatus; // 백엔드 엔티티 필드명
+}
+
+export interface CouponIssueRequest {
+  email: string;
+  couponCode: string;
+  couponName: string;
+  discountType: DiscountType;
+  discountValue: number;
+  freeShipping: boolean;
+  expiresAt: string;
+}
+
+export interface CouponUseRequest {
+  email: string;
+  couponCode: string;
+}
