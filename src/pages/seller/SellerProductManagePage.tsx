@@ -810,13 +810,37 @@ const ProductModal: React.FC<ProductModalProps> = ({
     }
   };
 
+  // 실시간 옵션 중복 검증
+  const validateOptionCombination = useCallback((newOption: ProductOptionRequest, excludeIndex?: number) => {
+    const duplicateExists = formData.options.some((option, index) =>
+      index !== excludeIndex &&
+      option.gender === newOption.gender &&
+      option.size === newOption.size &&
+      option.color === newOption.color
+    );
+
+    if (duplicateExists) {
+      setWarningMessage("이미 존재하는 옵션 조합입니다.");
+      setWarningOpen(true);
+      return false;
+    }
+    return true;
+  }, [formData.options]);
+
   const updateOption = (
     index: number,
     field: keyof ProductOptionRequest,
     value: any
   ) => {
     const updatedOptions = [...formData.options];
-    updatedOptions[index] = { ...updatedOptions[index], [field]: value };
+    const newOption = { ...updatedOptions[index], [field]: value };
+    
+    // 실시간 중복 검증
+    if (!validateOptionCombination(newOption, index)) {
+      return; // 중복이면 업데이트하지 않음
+    }
+    
+    updatedOptions[index] = newOption;
     setFormData({ ...formData, options: updatedOptions });
   };
 
