@@ -8,13 +8,24 @@ import FeedService from "../../api/feedService";
 import { FeedVoteRequest, FeedPost } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
 
-type Comment = {
-  id: number;
-  username: string;
-  level: number;
-  profileImg: string;
-  content: string;
-  createdAt: string;
+import { FeedComment } from "../../types/feed";
+
+// 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
+const formatKoreanTime = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    const koreanTime = new Intl.DateTimeFormat('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Seoul'
+    }).format(date);
+    return koreanTime;
+  } catch (error) {
+    return dateString; // 파싱 실패 시 원본 반환
+  }
 };
 
 const MyFeedPage = () => {
@@ -28,7 +39,7 @@ const MyFeedPage = () => {
   const [selectedPost, setSelectedPost] = useState<FeedPost | null>(null);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<FeedComment[]>([]);
   const [votedPosts, setVotedPosts] = useState<number[]>([]);
   const [showVoteModal, setShowVoteModal] = useState(false);
   const [showVoteToast, setShowVoteToast] = useState(false);
@@ -127,9 +138,22 @@ const MyFeedPage = () => {
     });
 
   // handleFeedClick: 상세 모달 오픈
-  const handleFeedClick = (post: FeedPost) => {
+  const handleFeedClick = async (post: FeedPost) => {
     setSelectedPost(post);
     setShowComments(false);
+    
+    // 댓글 로드
+    try {
+      const commentsData = await FeedService.getComments(post.id);
+      const commentsWithFormattedTime = (commentsData.pagination.content || []).map(comment => ({
+        ...comment,
+        createdAt: formatKoreanTime(comment.createdAt)
+      }));
+      setComments(commentsWithFormattedTime);
+    } catch (error: any) {
+      console.error('댓글 로드 실패:', error);
+      setComments([]);
+    }
   };
 
   // 좋아요 토글 (백엔드 API 연동)
@@ -210,19 +234,75 @@ const MyFeedPage = () => {
   };
 
   // 댓글 등록
-  const handleCommentSubmit = (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newComment.trim() && selectedPost) {
-      const newCommentObj = {
-        id: comments.length + 1,
-                 username: user?.nickname || "나",
-         level: 2, // 기본값 사용
-         profileImg: "https://readdy.ai/api/search-image?query=casual%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=40&height=40&seq=myprofile&orientation=squarish",
-        content: newComment,
-        createdAt: new Date().toLocaleString(),
+    if (!newComment.trim() || !selectedPost) return;
+
+    try {
+      // 백엔드 API 연동
+      const newCommentObj = await FeedService.createComment(selectedPost.id, {
+        content: newComment
+      });
+      
+      // 한국 시간으로 포맷팅
+      const commentWithFormattedTime = {
+        ...newCommentObj,
+        createdAt: formatKoreanTime(newCommentObj.createdAt)
       };
-      setComments([...comments, newCommentObj]);
+      
+      setComments([commentWithFormattedTime, ...comments]);
       setNewComment("");
+      
+      // 피드의 댓글 수 업데이트
+      setFeedPosts(prev => 
+        prev.map(post => 
+          post.id === selectedPost.id 
+            ? { ...post, commentCount: post.commentCount + 1 }
+            : post
+        )
+      );
+      
+    } catch (error: any) {
+      console.error('댓글 등록 실패:', error);
+      
+      if (error.response?.status === 401) {
+        alert("로그인이 필요합니다.");
+        navigate('/login');
+      } else {
+        alert(error.response?.data?.message || "댓글 등록에 실패했습니다.");
+      }
+    }
+  };
+
+  // 댓글 삭제
+  const handleDeleteComment = async (commentId: number) => {
+    if (!selectedPost || !window.confirm("정말로 이 댓글을 삭제하시겠습니까?")) return;
+    
+    try {
+      await FeedService.deleteComment(selectedPost.id, commentId);
+      setComments(comments.filter(comment => comment.id !== commentId));
+      
+      // 피드의 댓글 수 업데이트
+      setFeedPosts(prev => 
+        prev.map(post => 
+          post.id === selectedPost.id 
+            ? { ...post, commentCount: Math.max(0, post.commentCount - 1) }
+            : post
+        )
+      );
+      
+    } catch (error: any) {
+      console.error('댓글 삭제 실패:', error);
+      
+      if (error.response?.status === 401) {
+        alert("로그인이 필요합니다.");
+      } else if (error.response?.status === 403) {
+        alert("본인 댓글만 삭제할 수 있습니다.");
+      } else if (error.response?.status === 404) {
+        alert("댓글을 찾을 수 없습니다.");
+      } else {
+        alert(error.response?.data?.message || "댓글 삭제에 실패했습니다.");
+      }
     }
   };
 
@@ -523,6 +603,8 @@ const MyFeedPage = () => {
         onCommentChange={(e) => setNewComment(e.target.value)}
         onCommentSubmit={handleCommentSubmit}
         onShowLikeUsers={handleShowLikeUsers}
+        onDeleteComment={handleDeleteComment}
+        currentUser={user ? { nickname: user.nickname } : undefined}
       />
 
       {/* 좋아요 사용자 모달 */}

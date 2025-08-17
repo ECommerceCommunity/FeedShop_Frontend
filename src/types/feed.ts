@@ -56,13 +56,19 @@ export interface FeedPost {
 }
 
 export interface FeedComment {
-  id: number;
+  id: number; // 프론트엔드 호환성을 위해 유지
+  commentId: number; // 백엔드 응답 구조에 맞춤
   content: string;
   createdAt: string;
   updatedAt?: string;
   
-  // User 관계
-  user: {
+  // 백엔드 응답 구조에 맞춤
+  userId: number;
+  userNickname: string;
+  userProfileImage?: string;
+  
+  // 프론트엔드 호환성을 위한 user 객체 (백엔드 응답을 변환하여 사용)
+  user?: {
     id: number;
     nickname: string;
     level?: number;
@@ -167,7 +173,10 @@ export interface PaginatedResponse<T> {
 
 export interface FeedListResponse extends PaginatedResponse<FeedPost> {}
 
-export interface CommentListResponse extends PaginatedResponse<FeedComment> {}
+export interface CommentListResponse {
+  pagination: PaginatedResponse<FeedComment>;
+  totalComments: number;
+}
 
 export interface ImageUploadResponse {
   imageId: number;

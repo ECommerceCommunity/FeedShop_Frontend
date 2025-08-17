@@ -404,12 +404,29 @@ export class FeedService {
    */
   static async getComments(feedId: number, params: CommentListParams = {}): Promise<CommentListResponse> {
     try {
-      const response = await axiosInstance.get<ApiResponse<CommentListResponse>>(
+      const response = await axiosInstance.get<ApiResponse<any>>(
         `/api/feeds/${feedId}/comments`,
         { params }
       );
-      const apiResponse = response.data;
-      return apiResponse.data;
+      
+      if (response.data.success) {
+        // 백엔드 응답을 프론트엔드 타입으로 변환
+        const data = response.data.data;
+        if (data.pagination && data.pagination.content) {
+          data.pagination.content = data.pagination.content.map((comment: any) => ({
+            ...comment,
+            id: comment.commentId, // 프론트엔드 호환성을 위해 id 필드 추가
+            user: {
+              id: comment.userId,
+              nickname: comment.userNickname,
+              profileImg: comment.userProfileImage
+            }
+          }));
+        }
+        return data;
+      } else {
+        throw new Error(response.data.message || '댓글 목록 조회에 실패했습니다.');
+      }
     } catch (error: any) {
       console.error('댓글 목록 조회 실패:', error);
       throw error;
@@ -421,12 +438,26 @@ export class FeedService {
    */
   static async createComment(feedId: number, commentData: CreateCommentRequest): Promise<FeedComment> {
     try {
-      const response = await axiosInstance.post<ApiResponse<FeedComment>>(
+      const response = await axiosInstance.post<ApiResponse<any>>(
         `/api/feeds/${feedId}/comments`,
         commentData
       );
-      const apiResponse = response.data;
-      return apiResponse.data;
+      
+      if (response.data.success) {
+        // 백엔드 응답을 프론트엔드 타입으로 변환
+        const comment = response.data.data;
+        return {
+          ...comment,
+          id: comment.commentId, // 프론트엔드 호환성을 위해 id 필드 추가
+          user: {
+            id: comment.userId,
+            nickname: comment.userNickname,
+            profileImg: comment.userProfileImage
+          }
+        };
+      } else {
+        throw new Error(response.data.message || '댓글 생성에 실패했습니다.');
+      }
     } catch (error: any) {
       console.error('댓글 생성 실패:', error);
       throw error;
@@ -440,7 +471,13 @@ export class FeedService {
    */
   static async deleteComment(feedId: number, commentId: number): Promise<void> {
     try {
-      await axiosInstance.delete(`/api/feeds/${feedId}/comments/${commentId}`);
+      const response = await axiosInstance.delete<ApiResponse<void>>(
+        `/api/feeds/${feedId}/comments/${commentId}`
+      );
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || '댓글 삭제에 실패했습니다.');
+      }
     } catch (error: any) {
       console.error('댓글 삭제 실패:', error);
       throw error;
