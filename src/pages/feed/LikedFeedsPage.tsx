@@ -64,19 +64,11 @@ const LikedFeedsPage = () => {
   // 좋아요 취소
   const handleUnlike = async (feedId: number) => {
     try {
-      await FeedService.unlikeFeed(feedId);
+      // 백엔드 API에 맞게 toggle 메서드 사용
+      await FeedService.likeFeed(feedId);
       
-      // 목록에서 제거
+      // 목록에서 제거 (좋아요 취소되었으므로)
       setLikedFeeds(prev => prev.filter(feed => feed.feedId !== feedId));
-      
-      // 좋아요 수 업데이트
-      setLikedFeeds(prev => 
-        prev.map(feed => 
-          feed.feedId === feedId 
-            ? { ...feed, likeCount: Math.max(0, feed.likeCount - 1) }
-            : feed
-        )
-      );
       
     } catch (error: any) {
       console.error('좋아요 취소 실패:', error);

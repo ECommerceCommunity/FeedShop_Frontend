@@ -295,22 +295,17 @@ export class FeedService {
       const response = await axiosInstance.get<ApiResponse<MyLikedFeedsResponseDto>>(
         `/api/feeds/my-likes?page=${page}&size=${size}`
       );
+      
       const apiResponse = response.data;
+      
+      if (!apiResponse.success) {
+        console.error('API 응답 실패:', apiResponse.message);
+        throw new Error(apiResponse.message || '좋아요한 피드 목록 조회에 실패했습니다.');
+      }
+      
       return apiResponse.data;
     } catch (error: any) {
       console.error('좋아요한 피드 목록 조회 실패:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * 피드 좋아요를 취소합니다
-   */
-  static async unlikeFeed(feedId: number): Promise<void> {
-    try {
-      await axiosInstance.delete(`/api/feeds/${feedId}/likes`);
-    } catch (error: any) {
-      console.error('피드 좋아요 취소 실패:', error);
       throw error;
     }
   }

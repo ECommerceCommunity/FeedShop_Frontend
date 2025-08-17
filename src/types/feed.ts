@@ -99,12 +99,12 @@ export interface CreateCommentRequest {
 
 // 좋아요한 피드 목록 관련 타입들
 export interface MyLikedFeedItemDto {
-  feedId: number;
+  feedId: number; // Long -> number로 매핑
   title: string;
   content: string;
   feedType: string;
   imageUrl?: string;
-  likedAt: string;
+  likedAt: string; // LocalDateTime -> string으로 매핑
   likeCount: number;
   commentCount: number;
   authorNickname: string;
@@ -117,6 +117,8 @@ export interface MyLikedFeedsResponseDto {
   size: number;
   totalElements: number;
   totalPages: number;
+  first: boolean; // 백엔드와 일치하도록 추가
+  last: boolean;  // 백엔드와 일치하도록 추가
   hasNext: boolean;
   hasPrevious: boolean;
 }

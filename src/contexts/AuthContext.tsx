@@ -50,14 +50,8 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
           token: storedToken,
         });
 
-        // 저장된 사용자 정보가 있으면 좋아요한 피드 목록을 백엔드에서 가져오기 (최적화)
-        try {
-          const likedFeedIds = await FeedService.getMyLikedFeeds();
-          // 좋아요 목록은 각 컴포넌트에서 백엔드 응답의 isLiked 필드를 사용하므로
-          // 여기서는 별도로 저장하지 않음
-        } catch (error) {
-          console.error("초기화 시 좋아요한 피드 목록 조회 실패:", error);
-        }
+        // 저장된 사용자 정보가 있으면 초기화 완료
+        // 좋아요 목록은 각 컴포넌트에서 필요할 때 백엔드에서 가져옴
       } else {
         // 필수 정보가 없으면 로그인 상태가 아니므로 localStorage 정리
         localStorage.removeItem("nickname");
@@ -87,14 +81,8 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     localStorage.setItem("userType", userTypeLower);
     localStorage.setItem("token", token);
 
-    // 로그인 후 사용자가 좋아요한 피드 목록을 가져오기 (백엔드에서 isLiked 필드 사용)
-    try {
-      const likedFeedIds = await FeedService.getMyLikedFeeds();
-      // 좋아요 목록은 각 컴포넌트에서 백엔드 응답의 isLiked 필드를 사용하므로
-      // 여기서는 별도로 저장하지 않음
-    } catch (error) {
-      console.error("좋아요한 피드 목록 조회 실패:", error);
-    }
+    // 로그인 완료
+    // 좋아요 목록은 각 컴포넌트에서 필요할 때 백엔드에서 가져옴
   };
 
   const logout = () => {
