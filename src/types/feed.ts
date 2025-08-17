@@ -97,6 +97,30 @@ export interface CreateCommentRequest {
 
 // 이미지 업로드는 utils/imageUpload.ts에서 별도 처리
 
+// 좋아요한 피드 목록 관련 타입들
+export interface MyLikedFeedItemDto {
+  feedId: number;
+  title: string;
+  content: string;
+  feedType: string;
+  imageUrl?: string;
+  likedAt: string;
+  likeCount: number;
+  commentCount: number;
+  authorNickname: string;
+  authorProfileImage?: string;
+}
+
+export interface MyLikedFeedsResponseDto {
+  content: MyLikedFeedItemDto[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
 export interface FeedVoteRequest {
   eventId: number;
 }

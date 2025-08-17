@@ -60,6 +60,7 @@ const FeedDetailPage = lazy(() => import("./pages/feed/FeedDetailPage"));
 const FeedCreatePage = lazy(() => import("./pages/feed/FeedCreatePage"));
 const FeedEditPage = lazy(() => import("./pages/feed/FeedEditPage"));
 const MyFeedPage = lazy(() => import("./pages/feed/MyFeedPage"));
+const LikedFeedsPage = lazy(() => import("./pages/feed/LikedFeedsPage"));
 const EventListPage = lazy(() => import("./pages/event/EventListPage"));
 const EventCreatePage = lazy(() => import("./pages/event/EventCreatePage"));
 const EventEditPage = lazy(() => import("./pages/event/EventEditPage"));
@@ -193,6 +194,14 @@ const App: FC = () => {
                   element={
                     <UserProtectedRoute requireLogin={true}>
                       <MyFeedPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/liked-feeds"
+                  element={
+                    <UserProtectedRoute requireLogin={true}>
+                      <LikedFeedsPage />
                     </UserProtectedRoute>
                   }
                 />

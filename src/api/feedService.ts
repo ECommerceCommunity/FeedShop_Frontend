@@ -13,6 +13,7 @@ import {
   VoteResponse,
   FeedListParams,
   CommentListParams,
+  MyLikedFeedsResponseDto,
 } from "../types/feed";
 
 // 백엔드 응답 타입 정의
@@ -287,6 +288,34 @@ export class FeedService {
   }
 
   /**
+   * 사용자가 좋아요한 피드 목록을 가져옵니다
+   */
+  static async getMyLikedFeeds(page: number, size: number): Promise<MyLikedFeedsResponseDto> {
+    try {
+      const response = await axiosInstance.get<ApiResponse<MyLikedFeedsResponseDto>>(
+        `/api/feeds/my-likes?page=${page}&size=${size}`
+      );
+      const apiResponse = response.data;
+      return apiResponse.data;
+    } catch (error: any) {
+      console.error('좋아요한 피드 목록 조회 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 피드 좋아요를 취소합니다
+   */
+  static async unlikeFeed(feedId: number): Promise<void> {
+    try {
+      await axiosInstance.delete(`/api/feeds/${feedId}/likes`);
+    } catch (error: any) {
+      console.error('피드 좋아요 취소 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
    * 피드 좋아요를 토글합니다 (추가/취소)
    */
   static async likeFeed(feedId: number): Promise<LikeResponse> {
@@ -340,27 +369,7 @@ export class FeedService {
     }
   }
 
-  /**
-   * 현재 로그인한 사용자가 좋아요한 피드 ID 목록을 가져옵니다
-   */
-  static async getMyLikedFeeds(): Promise<number[]> {
-    try {
-      const response = await axiosInstance.get<ApiResponse<number[]>>(
-        '/api/feeds/my-likes'
-      );
-      
-      if (response.data.success) {
-        // 백엔드에서 이미 number[] 형태로 반환하므로 그대로 사용
-        return response.data.data;
-      } else {
-        return [];
-      }
-    } catch (error: any) {
-      console.error('내 좋아요 피드 목록 조회 실패:', error);
-      // 에러가 발생해도 빈 배열 반환 (로그인하지 않은 경우 등)
-      return [];
-    }
-  }
+
 
   /**
    * 피드에 투표합니다
