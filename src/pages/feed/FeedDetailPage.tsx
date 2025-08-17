@@ -396,7 +396,12 @@ const FeedDetailPage = () => {
                 />
                 <div>
                   <div className="flex items-center">
-                    <h3 className="font-medium text-lg">{feed.user?.nickname || "사용자"}</h3>
+                    <button
+                      onClick={() => navigate(`/my-feeds?userId=${feed.user?.id}`)}
+                      className="font-medium text-lg hover:text-[#87CEEB] transition duration-200 cursor-pointer"
+                    >
+                      {feed.user?.nickname || "사용자"}
+                    </button>
                     {feed.user?.level && (
                       <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
                         <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>

@@ -46,6 +46,7 @@ interface FeedDetailModalProps {
   onShowLikeUsers?: () => void;
   onDeleteComment?: (commentId: number) => void;
   currentUser?: { nickname?: string };
+  onUserClick?: (userId: number) => void; // 사용자 클릭 핸들러 추가
 }
 
 const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
@@ -75,6 +76,7 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
   onShowLikeUsers,
   onDeleteComment,
   currentUser,
+  onUserClick,
 }) => {
   if (!open || !feed) return null;
   const heroImage = feed.images && feed.images.length > 0 ? feed.images[0].imageUrl : 'https://via.placeholder.com/600x800?text=No+Image';
@@ -100,7 +102,12 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
               <img src={feed.user?.profileImg || 'https://via.placeholder.com/60'} alt={feed.user?.nickname || '사용자'} className="w-12 h-12 rounded-full object-cover mr-3" />
               <div>
                 <div className="flex items-center">
-                  <h3 className="font-medium text-lg">{feed.user?.nickname || '사용자'}</h3>
+                  <button
+                    onClick={() => onUserClick?.(feed.user?.id || 0)}
+                    className="font-medium text-lg hover:text-[#87CEEB] transition duration-200 cursor-pointer"
+                  >
+                    {feed.user?.nickname || '사용자'}
+                  </button>
                   {feed.user?.level && (
                     <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
                       <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>

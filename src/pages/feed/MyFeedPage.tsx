@@ -605,6 +605,10 @@ const MyFeedPage = () => {
         onShowLikeUsers={handleShowLikeUsers}
         onDeleteComment={handleDeleteComment}
         currentUser={user ? { nickname: user.nickname } : undefined}
+        onUserClick={(userId) => {
+          handleCloseModal();
+          navigate(`/my-feeds?userId=${userId}`);
+        }}
       />
 
       {/* 좋아요 사용자 모달 */}
