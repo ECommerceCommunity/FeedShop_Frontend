@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { ProductService } from "../../api/productService";
 import {
   ProductListItem,
@@ -514,6 +514,7 @@ interface ProductModalProps {
   onSave: (productData: CreateProductRequest) => void;
   editProduct?: ProductListItem | null;
   categories: Category[];
+  isSaving?: boolean;
 }
 
 const ProductModal: React.FC<ProductModalProps> = ({
@@ -522,6 +523,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
   onSave,
   editProduct,
   categories,
+  isSaving = false,
 }) => {
   const [formData, setFormData] = useState<CreateProductRequest>({
     name: "",
@@ -1185,8 +1187,20 @@ const ProductModal: React.FC<ProductModalProps> = ({
           <ActionButton type="button" variant="secondary" onClick={onClose}>
             취소
           </ActionButton>
-          <ActionButton type="submit" variant="primary" onClick={handleSubmit}>
-            {editProduct ? "수정" : "등록"}
+          <ActionButton 
+            type="submit" 
+            variant="primary" 
+            onClick={handleSubmit}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <>
+                <i className="fas fa-spinner" style={{ marginRight: "8px" }}></i>
+                {editProduct ? "수정 중..." : "등록 중..."}
+              </>
+            ) : (
+              editProduct ? "수정" : "등록"
+            )}
           </ActionButton>
         </ModalFooter>
       </ModalContent>
@@ -1212,8 +1226,11 @@ const SellerProductManagePage: React.FC = () => {
   const [editProduct, setEditProduct] = useState<ProductListItem | null>(null);
   const [deleteWarningOpen, setDeleteWarningOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
-  const [errorWarningOpen, setErrorWarningOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   // 페이지네이션 상태
   const [currentPage, setCurrentPage] = useState(0);
@@ -1222,28 +1239,46 @@ const SellerProductManagePage: React.FC = () => {
   const pageSize = 20;
 
   // 상품 목록 로드
-  const loadProducts = async (page: number = 0) => {
+  const loadProducts = useCallback(async (page: number = 0) => {
     try {
+      console.log("상품 목록 로드 시작:", { page, pageSize });
       setLoading(true);
       const response = await ProductService.getSellerProducts(page, pageSize);
+      console.log("상품 목록 로드 성공:", response);
       setProducts(response.content || []);
       setTotalPages(response.totalPages || 0);
       setTotalElements(response.totalElements || 0);
       setCurrentPage(page);
-    } catch (error) {
+    } catch (error: any) {
       console.error("상품 목록 로드 실패:", error);
+      console.error("에러 상세:", error.response?.data);
+      
+      // 인증 에러인 경우
+      if (error.response?.status === 401) {
+        setErrorMessage("로그인이 필요합니다. 다시 로그인해주세요.");
+      } else if (error.response?.status === 403) {
+        setErrorMessage("판매자 권한이 필요합니다.");
+      } else {
+        setErrorMessage("상품 목록을 불러오는데 실패했습니다. 다시 시도해주세요.");
+      }
+      setShowErrorModal(true);
     } finally {
       setLoading(false);
     }
-  };
+  }, [pageSize]);
 
   // 카테고리 목록 로드
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     try {
+      console.log("카테고리 로드 시작");
       const categoryList = await ProductService.getCategories();
+      console.log("카테고리 로드 성공:", categoryList);
       setCategories(categoryList);
-    } catch (error) {
+    } catch (error: any) {
       console.error("카테고리 로드 실패:", error);
+      console.error("에러 상세:", error.response?.data);
+      setErrorMessage("카테고리를 불러오는데 실패했습니다.");
+      setShowErrorModal(true);
       // 기본 카테고리 설정
       setCategories([
         { categoryId: 1, type: "FASHION", name: "패션" },
@@ -1251,22 +1286,44 @@ const SellerProductManagePage: React.FC = () => {
         { categoryId: 3, type: "SPORTS", name: "스포츠" },
       ]);
     }
-  };
-
-  useEffect(() => {
-    loadProducts();
-    loadCategories();
   }, []);
 
+  useEffect(() => {
+    // 인증 상태 확인
+    const token = localStorage.getItem("token");
+    const userType = localStorage.getItem("userType");
+    
+    console.log("인증 상태 확인:", { 
+      hasToken: !!token, 
+      userType,
+      token: token ? token.substring(0, 20) + "..." : null 
+    });
+    
+    if (!token) {
+      setErrorMessage("로그인이 필요합니다. 다시 로그인해주세요.");
+      setShowErrorModal(true);
+      return;
+    }
+    
+    if (userType !== "seller") {
+      setErrorMessage("판매자 권한이 필요합니다.");
+      setShowErrorModal(true);
+      return;
+    }
+    
+    loadProducts();
+    loadCategories();
+  }, [loadProducts, loadCategories]);
+
   // 페이지네이션 핸들러
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     if (page >= 0 && page < totalPages) {
       loadProducts(page);
     }
-  };
+  }, [totalPages, loadProducts]);
 
-  // 페이지 번호 생성
-  const generatePageNumbers = () => {
+  // 페이지 번호 생성 (메모이제이션)
+  const pageNumbers = useMemo(() => {
     const pages = [];
     const maxVisible = 5;
 
@@ -1282,11 +1339,14 @@ const SellerProductManagePage: React.FC = () => {
     }
 
     return pages;
-  };
+  }, [currentPage, totalPages]);
 
-  // 상품 등록/수정
-  const handleSaveProduct = async (productData: CreateProductRequest) => {
+  // 상품 등록/수정 (저장 상태 관리 및 알림)
+  const handleSaveProduct = useCallback(async (productData: CreateProductRequest) => {
+    if (isSaving) return; // 중복 클릭 방지
     try {
+      setIsSaving(true);
+
       if (editProduct) {
         // 수정
         const updateData: UpdateProductRequest = {
@@ -1300,60 +1360,67 @@ const SellerProductManagePage: React.FC = () => {
           options: productData.options,
         };
         await ProductService.updateProduct(editProduct.productId, updateData);
+        setSuccessMessage("상품이 성공적으로 수정되었습니다.");
       } else {
         // 등록
         await ProductService.createProduct(productData);
+        setSuccessMessage("상품이 성공적으로 등록되었습니다.");
       }
 
       setIsModalOpen(false);
       setEditProduct(null);
       loadProducts(currentPage); // 현재 페이지 유지하며 목록 새로고침
+      setShowSuccessModal(true);
     } catch (error) {
       console.error("상품 저장 실패:", error);
-      setErrorMessage("상품 저장에 실패했습니다.");
-      setErrorWarningOpen(true);
+      setErrorMessage("상품 저장에 실패했습니다. 다시 시도해주세요.");
+      setShowErrorModal(true);
+    } finally {
+      setIsSaving(false);
     }
-  };
+  }, [editProduct, currentPage, loadProducts, isSaving]);
 
   // 상품 삭제 확인 다이얼로그 열기
-  const handleDeleteProduct = (productId: number) => {
+  const handleDeleteProduct = useCallback((productId: number) => {
     setProductToDelete(productId);
     setDeleteWarningOpen(true);
-  };
+  }, []);
 
   // 상품 삭제 실행
-  const confirmDeleteProduct = async () => {
+  const confirmDeleteProduct = useCallback(async () => {
     if (productToDelete) {
       try {
         await ProductService.deleteProduct(productToDelete);
+        setSuccessMessage("상품이 성공적으로 삭제되었습니다.");
         loadProducts(currentPage); // 현재 페이지 유지하며 목록 새로고침
         setDeleteWarningOpen(false);
         setProductToDelete(null);
+        setShowSuccessModal(true);
       } catch (error) {
         console.error("상품 삭제 실패:", error);
-        setErrorMessage("상품 삭제에 실패했습니다.");
-        setErrorWarningOpen(true);
+        setErrorMessage("상품 삭제에 실패했습니다. 다시 시도해주세요.");
+        setShowErrorModal(true);
       }
     }
-  };
+  }, [productToDelete, currentPage, loadProducts]);
 
   // 상품 삭제 취소
-  const cancelDeleteProduct = () => {
+  const cancelDeleteProduct = useCallback(() => {
     setDeleteWarningOpen(false);
     setProductToDelete(null);
-  };
+  }, []);
 
   // 상품 수정 모달 열기
-  const handleEditProduct = (product: ProductListItem) => {
+  const handleEditProduct = useCallback((product: ProductListItem) => {
     setEditProduct(product);
     setIsModalOpen(true);
-  };
+  }, []);
 
   // 새 상품 등록 모달 열기
-  const handleNewProduct = () => {
+  const handleNewProduct = useCallback(() => {
     setEditProduct(null);
     setIsModalOpen(true);
-  };
+  }, []);
 
   return (
     <ManagementContainer>
@@ -1519,7 +1586,7 @@ const SellerProductManagePage: React.FC = () => {
                 </PaginationButton>
 
                 <PageNumbers>
-                  {generatePageNumbers().map((page) => (
+                  {pageNumbers.map((page) => (
                     <PaginationButton
                       key={page}
                       $active={page === currentPage}
@@ -1570,14 +1637,23 @@ const SellerProductManagePage: React.FC = () => {
         onConfirm={confirmDeleteProduct}
         onCancel={cancelDeleteProduct}
       />
-      
-      {/* Error Warning Modal */}
+
+      {/* 성공 알림 모달 */}
       <Warning
-        open={errorWarningOpen}
+        open={showSuccessModal}
+        title="성공"
+        message={successMessage}
+        onConfirm={() => setShowSuccessModal(false)}
+        onCancel={() => setShowSuccessModal(false)}
+      />
+
+      {/* 오류 알림 모달 */}
+      <Warning
+        open={showErrorModal}
         title="오류"
         message={errorMessage}
-        onConfirm={() => setErrorWarningOpen(false)}
-        onCancel={() => setErrorWarningOpen(false)}
+        onConfirm={() => setShowErrorModal(false)}
+        onCancel={() => setShowErrorModal(false)}
       />
     </ManagementContainer>
   );
