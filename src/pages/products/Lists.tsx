@@ -1,7 +1,5 @@
 import React, { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-// 공통 컴포넌트
-import PreparationNotice from "../../components/PreparationNotice"; // 준비중 안내 컴포넌트
 // 상품 관련 커스텀 훅
 import { useProductList } from "../../hooks/products/useProductList"; // 상품 목록 관리 훅
 // 상품 목록 UI 컴포넌트들
@@ -35,29 +33,33 @@ const Lists: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // 상품 목록 데이터와 페이지네이션 관련 상태 및 함수들
+  // 상품 목록 데이터와 페이지네이션, 정렬, 필터링 관련 상태 및 함수들
   const {
     products, // 현재 페이지의 상품 목록
     loading, // 로딩 상태
     error, // 에러 메시지
     currentPage, // 현재 페이지 번호 (0부터 시작)
     totalPages, // 전체 페이지 수
-    currentSort, // 현재 정렬 방식 (훅에서 파생)
+    currentSort, // 현재 정렬 방식
+    filters, // 현재 필터 상태
     loadProducts, // 상품 목록을 다시 로드하는 함수
     handlePageChange, // 페이지 변경 핸들러
-    handleSortChange: changeSortFromHook, // 이름 충돌 방지를 위해 별칭
+    handleSortChange: handleSortChangeFromHook, // 훅에서 제공하는 정렬 변경 핸들러 (이름 충돌 방지)
+    handleFiltersChange, // 필터 변경 핸들러
     retry, // 에러 발생 시 재시도 함수
   } = useProductList();
 
-  // 정렬 변경 핸들러 (URL 주도)
+  // 정렬 변경 핸들러 (URL 주도 + 훅 연동)
   const handleSortChange = (sort: string) => {
+    // URL 파라미터 업데이트
     const searchParams = new URLSearchParams(location.search);
     searchParams.set("sort", sort);
-    // 페이지를 0으로 초기화하고 싶다면 아래 줄 추가:
-    // searchParams.set("page", "0");
+    // 정렬 변경 시 첫 페이지로 이동
+    searchParams.delete("page");
     navigate(`/products?${searchParams.toString()}`);
-    // 즉시 반영을 원하면 아래 주석 해제(선택):
-    // changeSortFromHook(sort);
+
+    // 훅의 정렬 변경 핸들러도 호출하여 즉시 반영
+    handleSortChangeFromHook(sort);
   };
 
   // URL에서 현재 적용된 필터 정보 추출 및 페이지 제목 생성
@@ -70,8 +72,14 @@ const Lists: React.FC = () => {
     const categoryId = searchParams.get("categoryId");
 
     if (q && q.trim().length > 0) {
-      // 필요시 카테고리도 함께 표시하려면 다음과 같이 확장 가능:
-      // if (categoryId) { ... }
+      // 검색어와 카테고리가 모두 있는 경우
+      if (categoryId) {
+        const category = CategoryService.DEFAULT_CATEGORIES.find(
+          (cat) => cat.categoryId === Number(categoryId)
+        );
+        const categoryName = category ? category.name : "카테고리";
+        return `"${q}" ${categoryName} 검색 결과`;
+      }
       return `"${q}" 검색 결과`;
     }
 
@@ -110,9 +118,14 @@ const Lists: React.FC = () => {
       <Header>
         <Title>{pageTitle}</Title>
       </Header>
-      
-      {/* 정렬 버튼들 (최신순/인기순) */}
-      <FilterButtons activeSort={currentSort} onSortChange={handleSortChange} />
+
+      {/* 필터 및 정렬 버튼들 */}
+      <FilterButtons
+        activeSort={currentSort}
+        onSortChange={handleSortChange}
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
+      />
 
       {/* 상품 목록 또는 빈 상태 표시 */}
       {products.length === 0 ? (
