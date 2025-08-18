@@ -66,7 +66,6 @@ const SellerMyPage: React.FC = () => {
   useEffect(() => {
     // 대시보드가 활성 상태일 때만 차트 생성
     if (activeMenu !== "dashboard") return;
-
     const chartDom = document.getElementById("salesChart");
     if (!chartDom) return;
 
