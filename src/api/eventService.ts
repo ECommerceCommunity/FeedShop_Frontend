@@ -104,14 +104,18 @@ class EventService {
   async getFeedAvailableEvents(): Promise<FeedEventDto[]> {
     try {
       // 캐시 헤더 추가로 브라우저 캐싱 활용
-      const response = await axiosInstance.get<EventSummaryDto[]>('/api/events/feed-available', {
+      const response = await axiosInstance.get<ApiResponse<EventSummaryDto[]>>('/api/events/feed-available', {
         headers: {
           'Cache-Control': 'max-age=300', // 5분간 브라우저 캐시
         }
       });
       
+      // 백엔드 ApiResponse 구조에서 데이터 추출
+      const eventData = response.data.data || [];
+      const events = Array.isArray(eventData) ? eventData : [];
+      
       // 백엔드에서 반환하는 EventSummaryDto를 FeedEventDto로 변환
-      const events: FeedEventDto[] = response.data.map(event => ({
+      const feedEvents: FeedEventDto[] = events.map(event => ({
         eventId: event.eventId,
         title: event.title,
         eventStartDate: event.eventStartDate,
@@ -121,15 +125,16 @@ class EventService {
         isDeleted: event.isDeleted
       }));
       
-             return events;
+      console.log('피드 생성용 이벤트 목록 조회 성공:', feedEvents);
+      return feedEvents;
       
     } catch (error: any) {
       console.error('이벤트 목록 조회 실패:', error);
       
-             // 백엔드 연결 실패시 빈 배열 반환
-       if (!error.response || error.code === 'NETWORK_ERROR') {
-         return [];
-       }
+      // 백엔드 연결 실패시 빈 배열 반환
+      if (!error.response || error.code === 'NETWORK_ERROR') {
+        return [];
+      }
       
       throw error;
     }

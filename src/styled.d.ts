@@ -1,5 +1,24 @@
 import "styled-components";
-import { ComponentType, ChangeEvent, ReactNode, IntrinsicElements } from "react";
+import {
+  ComponentType,
+  ChangeEvent,
+  ReactNode,
+  IntrinsicElements,
+} from "react";
+
+// 다음 우편번호 서비스 타입 정의
+declare global {
+  interface Window {
+    daum: {
+      Postcode: new (options: {
+        oncomplete: (data: any) => void;
+        onclose?: () => void;
+      }) => {
+        open: () => void;
+      };
+    };
+  }
+}
 
 declare module "react" {
   interface HTMLAttributes<T> extends AriaAttributes, DOMAttributes<T> {

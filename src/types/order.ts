@@ -1,6 +1,8 @@
 export interface PaymentItem {
   id: string;
   productName: string;
+  gender?: "MEN" | "WOMEN" | "UNISEX"; // 성별 정보 추가
+  color?: string;                       // 색상 정보 추가
   size: string;
   discountPrice: number;
   productPrice: number;
@@ -23,6 +25,30 @@ export interface CreateOrderRequest {
   cardNumber?: string;
   cardExpiry?: string;
   cardCvc?: string;
+}
+
+// 바로 주문 요청 인터페이스
+export interface DirectOrderRequest {
+  items: DirectOrderItem[];
+  deliveryAddress: string;
+  deliveryDetailAddress: string;
+  postalCode: string;
+  recipientName: string;
+  recipientPhone: string;
+  usedPoints: number;
+  deliveryMessage: string;
+  deliveryFee: number;
+  paymentMethod: string; // "카드", "무통장입금", "간편결제", "휴대폰결제"
+  cardNumber?: string;
+  cardExpiry?: string;
+  cardCvc?: string;
+}
+
+// 바로 주문 아이템 인터페이스
+export interface DirectOrderItem {
+  optionId: number;
+  imageId: number;
+  quantity: number;
 }
 
 export interface OrderResponse {

@@ -134,7 +134,7 @@ const App: FC = () => {
                 <Route
                   path="/mypage/*"
                   element={
-                    <UserProtectedRoute requireLogin={true}>
+                    <UserProtectedRoute requireLogin={true} showNotice={false}>
                       <MyPage />
                     </UserProtectedRoute>
                   }
@@ -143,7 +143,7 @@ const App: FC = () => {
                 <Route
                   path="/profile"
                   element={
-                    <UserProtectedRoute requireLogin={true}>
+                    <UserProtectedRoute requireLogin={true} showNotice={false}>
                       <ProfilePage />
                     </UserProtectedRoute>
                   }
@@ -151,7 +151,7 @@ const App: FC = () => {
                 <Route
                   path="/profile-settings"
                   element={
-                    <UserProtectedRoute requireLogin={true}>
+                    <UserProtectedRoute requireLogin={true} showNotice={false}>
                       <ProfileSettingsPage />
                     </UserProtectedRoute>
                   }
@@ -159,7 +159,7 @@ const App: FC = () => {
                 <Route
                   path="/reviews"
                   element={
-                    <UserProtectedRoute requireLogin={true}>
+                    <UserProtectedRoute requireLogin={true} showNotice={false}>
                       <ReviewsPage />
                     </UserProtectedRoute>
                   }
@@ -175,7 +175,7 @@ const App: FC = () => {
                 <Route
                   path="/reviews/edit"
                   element={
-                    <UserProtectedRoute requireLogin={true}>
+                    <UserProtectedRoute requireLogin={true} showNotice={false}>
                       <ReviewEditPage />
                     </UserProtectedRoute>
                   }
@@ -238,7 +238,7 @@ const App: FC = () => {
                 <Route
                   path="/become-seller"
                   element={
-                    <UserProtectedRoute requireLogin={true}>
+                    <UserProtectedRoute requireLogin={true} showNotice={false}>
                       <BecomeSellerPage />
                     </UserProtectedRoute>
                   }

@@ -36,6 +36,7 @@ interface PaymentState {
   isProcessing: boolean;                   // 결제 처리 중 여부
   isDirectOrder: boolean;                  // 바로 주문 여부 (장바구니 경유 X)
   tempCartItemIds: number[];               // 임시 장바구니 아이템 ID들
+  directOrderItems: any[];                 // 바로 주문할 상품 목록 (바로 주문 시에만 사용)
 }
 
 // 훅에서 반환할 값들의 타입 정의 (PaymentState + 추가 기능들)
@@ -78,6 +79,7 @@ export const usePaymentData = (): UsePaymentDataReturn => {
     isProcessing: false,              // 결제 처리 중 아님
     isDirectOrder: false,             // 장바구니 경유 주문으로 기본 설정
     tempCartItemIds: [],              // 임시 장바구니 ID 목록
+    directOrderItems: [],             // 바로 주문 상품 목록
   });
 
   /**
@@ -126,33 +128,55 @@ export const usePaymentData = (): UsePaymentDataReturn => {
 
     // 바로 주문인 경우 처리
     if (locationState.isDirectOrder) {
-      setState((prev) => ({
-        ...prev,
-        isDirectOrder: true,
-        tempCartItemIds: locationState.tempCartItemIds,
-      }));
-      // 임시 장바구니 ID들로 상품 정보 로드
-      loadDirectOrderItems(locationState.tempCartItemIds);
+      // 바로 주문 상품 정보를 결제 형식에 맞게 변환
+      if (locationState.directOrderItems && locationState.directOrderItems.length > 0) {
+        const directOrderItems = locationState.directOrderItems.map((item: any) => ({
+          id: `${item.productId}-${item.optionId}`,
+          productName: item.productName,
+          gender: item.gender, // 성별 정보 추가
+          color: item.color,   // 색상 정보 추가
+          size: item.size || "",
+          discountPrice: item.discountPrice || item.price,
+          productPrice: item.price || item.discountPrice,
+          discount: (item.price || item.discountPrice) - (item.discountPrice || item.price),
+          quantity: item.quantity,
+          imageUrl: item.imageUrl,
+          selected: true, // 바로 주문에서는 모든 상품이 선택된 상태
+        }));
+
+        setState((prev) => ({
+          ...prev,
+          isDirectOrder: true,
+          items: directOrderItems,
+          directOrderItems: locationState.directOrderItems, // 원본 바로 주문 데이터도 저장
+        }));
+      } else {
+        throw new Error("주문 정보를 불러오는데 실패했습니다.");
+      }
       return;
     }
 
     // 장바구니에서 온 경우: 선택된 상품들을 결제 형식에 맞게 변환
-    const items = locationState.cartItems
-      .filter((item: any) => item && item.productId)  // 유효한 상품만 필터링
-      .map((item: any) => ({
-        id: `${item.productId}-${item.optionId}`,
-        productName: item.productName,
-        size: item.optionDetails?.size?.replace("SIZE_", "") || "",
-        discountPrice: item.discountPrice,
-        productPrice: item.productPrice,
-        discount: item.productPrice - item.discountPrice,
-        quantity: item.quantity,
-        imageUrl: item.imageUrl,
-        selected: item.selected,
-      }));
+    if (locationState.cartItems && locationState.cartItems.length > 0) {
+      const items = locationState.cartItems
+        .filter((item: any) => item && item.productId)  // 유효한 상품만 필터링
+        .map((item: any) => ({
+          id: `${item.productId}-${item.optionId}`,
+          productName: item.productName,
+          size: item.optionDetails?.size?.replace("SIZE_", "") || "",
+          discountPrice: item.discountPrice,
+          productPrice: item.productPrice,
+          discount: item.productPrice - item.discountPrice,
+          quantity: item.quantity,
+          imageUrl: item.imageUrl,
+          selected: item.selected,
+        }));
 
-    // 변환된 상품 목록을 상태에 설정
-    setState((prev) => ({ ...prev, items }));
+      // 변환된 상품 목록을 상태에 설정
+      setState((prev) => ({ ...prev, items }));
+    } else {
+      throw new Error("주문 정보를 불러오는데 실패했습니다.");
+    }
   }, [location.state]); // location.state가 변경될 때마다 재실행
 
   /**
