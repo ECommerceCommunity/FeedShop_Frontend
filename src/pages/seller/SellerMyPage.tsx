@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import * as echarts from "echarts";
 import SellerOrdersPage from "../order/SellerOrdersPage";
+import SellerProductManagePage from "./SellerProductManagePage";
 import StoreService from "../../api/storeService";
 import { SellerStore } from "../../types/products";
 import { toUrl } from "utils/common/images";
@@ -11,7 +12,12 @@ const SellerMyPage: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("일간");
   const [storeInfo, setStoreInfo] = useState<SellerStore | null>(null);
   const [loading, setLoading] = useState(true);
-  const { stats, recentOrders, loading: statsLoading, error: statsError } = useDashboardStats();
+  const {
+    stats,
+    recentOrders,
+    loading: statsLoading,
+    error: statsError,
+  } = useDashboardStats();
 
   const generateChartData = (
     period: string
@@ -60,7 +66,6 @@ const SellerMyPage: React.FC = () => {
   useEffect(() => {
     // 대시보드가 활성 상태일 때만 차트 생성
     if (activeMenu !== "dashboard") return;
-    
     const chartDom = document.getElementById("salesChart");
     if (!chartDom) return;
 
@@ -240,6 +245,8 @@ const SellerMyPage: React.FC = () => {
         <main className="flex-1">
           {activeMenu === "orders" ? (
             <SellerOrdersPage />
+          ) : activeMenu === "products" ? (
+            <SellerProductManagePage />
           ) : (
             <div className="p-8">
               <div className="max-w-7xl mx-auto">
@@ -323,27 +330,33 @@ const SellerMyPage: React.FC = () => {
                           <div
                             className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-lg flex items-center justify-center`}
                           >
-                            <i className={`${stat.icon} text-white text-lg`}></i>
+                            <i
+                              className={`${stat.icon} text-white text-lg`}
+                            ></i>
                           </div>
                         </div>
                         <h3 className="text-gray-600 text-sm mb-3 font-medium">
                           {stat.title}
                         </h3>
-                        
+
                         {/* 주요 지표 */}
                         <div className="mb-3">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs text-gray-500">{stat.mainLabel}</span>
+                            <span className="text-xs text-gray-500">
+                              {stat.mainLabel}
+                            </span>
                           </div>
                           <p className="text-2xl font-bold text-gray-800">
                             {stat.mainValue}
                           </p>
                         </div>
-                        
+
                         {/* 보조 지표 */}
                         <div className="pt-3 border-t border-gray-100">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-500">{stat.subLabel}</span>
+                            <span className="text-xs text-gray-500">
+                              {stat.subLabel}
+                            </span>
                             <span className="text-sm font-semibold text-gray-600">
                               {stat.subValue}
                             </span>
@@ -425,7 +438,9 @@ const SellerMyPage: React.FC = () => {
                                   alt={order.productName}
                                   className="w-12 h-12 object-cover rounded-lg"
                                   onError={(e) => {
-                                    e.currentTarget.src = toUrl("images/common/no-image.png");
+                                    e.currentTarget.src = toUrl(
+                                      "images/common/no-image.png"
+                                    );
                                   }}
                                 />
                               )}
@@ -433,14 +448,19 @@ const SellerMyPage: React.FC = () => {
                                 <p className="text-gray-800 font-medium text-sm">
                                   {order.productName}
                                 </p>
-                                <p className="text-gray-500 text-xs">#{order.orderId}</p>
+                                <p className="text-gray-500 text-xs">
+                                  #{order.orderId}
+                                </p>
                                 <p className="text-gray-400 text-xs">
-                                  {new Date(order.orderedAt).toLocaleDateString('ko-KR', {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                  })}
+                                  {new Date(order.orderedAt).toLocaleDateString(
+                                    "ko-KR",
+                                    {
+                                      month: "short",
+                                      day: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    }
+                                  )}
                                 </p>
                               </div>
                             </div>
