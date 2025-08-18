@@ -77,8 +77,7 @@ export const useDashboardStats = () => {
       setLoading(true);
       setError(null);
 
-      // 모든 주문 데이터를 가져옴 (첫 50개 주문으로 충분할 것)
-      const ordersResponse = await OrderService.getSellerOrders(0, 50, "ALL");
+      const ordersResponse = await OrderService.getSellerOrders(0, 1000, "ALL");
       const allOrders = ordersResponse.content;
 
       // 오늘 날짜 필터링
