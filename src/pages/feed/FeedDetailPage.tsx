@@ -397,7 +397,7 @@ const FeedDetailPage = () => {
                 <div>
                   <div className="flex items-center">
                     <button
-                      onClick={() => navigate(`/my-feeds?userId=${feed.user?.id}`)}
+                      onClick={() => navigate(`/my-feeds?userNickname=${feed.user?.nickname}`)}
                       className="font-medium text-lg hover:text-[#87CEEB] transition duration-200 cursor-pointer"
                     >
                       {feed.user?.nickname || "사용자"}

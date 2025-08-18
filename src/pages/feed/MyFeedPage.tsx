@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import FeedList from "../../components/feed/FeedList";
 import FeedDetailModal from "../../components/feed/FeedDetailModal";
 import LikedUsersModal from "../../components/feed/LikedUsersModal";
@@ -31,6 +31,11 @@ const formatKoreanTime = (dateString: string) => {
 const MyFeedPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const targetUserNickname = searchParams.get('userNickname');
+  
+  // 현재 로그인한 사용자인지 확인
+  const isCurrentUser = !targetUserNickname || targetUserNickname === user?.nickname;
 
   // 상태 관리
   const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);
@@ -63,20 +68,46 @@ const MyFeedPage = () => {
       setLoading(true);
       setError(null);
 
-      // API 파라미터 구성
-      const params: any = {
-        page: 0,
-        size: 50, // 충분한 데이터 로드
-        sort: sortBy
-        // userId는 백엔드에서 JWT 토큰을 통해 자동으로 처리
-      };
+      let response;
+      
+      if (targetUserNickname && !isCurrentUser) {
+        // 특정 사용자의 피드를 가져오는 경우
+        const params: any = {
+          page: 0,
+          size: 100, // 더 많은 데이터를 가져와서 필터링
+          sort: sortBy
+        };
 
-      // 탭 필터링
-      if (activeTab !== "all") {
-        params.feedType = activeTab;
+        if (activeTab !== "all") {
+          params.feedType = activeTab;
+        }
+
+        // 전체 피드를 가져온 후 특정 사용자 필터링
+        const allFeedsResponse = await FeedService.getFeeds(params);
+        const userFeeds = allFeedsResponse.content.filter(feed => 
+          feed.user?.nickname === targetUserNickname
+        );
+        
+        response = {
+          content: userFeeds,
+          totalElements: userFeeds.length,
+          totalPages: Math.ceil(userFeeds.length / 50)
+        };
+      } else {
+        // 현재 로그인한 사용자의 피드를 가져오는 경우
+        const params: any = {
+          page: 0,
+          size: 50,
+          sort: sortBy
+        };
+
+        if (activeTab !== "all") {
+          params.feedType = activeTab;
+        }
+
+        response = await FeedService.getMyFeeds(params);
       }
-
-      const response = await FeedService.getMyFeeds(params);
+      
       setFeedPosts(response.content || []);
       
       // 백엔드에서 받은 isLiked 상태만 사용
@@ -88,11 +119,13 @@ const MyFeedPage = () => {
       updateLikedPosts(backendLikedIds);
       
     } catch (error: any) {
-      console.error('마이피드 로드 실패:', error);
+      console.error('피드 로드 실패:', error);
       
       if (error.response?.status === 401) {
         setError("로그인이 필요합니다.");
         navigate('/login');
+      } else if (error.response?.status === 404) {
+        setError("사용자를 찾을 수 없습니다.");
       } else {
         setError(error.response?.data?.message || "피드 목록을 불러오는데 실패했습니다.");
       }
@@ -457,29 +490,38 @@ const MyFeedPage = () => {
               className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg"
             />
             <div className="ml-6">
-              <h2 className="text-3xl font-bold mb-2">나의 스타일 피드</h2>
+              <h2 className="text-3xl font-bold mb-2">
+                {isCurrentUser ? "나의 스타일 피드" : `${targetUserNickname}님의 스타일 피드`}
+              </h2>
               <div className="flex items-center mb-3">
                 <div className="bg-[#87CEEB] text-white px-3 py-1 rounded-full flex items-center">
                   <i className="fas fa-crown text-yellow-300 mr-1"></i>
                   <span>Lv.4 스타일리스트</span>
                 </div>
-                <button className="ml-3 text-[#87CEEB] hover:text-blue-400 flex items-center">
-                  <i className="fas fa-edit mr-1"></i>
-                  <span>프로필 수정</span>
-                </button>
+                {isCurrentUser && (
+                  <button className="ml-3 text-[#87CEEB] hover:text-blue-400 flex items-center">
+                    <i className="fas fa-edit mr-1"></i>
+                    <span>프로필 수정</span>
+                  </button>
+                )}
               </div>
               <p className="text-gray-600">
-                나만의 스타일을 공유하고 다른 사람들과 소통해보세요!
+                {isCurrentUser 
+                  ? "나만의 스타일을 공유하고 다른 사람들과 소통해보세요!"
+                  : `${targetUserNickname}님의 스타일을 확인해보세요!`
+                }
               </p>
             </div>
           </div>
-          <button
-            className="bg-[#87CEEB] text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-400 transition duration-200 flex items-center cursor-pointer"
-            onClick={() => navigate("/feed-create")}
-          >
-            <i className="fas fa-plus-circle mr-2"></i>
-            착용샷 올리기
-          </button>
+          {isCurrentUser && (
+            <button
+              className="bg-[#87CEEB] text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-400 transition duration-200 flex items-center cursor-pointer"
+              onClick={() => navigate("/feed-create")}
+            >
+              <i className="fas fa-plus-circle mr-2"></i>
+              착용샷 올리기
+            </button>
+          )}
         </div>
 
         {/* 내 피드 모아보기 탭/정렬 */}
@@ -546,16 +588,25 @@ const MyFeedPage = () => {
         <div className="text-center py-12">
           <div className="text-gray-400 mb-4">
             <i className="fas fa-camera text-6xl mb-4"></i>
-            <p className="text-xl font-medium">아직 피드가 없습니다</p>
-            <p className="text-gray-500 mt-2">첫 번째 피드를 올려보세요!</p>
+            <p className="text-xl font-medium">
+              {isCurrentUser ? "아직 피드가 없습니다" : "아직 피드가 없습니다"}
+            </p>
+            <p className="text-gray-500 mt-2">
+              {isCurrentUser 
+                ? "첫 번째 피드를 올려보세요!" 
+                : `${targetUserNickname}님은 아직 피드를 올리지 않았습니다.`
+              }
+            </p>
           </div>
-          <button
-            onClick={() => navigate("/feed-create")}
-            className="bg-[#87CEEB] text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-400 transition duration-200"
-          >
-            <i className="fas fa-plus-circle mr-2"></i>
-            피드 올리기
-          </button>
+          {isCurrentUser && (
+            <button
+              onClick={() => navigate("/feed-create")}
+              className="bg-[#87CEEB] text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-400 transition duration-200"
+            >
+              <i className="fas fa-plus-circle mr-2"></i>
+              피드 올리기
+            </button>
+          )}
         </div>
       ) : (
         <FeedList 
@@ -581,7 +632,7 @@ const MyFeedPage = () => {
         voted={selectedPost ? votedPosts.includes(selectedPost.id) : false}
         onEdit={(() => {
           const isOwner = !!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname);
-          if (!isOwner) return undefined;
+          if (!isOwner || !isCurrentUser) return undefined;
           return () => {
             handleCloseModal();
             navigate(`/feed-edit?id=${selectedPost?.id}`);
@@ -589,11 +640,11 @@ const MyFeedPage = () => {
         })()}
         onDelete={(() => {
           const isOwner = !!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname);
-          if (!isOwner || !selectedPost) return undefined;
+          if (!isOwner || !selectedPost || !isCurrentUser) return undefined;
           return () => handleDelete(selectedPost.id);
         })()}
         showVoteButton={selectedPost?.feedType === "EVENT"}
-        showEditButton={!!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname)}
+        showEditButton={!!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname && isCurrentUser)}
         showVoteModal={showVoteModal}
         onVoteModalClose={() => setShowVoteModal(false)}
         onVoteConfirm={() => selectedPost && handleVote(selectedPost.id)}
@@ -607,7 +658,11 @@ const MyFeedPage = () => {
         currentUser={user ? { nickname: user.nickname } : undefined}
         onUserClick={(userId) => {
           handleCloseModal();
-          navigate(`/my-feeds?userId=${userId}`);
+          // userId 대신 nickname을 사용하여 필터링
+          const selectedUserNickname = selectedPost?.user?.nickname;
+          if (selectedUserNickname) {
+            navigate(`/my-feeds?userNickname=${selectedUserNickname}`);
+          }
         }}
       />
 

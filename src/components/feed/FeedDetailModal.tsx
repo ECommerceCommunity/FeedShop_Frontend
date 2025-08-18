@@ -103,7 +103,12 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
               <div>
                 <div className="flex items-center">
                   <button
-                    onClick={() => onUserClick?.(feed.user?.id || 0)}
+                    onClick={() => {
+                      // userId 대신 nickname을 사용하여 필터링
+                      if (feed.user?.nickname) {
+                        window.location.href = `/my-feeds?userNickname=${feed.user.nickname}`;
+                      }
+                    }}
                     className="font-medium text-lg hover:text-[#87CEEB] transition duration-200 cursor-pointer"
                   >
                     {feed.user?.nickname || '사용자'}
