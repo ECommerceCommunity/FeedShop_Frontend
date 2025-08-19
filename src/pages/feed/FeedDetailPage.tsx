@@ -4,6 +4,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
 import { FeedPost, FeedComment } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
+import FeedUserProfile from "../../components/feed/FeedUserProfile";
 
 // 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
 const formatKoreanTime = (dateString: string) => {
@@ -366,43 +367,26 @@ const FeedDetailPage = () => {
             {/* 사용자 정보 */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
-                <img
-                  src={feed.user?.profileImg || "https://readdy.ai/api/search-image?query=default%20profile&width=60&height=60"}
-                  alt={feed.user?.nickname || "사용자"}
-                  className="w-12 h-12 rounded-full object-cover mr-3"
-                />
-                <div>
-                  <div className="flex items-center">
-                    <button
-                      onClick={() => navigate(`/my-feeds?userNickname=${feed.user?.nickname}`)}
-                      className="font-medium text-lg hover:text-[#87CEEB] transition duration-200 cursor-pointer"
-                    >
-                      {feed.user?.nickname || "사용자"}
-                    </button>
-                    {feed.user?.level && (
-                      <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
-                        <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
-                        <span>Lv.{feed.user.level}</span>
-                      </div>
-                    )}
+                {feed.user && (
+                  <FeedUserProfile
+                    userId={feed.user.id || 0}
+                    nickname={feed.user.nickname}
+                    profileImageUrl={feed.user.profileImg}
+                    showBodyInfo={true}
+                    size="large"
+                    onClick={() => {
+                      if (feed.user?.nickname) {
+                        navigate(`/my-feeds?userNickname=${feed.user.nickname}`);
+                      }
+                    }}
+                  />
+                )}
+                {feed.user?.level && (
+                  <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
+                    <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
+                    <span>Lv.{feed.user.level}</span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-500 mt-1">
-                    {feed.user?.gender && feed.user?.height && (
-                      <span>{feed.user.gender} · {feed.user.height}cm</span>
-                    )}
-                    {feed.instagramId && (
-                      <a
-                        href={`https://instagram.com/${feed.instagramId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-3 text-[#87CEEB] hover:underline"
-                      >
-                        <i className="fab fa-instagram mr-1"></i>
-                        {feed.instagramId}
-                      </a>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
               
               {canEdit && (
