@@ -5,7 +5,6 @@ import {
   CreateFeedRequest,
   UpdateFeedRequest,
   CreateCommentRequest,
-  FeedVoteRequest,
   ApiResponse,
   FeedListResponse,
   CommentListResponse,
@@ -76,13 +75,6 @@ export class FeedService {
         productName: backendFeed.productName,
         size: backendFeed.productSize,
       },
-      event: backendFeed.eventId && backendFeed.eventTitle && backendFeed.eventStartDate && backendFeed.eventEndDate ? {
-        id: backendFeed.eventId,
-        title: backendFeed.eventTitle,
-        description: backendFeed.eventDescription,
-        startDate: backendFeed.eventStartDate,
-        endDate: backendFeed.eventEndDate,
-      } : undefined,
       images: backendFeed.imageUrls?.map((url: string, index: number) => ({
         id: index + 1,
         imageUrl: url,
@@ -117,10 +109,10 @@ export class FeedService {
           };
         }
       }) || [],
-      isLiked: backendFeed.isLiked,
-      isVoted: backendFeed.isVoted,
+      isLiked: backendFeed.isLiked ?? false,
+      isVoted: backendFeed.isVoted ?? false,
       createdAt: backendFeed.createdAt,
-      updatedAt: backendFeed.updatedAt,
+      updatedAt: backendFeed.updatedAt ?? backendFeed.createdAt,
     };
   }
 
@@ -369,11 +361,10 @@ export class FeedService {
   /**
    * 피드에 투표합니다
    */
-  static async voteFeed(feedId: number, voteData: FeedVoteRequest): Promise<VoteResponse> {
+  static async voteFeed(feedId: number): Promise<VoteResponse> {
     try {
       const response = await axiosInstance.post<ApiResponse<VoteResponse>>(
-        `/api/feeds/${feedId}/vote`,
-        voteData
+        `/api/feeds/${feedId}/vote`
       );
       const apiResponse = response.data;
       return apiResponse.data;
@@ -388,10 +379,10 @@ export class FeedService {
    */
   static async hasVoted(feedId: number): Promise<boolean> {
     try {
-      const response = await axiosInstance.get<ApiResponse<{ hasVoted: boolean }>>(
+      const response = await axiosInstance.get<ApiResponse<boolean>>(
         `/api/feeds/${feedId}/vote/check`
       );
-      return response.data.data.hasVoted;
+      return response.data.data;
     } catch (error: any) {
       console.error('투표 상태 확인 실패:', error);
       return false;

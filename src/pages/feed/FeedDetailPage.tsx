@@ -4,6 +4,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
 import { FeedPost, FeedComment } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
+import FeedVoteButton from "../../components/feed/FeedVoteButton";
 
 // 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
 const formatKoreanTime = (dateString: string) => {
@@ -509,7 +510,29 @@ const FeedDetailPage = () => {
                 </div>
               </div>
 
-
+              {/* 이벤트 피드인 경우에만 투표 버튼 표시 */}
+              {feed.feedType === 'EVENT' && (
+                <FeedVoteButton
+                  feedId={feed.id}
+                  feedType={feed.feedType}
+                  participantVoteCount={feed.participantVoteCount || 0}
+                  isVoted={feed.isVoted}
+                  size="medium"
+                  onVoteSuccess={(voteCount) => {
+                    // 투표 성공 시 피드 정보 업데이트
+                    setFeed(prev => prev ? { ...prev, participantVoteCount: voteCount } : null);
+                    setToastMessage('투표가 완료되었습니다!');
+                    setShowToast(true);
+                    setTimeout(() => setShowToast(false), 3000);
+                  }}
+                  onVoteError={(error) => {
+                    console.error('투표 에러:', error);
+                    setToastMessage('투표에 실패했습니다.');
+                    setShowToast(true);
+                    setTimeout(() => setShowToast(false), 3000);
+                  }}
+                />
+              )}
             </div>
 
             {/* 댓글 섹션 */}

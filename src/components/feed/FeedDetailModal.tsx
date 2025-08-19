@@ -165,6 +165,8 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                     feedId={feed.id}
                     feedType={feed.feedType}
                     participantVoteCount={feed.participantVoteCount || 0}
+                    isVoted={feed.isVoted}
+                    size="small"
                     onVoteSuccess={(voteCount) => {
                       // 투표 성공 시 피드 정보 업데이트
                       console.log('투표 성공:', voteCount);

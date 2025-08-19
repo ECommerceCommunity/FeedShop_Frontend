@@ -5,6 +5,8 @@ interface FeedVoteButtonProps {
   feedId: number;
   feedType: string;
   participantVoteCount: number;
+  isVoted?: boolean; // 피드에서 받은 투표 상태
+  size?: 'small' | 'medium' | 'large'; // 버튼 크기
   onVoteSuccess?: (voteCount: number) => void;
   onVoteError?: (error: any) => void;
 }
@@ -13,20 +15,38 @@ const FeedVoteButton: React.FC<FeedVoteButtonProps> = ({
   feedId,
   feedType,
   participantVoteCount,
+  isVoted: initialIsVoted,
+  size = 'medium', // 기본값은 medium
   onVoteSuccess,
   onVoteError,
 }) => {
-  const [voted, setVoted] = useState(false);
+  const [voted, setVoted] = useState(initialIsVoted || false);
   const [voteCount, setVoteCount] = useState(participantVoteCount);
   const [showVoteModal, setShowVoteModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // 초기 투표 상태 확인
+  // 초기 투표 상태 설정
+  useEffect(() => {
+    if (initialIsVoted !== undefined) {
+      setVoted(initialIsVoted);
+      console.log(`초기 투표 상태 설정 - feedId: ${feedId}, isVoted: ${initialIsVoted}`);
+    }
+  }, [initialIsVoted, feedId]);
+
+  // 초기 투표 상태 확인 (피드에서 받은 상태가 없거나 false인 경우)
   useEffect(() => {
     const checkVoteStatus = async () => {
+      // 피드에서 이미 투표 상태를 받았다면 API 호출하지 않음
+      if (initialIsVoted !== undefined) {
+        console.log(`피드에서 투표 상태 받음 - feedId: ${feedId}, isVoted: ${initialIsVoted}`);
+        return;
+      }
+
       try {
+        console.log(`투표 상태 확인 시작 - feedId: ${feedId}`);
         const hasVoted = await FeedService.hasVoted(feedId);
+        console.log(`투표 상태 확인 결과 - feedId: ${feedId}, hasVoted: ${hasVoted}`);
         setVoted(hasVoted);
       } catch (error) {
         console.error('투표 상태 확인 실패:', error);
@@ -34,7 +54,7 @@ const FeedVoteButton: React.FC<FeedVoteButtonProps> = ({
     };
 
     checkVoteStatus();
-  }, [feedId]);
+  }, [feedId, initialIsVoted]);
 
   // participantVoteCount prop이 변경될 때 voteCount 업데이트
   useEffect(() => {
@@ -44,9 +64,11 @@ const FeedVoteButton: React.FC<FeedVoteButtonProps> = ({
   const handleVote = async () => {
     if (loading) return;
     
+    console.log(`투표 시작 - feedId: ${feedId}`);
     setLoading(true);
     try {
-      const result = await FeedService.voteFeed(feedId, { eventId: feedId });
+      const result = await FeedService.voteFeed(feedId);
+      console.log(`투표 API 응답:`, result);
       
       // 투표 완료 후 상태 재확인
       try {
@@ -61,6 +83,7 @@ const FeedVoteButton: React.FC<FeedVoteButtonProps> = ({
       
       // 투표 수 업데이트
       setVoteCount(result.voteCount);
+      console.log(`투표 수 업데이트: ${result.voteCount}`);
       
       // 성공 콜백 호출
       if (onVoteSuccess) {
@@ -73,6 +96,7 @@ const FeedVoteButton: React.FC<FeedVoteButtonProps> = ({
       try {
         const latestVoteCount = await FeedService.getVoteCount(feedId);
         setVoteCount(latestVoteCount);
+        console.log(`최신 투표 수 조회: ${latestVoteCount}`);
         if (onVoteSuccess) {
           onVoteSuccess(latestVoteCount);
         }
@@ -81,6 +105,11 @@ const FeedVoteButton: React.FC<FeedVoteButtonProps> = ({
       }
     } catch (error: any) {
       console.error('투표 실패:', error);
+      console.error('에러 상세:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       
       // 에러 메시지 설정
       const errorMsg = error.response?.data?.message || '투표에 실패했습니다.';
@@ -98,6 +127,18 @@ const FeedVoteButton: React.FC<FeedVoteButtonProps> = ({
     }
   };
 
+  // 버튼 크기에 따른 스타일 클래스
+  const getSizeClasses = () => {
+    switch (size) {
+      case 'small':
+        return 'px-3 py-1 text-sm';
+      case 'large':
+        return 'px-6 py-3 text-lg';
+      default: // medium
+        return 'px-4 py-2 text-base';
+    }
+  };
+
   // 이벤트가 아니면 버튼을 숨김
   if (feedType !== 'EVENT') {
     return null;
@@ -106,16 +147,20 @@ const FeedVoteButton: React.FC<FeedVoteButtonProps> = ({
   return (
     <>
       <button
-        className={`mt-3 w-full py-2 rounded-lg font-medium transition ${
+        className={`rounded-lg font-medium transition ${getSizeClasses()} ${
           voted 
-            ? 'bg-green-500 text-white hover:bg-green-600' 
+            ? 'bg-green-500 text-white cursor-not-allowed' 
             : 'bg-[#87CEEB] text-white hover:bg-blue-400'
         } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
         onClick={(e) => {
           e.stopPropagation();
+          // 투표 완료된 경우 클릭 무시
+          if (voted) {
+            return;
+          }
           setShowVoteModal(true);
         }}
-        disabled={loading}
+        disabled={loading || voted}
       >
         <i className={`fas ${voted ? 'fa-check' : 'fa-vote-yea'} mr-1`}></i>
         {voted ? '투표 완료' : '투표하기'} ({voteCount})
