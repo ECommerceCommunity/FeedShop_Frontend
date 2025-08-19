@@ -470,21 +470,16 @@ const MyFeedPage = () => {
                   </button>
                 )}
               </div>
-              <p className="text-gray-600 mb-3">
-                {isCurrentUser 
-                  ? "나만의 스타일을 공유하고 다른 사람들과 소통해보세요!"
-                  : `${targetUserNickname}님의 스타일을 확인해보세요!`
-                }
-              </p>
               
               {/* 사용자 신체 정보 표시 */}
               {isCurrentUser && userProfile && (
-                <div className="mt-3">
+                <div className="mb-3">
                   <FeedUserProfile
                     userId={userProfile.userId || 0}
                     nickname={userProfile.nickname}
                     profileImageUrl={userProfile.profileImageUrl}
                     showBodyInfo={true}
+                    showBodyInfoOnly={true}
                     size="medium"
                     onClick={() => {
                       // 프로필 수정 페이지로 이동
@@ -493,6 +488,13 @@ const MyFeedPage = () => {
                   />
                 </div>
               )}
+              
+              <p className="text-gray-600 mb-3">
+                {isCurrentUser 
+                  ? "나만의 스타일을 공유하고 다른 사람들과 소통해보세요!"
+                  : `${targetUserNickname}님의 스타일을 확인해보세요!`
+                }
+              </p>
             </div>
           </div>
           {isCurrentUser && (

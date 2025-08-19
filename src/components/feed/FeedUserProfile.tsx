@@ -7,6 +7,7 @@ interface FeedUserProfileProps {
   nickname?: string;
   profileImageUrl?: string;
   showBodyInfo?: boolean;
+  showBodyInfoOnly?: boolean; // 신체 정보만 표시 (닉네임, 사진 제외)
   size?: 'small' | 'medium' | 'large';
   onClick?: () => void;
 }
@@ -16,6 +17,7 @@ const FeedUserProfile: React.FC<FeedUserProfileProps> = ({
   nickname,
   profileImageUrl,
   showBodyInfo = true,
+  showBodyInfoOnly = false,
   size = 'medium',
   onClick,
 }) => {
@@ -107,9 +109,13 @@ const FeedUserProfile: React.FC<FeedUserProfileProps> = ({
   if (loading) {
     return (
       <div className={`${sizeClasses.container} animate-pulse`}>
-        <div className={`${sizeClasses.image} bg-gray-200 rounded-full`}></div>
+        {!showBodyInfoOnly && (
+          <div className={`${sizeClasses.image} bg-gray-200 rounded-full`}></div>
+        )}
         <div className="space-y-1">
-          <div className={`${sizeClasses.text} bg-gray-200 h-4 w-20 rounded`}></div>
+          {!showBodyInfoOnly && (
+            <div className={`${sizeClasses.text} bg-gray-200 h-4 w-20 rounded`}></div>
+          )}
           {showBodyInfo && (
             <div className={`${sizeClasses.bodyInfo} bg-gray-200 h-3 w-24 rounded`}></div>
           )}
@@ -121,10 +127,21 @@ const FeedUserProfile: React.FC<FeedUserProfileProps> = ({
   if (error) {
     return (
       <div className={`${sizeClasses.container} text-red-500`}>
-        <div className={`${sizeClasses.image} bg-red-100 rounded-full flex items-center justify-center`}>
-          <i className="fas fa-exclamation-triangle text-red-400"></i>
-        </div>
+        {!showBodyInfoOnly && (
+          <div className={`${sizeClasses.image} bg-red-100 rounded-full flex items-center justify-center`}>
+            <i className="fas fa-exclamation-triangle text-red-400"></i>
+          </div>
+        )}
         <div className={sizeClasses.text}>프로필 로드 실패</div>
+      </div>
+    );
+  }
+
+  // 신체 정보만 표시하는 경우
+  if (showBodyInfoOnly) {
+    return (
+      <div className={`${sizeClasses.bodyInfo} text-gray-600`}>
+        {bodyInfoText}
       </div>
     );
   }
