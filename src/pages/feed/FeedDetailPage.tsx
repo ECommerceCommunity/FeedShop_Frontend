@@ -19,6 +19,7 @@ const formatKoreanTime = (dateString: string) => {
     }).format(date);
     return koreanTime;
   } catch (error) {
+    console.warn('날짜 파싱 실패:', error);
     return dateString; // 파싱 실패 시 원본 반환
   }
 };

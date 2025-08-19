@@ -90,7 +90,7 @@ const LikedFeedsPage = () => {
             <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="bg-white rounded-lg shadow p-4">
+                <div key={`skeleton-${i}`} className="bg-white rounded-lg shadow p-4">
                   <div className="h-32 bg-gray-200 rounded mb-3"></div>
                   <div className="h-4 bg-gray-200 rounded mb-2"></div>
                   <div className="h-3 bg-gray-200 rounded w-3/4"></div>
@@ -160,10 +160,17 @@ const LikedFeedsPage = () => {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {likedFeeds.map((feed) => (
-                <div
+                <button
                   key={feed.feedId}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer"
+                  className="w-full text-left bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#87CEEB] focus:ring-opacity-50"
                   onClick={() => handleFeedClick(feed.feedId)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleFeedClick(feed.feedId);
+                    }
+                  }}
+                  aria-label={`${feed.title} 피드 보기`}
                 >
                   {/* 피드 이미지 */}
                   {feed.imageUrl && (
@@ -235,7 +242,7 @@ const LikedFeedsPage = () => {
                       좋아요 취소
                     </button>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
             

@@ -5,10 +5,8 @@ import FeedDetailModal from "../../components/feed/FeedDetailModal";
 import LikedUsersModal from "../../components/feed/LikedUsersModal";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
-import { FeedPost } from "../../types/feed";
+import { FeedPost, FeedComment } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
-
-import { FeedComment } from "../../types/feed";
 
 // 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
 const formatKoreanTime = (dateString: string) => {
@@ -195,7 +193,11 @@ const MyFeedPage = () => {
       const likeResult = await FeedService.likeFeed(postId);
       
       // 백엔드 응답에 따라 좋아요 상태 업데이트
-      updateLikedPosts(isLiked(postId) ? likedPosts.filter((id: number) => id !== postId) : [...likedPosts, postId]);
+      const isCurrentlyLiked = isLiked(postId);
+      const updatedLikedPosts = isCurrentlyLiked 
+        ? likedPosts.filter((id: number) => id !== postId)
+        : [...likedPosts, postId];
+      updateLikedPosts(updatedLikedPosts);
       
       // 실제 피드 데이터의 좋아요 수와 isLiked 상태 업데이트
       setFeedPosts((prev) =>
@@ -523,7 +525,7 @@ const MyFeedPage = () => {
           <div className="text-gray-400 mb-4">
             <i className="fas fa-camera text-6xl mb-4"></i>
             <p className="text-xl font-medium">
-              {isCurrentUser ? "아직 피드가 없습니다" : "아직 피드가 없습니다"}
+              아직 피드가 없습니다
             </p>
             <p className="text-gray-500 mt-2">
               {isCurrentUser 

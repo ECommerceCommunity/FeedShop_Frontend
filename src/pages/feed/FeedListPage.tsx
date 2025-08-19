@@ -16,7 +16,7 @@ import { useLikedPosts } from "../../hooks/useLikedPosts";
 const FeedListPage = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [sortBy, setSortBy] = useState("latest");
-  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
   // 🔧 백엔드 연동 버전: 실제 Feed Entity 구조 사용

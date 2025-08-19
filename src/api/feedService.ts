@@ -412,7 +412,7 @@ export class FeedService {
       if (response.data.success) {
         // 백엔드 응답을 프론트엔드 타입으로 변환
         const data = response.data.data;
-        if (data.pagination && data.pagination.content) {
+        if (data.pagination?.content) {
           data.pagination.content = data.pagination.content.map((comment: any) => ({
             ...comment,
             id: comment.commentId, // 프론트엔드 호환성을 위해 id 필드 추가
