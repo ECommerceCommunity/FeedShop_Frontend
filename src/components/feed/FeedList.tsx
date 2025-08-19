@@ -7,6 +7,7 @@ interface FeedListProps {
   feeds: any[];
   onFeedClick?: (feed: any) => void;
   onVoteClick?: (feed: any) => void;
+  onVoteSuccess?: (feedId: number, voteCount: number) => void;
   onLikeClick?: (feed: any) => void;
   onLikeCountClick?: (feed: any) => void;
   likedPosts?: number[];
@@ -16,6 +17,7 @@ const FeedList: React.FC<FeedListProps> = ({
   feeds,
   onFeedClick,
   onVoteClick,
+  onVoteSuccess,
   onLikeClick,
   onLikeCountClick,
   likedPosts,
@@ -43,7 +45,16 @@ const FeedList: React.FC<FeedListProps> = ({
               feedId={feed.id}
               feedType={feed.feedType}
               participantVoteCount={feed.participantVoteCount || 0}
-              onVoteSuccess={(voteCount) => onVoteClick?.({ ...feed, participantVoteCount: voteCount })}
+              onVoteSuccess={(voteCount) => {
+                // 투표 성공 시 콜백 호출
+                if (onVoteSuccess) {
+                  onVoteSuccess(feed.id, voteCount);
+                }
+                // 기존 onVoteClick도 호출 (상세 페이지 이동용)
+                if (onVoteClick) {
+                  onVoteClick({ ...feed, participantVoteCount: voteCount });
+                }
+              }}
               onVoteError={(error) => console.error('투표 에러:', error)}
             />
           )}

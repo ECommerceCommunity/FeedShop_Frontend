@@ -47,7 +47,19 @@ const FeedVoteButton: React.FC<FeedVoteButtonProps> = ({
     setLoading(true);
     try {
       const result = await FeedService.voteFeed(feedId, { eventId: feedId });
-      setVoted(result.voted);
+      
+      // 투표 완료 후 상태 재확인
+      try {
+        const hasVoted = await FeedService.hasVoted(feedId);
+        setVoted(hasVoted);
+        console.log(`투표 후 상태 재확인: ${hasVoted}`);
+      } catch (error) {
+        console.error('투표 상태 재확인 실패:', error);
+        // 백업으로 API 응답 사용
+        setVoted(result.voted);
+      }
+      
+      // 투표 수 업데이트
       setVoteCount(result.voteCount);
       
       // 성공 콜백 호출
@@ -57,7 +69,7 @@ const FeedVoteButton: React.FC<FeedVoteButtonProps> = ({
       
       setShowVoteModal(false);
       
-      // 투표 완료 후 최신 투표 수 조회
+      // 추가로 최신 투표 수 조회
       try {
         const latestVoteCount = await FeedService.getVoteCount(feedId);
         setVoteCount(latestVoteCount);
