@@ -1,5 +1,7 @@
 import React from 'react';
 import { FeedPost } from '../../types/feed';
+import FeedVoteButton from './FeedVoteButton';
+import FeedUserProfile from './FeedUserProfile';
 
 // 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
 const formatKoreanTime = (dateString: string) => {
@@ -99,40 +101,21 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
           </div>
           {/* 상세 정보 */}
           <div className="md:w-1/2 p-6">
-            <div className="flex items-center mb-6">
-              <img src={feed.user?.profileImg || 'https://via.placeholder.com/60'} alt={feed.user?.nickname || '사용자'} className="w-12 h-12 rounded-full object-cover mr-3" />
-              <div>
-                <div className="flex items-center">
-                  <button
-                    onClick={() => {
-                      // userId 대신 nickname을 사용하여 필터링
-                      if (feed.user?.nickname) {
-                        window.location.href = `/my-feeds?userNickname=${feed.user.nickname}`;
-                      }
-                    }}
-                    className="font-medium text-lg hover:text-[#87CEEB] transition duration-200 cursor-pointer"
-                  >
-                    {feed.user?.nickname || '사용자'}
-                  </button>
-                  {feed.user?.level && (
-                    <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
-                      <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
-                      <span>Lv.{feed.user.level}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center text-sm text-gray-500 mt-1">
-                  {feed.user?.gender && feed.user?.height && (
-                    <span>{feed.user.gender} · {feed.user.height}cm</span>
-                  )}
-                  {feed.instagramId && (
-                    <a href={`https://instagram.com/${feed.instagramId}`} target="_blank" rel="noopener noreferrer" className="ml-3 text-[#87CEEB] hover:underline cursor-pointer">
-                      <i className="fab fa-instagram mr-1"></i>
-                      {feed.instagramId}
-                    </a>
-                  )}
-                </div>
-              </div>
+            <div className="mb-6">
+              {feed.user && (
+                <FeedUserProfile
+                  userId={feed.user.id || 0}
+                  nickname={feed.user.nickname}
+                  profileImageUrl={feed.user.profileImg}
+                  showBodyInfo={true}
+                  size="large"
+                  onClick={() => {
+                    if (feed.user?.nickname) {
+                      window.location.href = `/my-feeds?userNickname=${feed.user.nickname}`;
+                    }
+                  }}
+                />
+              )}
             </div>
             <div className="mb-6">
               <h2 className="text-xl font-bold mb-2">{feed.title}</h2>

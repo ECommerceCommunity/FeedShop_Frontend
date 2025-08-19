@@ -31,7 +31,7 @@ export interface UpdateUserProfileRequest {
 }
 
 export const UserProfileService = {
-  // 사용자 프로필 정보 조회
+  // 내 프로필 정보 조회
   getUserProfile: async (): Promise<UserProfileData> => {
     try {
       // 토큰 상태 확인
@@ -103,6 +103,82 @@ export const UserProfileService = {
       return {
         name: "홍길동",
         nickname: "쇼핑러버",
+        phone: "010-1234-5678",
+        birthDate: "1990-01-01",
+        gender: "MALE",
+        height: 170,
+        weight: 65,
+        footSize: 260,
+        footWidth: "NORMAL",
+        profileImageUrl: "",
+      };
+    }
+  },
+
+  // 특정 사용자 프로필 정보 조회
+  getUserProfileById: async (userId: number): Promise<UserProfileData> => {
+    try {
+      console.log(`사용자 ${userId} 프로필 조회 시작`);
+
+      const response = await axios.get(`/api/users/${userId}/profile`);
+      console.log("특정 사용자 프로필 응답:", response.data);
+
+      // 백엔드 응답을 프론트엔드 형식에 맞춰 매핑
+      const backendData = response.data;
+
+      const mappedData = {
+        userId: backendData.userId,
+        username: backendData.username,
+        email: backendData.email,
+        name: backendData.name || backendData.username || "",
+        nickname: backendData.nickname || "",
+        phone: backendData.phone || "",
+        birthDate: backendData.birthDate || "",
+        gender: backendData.gender || "MALE",
+        height: backendData.height,
+        weight: backendData.weight,
+        footSize: backendData.footSize,
+        footWidth: backendData.footWidth || "NORMAL",
+        profileImageUrl: backendData.profileImageUrl || "",
+      };
+
+      // 이미지 URL 처리
+      if (
+        mappedData.profileImageUrl &&
+        !mappedData.profileImageUrl.startsWith("http")
+      ) {
+        const baseURL =
+          process.env.REACT_APP_API_URL || "https://localhost:8443";
+        mappedData.profileImageUrl = `${baseURL}${
+          mappedData.profileImageUrl.startsWith("/") ? "" : "/"
+        }${mappedData.profileImageUrl}`;
+      }
+
+      if (
+        mappedData.profileImageUrl &&
+        mappedData.profileImageUrl.includes("mock-gcp-bucket")
+      ) {
+        mappedData.profileImageUrl = convertMockUrlToCdnUrl(
+          mappedData.profileImageUrl
+        );
+      }
+
+      console.log("매핑된 특정 사용자 데이터:", mappedData);
+      return mappedData;
+    } catch (error: any) {
+      console.error(`사용자 ${userId} 프로필 조회 실패:`, error);
+
+      // 프로덕션 환경에서는 에러를 그대로 전파
+      if (process.env.NODE_ENV === "production") {
+        throw error;
+      }
+
+      // 개발 환경에서만 임시 데이터 반환
+      console.warn(`개발 환경: 사용자 ${userId} 임시 프로필 데이터를 반환합니다.`);
+      return {
+        userId: userId,
+        name: `사용자${userId}`,
+        nickname: `닉네임${userId}`,
         phone: "010-1234-5678",
         birthDate: "1990-01-01",
         gender: "MALE",
