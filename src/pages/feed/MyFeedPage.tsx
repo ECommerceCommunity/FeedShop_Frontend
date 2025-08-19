@@ -197,7 +197,7 @@ const MyFeedPage = () => {
       const likeResult = await FeedService.likeFeed(postId);
       
       // 백엔드 응답에 따라 좋아요 상태 업데이트
-      updateLikedPosts(isLiked(postId) ? likedPosts.filter(id => id !== postId) : [...likedPosts, postId]);
+      updateLikedPosts(isLiked(postId) ? likedPosts.filter((id: number) => id !== postId) : [...likedPosts, postId]);
       
       // 실제 피드 데이터의 좋아요 수와 isLiked 상태 업데이트
       setFeedPosts((prev) =>

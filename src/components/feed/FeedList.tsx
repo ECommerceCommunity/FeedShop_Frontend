@@ -33,8 +33,8 @@ const FeedList: React.FC<FeedListProps> = ({
             feedId={feed.id}
             likeCount={feed.likeCount || 0}
             isLiked={likedPosts?.includes(feed.id) || false}
-            onLikeClick={(feedId) => onLikeClick?.({ ...feed, id: feedId })}
-            onLikeCountClick={(feedId) => onLikeCountClick?.({ ...feed, id: feedId })}
+            onLikeClick={(feedId: number) => onLikeClick?.({ ...feed, id: feedId })}
+            onLikeCountClick={(feedId: number) => onLikeCountClick?.({ ...feed, id: feedId })}
           />
           
           {/* 투표 버튼 (이벤트 피드인 경우만) */}
@@ -42,7 +42,7 @@ const FeedList: React.FC<FeedListProps> = ({
             <FeedVoteButton
               feedId={feed.id}
               participantVoteCount={feed.participantVoteCount || 0}
-              onVoteClick={(feedId) => onVoteClick({ ...feed, id: feedId })}
+              onVoteClick={(feedId: number) => onVoteClick({ ...feed, id: feedId })}
             />
           )}
         </FeedCard>

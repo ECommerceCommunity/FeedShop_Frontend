@@ -1,6 +1,7 @@
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import axios from "../api/axios";
 
 interface SellerProtectedRouteProps {
   children?: React.ReactNode; // 렌더링할 자식 컴포넌트 (선택 사항, Outlet과 함께 사용)
@@ -13,7 +14,30 @@ const SellerProtectedRoute: React.FC<SellerProtectedRouteProps> = ({
   allowedUserType,
   redirectPath = "/", // 기본 리디렉션 경로를 메인 페이지로 설정
 }) => {
-  const { user } = useAuth(); // AuthContext에서 user 정보 가져오기
+  const { user, handleUnauthorized } = useAuth(); // AuthContext에서 user 정보 가져오기
+
+  // 컴포넌트 마운트 시 실시간 토큰 유효성 검증
+  React.useEffect(() => {
+    const verifyTokenOnAccess = async () => {
+      const storedToken = localStorage.getItem("token");
+      if (storedToken && user) {
+        console.log("🔍 판매자 페이지 접근 시 서버 연결 상태 확인...");
+        try {
+          await axios.get("/api/users/me/profile");
+          console.log("✅ 서버 연결 정상");
+        } catch (error: any) {
+          console.log("🚨 서버 연결 실패: 자동 로그아웃 처리");
+          console.error("Error details:", error);
+          handleUnauthorized();
+          return;
+        }
+      }
+    };
+
+    if (user) {
+      verifyTokenOnAccess();
+    }
+  }, [user, handleUnauthorized]);
 
   // 1. 로그인 자체가 안 되어 있는 경우
   if (!user) {

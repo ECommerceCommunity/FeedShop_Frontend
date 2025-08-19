@@ -1,6 +1,7 @@
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import axios from "../api/axios";
 import styled from "styled-components";
 
 const NoticeContainer = styled.div`
@@ -73,7 +74,32 @@ const UserProtectedRoute: React.FC<UserProtectedRouteProps> = ({
   requireUserRole = false,
   showNotice = true,
 }) => {
-  const { user } = useAuth();
+  const { user, handleUnauthorized } = useAuth();
+
+  // 컴포넌트 마운트 시 실시간 토큰 유효성 검증
+  React.useEffect(() => {
+    const verifyTokenOnAccess = async () => {
+      // user가 있고 토큰이 있는 경우 서버 연결 상태 확인
+      const storedToken = localStorage.getItem("token");
+      if (storedToken && user) {
+        console.log("🔍 보호된 페이지 접근 시 서버 연결 상태 확인...");
+        try {
+          // 서버 연결 상태를 확인하기 위해 간단한 API 호출 (개발환경 임시데이터 우회)
+          await axios.get("/api/users/me/profile");
+          console.log("✅ 서버 연결 정상");
+        } catch (error: any) {
+          console.log("🚨 서버 연결 실패: 자동 로그아웃 처리");
+          console.error("Error details:", error);
+          handleUnauthorized();
+          return;
+        }
+      }
+    };
+
+    if ((requireLogin || requireUserRole) && user) {
+      verifyTokenOnAccess();
+    }
+  }, [user, requireLogin, requireUserRole, handleUnauthorized]);
 
   // 1. 로그인이 필요한데 로그인하지 않은 경우
   if (requireLogin && !user) {
@@ -87,7 +113,7 @@ const UserProtectedRoute: React.FC<UserProtectedRouteProps> = ({
             <br />
             로그인 후 다시 시도해주세요.
           </NoticeMessage>
-          <LoginButton onClick={() => window.location.href = '/login'}>
+          <LoginButton onClick={() => (window.location.href = "/login")}>
             로그인하기
           </LoginButton>
         </NoticeContainer>
@@ -110,7 +136,7 @@ const UserProtectedRoute: React.FC<UserProtectedRouteProps> = ({
               <br />
               로그인 후 다시 시도해주세요.
             </NoticeMessage>
-            <LoginButton onClick={() => window.location.href = '/login'}>
+            <LoginButton onClick={() => (window.location.href = "/login")}>
               로그인하기
             </LoginButton>
           </NoticeContainer>
@@ -118,7 +144,7 @@ const UserProtectedRoute: React.FC<UserProtectedRouteProps> = ({
       }
       return <Navigate to="/login" replace />;
     }
-    
+
     // 로그인했지만 USER 권한이 아닌 경우
     if (user.userType !== "user") {
       if (showNotice) {
