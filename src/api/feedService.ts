@@ -5,7 +5,6 @@ import {
   CreateFeedRequest,
   UpdateFeedRequest,
   CreateCommentRequest,
-  FeedVoteRequest,
   ApiResponse,
   FeedListResponse,
   CommentListResponse,
@@ -76,13 +75,6 @@ export class FeedService {
         productName: backendFeed.productName,
         size: backendFeed.productSize,
       },
-      event: backendFeed.eventId && backendFeed.eventTitle && backendFeed.eventStartDate && backendFeed.eventEndDate ? {
-        id: backendFeed.eventId,
-        title: backendFeed.eventTitle,
-        description: backendFeed.eventDescription,
-        startDate: backendFeed.eventStartDate,
-        endDate: backendFeed.eventEndDate,
-      } : undefined,
       images: backendFeed.imageUrls?.map((url: string, index: number) => ({
         id: index + 1,
         imageUrl: url,
@@ -117,10 +109,10 @@ export class FeedService {
           };
         }
       }) || [],
-      isLiked: backendFeed.isLiked,
-      isVoted: backendFeed.isVoted,
+      isLiked: backendFeed.isLiked ?? false,
+      isVoted: backendFeed.isVoted ?? false,
       createdAt: backendFeed.createdAt,
-      updatedAt: backendFeed.updatedAt,
+      updatedAt: backendFeed.updatedAt ?? backendFeed.createdAt,
     };
   }
 
@@ -369,17 +361,46 @@ export class FeedService {
   /**
    * 피드에 투표합니다
    */
-  static async voteFeed(feedId: number, voteData: FeedVoteRequest): Promise<VoteResponse> {
+  static async voteFeed(feedId: number): Promise<VoteResponse> {
     try {
       const response = await axiosInstance.post<ApiResponse<VoteResponse>>(
-        `/api/feeds/${feedId}/vote`,
-        voteData
+        `/api/feeds/${feedId}/vote`
       );
       const apiResponse = response.data;
       return apiResponse.data;
     } catch (error: any) {
       console.error('투표 실패:', error);
       throw error;
+    }
+  }
+
+  /**
+   * 사용자가 해당 피드에 투표했는지 확인합니다
+   */
+  static async hasVoted(feedId: number): Promise<boolean> {
+    try {
+      const response = await axiosInstance.get<ApiResponse<boolean>>(
+        `/api/feeds/${feedId}/vote/check`
+      );
+      return response.data.data;
+    } catch (error: any) {
+      console.error('투표 상태 확인 실패:', error);
+      return false;
+    }
+  }
+
+  /**
+   * 피드의 투표 수를 조회합니다
+   */
+  static async getVoteCount(feedId: number): Promise<number> {
+    try {
+      const response = await axiosInstance.get<ApiResponse<number>>(
+        `/api/feeds/${feedId}/vote/count`
+      );
+      return response.data.data;
+    } catch (error: any) {
+      console.error('투표 수 조회 실패:', error);
+      return 0;
     }
   }
 
@@ -596,6 +617,22 @@ export class FeedService {
         eventCount: 0,
         rankingCount: 0
       };
+    }
+  }
+
+  /**
+   * 현재 로그인한 사용자가 작성한 댓글 목록을 조회합니다
+   */
+  static async getMyComments(page: number = 0, size: number = 20): Promise<ApiResponse<any>> {
+    try {
+      const response = await axiosInstance.get<ApiResponse<any>>(
+        `/api/feeds/my-comments`,
+        { params: { page, size } }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error('내 댓글 목록 조회 실패:', error);
+      throw error;
     }
   }
 
