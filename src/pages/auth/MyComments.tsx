@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
 import styled from "styled-components";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
@@ -27,6 +27,77 @@ interface MyCommentListResponse {
   currentPage: number;
   size: number;
 }
+
+// 통합된 상태 타입
+interface CommentsState {
+  comments: MyCommentItem[];
+  loading: boolean;
+  error: string | null;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalElements: number;
+  };
+  deletingCommentId: number | null;
+}
+
+// 초기 상태
+const initialState: CommentsState = {
+  comments: [],
+  loading: true,
+  error: null,
+  pagination: {
+    currentPage: 0,
+    totalPages: 0,
+    totalElements: 0,
+  },
+  deletingCommentId: null,
+};
+
+// 액션 타입
+type CommentsAction =
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'SET_COMMENTS'; payload: MyCommentListResponse }
+  | { type: 'DELETE_COMMENT'; payload: number }
+  | { type: 'SET_DELETING_COMMENT'; payload: number | null }
+  | { type: 'SET_CURRENT_PAGE'; payload: number };
+
+// 리듀서 함수
+const commentsReducer = (state: CommentsState, action: CommentsAction): CommentsState => {
+  switch (action.type) {
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload };
+    case 'SET_ERROR':
+      return { ...state, error: action.payload };
+    case 'SET_COMMENTS':
+      return {
+        ...state,
+        comments: action.payload.content,
+        pagination: {
+          currentPage: action.payload.currentPage,
+          totalPages: action.payload.totalPages,
+          totalElements: action.payload.totalElements,
+        },
+        loading: false,
+        error: null,
+      };
+    case 'DELETE_COMMENT':
+      return {
+        ...state,
+        comments: state.comments.filter(comment => comment.id !== action.payload),
+      };
+    case 'SET_DELETING_COMMENT':
+      return { ...state, deletingCommentId: action.payload };
+    case 'SET_CURRENT_PAGE':
+      return {
+        ...state,
+        pagination: { ...state.pagination, currentPage: action.payload },
+      };
+    default:
+      return state;
+  }
+};
 
 // 스타일드 컴포넌트
 const Container = styled.div`
@@ -209,29 +280,22 @@ const PaginationButton = styled.button<{ isActive?: boolean }>`
 
 const MyCommentsPage: React.FC = () => {
   const { user } = useAuth();
-  const [comments, setComments] = useState<MyCommentItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
+  const [state, dispatch] = useReducer(commentsReducer, initialState);
 
   const fetchMyComments = async (page: number = 0) => {
     try {
-      setLoading(true);
-      setError(null);
+      dispatch({ type: 'SET_LOADING', payload: true });
+      dispatch({ type: 'SET_ERROR', payload: null });
       
       const response = await FeedService.getMyComments(page, 20);
       const data = response.data as MyCommentListResponse;
       
-      setComments(data.content);
-      setTotalPages(data.totalPages);
-      setCurrentPage(data.currentPage);
+      dispatch({ type: 'SET_COMMENTS', payload: data });
     } catch (error: any) {
       console.error('내 댓글 조회 실패:', error);
-      setError(error.response?.data?.message || '댓글 목록을 불러오는데 실패했습니다.');
+      dispatch({ type: 'SET_ERROR', payload: error.response?.data?.message || '댓글 목록을 불러오는데 실패했습니다.' });
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
@@ -247,29 +311,29 @@ const MyCommentsPage: React.FC = () => {
 
   const handleDeleteConfirm = async (commentId: number) => {
     try {
-      setDeletingCommentId(commentId);
+      dispatch({ type: 'SET_DELETING_COMMENT', payload: commentId });
       
       // 댓글 삭제 API 호출
       await FeedService.deleteComment(commentId, commentId); // feedId와 commentId 모두 commentId로 전달
       
       // 삭제 성공 시 목록에서 제거
-      setComments(prev => prev.filter(comment => comment.id !== commentId));
+      dispatch({ type: 'DELETE_COMMENT', payload: commentId });
       
       // 현재 페이지가 비어있고 이전 페이지가 있다면 이전 페이지로 이동
-      if (comments.length === 1 && currentPage > 0) {
-        setCurrentPage(prev => prev - 1);
-        fetchMyComments(currentPage - 1);
+      if (state.comments.length === 1 && state.pagination.currentPage > 0) {
+        dispatch({ type: 'SET_CURRENT_PAGE', payload: state.pagination.currentPage - 1 });
+        fetchMyComments(state.pagination.currentPage - 1);
       }
     } catch (error: any) {
       console.error('댓글 삭제 실패:', error);
       alert(error.response?.data?.message || '댓글 삭제에 실패했습니다.');
     } finally {
-      setDeletingCommentId(null);
+      dispatch({ type: 'SET_DELETING_COMMENT', payload: null });
     }
   };
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    dispatch({ type: 'SET_CURRENT_PAGE', payload: page });
     fetchMyComments(page);
   };
 
@@ -281,7 +345,7 @@ const MyCommentsPage: React.FC = () => {
     }
   };
 
-  if (loading) {
+  if (state.loading) {
     return (
       <Container>
         <LoadingState>
@@ -291,11 +355,11 @@ const MyCommentsPage: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (state.error) {
     return (
       <Container>
         <ErrorState>
-          <div>오류가 발생했습니다: {error}</div>
+          <div>오류가 발생했습니다: {state.error}</div>
         </ErrorState>
       </Container>
     );
@@ -308,14 +372,14 @@ const MyCommentsPage: React.FC = () => {
         <Subtitle>내가 작성한 댓글들을 확인하고 관리할 수 있습니다.</Subtitle>
       </Header>
 
-      {comments.length === 0 ? (
+      {state.comments.length === 0 ? (
         <EmptyState>
           <div>아직 작성한 댓글이 없습니다.</div>
         </EmptyState>
       ) : (
         <>
           <CommentList>
-            {comments.map((comment) => (
+            {state.comments.map((comment) => (
               <CommentCard key={comment.id}>
                 <FeedInfo>
                   <FeedTypeBadge feedType={comment.feed.feedType}>
@@ -338,28 +402,28 @@ const MyCommentsPage: React.FC = () => {
                   <CommentDate>{formatKoreanDate(comment.createdAt)}</CommentDate>
                   <DeleteButton
                     onClick={() => handleDeleteClick(comment.id)}
-                    disabled={deletingCommentId === comment.id}
+                    disabled={state.deletingCommentId === comment.id}
                   >
-                    {deletingCommentId === comment.id ? '삭제 중...' : '삭제'}
+                    {state.deletingCommentId === comment.id ? '삭제 중...' : '삭제'}
                   </DeleteButton>
                 </CommentMeta>
               </CommentCard>
             ))}
           </CommentList>
 
-          {totalPages > 1 && (
+          {state.pagination.totalPages > 1 && (
             <PaginationContainer>
               <PaginationButton
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 0}
+                onClick={() => handlePageChange(state.pagination.currentPage - 1)}
+                disabled={state.pagination.currentPage === 0}
               >
                 이전
               </PaginationButton>
               
-              {Array.from({ length: totalPages }, (_, i) => (
+              {Array.from({ length: state.pagination.totalPages }, (_, i) => (
                 <PaginationButton
                   key={i}
-                  isActive={i === currentPage}
+                  isActive={i === state.pagination.currentPage}
                   onClick={() => handlePageChange(i)}
                 >
                   {i + 1}
@@ -367,8 +431,8 @@ const MyCommentsPage: React.FC = () => {
               ))}
               
               <PaginationButton
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages - 1}
+                onClick={() => handlePageChange(state.pagination.currentPage + 1)}
+                disabled={state.pagination.currentPage === state.pagination.totalPages - 1}
               >
                 다음
               </PaginationButton>
