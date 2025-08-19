@@ -38,11 +38,13 @@ const FeedList: React.FC<FeedListProps> = ({
           />
           
           {/* 투표 버튼 (이벤트 피드인 경우만) */}
-          {feed.feedType === 'EVENT' && onVoteClick && (
+          {feed.feedType === 'EVENT' && (
             <FeedVoteButton
               feedId={feed.id}
+              feedType={feed.feedType}
               participantVoteCount={feed.participantVoteCount || 0}
-              onVoteClick={(feedId: number) => onVoteClick({ ...feed, id: feedId })}
+              onVoteSuccess={(voteCount) => onVoteClick?.({ ...feed, participantVoteCount: voteCount })}
+              onVoteError={(error) => console.error('투표 에러:', error)}
             />
           )}
         </FeedCard>
