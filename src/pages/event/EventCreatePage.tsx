@@ -332,7 +332,7 @@ const EventCreatePage = () => {
         formData.append("image", eventForm.imageFile);
       }
 
-      const response = await axiosInstance.post("/api/events", formData, {
+      await axiosInstance.post("/api/events", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
