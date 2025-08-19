@@ -3,8 +3,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import FeedList from "../../components/feed/FeedList";
 import FeedDetailModal from "../../components/feed/FeedDetailModal";
 import LikedUsersModal from "../../components/feed/LikedUsersModal";
+import FeedUserProfile from "../../components/feed/FeedUserProfile";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
+import { UserProfileService, UserProfileData } from "../../api/userProfileService";
 import { FeedPost, FeedComment } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
 
@@ -43,6 +45,7 @@ const MyFeedPage = () => {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState<FeedComment[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
 
   
   // 좋아요 상태
@@ -103,7 +106,7 @@ const MyFeedPage = () => {
 
         response = await FeedService.getMyFeeds(params);
       }
-      
+
       setFeedPosts(response.content || []);
       
       // 백엔드에서 받은 isLiked 상태만 사용
@@ -130,10 +133,23 @@ const MyFeedPage = () => {
     }
   };
 
+  // 사용자 프로필 정보 로드
+  const loadUserProfile = async () => {
+    if (!isCurrentUser || !user) return;
+    
+    try {
+      const profile = await UserProfileService.getUserProfile();
+      setUserProfile(profile);
+    } catch (error) {
+      console.error("사용자 프로필 로드 실패:", error);
+    }
+  };
+
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
     if (user) {
       loadMyFeeds();
+      loadUserProfile(); // 사용자 프로필 로드
     }
   }, [user, activeTab, sortBy]);
 
@@ -441,12 +457,29 @@ const MyFeedPage = () => {
                   </button>
                 )}
               </div>
-              <p className="text-gray-600">
+              <p className="text-gray-600 mb-3">
                 {isCurrentUser 
                   ? "나만의 스타일을 공유하고 다른 사람들과 소통해보세요!"
                   : `${targetUserNickname}님의 스타일을 확인해보세요!`
                 }
               </p>
+              
+              {/* 사용자 신체 정보 표시 */}
+              {isCurrentUser && userProfile && (
+                <div className="mt-3">
+                  <FeedUserProfile
+                    userId={userProfile.userId || 0}
+                    nickname={userProfile.nickname}
+                    profileImageUrl={userProfile.profileImageUrl}
+                    showBodyInfo={true}
+                    size="medium"
+                    onClick={() => {
+                      // 프로필 수정 페이지로 이동
+                      navigate("/profile-settings");
+                    }}
+                  />
+                </div>
+              )}
             </div>
           </div>
           {isCurrentUser && (
