@@ -451,7 +451,10 @@ const MyFeedPage = () => {
                   <span>Lv.4 스타일리스트</span>
                 </div>
                 {isCurrentUser && (
-                  <button className="ml-3 text-[#87CEEB] hover:text-blue-400 flex items-center">
+                  <button 
+                    className="ml-3 text-[#87CEEB] hover:text-blue-400 flex items-center cursor-pointer transition duration-200"
+                    onClick={() => navigate("/profile-settings")}
+                  >
                     <i className="fas fa-edit mr-1"></i>
                     <span>프로필 수정</span>
                   </button>
