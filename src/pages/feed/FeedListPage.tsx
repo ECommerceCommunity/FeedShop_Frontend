@@ -9,54 +9,7 @@ import axiosInstance from "../../api/axios";
 import { FeedPost, FeedListParams } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
 
-// 더미 데이터 생성 함수 (백엔드 연동 실패시 fallback용)
-function getSecureRandomInt(min: number, max: number): number {
-  const array = new Uint32Array(1);
-  window.crypto.getRandomValues(array);
-  return min + (array[0] % (max - min));
-}
 
-const generateDummyFeed = (id: number): FeedPost => ({
-  id,
-  title: `트렌디 아이템 ${id}`,
-  content: `트렌디한 스타일의 아이템입니다. 데일리룩으로 활용하기 좋아요. ${id}`,
-  instagramId: `fashion_lover${id}`,
-  feedType: ["DAILY", "EVENT", "RANKING"][getSecureRandomInt(0, 3)] as "DAILY" | "EVENT" | "RANKING",
-  likeCount: getSecureRandomInt(50, 250),
-  commentCount: getSecureRandomInt(5, 25),
-  participantVoteCount: getSecureRandomInt(10, 60),
-  user: {
-    id,
-    nickname: `패션러버${id}`,
-    level: getSecureRandomInt(1, 6),
-    profileImg: `https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait&width=60&height=60&seq=profile${id}`,
-    gender: getSecureRandomInt(0, 2) === 0 ? "여성" : "남성",
-    height: getSecureRandomInt(155, 185),
-  },
-  orderItem: {
-    id,
-    productName: `트렌디 아이템 ${id}`,
-    size: [220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300][getSecureRandomInt(0, 17)],
-  },
-  images: [
-    {
-      id: id * 10 + 1,
-      imageUrl: `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20trendy%20outfit&width=400&height=500&seq=post${id}`,
-      sortOrder: 0,
-    },
-    {
-      id: id * 10 + 2,
-      imageUrl: `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20casual%20streetwear&width=400&height=500&seq=post${id}a`,
-      sortOrder: 1,
-    },
-  ],
-  hashtags: [
-    { id: id * 10 + 1, tag: "데일리룩" },
-    { id: id * 10 + 2, tag: "패션" },
-  ],
-  createdAt: "2025-06-12",
-  isLiked: false,
-});
 
 // 더미 이벤트 데이터 제거 - 백엔드에서 가져옴
 
@@ -75,7 +28,7 @@ const FeedListPage = () => {
   const postsPerPage = 6;
 
   // 좋아요 상태
-  const { likedPosts, updateLikedPosts, isLiked } = useLikedPosts();
+  const { likedPosts, updateLikedPosts } = useLikedPosts();
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
@@ -239,13 +192,7 @@ const FeedListPage = () => {
     }
   }, [user]);
 
-  const handleFilterToggle = (filter: string) => {
-    if (selectedFilters.includes(filter)) {
-      setSelectedFilters(selectedFilters.filter((f) => f !== filter));
-    } else {
-      setSelectedFilters([...selectedFilters, filter]);
-    }
-  };
+
 
   // 🔧 백엔드 연동 버전: 더보기 버튼
   const handleLoadMore = async () => {

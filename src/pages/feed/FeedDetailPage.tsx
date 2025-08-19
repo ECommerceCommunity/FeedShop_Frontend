@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
-import { FeedPost, FeedComment, FeedVoteRequest } from "../../types/feed";
+import { FeedPost, FeedComment } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
 
 // 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
@@ -36,8 +36,8 @@ const FeedDetailPage = () => {
   const [likeUsersOpen, setLikeUsersOpen] = useState(false);
   const [likeUsers, setLikeUsers] = useState<Array<{ userId?: number; nickname: string; profileImg?: string }>>([]);
   const [likeUsersLoading, setLikeUsersLoading] = useState(false);
-  const [voted, setVoted] = useState(false);
-  const [showVoteModal, setShowVoteModal] = useState(false);
+
+
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -170,31 +170,7 @@ const FeedDetailPage = () => {
     }
   };
 
-  const handleVote = async () => {
-    if (!feed || voted) return;
-    
-    try {
-      // 백엔드 API 연동 (추후 구현)
-      // const voteRequest: FeedVoteRequest = {
-      //   eventId: feed.event.id
-      // };
-      // const voteResult = await FeedService.voteFeed(feed.id, voteRequest);
-      // setVoted(voteResult.voted);
-      // setFeed(prev => prev ? { ...prev, participantVoteCount: voteResult.voteCount } : null);
-      
-      setShowVoteModal(false);
-      setToastMessage("투표 기능은 추후 구현 예정입니다.");
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 2000);
-      
-    } catch (error: any) {
-      console.error('투표 실패:', error);
-      setShowVoteModal(false);
-      setToastMessage("투표 처리에 실패했습니다.");
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
-    }
-  };
+
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -532,20 +508,7 @@ const FeedDetailPage = () => {
                 </div>
               </div>
 
-              {feed.feedType === "EVENT" && (
-                <button
-                  onClick={() => setShowVoteModal(true)}
-                  className={`px-4 py-2 rounded-lg transition duration-200 ${
-                    voted
-                      ? 'bg-gray-200 text-gray-600'
-                      : 'bg-[#87CEEB] text-white hover:bg-blue-400'
-                  }`}
-                  disabled={voted}
-                >
-                  <i className="fas fa-vote-yea mr-1"></i>
-                  {voted ? '투표완료' : '투표하기'} {feed.participantVoteCount || 0}
-                </button>
-              )}
+
             </div>
 
             {/* 댓글 섹션 */}
@@ -613,29 +576,7 @@ const FeedDetailPage = () => {
         </div>
       </div>
 
-      {/* 투표 확인 모달 */}
-      {showVoteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">투표 확인</h3>
-            <p className="text-gray-600 mb-6">이 착용샷에 투표하시겠습니까?</p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowVoteModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleVote}
-                className="px-4 py-2 bg-[#87CEEB] text-white rounded-lg hover:bg-blue-400"
-              >
-                투표하기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* 토스트 알림 */}
       {showToast && (

@@ -5,7 +5,7 @@ import FeedDetailModal from "../../components/feed/FeedDetailModal";
 import LikedUsersModal from "../../components/feed/LikedUsersModal";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
-import { FeedVoteRequest, FeedPost } from "../../types/feed";
+import { FeedPost } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
 
 import { FeedComment } from "../../types/feed";
@@ -45,9 +45,7 @@ const MyFeedPage = () => {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState<FeedComment[]>([]);
-  const [votedPosts, setVotedPosts] = useState<number[]>([]);
-  const [showVoteModal, setShowVoteModal] = useState(false);
-  const [showVoteToast, setShowVoteToast] = useState(false);
+
   
   // 좋아요 상태
   const { likedPosts, updateLikedPosts, isLiked } = useLikedPosts();
@@ -345,71 +343,7 @@ const MyFeedPage = () => {
     setShowComments(false);
   };
 
-  // 투표 처리 (백엔드 API 연동)
-  const handleVote = async (postId: number) => {
-    if (!postId || votedPosts.includes(postId)) return;
-    
-    try {
-      // 해당 피드 찾기
-      const targetFeed = feedPosts.find(post => post.id === postId);
-      if (!targetFeed || targetFeed.feedType !== 'EVENT') {
-        alert("투표할 수 있는 이벤트 피드가 아닙니다.");
-        return;
-      }
-      
-      // 임시로 eventId를 1로 설정 (실제로는 피드에서 eventId를 가져와야 함)
-      const voteRequest: FeedVoteRequest = { eventId: targetFeed.event?.id || 1 };
-      const voteResult = await FeedService.voteFeed(postId, voteRequest);
-      
-      setVotedPosts([...votedPosts, postId]);
 
-        // 실제 피드 데이터의 투표 수 업데이트
-        setFeedPosts((prev) =>
-          prev.map((post) =>
-            post.id === postId ? { ...post, participantVoteCount: voteResult.voteCount } : post
-          )
-        );
-      
-    } catch (error: any) {
-      console.error('투표 실패:', error);
-      
-      if (error.response?.status === 401) {
-        alert("로그인이 필요합니다.");
-        navigate('/login');
-      } else if (error.response?.status === 409) {
-        alert("이미 투표하셨습니다.");
-      } else {
-        alert(error.response?.data?.message || "투표 처리에 실패했습니다.");
-      }
-    }
-  };
-
-  // 투표 모달 닫기
-  const handleVoteModalClose = () => {
-    setShowVoteModal(false);
-  };
-
-  // 투표 모달 확인
-  const handleVoteConfirm = () => {
-    // 투표 처리 로직 구현
-    setShowVoteModal(false);
-  };
-
-  // 투표 모달 표시
-  const handleShowVoteModal = (post: FeedPost) => {
-    setSelectedPost(post);
-    setShowVoteModal(true);
-  };
-
-  // 투표 모달 표시 여부
-  const showVoteButton = selectedPost?.feedType === "EVENT";
-
-  // 투표 모달 수정 버튼 여부
-  const showEditButton = !!(
-    user?.nickname &&
-    selectedPost &&
-    selectedPost.user.nickname === user.nickname
-  );
 
   // 좋아요 사용자 목록 조회 (모달에서 사용)
   const handleShowLikeUsers = async () => {
@@ -628,8 +562,6 @@ const MyFeedPage = () => {
         onToggleComments={() => setShowComments(!showComments)}
         onLike={() => selectedPost && handleLike(selectedPost.id)}
         liked={selectedPost ? isLiked(selectedPost.id) : false}
-        onVote={() => setShowVoteModal(true)}
-        voted={selectedPost ? votedPosts.includes(selectedPost.id) : false}
         onEdit={(() => {
           const isOwner = !!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname);
           if (!isOwner || !isCurrentUser) return undefined;
@@ -643,13 +575,7 @@ const MyFeedPage = () => {
           if (!isOwner || !selectedPost || !isCurrentUser) return undefined;
           return () => handleDelete(selectedPost.id);
         })()}
-        showVoteButton={selectedPost?.feedType === "EVENT"}
         showEditButton={!!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname && isCurrentUser)}
-        showVoteModal={showVoteModal}
-        onVoteModalClose={() => setShowVoteModal(false)}
-        onVoteConfirm={() => selectedPost && handleVote(selectedPost.id)}
-        showToast={showVoteToast}
-        toastMessage={"투표가 완료되었습니다!"}
         newComment={newComment}
         onCommentChange={(e) => setNewComment(e.target.value)}
         onCommentSubmit={handleCommentSubmit}
