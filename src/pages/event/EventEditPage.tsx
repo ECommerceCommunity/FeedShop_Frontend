@@ -2,7 +2,7 @@ import { useState, ChangeEvent, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../../api/axios";
 import { EventType } from "../../types/types";
-import EventService from "../../api/eventService";
+
 
 // Add global styles for animation
 const style = document.createElement('style');
@@ -312,7 +312,7 @@ const EventEditPage = () => {
         formData.append("image", eventForm.imageFile);
       }
 
-      const response = await axiosInstance.put(`/api/events/${id}/multipart`, formData, {
+      await axiosInstance.put(`/api/events/${id}/multipart`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
