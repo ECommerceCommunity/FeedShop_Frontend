@@ -437,13 +437,23 @@ const MyFeedPage = () => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
           <div className="flex items-center mb-4 md:mb-0">
             <img
-              src={"https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=120&height=120&seq=myprofile"}
-              alt="My Profile"
+              src={isCurrentUser && userProfile?.profileImageUrl 
+                ? userProfile.profileImageUrl 
+                : "https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=120&height=120&seq=myprofile"
+              }
+              alt={isCurrentUser ? (userProfile?.nickname || user?.nickname || "My Profile") : `${targetUserNickname}님의 프로필`}
               className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=120&height=120&seq=myprofile";
+              }}
             />
             <div className="ml-6">
               <h2 className="text-3xl font-bold mb-2">
-                {isCurrentUser ? "나의 스타일 피드" : `${targetUserNickname}님의 스타일 피드`}
+                {isCurrentUser 
+                  ? `${userProfile?.nickname || user?.nickname || '나'}의 스타일 피드` 
+                  : `${targetUserNickname}님의 스타일 피드`
+                }
               </h2>
               <div className="flex items-center mb-3">
                 <div className="bg-[#87CEEB] text-white px-3 py-1 rounded-full flex items-center">
