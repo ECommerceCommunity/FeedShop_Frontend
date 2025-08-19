@@ -399,6 +399,21 @@ export class FeedService {
   }
 
   /**
+   * 피드의 투표 수를 조회합니다
+   */
+  static async getVoteCount(feedId: number): Promise<number> {
+    try {
+      const response = await axiosInstance.get<ApiResponse<number>>(
+        `/api/feeds/${feedId}/vote/count`
+      );
+      return response.data.data;
+    } catch (error: any) {
+      console.error('투표 수 조회 실패:', error);
+      return 0;
+    }
+  }
+
+  /**
    * 피드의 투표를 취소합니다
    */
   static async unvoteFeed(feedId: number): Promise<VoteResponse> {

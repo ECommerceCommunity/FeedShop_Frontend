@@ -192,6 +192,7 @@ export interface LikeResponse {
 export interface VoteResponse {
   voted: boolean;
   voteCount: number;
+  message: string;
 }
 
 // === 에러 응답 타입 ===

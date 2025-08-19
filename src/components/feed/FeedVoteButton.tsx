@@ -20,6 +20,7 @@ const FeedVoteButton: React.FC<FeedVoteButtonProps> = ({
   const [voteCount, setVoteCount] = useState(participantVoteCount);
   const [showVoteModal, setShowVoteModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // 초기 투표 상태 확인
   useEffect(() => {
@@ -55,13 +56,31 @@ const FeedVoteButton: React.FC<FeedVoteButtonProps> = ({
       }
       
       setShowVoteModal(false);
+      
+      // 투표 완료 후 최신 투표 수 조회
+      try {
+        const latestVoteCount = await FeedService.getVoteCount(feedId);
+        setVoteCount(latestVoteCount);
+        if (onVoteSuccess) {
+          onVoteSuccess(latestVoteCount);
+        }
+      } catch (error) {
+        console.error('투표 수 업데이트 실패:', error);
+      }
     } catch (error: any) {
       console.error('투표 실패:', error);
+      
+      // 에러 메시지 설정
+      const errorMsg = error.response?.data?.message || '투표에 실패했습니다.';
+      setErrorMessage(errorMsg);
       
       // 에러 콜백 호출
       if (onVoteError) {
         onVoteError(error);
       }
+      
+      // 3초 후 에러 메시지 제거
+      setTimeout(() => setErrorMessage(null), 3000);
     } finally {
       setLoading(false);
     }
@@ -98,6 +117,11 @@ const FeedVoteButton: React.FC<FeedVoteButtonProps> = ({
             <p className="text-gray-600 mb-6">
               이 이벤트에 투표하시겠습니까?
             </p>
+            {errorMessage && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                {errorMessage}
+              </div>
+            )}
             <div className="flex space-x-3">
               <button
                 className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition"
