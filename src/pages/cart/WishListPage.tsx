@@ -36,6 +36,7 @@ const WishGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
   margin-bottom: 40px;
+  align-items: start; /* 카드들을 상단 정렬 */
 `;
 
 const WishCard = styled.div`
@@ -45,6 +46,10 @@ const WishCard = styled.div`
   overflow: hidden;
   transition: all 0.3s ease;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* 전체 높이 사용 */
+  min-height: 420px; /* 최소 높이 지정 */
 
   &:hover {
     transform: translateY(-4px);
@@ -94,6 +99,9 @@ const RemoveButton = styled.button`
 
 const ProductInfo = styled.div`
   padding: 16px;
+  flex: 1; /* 남은 공간 모두 차지 */
+  display: flex;
+  flex-direction: column;
 `;
 
 const ProductName = styled.h3`
@@ -102,6 +110,12 @@ const ProductName = styled.h3`
   color: #1f2937;
   margin-bottom: 8px;
   line-height: 1.4;
+  min-height: 2.8rem; /* 최소 2줄 높이 확보 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 최대 2줄로 제한 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 
@@ -109,7 +123,8 @@ const PriceSection = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: auto; /* 자동 마진으로 추가된 날짜를 아래로 푸시 */
+  flex-wrap: wrap;
 `;
 
 const DiscountPrice = styled.span`
@@ -136,6 +151,8 @@ const DiscountBadge = styled.span`
 const AddedDate = styled.div`
   font-size: 0.875rem;
   color: #9ca3af;
+  margin-top: auto; /* 상단 자동 마진으로 하단에 고정 */
+  padding-top: 8px;
 `;
 
 const EmptyWishlist = styled.div`
