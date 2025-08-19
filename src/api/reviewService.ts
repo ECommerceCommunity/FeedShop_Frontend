@@ -41,8 +41,16 @@ export class ReviewService {
                 page: params.page || 0,
                 size: params.size || 10,
                 sort: params.sort || 'latest',
-                ...(params.rating && { rating: params.rating })
+                ...(params.rating && params.rating > 0 && { 
+                    rating: params.rating,
+                    exactRating: params.exactRating || false 
+                }),
+                ...(params.sizeFit && params.sizeFit > 0 && { sizeFit: params.sizeFit }),
+                ...(params.cushion && params.cushion > 0 && { cushion: params.cushion }),
+                ...(params.stability && params.stability > 0 && { stability: params.stability })
             };
+
+            console.log('🔍 실제 전송될 queryParams:', queryParams);
 
             const response = await axiosInstance.get<ApiResponse<ReviewListResponse>>(
                 `/api/reviews/products/${productId}`,

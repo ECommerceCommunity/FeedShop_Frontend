@@ -30,6 +30,10 @@ interface UseReviewListOptions {
 const DEFAULT_FILTER: ReviewFilterState = {
     sort: 'latest',
     rating: 0,
+    exactRating: false,
+    sizeFit: 0,
+    cushion: 0,
+    stability: 0,
 };
 
 // =============== 메인 훅 ===============
@@ -86,8 +90,20 @@ export const useReviewList = (options: UseReviewListOptions): UseReviewListRetur
             };
 
             // 별점 필터 추가
-            if (filter.rating > 0) {
+            if (filter.rating && filter.rating > 0) {
                 params.rating = filter.rating;
+                params.exactRating = filter.exactRating;
+            }
+
+            // 3요소 필터 추가
+            if (filter.sizeFit && filter.sizeFit > 0) {
+                params.sizeFit = filter.sizeFit;
+            }
+            if (filter.cushion && filter.cushion > 0) {
+                params.cushion = filter.cushion;
+            }
+            if (filter.stability && filter.stability > 0) {
+                params.stability = filter.stability;
             }
 
             const response: ReviewListResponse = await ReviewService.getProductReviews(
@@ -175,7 +191,7 @@ export const useReviewList = (options: UseReviewListOptions): UseReviewListRetur
         if (productId > 0) {
             loadReviews(0, true);
         }
-    }, [filter.sort, filter.rating]); // loadReviews는 의존성에서 제외 (무한 루프 방지)
+    }, [filter.sort, filter.rating, filter.exactRating, filter.sizeFit, filter.cushion, filter.stability]); // loadReviews는 의존성에서 제외 (무한 루프 방지)
 
     /**
      * forceRefresh prop 변경 시 데이터 새로고침
