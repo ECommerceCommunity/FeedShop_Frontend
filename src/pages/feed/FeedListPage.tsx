@@ -295,7 +295,7 @@ const FeedListPage = () => {
       if (likeResult.liked) {
         updateLikedPosts([...likedPosts, postId]);
       } else {
-        updateLikedPosts(likedPosts.filter(id => id !== postId));
+        updateLikedPosts(likedPosts.filter((id: number) => id !== postId));
       }
       
       // 피드 목록에서도 isLiked 상태 업데이트
