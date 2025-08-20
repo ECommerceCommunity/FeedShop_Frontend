@@ -1,5 +1,25 @@
 import React from 'react';
 import { FeedPost } from '../../types/feed';
+import FeedVoteButton from './FeedVoteButton';
+
+// 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
+const formatKoreanTime = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    const koreanTime = new Intl.DateTimeFormat('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Seoul'
+    }).format(date);
+    return koreanTime;
+  } catch (error) {
+    console.warn('날짜 파싱 실패:', error);
+    return dateString; // 파싱 실패 시 원본 반환
+  }
+};
 
 interface FeedDetailModalProps {
   open: boolean;
@@ -10,22 +30,19 @@ interface FeedDetailModalProps {
   onToggleComments: () => void;
   onLike: () => void;
   liked: boolean;
-  onVote?: () => void;
-  voted?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
-  showVoteButton?: boolean;
   showEditButton?: boolean;
-  showDeleteButton?: boolean; // optional; defaults to showEditButton when undefined
-  showVoteModal?: boolean;
-  onVoteModalClose?: () => void;
-  onVoteConfirm?: () => void;
+  showDeleteButton?: boolean;
   showToast?: boolean;
   toastMessage?: string;
   newComment: string;
   onCommentChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onCommentSubmit: (e: React.FormEvent) => void;
   onShowLikeUsers?: () => void;
+  onDeleteComment?: (commentId: number) => void;
+  currentUser?: { nickname?: string };
+  onUserClick?: (userId: number) => void;
 }
 
 const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
@@ -37,22 +54,19 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
   onToggleComments,
   onLike,
   liked,
-  onVote,
-  voted,
   onEdit,
   onDelete,
-  showVoteButton,
   showEditButton,
   showDeleteButton,
-  showVoteModal,
-  onVoteModalClose,
-  onVoteConfirm,
   showToast,
   toastMessage,
   newComment,
   onCommentChange,
   onCommentSubmit,
   onShowLikeUsers,
+  onDeleteComment,
+  currentUser,
+  onUserClick,
 }) => {
   if (!open || !feed) return null;
   const heroImage = feed.images && feed.images.length > 0 ? feed.images[0].imageUrl : 'https://via.placeholder.com/600x800?text=No+Image';
@@ -78,7 +92,17 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
               <img src={feed.user?.profileImg || 'https://via.placeholder.com/60'} alt={feed.user?.nickname || '사용자'} className="w-12 h-12 rounded-full object-cover mr-3" />
               <div>
                 <div className="flex items-center">
-                  <h3 className="font-medium text-lg">{feed.user?.nickname || '사용자'}</h3>
+                  <button
+                    onClick={() => {
+                      // userId 대신 nickname을 사용하여 필터링
+                      if (feed.user?.nickname) {
+                        window.location.href = `/my-feeds?userNickname=${feed.user.nickname}`;
+                      }
+                    }}
+                    className="font-medium text-lg hover:text-[#87CEEB] transition duration-200 cursor-pointer"
+                  >
+                    {feed.user?.nickname || '사용자'}
+                  </button>
                   {feed.user?.level && (
                     <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
                       <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
@@ -135,15 +159,22 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                 </button>
               </div>
               <div className="flex items-center space-x-2">
-                {showVoteButton && (
-                  <button
-                    onClick={onVote}
-                    className={`px-4 py-2 rounded-lg transition duration-200 cursor-pointer ${voted ? 'bg-gray-200 text-gray-600' : 'bg-[#87CEEB] text-white hover:bg-blue-400'}`}
-                    disabled={voted}
-                  >
-                    <i className="fas fa-vote-yea mr-1"></i>
-                    {voted ? '투표완료' : '투표하기'} {feed.participantVoteCount || 0}
-                  </button>
+                {/* 이벤트 피드인 경우에만 투표 버튼 표시 */}
+                {feed.feedType === 'EVENT' && (
+                  <FeedVoteButton
+                    feedId={feed.id}
+                    feedType={feed.feedType}
+                    participantVoteCount={feed.participantVoteCount || 0}
+                    isVoted={feed.isVoted}
+                    size="small"
+                    onVoteSuccess={(voteCount) => {
+                      // 투표 성공 시 피드 정보 업데이트
+                      console.log('투표 성공:', voteCount);
+                    }}
+                    onVoteError={(error) => {
+                      console.error('투표 에러:', error);
+                    }}
+                  />
                 )}
                 {showEditButton && (
                   <button
@@ -163,29 +194,6 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                 )}
               </div>
             </div>
-            {/* 투표 확인 모달 */}
-            {showVoteModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center">
-                <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4">투표 확인</h3>
-                  <p className="text-gray-600 mb-6">이 착용샷에 투표하시겠습니까?</p>
-                  <div className="flex justify-end space-x-3">
-                    <button
-                      onClick={onVoteModalClose}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer"
-                    >
-                      취소
-                    </button>
-                    <button
-                      onClick={onVoteConfirm}
-                      className="px-4 py-2 bg-[#87CEEB] text-white rounded-lg hover:bg-blue-400 cursor-pointer"
-                    >
-                      투표하기
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
             {/* 토스트 알림 */}
             {showToast && (
               <div className="fixed bottom-4 right-4 bg-[#87CEEB] text-white px-6 py-3 rounded-lg shadow-lg z-[70] animate-fade-in-up">
@@ -203,12 +211,32 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                 <div className="space-y-4 mb-6 max-h-60 overflow-y-auto">
                   {comments.map((comment) => (
                     <div key={comment.id} className="flex space-x-3">
-                      <img src={comment.profileImg} alt={comment.username} className="w-8 h-8 rounded-full object-cover" />
+                      <img 
+                        src={comment.user?.profileImg || "https://readdy.ai/api/search-image?query=default%20profile&width=40&height=40"} 
+                        alt={comment.user?.nickname || comment.userNickname || "사용자"} 
+                        className="w-8 h-8 rounded-full object-cover" 
+                      />
                       <div className="flex-1">
-                        <div className="flex items-center mb-1">
-                          <span className="font-medium text-sm">{comment.username}</span>
-                          <div className="ml-2 bg-[#87CEEB] bg-opacity-10 text-[#87CEEB] text-xs px-2 py-0.5 rounded-full">Lv.{comment.level}</div>
-                          <span className="ml-2 text-xs text-gray-500">{comment.createdAt}</span>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center">
+                            <span className="font-medium text-sm">{comment.user?.nickname || comment.userNickname || "사용자"}</span>
+                            {comment.user?.level && (
+                              <div className="ml-2 bg-[#87CEEB] bg-opacity-10 text-[#87CEEB] text-xs px-2 py-0.5 rounded-full">
+                                Lv.{comment.user.level}
+                              </div>
+                            )}
+                            <span className="ml-2 text-xs text-gray-500">{formatKoreanTime(comment.createdAt)}</span>
+                          </div>
+                          {/* 댓글 작성자만 삭제 버튼 표시 */}
+                          {currentUser?.nickname && (comment.user?.nickname || comment.userNickname) === currentUser.nickname && onDeleteComment && (
+                            <button
+                              onClick={() => onDeleteComment(comment.id)}
+                              className="text-red-500 hover:text-red-700 text-xs font-bold"
+                              title="댓글 삭제"
+                            >
+                              ✕
+                            </button>
+                          )}
                         </div>
                         <p className="text-sm text-gray-700">{comment.content}</p>
                       </div>

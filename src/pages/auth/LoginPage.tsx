@@ -1,7 +1,7 @@
 import { useAuth } from "../../contexts/AuthContext";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { validateEmail } from "../../utils/auth/auth";
 import axios from "axios";
 import {
@@ -101,6 +101,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const isEmailValid = validateEmail(email);
   const { login: authLogin } = useAuth();
 
@@ -113,6 +114,14 @@ export default function LoginPage() {
       setIsRecaptchaReady(true);
     }
   }, [executeRecaptcha]);
+
+  // 소셜 로그인 콜백에서 전달된 에러 처리
+  useEffect(() => {
+    const state = location.state as { error?: string } | null;
+    if (state?.error) {
+      setError(state.error);
+    }
+  }, [location.state]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -156,7 +165,7 @@ export default function LoginPage() {
       const loginData = response.data.data;
       if (loginData && loginData.token) {
         // authLogin 함수를 4개의 인자를 받도록 수정 (name 추가)
-        await authLogin(
+        authLogin(
           loginData.nickname,
           loginData.name || loginData.nickname,
           loginData.role,
@@ -181,6 +190,17 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // 소셜 로그인 핸들러
+  const handleGoogleLogin = () => {
+    const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+    window.location.href = `${baseURL}/oauth2/authorization/google`;
+  };
+
+  const handleKakaoLogin = () => {
+    const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+    window.location.href = `${baseURL}/oauth2/authorization/kakao`;
   };
 
   return (
@@ -245,8 +265,8 @@ export default function LoginPage() {
 
         <SocialLoginButton
           type="button"
-          // alert() 대신 console.log로 변경
-          onClick={() => console.log("구글 로그인 연동 필요")}
+          onClick={handleGoogleLogin}
+          disabled={loading}
         >
           <i className="fab fa-google" style={{ color: "#DB4437" }}></i>
           구글로 로그인
@@ -254,8 +274,8 @@ export default function LoginPage() {
 
         <SocialLoginButton
           type="button"
-          // alert() 대신 console.log로 변경
-          onClick={() => console.log("카카오 로그인 연동 필요")}
+          onClick={handleKakaoLogin}
+          disabled={loading}
         >
           <i className="fas fa-comment" style={{ color: "#FEE500" }}></i>
           카카오로 로그인

@@ -60,6 +60,7 @@ const FeedDetailPage = lazy(() => import("./pages/feed/FeedDetailPage"));
 const FeedCreatePage = lazy(() => import("./pages/feed/FeedCreatePage"));
 const FeedEditPage = lazy(() => import("./pages/feed/FeedEditPage"));
 const MyFeedPage = lazy(() => import("./pages/feed/MyFeedPage"));
+const LikedFeedsPage = lazy(() => import("./pages/feed/LikedFeedsPage"));
 const EventListPage = lazy(() => import("./pages/event/EventListPage"));
 const EventCreatePage = lazy(() => import("./pages/event/EventCreatePage"));
 const EventEditPage = lazy(() => import("./pages/event/EventEditPage"));
@@ -68,6 +69,7 @@ const BecomeSellerPage = lazy(() => import("./pages/seller/BecomeSellerPage"));
 const SellerMyPage = lazy(() => import("./pages/seller/SellerMyPage"));
 const ReviewListPage = lazy(() => import("./pages/reviews/ReviewListPage"));
 const ReviewWritePage = lazy(() => import("./pages/reviews/ReviewWritePage"));
+const SocialCallbackPage = lazy(() => import("./pages/auth/SocialCallbackPage"));
 
 const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY || "";
 
@@ -207,6 +209,14 @@ const App: FC = () => {
                     </UserProtectedRoute>
                   }
                 />
+                <Route
+                  path="/liked-feeds"
+                  element={
+                    <UserProtectedRoute requireLogin={true}>
+                      <LikedFeedsPage />
+                    </UserProtectedRoute>
+                  }
+                />
                 {/* 이벤트 관련 페이지들 */}
                 <Route path="/event-list" element={<EventListPage />} />
                 <Route
@@ -322,6 +332,7 @@ const App: FC = () => {
               <Route path="/find-account" element={<FindAccountPage />} />
               <Route path="/find-password" element={<FindPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/auth/callback" element={<SocialCallbackPage />} />
             </Routes>
           </Suspense>
         </AuthProvider>
