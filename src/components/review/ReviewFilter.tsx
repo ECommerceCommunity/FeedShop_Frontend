@@ -73,7 +73,7 @@ const FilterContainer = styled.div`
 
 const FilterHeader = styled.div`
   display: flex;
-  justify-content: between;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
   gap: 16px;
