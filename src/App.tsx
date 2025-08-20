@@ -67,6 +67,7 @@ const EventEditPage = lazy(() => import("./pages/event/EventEditPage"));
 const EventResultPage = lazy(() => import("./pages/event/EventResultPage"));
 const BecomeSellerPage = lazy(() => import("./pages/seller/BecomeSellerPage"));
 const SellerMyPage = lazy(() => import("./pages/seller/SellerMyPage"));
+const SocialCallbackPage = lazy(() => import("./pages/auth/SocialCallbackPage"));
 
 const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY || "";
 
@@ -320,6 +321,7 @@ const App: FC = () => {
               <Route path="/find-account" element={<FindAccountPage />} />
               <Route path="/find-password" element={<FindPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/auth/callback" element={<SocialCallbackPage />} />
             </Routes>
           </Suspense>
         </AuthProvider>
