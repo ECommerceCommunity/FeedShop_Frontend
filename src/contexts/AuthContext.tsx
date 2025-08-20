@@ -61,7 +61,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
           // 좋아요한 피드 목록 조회 (선택사항)
           try {
-            await FeedService.getMyLikedFeeds();
+            await FeedService.getMyLikedFeeds(0, 20);
             // 좋아요 목록은 각 컴포넌트에서 백엔드 응답의 isLiked 필드를 사용하므로
             // 여기서는 별도로 저장하지 않음
           } catch (error) {
@@ -112,7 +112,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       localStorage.setItem("token", token);
 
       // 로그인 후 사용자가 좋아요한 피드 목록을 가져오기 (백엔드에서 isLiked 필드 사용)
-      FeedService.getMyLikedFeeds()
+      FeedService.getMyLikedFeeds(0, 20)
         .then(() => {
           // 좋아요 목록은 각 컴포넌트에서 백엔드 응답의 isLiked 필드를 사용하므로
           // 여기서는 별도로 저장하지 않음
