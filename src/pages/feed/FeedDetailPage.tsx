@@ -2,8 +2,28 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
-import { FeedPost, FeedComment, FeedVoteRequest } from "../../types/feed";
+import { FeedPost, FeedComment } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
+import FeedVoteButton from "../../components/feed/FeedVoteButton";
+
+// 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
+const formatKoreanTime = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    const koreanTime = new Intl.DateTimeFormat('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Seoul'
+    }).format(date);
+    return koreanTime;
+  } catch (error) {
+    console.warn('날짜 파싱 실패:', error);
+    return dateString; // 파싱 실패 시 원본 반환
+  }
+};
 
 const FeedDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,8 +38,8 @@ const FeedDetailPage = () => {
   const [likeUsersOpen, setLikeUsersOpen] = useState(false);
   const [likeUsers, setLikeUsers] = useState<Array<{ userId?: number; nickname: string; profileImg?: string }>>([]);
   const [likeUsersLoading, setLikeUsersLoading] = useState(false);
-  const [voted, setVoted] = useState(false);
-  const [showVoteModal, setShowVoteModal] = useState(false);
+
+
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -57,9 +77,13 @@ const FeedDetailPage = () => {
           updateLikedPosts([feedData.id]);
         }
         
-        // 댓글도 API로 가져오기 (추후 구현)
-        // const commentsData = await FeedService.getComments(parseInt(id));
-        // setComments(commentsData.content || []);
+        // 댓글도 API로 가져오기
+        const commentsData = await FeedService.getComments(parseInt(id));
+        const commentsWithFormattedTime = (commentsData.pagination.content || []).map(comment => ({
+          ...comment,
+          createdAt: formatKoreanTime(comment.createdAt)
+        }));
+        setComments(commentsWithFormattedTime);
         
       } catch (error: any) {
         console.error('피드 조회 실패:', error);
@@ -148,52 +172,42 @@ const FeedDetailPage = () => {
     }
   };
 
-  const handleVote = async () => {
-    if (!feed || voted) return;
-    
-    try {
-      // 백엔드 API 연동 (추후 구현)
-      // const voteRequest: FeedVoteRequest = {
-      //   eventId: feed.event.id
-      // };
-      // const voteResult = await FeedService.voteFeed(feed.id, voteRequest);
-      // setVoted(voteResult.voted);
-      // setFeed(prev => prev ? { ...prev, participantVoteCount: voteResult.voteCount } : null);
-      
-      setShowVoteModal(false);
-      setToastMessage("투표 기능은 추후 구현 예정입니다.");
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 2000);
-      
-    } catch (error: any) {
-      console.error('투표 실패:', error);
-      setShowVoteModal(false);
-      setToastMessage("투표 처리에 실패했습니다.");
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
-    }
-  };
+
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim() || !feed) return;
 
     try {
-      // 백엔드 API 연동 (추후 구현)
-      // const newCommentObj = await FeedService.createComment(feed.id, {
-      //   content: newComment
-      // });
-      // setComments([...comments, newCommentObj]);
-      // setFeed(prev => prev ? { ...prev, commentCount: prev.commentCount + 1 } : null);
+      // 백엔드 API 연동
+      const newCommentObj = await FeedService.createComment(feed.id, {
+        content: newComment
+      });
+      
+      // 한국 시간으로 포맷팅
+      const commentWithFormattedTime = {
+        ...newCommentObj,
+        createdAt: formatKoreanTime(newCommentObj.createdAt)
+      };
+      
+      setComments([commentWithFormattedTime, ...comments]);
+      setFeed(prev => prev ? { ...prev, commentCount: prev.commentCount + 1 } : null);
       
       setNewComment("");
-      setToastMessage("댓글 기능은 추후 구현 예정입니다.");
+      setToastMessage("댓글이 등록되었습니다.");
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
       
     } catch (error: any) {
       console.error('댓글 등록 실패:', error);
-      setToastMessage("댓글 등록에 실패했습니다.");
+      
+      if (error.response?.status === 401) {
+        setToastMessage("로그인이 필요합니다.");
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        setToastMessage(error.response?.data?.message || "댓글 등록에 실패했습니다.");
+      }
+      
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     }
@@ -228,6 +242,36 @@ const FeedDetailPage = () => {
   };
 
   const canEdit = user?.nickname && feed && feed.user.nickname === user.nickname;
+
+  const handleDeleteComment = async (commentId: number) => {
+    if (!feed || !window.confirm("정말로 이 댓글을 삭제하시겠습니까?")) return;
+    
+    try {
+      await FeedService.deleteComment(feed.id, commentId);
+      setComments(comments.filter(comment => comment.id !== commentId));
+      setFeed(prev => prev ? { ...prev, commentCount: prev.commentCount - 1 } : null);
+      
+      setToastMessage("댓글이 삭제되었습니다.");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+      
+    } catch (error: any) {
+      console.error('댓글 삭제 실패:', error);
+      
+      if (error.response?.status === 401) {
+        setToastMessage("로그인이 필요합니다.");
+      } else if (error.response?.status === 403) {
+        setToastMessage("본인 댓글만 삭제할 수 있습니다.");
+      } else if (error.response?.status === 404) {
+        setToastMessage("댓글을 찾을 수 없습니다.");
+      } else {
+        setToastMessage(error.response?.data?.message || "댓글 삭제에 실패했습니다.");
+      }
+      
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }
+  };
 
   if (loading) {
     return (
@@ -330,7 +374,12 @@ const FeedDetailPage = () => {
                 />
                 <div>
                   <div className="flex items-center">
-                    <h3 className="font-medium text-lg">{feed.user?.nickname || "사용자"}</h3>
+                    <button
+                      onClick={() => navigate(`/my-feeds?userNickname=${feed.user?.nickname}`)}
+                      className="font-medium text-lg hover:text-[#87CEEB] transition duration-200 cursor-pointer"
+                    >
+                      {feed.user?.nickname || "사용자"}
+                    </button>
                     {feed.user?.level && (
                       <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
                         <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
@@ -461,19 +510,28 @@ const FeedDetailPage = () => {
                 </div>
               </div>
 
-              {feed.feedType === "EVENT" && (
-                <button
-                  onClick={() => setShowVoteModal(true)}
-                  className={`px-4 py-2 rounded-lg transition duration-200 ${
-                    voted
-                      ? 'bg-gray-200 text-gray-600'
-                      : 'bg-[#87CEEB] text-white hover:bg-blue-400'
-                  }`}
-                  disabled={voted}
-                >
-                  <i className="fas fa-vote-yea mr-1"></i>
-                  {voted ? '투표완료' : '투표하기'} {feed.participantVoteCount || 0}
-                </button>
+              {/* 이벤트 피드인 경우에만 투표 버튼 표시 */}
+              {feed.feedType === 'EVENT' && (
+                <FeedVoteButton
+                  feedId={feed.id}
+                  feedType={feed.feedType}
+                  participantVoteCount={feed.participantVoteCount || 0}
+                  isVoted={feed.isVoted}
+                  size="medium"
+                  onVoteSuccess={(voteCount) => {
+                    // 투표 성공 시 피드 정보 업데이트
+                    setFeed(prev => prev ? { ...prev, participantVoteCount: voteCount } : null);
+                    setToastMessage('투표가 완료되었습니다!');
+                    setShowToast(true);
+                    setTimeout(() => setShowToast(false), 3000);
+                  }}
+                  onVoteError={(error) => {
+                    console.error('투표 에러:', error);
+                    setToastMessage('투표에 실패했습니다.');
+                    setShowToast(true);
+                    setTimeout(() => setShowToast(false), 3000);
+                  }}
+                />
               )}
             </div>
 
@@ -491,14 +549,27 @@ const FeedDetailPage = () => {
                       className="w-8 h-8 rounded-full object-cover"
                     />
                     <div className="flex-1">
-                      <div className="flex items-center mb-1">
-                        <span className="font-medium text-sm">{comment.user?.nickname || "사용자"}</span>
-                        {comment.user?.level && (
-                          <div className="ml-2 bg-[#87CEEB] bg-opacity-10 text-[#87CEEB] text-xs px-2 py-0.5 rounded-full">
-                            Lv.{comment.user.level}
-                          </div>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center">
+                          <span className="font-medium text-sm">{comment.user?.nickname || comment.userNickname || "사용자"}</span>
+                          {comment.user?.level && (
+                            <div className="ml-2 bg-[#87CEEB] bg-opacity-10 text-[#87CEEB] text-xs px-2 py-0.5 rounded-full">
+                              Lv.{comment.user.level}
+                            </div>
+                          )}
+                          <span className="ml-2 text-xs text-gray-500">{comment.createdAt}</span>
+                        </div>
+                        {/* 댓글 작성자만 삭제 버튼 표시 */}
+                        {user?.nickname && (comment.user?.nickname || comment.userNickname) === user.nickname && (
+                          <button
+                            onClick={() => handleDeleteComment(comment.id)}
+                            className="text-red-500 hover:text-red-700 text-xs font-bold"
+                            title="댓글 삭제"
+                          >
+                            ✕
+                          </button>
                         )}
-                        <span className="ml-2 text-xs text-gray-500">{comment.createdAt}</span>
+
                       </div>
                       <p className="text-sm text-gray-700">{comment.content}</p>
                     </div>
@@ -529,29 +600,7 @@ const FeedDetailPage = () => {
         </div>
       </div>
 
-      {/* 투표 확인 모달 */}
-      {showVoteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">투표 확인</h3>
-            <p className="text-gray-600 mb-6">이 착용샷에 투표하시겠습니까?</p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowVoteModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleVote}
-                className="px-4 py-2 bg-[#87CEEB] text-white rounded-lg hover:bg-blue-400"
-              >
-                투표하기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* 토스트 알림 */}
       {showToast && (
