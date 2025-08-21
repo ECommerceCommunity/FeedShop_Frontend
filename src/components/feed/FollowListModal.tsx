@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FollowButton from './FollowButton';
+import axiosInstance from '../../api/axios';
 
 interface FollowUser {
   userId: number;
@@ -15,6 +16,7 @@ interface FollowListModalProps {
   userId: number;
   type: 'followers' | 'followings';
   title: string;
+  onFollowChange?: () => void; // 팔로우 상태 변경 시 콜백 추가
 }
 
 const FollowListModal: React.FC<FollowListModalProps> = ({
@@ -22,7 +24,8 @@ const FollowListModal: React.FC<FollowListModalProps> = ({
   onClose,
   userId,
   type,
-  title
+  title,
+  onFollowChange
 }) => {
   const navigate = useNavigate();
   const [users, setUsers] = useState<FollowUser[]>([]);
@@ -47,26 +50,20 @@ const FollowListModal: React.FC<FollowListModalProps> = ({
         ? `/api/users/${userId}/followers`
         : `/api/users/${userId}/followings`;
 
-      const response = await fetch(`${endpoint}?page=${page}&size=20`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      const response = await axiosInstance.get(endpoint, {
+        params: { page, size: 20 }
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const newUsers = data.data.users || [];
-        
-        if (page === 0) {
-          setUsers(newUsers);
-        } else {
-          setUsers(prev => [...prev, ...newUsers]);
-        }
-        
-        setHasNext(data.data.pagination?.hasNext || false);
+      const data = response.data;
+      const newUsers = data.data.users || [];
+      
+      if (page === 0) {
+        setUsers(newUsers);
       } else {
-        setError('목록을 불러오는데 실패했습니다.');
+        setUsers(prev => [...prev, ...newUsers]);
       }
+      
+      setHasNext(data.data.pagination?.hasNext || false);
     } catch (error) {
       console.error('팔로우 목록 로드 실패:', error);
       setError('목록을 불러오는데 실패했습니다.');
@@ -162,12 +159,24 @@ const FollowListModal: React.FC<FollowListModalProps> = ({
                       targetUserId={user.userId}
                       targetUserNickname={user.nickname}
                       size="small"
-                      onFollowChange={(isFollowing) => {
-                        // 팔로우 상태 변경 시 목록 새로고침
-                        if (isFollowing !== undefined) {
-                          loadFollowList();
+                                          onFollowChange={(isFollowing) => {
+                      // 팔로우 상태 변경 시 즉시 UI 업데이트
+                      if (isFollowing !== undefined) {
+                        // 팔로워 목록에서 팔로우 버튼을 누르면 해당 사용자를 목록에서 제거
+                        if (type === 'followers' && !isFollowing) {
+                          setUsers(prev => prev.filter(u => u.userId !== user.userId));
                         }
-                      }}
+                        // 팔로잉 목록에서 언팔로우 버튼을 누르면 해당 사용자를 목록에서 제거
+                        else if (type === 'followings' && !isFollowing) {
+                          setUsers(prev => prev.filter(u => u.userId !== user.userId));
+                        }
+                        
+                        // 팔로우 수 업데이트 콜백 실행
+                        if (onFollowChange) {
+                          onFollowChange();
+                        }
+                      }
+                    }}
                     />
                     <i className="fas fa-chevron-right text-gray-400"></i>
                   </div>

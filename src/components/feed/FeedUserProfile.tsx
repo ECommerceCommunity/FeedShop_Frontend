@@ -102,7 +102,13 @@ const FeedUserProfile: React.FC<FeedUserProfileProps> = ({
   };
 
   const sizeClasses = getSizeClasses();
-  const displayNickname = userProfile?.nickname || nickname || '사용자';
+  // props로 전달된 nickname을 우선 사용 (피드 데이터의 실제 닉네임)
+  const displayNickname = nickname || userProfile?.nickname || '사용자';
+  console.log('FeedUserProfile 닉네임 정보:', { 
+    propsNickname: nickname, 
+    userProfileNickname: userProfile?.nickname, 
+    displayNickname 
+  });
   const displayProfileImage = userProfile?.profileImageUrl || profileImageUrl;
   const bodyInfoText = getBodyInfoText();
 

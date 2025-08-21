@@ -67,6 +67,7 @@ const FeedDetailPage = () => {
         
         // 백엔드 API 연동
         const feedData = await FeedService.getFeed(parseInt(id));
+        console.log('피드 데이터:', feedData);
         setFeed(feedData);
         
         // 백엔드에서 받은 isLiked 상태를 우선으로 설정
@@ -92,11 +93,13 @@ const FeedDetailPage = () => {
         if (error.response?.status === 404) {
           setToastMessage("피드를 찾을 수 없습니다.");
           setShowToast(true);
-          setTimeout(() => navigate('/feeds'), 2000);
+          // 자동 페이지 이동 제거 - 사용자가 직접 선택하도록
+          // setTimeout(() => navigate('/feeds'), 2000);
         } else {
           setToastMessage("피드 조회에 실패했습니다.");
           setShowToast(true);
-          setTimeout(() => navigate('/feeds'), 2000);
+          // 자동 페이지 이동 제거 - 사용자가 직접 선택하도록
+          // setTimeout(() => navigate('/feeds'), 2000);
         }
       } finally {
         setLoading(false);
@@ -138,7 +141,8 @@ const FeedDetailPage = () => {
       
       if (error.response?.status === 401) {
         setToastMessage("로그인이 필요합니다.");
-        setTimeout(() => navigate('/login'), 2000);
+        // 자동 페이지 이동 제거 - 사용자가 직접 선택하도록
+        // setTimeout(() => navigate('/login'), 2000);
       } else if (error.response?.status === 404) {
         setToastMessage("피드를 찾을 수 없습니다.");
       } else {
@@ -204,7 +208,8 @@ const FeedDetailPage = () => {
       
       if (error.response?.status === 401) {
         setToastMessage("로그인이 필요합니다.");
-        setTimeout(() => navigate('/login'), 2000);
+        // 자동 페이지 이동 제거 - 사용자가 직접 선택하도록
+        // setTimeout(() => navigate('/login'), 2000);
       } else {
         setToastMessage(error.response?.data?.message || "댓글 등록에 실패했습니다.");
       }
@@ -224,7 +229,8 @@ const FeedDetailPage = () => {
       await FeedService.deleteFeed(feed.id);
       setToastMessage("피드가 삭제되었습니다.");
       setShowToast(true);
-      setTimeout(() => navigate('/feeds'), 1200);
+      // 자동 페이지 이동 제거 - 사용자가 직접 선택하도록
+      // setTimeout(() => navigate('/feeds'), 1200);
     } catch (error: any) {
       console.error('피드 삭제 실패:', error);
       const status = error?.response?.status;
@@ -395,6 +401,11 @@ const FeedDetailPage = () => {
                       targetUserId={feed.user.id}
                       targetUserNickname={feed.user.nickname}
                       size="medium"
+                      onFollowChange={(isFollowing: boolean) => {
+                        // 팔로우 상태 변경 시 즉시 반영
+                        console.log('팔로우 상태 변경:', isFollowing);
+                        // 필요시 여기에 추가 로직 구현
+                      }}
                     />
                   </div>
                 )}

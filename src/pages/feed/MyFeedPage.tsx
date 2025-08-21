@@ -8,6 +8,7 @@ import FollowListModal from "../../components/feed/FollowListModal";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
 import { UserProfileService, UserProfileData } from "../../api/userProfileService";
+import axiosInstance from "../../api/axios";
 import { FeedPost, FeedComment } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
 
@@ -37,7 +38,9 @@ const MyFeedPage = () => {
   const targetUserNickname = searchParams.get('userNickname'); // 하위 호환성을 위해 유지
   
   // 현재 로그인한 사용자인지 확인
-  const isCurrentUser = !targetUserId && !targetUserNickname;
+  // targetUserId가 없으면 현재 사용자의 피드, 있으면 특정 사용자의 피드
+  const isCurrentUser = !targetUserId;
+  console.log('MyFeedPage 상태:', { targetUserId, targetUserNickname, isCurrentUser, user });
 
   // 상태 관리
   const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);
@@ -73,6 +76,7 @@ const MyFeedPage = () => {
       
       if (targetUserId && !isCurrentUser) {
         // 특정 사용자의 피드를 가져오는 경우 - 새로운 API 사용
+        console.log('특정 사용자 피드 로드 시작:', { targetUserId, targetUserNickname, isCurrentUser });
         try {
           const params: any = {
             page: 0,
@@ -84,25 +88,24 @@ const MyFeedPage = () => {
             params.feedType = activeTab;
           }
 
-          // 새로운 백엔드 API 호출
-          const userFeedsResponse = await fetch(`/api/feeds/user/${targetUserId}?${new URLSearchParams(params)}`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          console.log('API 호출 파라미터:', params);
+          
+          // axios 인스턴스 사용
+          const userFeedsResponse = await axiosInstance.get(`/api/feeds/user/${targetUserId}`, {
+            params: params
           });
 
-          if (userFeedsResponse.ok) {
-            const data = await userFeedsResponse.json();
-            response = {
-              content: data.data.content,
-              totalElements: data.data.totalElements,
-              totalPages: data.data.totalPages
-            };
-          } else {
-            throw new Error('사용자 피드 조회 실패');
-          }
+          console.log('API 응답:', userFeedsResponse.data);
+          const data = userFeedsResponse.data;
+          response = {
+            content: data.data.content,
+            totalElements: data.data.totalElements,
+            totalPages: data.data.totalPages
+          };
+          console.log('처리된 응답:', response);
         } catch (error) {
           console.error('사용자 피드 조회 실패:', error);
+          console.log('폴백 방식으로 처리 시작');
           // 폴백: 기존 방식으로 처리
           const params: any = {
             page: 0,
@@ -162,6 +165,7 @@ const MyFeedPage = () => {
         response = await FeedService.getMyFeeds(params);
       }
 
+      console.log('최종 응답 설정:', response);
       setFeedPosts(response.content || []);
       
       // 백엔드에서 받은 isLiked 상태만 사용
@@ -169,6 +173,7 @@ const MyFeedPage = () => {
         .filter((feed: FeedPost) => feed.isLiked)
         .map((feed: FeedPost) => feed.id);
       
+      console.log('좋아요 상태 업데이트:', backendLikedIds);
       // 전역 상태 업데이트
       updateLikedPosts(backendLikedIds);
       
@@ -196,17 +201,8 @@ const MyFeedPage = () => {
       let profile;
       if (targetUserId && !isCurrentUser) {
         // 특정 사용자의 프로필 로드
-        const response = await fetch(`/api/users/${targetUserId}/profile`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          profile = data.data;
-        } else {
-          throw new Error('사용자 프로필 조회 실패');
-        }
+        const response = await axiosInstance.get(`/api/users/${targetUserId}/profile`);
+        profile = response.data.data;
       } else {
         // 현재 로그인한 사용자의 프로필 로드
         profile = await UserProfileService.getUserProfile();
@@ -224,7 +220,7 @@ const MyFeedPage = () => {
       loadUserProfile(); // 사용자 프로필 로드
       loadFollowCounts(); // 팔로우 수 로드
     }
-  }, [user, activeTab, sortBy]);
+  }, [user, activeTab, sortBy, targetUserId]);
 
   // 사용자 로그아웃 시 좋아요 상태 초기화
   useEffect(() => {
@@ -243,7 +239,9 @@ const MyFeedPage = () => {
   // 팔로우 수 로드
   const loadFollowCounts = async () => {
     if (!user) return;
+    
     try {
+      // 현재 사용자 ID 가져오기
       const userProfile = await UserProfileService.getUserProfile();
       if (!userProfile.userId) {
         console.warn('사용자 ID를 찾을 수 없습니다.');
@@ -252,16 +250,15 @@ const MyFeedPage = () => {
       
       setCurrentUserId(userProfile.userId);
       
-      const response = await fetch(`/api/users/${userProfile.userId}/follow-count`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setFollowerCount(data.data.followerCount);
-        setFollowingCount(data.data.followingCount);
-      }
+      // 팔로우 수를 가져올 사용자 ID 결정
+      const targetId = targetUserId || userProfile.userId;
+      console.log('팔로우 수 로드 대상 ID:', targetId);
+      
+      const response = await axiosInstance.get(`/api/users/${targetId}/follow-count`);
+      
+      console.log('팔로우 수 응답:', response.data);
+      setFollowerCount(response.data.data.followerCount);
+      setFollowingCount(response.data.data.followingCount);
     } catch (error) {
       console.error('팔로우 수 로드 실패:', error);
     }
@@ -655,7 +652,13 @@ const MyFeedPage = () => {
           </div>
           <div 
             className="bg-white p-4 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => isCurrentUser && user && setShowFollowersModal(true)}
+            onClick={() => {
+              // 현재 사용자 또는 특정 사용자의 팔로워 목록 표시
+              const targetId = targetUserId ? parseInt(targetUserId) : currentUserId;
+              if (targetId) {
+                setShowFollowersModal(true);
+              }
+            }}
           >
             <h3 className="text-2xl font-bold text-[#87CEEB]">
               {followerCount}
@@ -664,7 +667,13 @@ const MyFeedPage = () => {
           </div>
           <div 
             className="bg-white p-4 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => isCurrentUser && user && setShowFollowingsModal(true)}
+            onClick={() => {
+              // 현재 사용자 또는 특정 사용자의 팔로잉 목록 표시
+              const targetId = targetUserId ? parseInt(targetUserId) : currentUserId;
+              if (targetId) {
+                setShowFollowingsModal(true);
+              }
+            }}
           >
             <h3 className="text-2xl font-bold text-[#87CEEB]">
               {followingCount}
@@ -744,12 +753,15 @@ const MyFeedPage = () => {
         onDeleteComment={handleDeleteComment}
         currentUser={user ? { nickname: user.nickname } : undefined}
         onUserClick={(userId) => {
-          handleCloseModal();
-          // userId 대신 nickname을 사용하여 필터링
-          const selectedUserNickname = selectedPost?.user?.nickname;
-          if (selectedUserNickname) {
-            navigate(`/my-feeds?userNickname=${selectedUserNickname}`);
-          }
+          // 팔로우 버튼 클릭 시 페이지 이동하지 않고 현재 페이지에서 팔로우 상태만 변경
+          // 모달은 닫지 않음 (사용자가 직접 닫을 수 있도록)
+          console.log('사용자 클릭됨, 페이지 이동하지 않음:', userId);
+        }}
+        onFollowChange={(isFollowing: boolean) => {
+          // 팔로우 상태 변경 시 팔로우 수 즉시 업데이트
+          console.log('팔로우 상태 변경:', isFollowing);
+          // 팔로우 수 새로고침
+          loadFollowCounts();
         }}
       />
 
@@ -762,24 +774,26 @@ const MyFeedPage = () => {
       )}
 
       {/* 팔로워 목록 모달 */}
-      {showFollowersModal && user && currentUserId && (
+      {showFollowersModal && user && (
         <FollowListModal
           open={showFollowersModal}
           onClose={() => setShowFollowersModal(false)}
-          userId={currentUserId}
+          userId={targetUserId ? parseInt(targetUserId) : (currentUserId || 0)}
           type="followers"
           title="팔로워"
+          onFollowChange={loadFollowCounts}
         />
       )}
 
       {/* 팔로잉 목록 모달 */}
-      {showFollowingsModal && user && currentUserId && (
+      {showFollowingsModal && user && (
         <FollowListModal
           open={showFollowingsModal}
           onClose={() => setShowFollowingsModal(false)}
-          userId={currentUserId}
+          userId={targetUserId ? parseInt(targetUserId) : (currentUserId || 0)}
           type="followings"
           title="팔로잉"
+          onFollowChange={loadFollowCounts}
         />
       )}
     </div>

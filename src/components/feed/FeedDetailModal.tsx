@@ -53,6 +53,7 @@ interface FeedDetailModalProps {
   onDeleteComment?: (commentId: number) => void;
   currentUser?: { nickname?: string };
   onUserClick?: (userId: number) => void; // 사용자 클릭 핸들러 추가
+  onFollowChange?: (isFollowing: boolean) => void; // 팔로우 상태 변경 핸들러 추가
 }
 
 const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
@@ -83,6 +84,7 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
   onDeleteComment,
   currentUser,
   onUserClick,
+  onFollowChange,
 }) => {
   const { user } = useAuth();
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
@@ -145,6 +147,7 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                       targetUserId={feed.user.id}
                       targetUserNickname={feed.user.nickname}
                       size="small"
+                      onFollowChange={onFollowChange}
                     />
                   )}
                 </div>
