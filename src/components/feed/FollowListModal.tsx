@@ -158,9 +158,6 @@ const FollowListModal: React.FC<FollowListModalProps> = ({
                   />
                   <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleUserClick(user.nickname, user.userId)}>
                     <p className="font-medium text-gray-900 truncate hover:text-[#87CEEB] transition-colors">{user.nickname}</p>
-                    <p className="text-xs text-gray-500">
-                      {type === 'followers' ? '팔로우 시작' : '팔로우 시작'}: {formatDate(user.followedAt)}
-                    </p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <FollowButton
