@@ -655,7 +655,7 @@ export class FeedService {
     hashtags?: string[];
     page?: number;
     size?: number;
-    sort?: 'latest' | 'popular' | 'comments' | 'votes';
+    sort?: 'latest' | 'popular';  // 백엔드에서 지원하는 2가지 옵션만
   } = {}): Promise<FeedListResponse> {
     try {
       console.log('피드 검색 시작:', params);
