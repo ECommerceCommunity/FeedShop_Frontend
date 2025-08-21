@@ -1,58 +1,48 @@
 // 백엔드 Entity 구조에 맞춘 Feed 타입 정의
 
+export interface User {
+  id: number;
+  nickname: string;
+  level?: number;
+  profileImg?: string;
+  gender?: string;
+  height?: number;
+}
+
+export interface FeedImage {
+  id: number;
+  imageUrl: string;
+  sortOrder: number;
+}
+
+export interface FeedHashtag {
+  id: number;
+  tag: string;
+}
+
+export interface OrderItem {
+  id: number;
+  productName: string;
+  size?: number;
+}
+
 export interface FeedPost {
   id: number;
   title: string;
   content: string;
-  instagramId?: string;
-  feedType: 'DAILY' | 'EVENT' | 'RANKING';
+  images: FeedImage[];
+  hashtags: FeedHashtag[];
+  user: User;
+  createdAt: string;
+  updatedAt: string;
   likeCount: number;
   commentCount: number;
-  participantVoteCount: number;
-  
-  // User 관계
-  user: {
-    id: number;
-    nickname: string;
-    level?: number;
-    profileImg?: string;
-    gender?: string;
-    height?: number;
-  };
-  
-  // OrderItem 관계 (상품 정보)
-  orderItem: {
-    id: number;
-    productName: string;
-    size?: number;
-  };
-  
-  // Event 관계 (투표 이벤트용)
-  event?: {
-    id: number;
-    title: string;
-    description?: string;
-    startDate: string;
-    endDate: string;
-  };
-  
-  // 관계 엔티티들
-  images: Array<{
-    id: number;
-    imageUrl: string;
-    sortOrder: number;
-  }>;
-  
-  hashtags: Array<{
-    id: number;
-    tag: string;
-  }>;
-  
-  // 상태 정보
-  isLiked?: boolean;
-  isVoted?: boolean;
-  createdAt: string;
-  updatedAt?: string;
+  isLiked: boolean;
+  isVoted?: boolean; // 투표 상태
+  feedType: 'DAILY' | 'EVENT' | 'RANKING';
+  participantVoteCount?: number; // 투표 수
+  orderItem?: OrderItem;
+  instagramId?: string;
 }
 
 export interface FeedComment {
@@ -129,10 +119,6 @@ export interface MyLikedFeedsResponseDto {
   hasPrevious: boolean;
 }
 
-export interface FeedVoteRequest {
-  eventId: number;
-}
-
 // === API 응답 타입들 ===
 
 export interface ApiResponse<T> {
@@ -192,6 +178,7 @@ export interface LikeResponse {
 export interface VoteResponse {
   voted: boolean;
   voteCount: number;
+  message: string;
 }
 
 // === 에러 응답 타입 ===
