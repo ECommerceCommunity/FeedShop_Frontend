@@ -373,13 +373,17 @@ const FeedListPage = () => {
       )}
 
       {/* 헤더 - FEED 제목과 검색 아이콘 */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">FEED</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-4xl font-extrabold text-gray-800 tracking-tight">
+          <span className="bg-gradient-to-r from-[#87CEEB] to-blue-600 bg-clip-text text-transparent">
+            FEED
+          </span>
+        </h1>
         <button
           onClick={() => setShowSearchModal(true)}
-          className="text-gray-600 hover:text-[#87CEEB] transition-colors"
+          className="text-gray-600 hover:text-[#87CEEB] transition-colors p-2 rounded-full hover:bg-gray-100"
         >
-          <i className="fas fa-search text-xl"></i>
+          <i className="fas fa-search text-2xl"></i>
         </button>
       </div>
 
