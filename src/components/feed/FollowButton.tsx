@@ -50,8 +50,10 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         const response = await axiosInstance.get(`/api/users/${targetUserId}/follow-status`);
         
         console.log('팔로우 상태 확인 응답:', response.data);
-        const followStatus = response.data.data;
+        const responseData = response.data.data;
+        const followStatus = responseData?.following ?? responseData?.isFollowing ?? responseData;
         console.log('팔로우 상태:', followStatus);
+        console.log('전체 응답 데이터:', responseData);
         setIsFollowing(followStatus);
       } catch (error: any) {
         console.error('팔로우 상태 확인 실패:', error);
@@ -100,9 +102,11 @@ const FollowButton: React.FC<FollowButtonProps> = ({
       console.log('팔로우 토글 응답:', response.data);
       console.log('응답 data 필드:', response.data.data);
       
-      // 올바른 응답 구조 사용 (백엔드에서 'following' 필드 사용)
-      const newFollowStatus = response.data.data?.following;
+      // 백엔드 응답 구조 확인 및 처리
+      const responseData = response.data.data;
+      const newFollowStatus = responseData?.following ?? responseData?.isFollowing ?? responseData;
       console.log('새로운 팔로우 상태:', newFollowStatus);
+      console.log('전체 응답 데이터:', responseData);
       
       if (newFollowStatus !== undefined) {
         setIsFollowing(newFollowStatus);

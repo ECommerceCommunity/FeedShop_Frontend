@@ -37,9 +37,17 @@ const FollowListModal: React.FC<FollowListModalProps> = ({
   // 팔로워/팔로잉 목록 로드
   useEffect(() => {
     if (open && userId) {
+      setPage(0); // 페이지 초기화
       loadFollowList();
     }
-  }, [open, userId, type, page]);
+  }, [open, userId, type]);
+
+  // 페이지 변경 시에만 추가 로드
+  useEffect(() => {
+    if (open && userId && page > 0) {
+      loadFollowList();
+    }
+  }, [page]);
 
   const loadFollowList = async () => {
     try {
@@ -160,16 +168,22 @@ const FollowListModal: React.FC<FollowListModalProps> = ({
                       targetUserNickname={user.nickname}
                       size="small"
                                           onFollowChange={(isFollowing) => {
+                      console.log('팔로우 상태 변경 감지:', { userId: user.userId, isFollowing, type });
+                      
                       // 팔로우 상태 변경 시 즉시 UI 업데이트
                       if (isFollowing !== undefined) {
-                        // 팔로워 목록에서 팔로우 버튼을 누르면 해당 사용자를 목록에서 제거
-                        if (type === 'followers' && !isFollowing) {
+                        // 팔로잉 목록에서 언팔로우하면 해당 사용자를 목록에서 제거
+                        if (type === 'followings' && !isFollowing) {
+                          console.log('팔로잉 목록에서 사용자 제거:', user.userId);
                           setUsers(prev => prev.filter(u => u.userId !== user.userId));
                         }
-                        // 팔로잉 목록에서 언팔로우 버튼을 누르면 해당 사용자를 목록에서 제거
-                        else if (type === 'followings' && !isFollowing) {
-                          setUsers(prev => prev.filter(u => u.userId !== user.userId));
-                        }
+                        // 팔로워 목록에서는 제거하지 않음 (다른 사용자가 나를 언팔로우하는 것이 아니므로)
+                        
+                        // 목록 새로고침 (더 확실한 방법)
+                        setTimeout(() => {
+                          setPage(0);
+                          loadFollowList();
+                        }, 500);
                         
                         // 팔로우 수 업데이트 콜백 실행
                         if (onFollowChange) {
