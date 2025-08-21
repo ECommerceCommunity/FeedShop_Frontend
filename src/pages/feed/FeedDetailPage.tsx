@@ -5,6 +5,7 @@ import FeedService from "../../api/feedService";
 import { FeedPost, FeedComment } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
 import FeedUserProfile from "../../components/feed/FeedUserProfile";
+import FollowButton from "../../components/feed/FollowButton";
 
 // 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
 const formatKoreanTime = (dateString: string) => {
@@ -375,8 +376,8 @@ const FeedDetailPage = () => {
                     showBodyInfo={true}
                     size="large"
                     onClick={() => {
-                      if (feed.user?.nickname) {
-                        navigate(`/my-feeds?userNickname=${feed.user.nickname}`);
+                      if (feed.user?.id) {
+                        navigate(`/my-feeds?userId=${feed.user.id}`);
                       }
                     }}
                   />
@@ -385,6 +386,16 @@ const FeedDetailPage = () => {
                   <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
                     <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
                     <span>Lv.{feed.user.level}</span>
+                  </div>
+                )}
+                {/* 팔로우 버튼 */}
+                {feed.user && user && feed.user.nickname !== user.nickname && (
+                  <div className="ml-3">
+                    <FollowButton
+                      targetUserId={feed.user.id}
+                      targetUserNickname={feed.user.nickname}
+                      size="medium"
+                    />
                   </div>
                 )}
               </div>

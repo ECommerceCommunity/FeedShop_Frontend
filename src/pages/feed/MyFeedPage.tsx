@@ -4,6 +4,7 @@ import FeedList from "../../components/feed/FeedList";
 import FeedDetailModal from "../../components/feed/FeedDetailModal";
 import LikedUsersModal from "../../components/feed/LikedUsersModal";
 import FeedUserProfile from "../../components/feed/FeedUserProfile";
+import FollowListModal from "../../components/feed/FollowListModal";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
 import { UserProfileService, UserProfileData } from "../../api/userProfileService";
@@ -32,10 +33,11 @@ const MyFeedPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const targetUserNickname = searchParams.get('userNickname');
+  const targetUserId = searchParams.get('userId');
+  const targetUserNickname = searchParams.get('userNickname'); // 하위 호환성을 위해 유지
   
   // 현재 로그인한 사용자인지 확인
-  const isCurrentUser = !targetUserNickname || targetUserNickname === user?.nickname;
+  const isCurrentUser = !targetUserId && !targetUserNickname;
 
   // 상태 관리
   const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);
@@ -69,11 +71,65 @@ const MyFeedPage = () => {
 
       let response;
       
-      if (targetUserNickname && !isCurrentUser) {
-        // 특정 사용자의 피드를 가져오는 경우
+      if (targetUserId && !isCurrentUser) {
+        // 특정 사용자의 피드를 가져오는 경우 - 새로운 API 사용
+        try {
+          const params: any = {
+            page: 0,
+            size: 50,
+            sort: sortBy
+          };
+
+          if (activeTab !== "all") {
+            params.feedType = activeTab;
+          }
+
+          // 새로운 백엔드 API 호출
+          const userFeedsResponse = await fetch(`/api/feeds/user/${targetUserId}?${new URLSearchParams(params)}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+
+          if (userFeedsResponse.ok) {
+            const data = await userFeedsResponse.json();
+            response = {
+              content: data.data.content,
+              totalElements: data.data.totalElements,
+              totalPages: data.data.totalPages
+            };
+          } else {
+            throw new Error('사용자 피드 조회 실패');
+          }
+        } catch (error) {
+          console.error('사용자 피드 조회 실패:', error);
+          // 폴백: 기존 방식으로 처리
+          const params: any = {
+            page: 0,
+            size: 100,
+            sort: sortBy
+          };
+
+          if (activeTab !== "all") {
+            params.feedType = activeTab;
+          }
+
+          const allFeedsResponse = await FeedService.getFeeds(params);
+          const userFeeds = allFeedsResponse.content.filter(feed => 
+            feed.user?.nickname === targetUserNickname
+          );
+          
+          response = {
+            content: userFeeds,
+            totalElements: userFeeds.length,
+            totalPages: Math.ceil(userFeeds.length / 50)
+          };
+        }
+      } else if (targetUserNickname && !isCurrentUser) {
+        // 하위 호환성을 위한 기존 방식 (nickname 사용)
         const params: any = {
           page: 0,
-          size: 100, // 더 많은 데이터를 가져와서 필터링
+          size: 100,
           sort: sortBy
         };
 
@@ -81,7 +137,6 @@ const MyFeedPage = () => {
           params.feedType = activeTab;
         }
 
-        // 전체 피드를 가져온 후 특정 사용자 필터링
         const allFeedsResponse = await FeedService.getFeeds(params);
         const userFeeds = allFeedsResponse.content.filter(feed => 
           feed.user?.nickname === targetUserNickname
@@ -135,10 +190,27 @@ const MyFeedPage = () => {
 
   // 사용자 프로필 정보 로드
   const loadUserProfile = async () => {
-    if (!isCurrentUser || !user) return;
+    if (!user) return;
     
     try {
-      const profile = await UserProfileService.getUserProfile();
+      let profile;
+      if (targetUserId && !isCurrentUser) {
+        // 특정 사용자의 프로필 로드
+        const response = await fetch(`/api/users/${targetUserId}/profile`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          profile = data.data;
+        } else {
+          throw new Error('사용자 프로필 조회 실패');
+        }
+      } else {
+        // 현재 로그인한 사용자의 프로필 로드
+        profile = await UserProfileService.getUserProfile();
+      }
       setUserProfile(profile);
     } catch (error) {
       console.error("사용자 프로필 로드 실패:", error);
@@ -150,6 +222,7 @@ const MyFeedPage = () => {
     if (user) {
       loadMyFeeds();
       loadUserProfile(); // 사용자 프로필 로드
+      loadFollowCounts(); // 팔로우 수 로드
     }
   }, [user, activeTab, sortBy]);
 
@@ -160,14 +233,46 @@ const MyFeedPage = () => {
     }
   }, [user]);
 
+  // 팔로우 관련 상태
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingsModal, setShowFollowingsModal] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
+  // 팔로우 수 로드
+  const loadFollowCounts = async () => {
+    if (!user) return;
+    try {
+      const userProfile = await UserProfileService.getUserProfile();
+      if (!userProfile.userId) {
+        console.warn('사용자 ID를 찾을 수 없습니다.');
+        return;
+      }
+      
+      setCurrentUserId(userProfile.userId);
+      
+      const response = await fetch(`/api/users/${userProfile.userId}/follow-count`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setFollowerCount(data.data.followerCount);
+        setFollowingCount(data.data.followingCount);
+      }
+    } catch (error) {
+      console.error('팔로우 수 로드 실패:', error);
+    }
+  };
+
   // 통계 계산
   const feedCount = feedPosts.length;
   const totalLikes = feedPosts.reduce(
     (sum: number, post: FeedPost) => sum + (post.likeCount || 0),
     0
   );
-  const followerCount = 324; // TODO: 백엔드 API 연동 필요
-  const followingCount = 156; // TODO: 백엔드 API 연동 필요
 
   // filteredFeeds: 탭/정렬에 따라 feedPosts를 필터링/정렬
   const filteredFeeds = feedPosts
@@ -441,7 +546,7 @@ const MyFeedPage = () => {
                 ? userProfile.profileImageUrl 
                 : "https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=120&height=120&seq=myprofile"
               }
-              alt={isCurrentUser ? (userProfile?.nickname || user?.nickname || "My Profile") : `${targetUserNickname}님의 프로필`}
+              alt={isCurrentUser ? (userProfile?.nickname || user?.nickname || "My Profile") : `${userProfile?.nickname || targetUserNickname}님의 프로필`}
               className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -452,7 +557,7 @@ const MyFeedPage = () => {
               <h2 className="text-3xl font-bold mb-2">
                 {isCurrentUser 
                   ? `${userProfile?.nickname || user?.nickname || '나'}의 스타일 피드` 
-                  : `${targetUserNickname}님의 스타일 피드`
+                  : `${userProfile?.nickname || targetUserNickname}님의 스타일 피드`
                 }
               </h2>
               <div className="flex items-center mb-3">
@@ -548,13 +653,19 @@ const MyFeedPage = () => {
             <h3 className="text-2xl font-bold text-[#87CEEB]">{feedCount}</h3>
             <p className="text-gray-600">게시물</p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm">
+          <div 
+            className="bg-white p-4 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => isCurrentUser && user && setShowFollowersModal(true)}
+          >
             <h3 className="text-2xl font-bold text-[#87CEEB]">
               {followerCount}
             </h3>
             <p className="text-gray-600">팔로워</p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm">
+          <div 
+            className="bg-white p-4 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => isCurrentUser && user && setShowFollowingsModal(true)}
+          >
             <h3 className="text-2xl font-bold text-[#87CEEB]">
               {followingCount}
             </h3>
@@ -647,6 +758,28 @@ const MyFeedPage = () => {
         <LikedUsersModal
           users={likedUsers}
           onClose={() => setShowLikedUsersModal(false)}
+        />
+      )}
+
+      {/* 팔로워 목록 모달 */}
+      {showFollowersModal && user && currentUserId && (
+        <FollowListModal
+          open={showFollowersModal}
+          onClose={() => setShowFollowersModal(false)}
+          userId={currentUserId}
+          type="followers"
+          title="팔로워"
+        />
+      )}
+
+      {/* 팔로잉 목록 모달 */}
+      {showFollowingsModal && user && currentUserId && (
+        <FollowListModal
+          open={showFollowingsModal}
+          onClose={() => setShowFollowingsModal(false)}
+          userId={currentUserId}
+          type="followings"
+          title="팔로잉"
         />
       )}
     </div>
