@@ -69,7 +69,6 @@ const BecomeSellerPage = lazy(() => import("./pages/seller/BecomeSellerPage"));
 const SellerMyPage = lazy(() => import("./pages/seller/SellerMyPage"));
 const ReviewListPage = lazy(() => import("./pages/reviews/ReviewListPage"));
 const ReviewWritePage = lazy(() => import("./pages/reviews/ReviewWritePage"));
-
 const SocialCallbackPage = lazy(() => import("./pages/auth/SocialCallbackPage"));
 
 
