@@ -378,7 +378,25 @@ const MyFeedPage = () => {
       setShowLikedUsersModal(true);
     } catch (error) {
       console.error('좋아요한 사용자 목록 조회 실패:', error);
-      alert("좋아요한 사용자 목록을 불러오는데 실패했습니다.");
+    }
+  };
+
+  // 투표 후 피드 목록 새로고침
+  const handleVoteSuccess = async (feedId: number, newVoteCount: number) => {
+    try {
+      // 현재 피드 목록에서 해당 피드의 투표 수 업데이트
+      setFeedPosts(prev => 
+        prev.map(feed => 
+          feed.id === feedId 
+            ? { ...feed, participantVoteCount: newVoteCount }
+            : feed
+        )
+      );
+      
+      // 성공 메시지 표시
+      console.log(`피드 ${feedId} 투표 완료: ${newVoteCount}표`);
+    } catch (error) {
+      console.error('투표 후 피드 업데이트 실패:', error);
     }
   };
 
@@ -551,6 +569,7 @@ const MyFeedPage = () => {
           onLikeClick={(feed) => handleLike(feed.id)}
           onLikeCountClick={handleLikeCountClick}
           likedPosts={likedPosts}
+          onVoteSuccess={handleVoteSuccess}
         />
       )}
 
