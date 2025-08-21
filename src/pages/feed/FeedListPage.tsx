@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedList from "../../components/feed/FeedList";
 import LikedUsersModal from "../../components/feed/LikedUsersModal";
+import FeedSearchModal from "../../components/feed/FeedSearchModal";
 import FeedService from "../../api/feedService";
 import { EventDto } from "../../api/eventService";
 import axiosInstance from "../../api/axios";
@@ -35,6 +36,10 @@ const FeedListPage = () => {
   // 좋아요 사용자 모달 상태
   const [showLikedUsersModal, setShowLikedUsersModal] = useState(false);
   const [likedUsers, setLikedUsers] = useState<{ id: number; nickname: string; profileImg?: string; }[]>([]);
+
+  // 검색 관련 상태
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // 🔧 백엔드 연동: 이벤트 데이터
   const [events, setEvents] = useState<EventDto[]>([]);
@@ -333,6 +338,19 @@ const FeedListPage = () => {
     });
   };
 
+  // 검색 기능
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    // 검색어가 있으면 피드 목록을 필터링
+    if (term.trim()) {
+      // 여기에 검색 로직을 추가할 수 있습니다
+      console.log('검색어:', term);
+    } else {
+      // 검색어가 없으면 모든 피드 표시
+      fetchFeeds();
+    }
+  };
+
   if (initialLoading) {
     return (
       <div className="p-5 text-center">
@@ -353,6 +371,17 @@ const FeedListPage = () => {
           </div>
         </div>
       )}
+
+      {/* 헤더 - FEED 제목과 검색 아이콘 */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">FEED</h1>
+        <button
+          onClick={() => setShowSearchModal(true)}
+          className="text-gray-600 hover:text-[#87CEEB] transition-colors"
+        >
+          <i className="fas fa-search text-xl"></i>
+        </button>
+      </div>
 
       {/* 탭 네비게이션 */}
       <div className="flex border-b border-gray-200 mb-6 overflow-x-auto">
@@ -574,6 +603,13 @@ const FeedListPage = () => {
           onClose={() => setShowLikedUsersModal(false)}
         />
       )}
+
+      {/* 검색 모달 */}
+      <FeedSearchModal
+        open={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        onSearch={handleSearch}
+      />
     </div>
   );
 };
