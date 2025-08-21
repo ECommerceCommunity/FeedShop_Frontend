@@ -117,7 +117,11 @@ export interface ReviewListParams {
     page?: number;
     size?: number;
     sort?: ReviewSortOption;
-    rating?: number; // 별점 필터
+    rating?: number; // 별점 필터 (정확한 별점이면 exact=true와 함께 사용)
+    exactRating?: boolean; // true면 정확한 별점, false면 이상 (기본값)
+    sizeFit?: number; // 사이즈 필터 (1: 작음, 2: 적당함, 3: 큼)
+    cushion?: number; // 쿠션감 필터 (1: 부드러움, 2: 적당함, 3: 딱딱함)
+    stability?: number; // 안정성 필터 (1: 낮음, 2: 보통, 3: 높음)
 }
 
 // =============== API 응답 타입 ===============
@@ -167,7 +171,11 @@ export interface DeleteReviewResponse {
  */
 export interface ReviewFilterState {
     sort: ReviewSortOption;
-    rating: number;        // 0: 전체, 1-5: 해당 별점 이상
+    rating: number;        // 0: 전체, 1-5: 별점 필터
+    exactRating: boolean;  // true: 정확한 별점, false: 이상 (기본값)
+    sizeFit: number;       // 0: 전체, 1: 작음, 2: 적당함, 3: 큼
+    cushion: number;       // 0: 전체, 1: 부드러움, 2: 적당함, 3: 딱딱함
+    stability: number;     // 0: 전체, 1: 낮음, 2: 보통, 3: 높음
 }
 
 // =============== 컴포넌트 Props 타입 ===============
