@@ -175,17 +175,61 @@ export const UserProfileService = {
 
       // 개발 환경에서만 임시 데이터 반환
       console.warn(`개발 환경: 사용자 ${userId} 임시 프로필 데이터를 반환합니다.`);
-      return {
+      
+      // 사용자별로 다른 임시 데이터 제공
+      const mockProfiles = {
+        1: {
+          userId: 1,
+          name: "김철수",
+          nickname: "스타일리스트",
+          phone: "010-1234-5678",
+          birthDate: "1990-01-01",
+          gender: "MALE" as const,
+          height: 175,
+          weight: 70,
+          footSize: 270,
+          footWidth: "NORMAL" as const,
+          profileImageUrl: "",
+        },
+        2: {
+          userId: 2,
+          name: "이영희",
+          nickname: "패션러버",
+          phone: "010-2345-6789",
+          birthDate: "1992-05-15",
+          gender: "FEMALE" as const,
+          height: 165,
+          weight: 55,
+          footSize: 235,
+          footWidth: "NARROW" as const,
+          profileImageUrl: "",
+        },
+        3: {
+          userId: 3,
+          name: "박민수",
+          nickname: "신발마니아",
+          phone: "010-3456-7890",
+          birthDate: "1988-12-03",
+          gender: "MALE" as const,
+          height: 180,
+          weight: 75,
+          footSize: 280,
+          footWidth: "WIDE" as const,
+          profileImageUrl: "",
+        }
+      };
+      
+      return mockProfiles[userId as keyof typeof mockProfiles] || {
         userId: userId,
         name: `사용자${userId}`,
         nickname: `닉네임${userId}`,
         phone: "010-1234-5678",
         birthDate: "1990-01-01",
-        gender: "MALE",
+        gender: "MALE" as const,
         height: 170,
         weight: 65,
         footSize: 260,
-        footWidth: "NORMAL",
+        footWidth: "NORMAL" as const,
         profileImageUrl: "",
       };
     }

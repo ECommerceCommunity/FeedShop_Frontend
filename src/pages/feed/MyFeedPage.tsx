@@ -202,26 +202,7 @@ const MyFeedPage = () => {
       if (targetUserId && !isCurrentUser) {
         // 특정 사용자의 프로필 로드 - UserProfileService 사용
         console.log('특정 사용자 프로필 로드 시작:', targetUserId);
-        const response = await axiosInstance.get(`/api/users/${targetUserId}/profile`);
-        console.log('백엔드 응답 전체:', response.data);
-        
-        // 백엔드 응답 구조에 맞게 데이터 매핑
-        const backendData = response.data.data;
-        profile = {
-          userId: backendData.userId || parseInt(targetUserId),
-          nickname: backendData.nickname || `사용자${targetUserId}`,
-          profileImageUrl: backendData.profileImageUrl || "",
-          name: backendData.name || backendData.nickname || `사용자${targetUserId}`,
-          username: backendData.username || "",
-          email: backendData.email || "",
-          phone: backendData.phone || "",
-          birthDate: backendData.birthDate || "",
-          gender: backendData.gender || "MALE",
-          height: backendData.height || 0,
-          weight: backendData.weight || 0,
-          footSize: backendData.footSize || 0,
-          footWidth: backendData.footWidth || "NORMAL"
-        };
+        profile = await UserProfileService.getUserProfileById(parseInt(targetUserId));
         console.log('매핑된 프로필 데이터:', profile);
       } else {
         // 현재 로그인한 사용자의 프로필 로드
@@ -632,7 +613,7 @@ const MyFeedPage = () => {
               </div>
               
               {/* 사용자 신체 정보 표시 */}
-              {isCurrentUser && userProfile && (
+              {userProfile && (
                 <div className="mb-3">
                   <FeedUserProfile
                     userId={userProfile.userId || 0}
@@ -642,8 +623,10 @@ const MyFeedPage = () => {
                     showBodyInfoOnly={true}
                     size="medium"
                     onClick={() => {
-                      // 프로필 수정 페이지로 이동
-                      navigate("/profile-settings");
+                      // 현재 사용자인 경우에만 프로필 수정 페이지로 이동
+                      if (isCurrentUser) {
+                        navigate("/profile-settings");
+                      }
                     }}
                   />
                 </div>
