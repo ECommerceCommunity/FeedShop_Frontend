@@ -4,6 +4,8 @@ import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
 import { FeedPost, FeedComment } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
+import FeedUserProfile from "../../components/feed/FeedUserProfile";
+import FollowButton from "../../components/feed/FollowButton";
 import FeedVoteButton from "../../components/feed/FeedVoteButton";
 
 // 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
@@ -66,6 +68,7 @@ const FeedDetailPage = () => {
         
         // 백엔드 API 연동
         const feedData = await FeedService.getFeed(parseInt(id));
+        console.log('피드 데이터:', feedData);
         setFeed(feedData);
         
         // 백엔드에서 받은 isLiked 상태를 우선으로 설정
@@ -91,11 +94,13 @@ const FeedDetailPage = () => {
         if (error.response?.status === 404) {
           setToastMessage("피드를 찾을 수 없습니다.");
           setShowToast(true);
-          setTimeout(() => navigate('/feeds'), 2000);
+          // 자동 페이지 이동 제거 - 사용자가 직접 선택하도록
+          // setTimeout(() => navigate('/feeds'), 2000);
         } else {
           setToastMessage("피드 조회에 실패했습니다.");
           setShowToast(true);
-          setTimeout(() => navigate('/feeds'), 2000);
+          // 자동 페이지 이동 제거 - 사용자가 직접 선택하도록
+          // setTimeout(() => navigate('/feeds'), 2000);
         }
       } finally {
         setLoading(false);
@@ -137,7 +142,8 @@ const FeedDetailPage = () => {
       
       if (error.response?.status === 401) {
         setToastMessage("로그인이 필요합니다.");
-        setTimeout(() => navigate('/login'), 2000);
+        // 자동 페이지 이동 제거 - 사용자가 직접 선택하도록
+        // setTimeout(() => navigate('/login'), 2000);
       } else if (error.response?.status === 404) {
         setToastMessage("피드를 찾을 수 없습니다.");
       } else {
@@ -203,7 +209,8 @@ const FeedDetailPage = () => {
       
       if (error.response?.status === 401) {
         setToastMessage("로그인이 필요합니다.");
-        setTimeout(() => navigate('/login'), 2000);
+        // 자동 페이지 이동 제거 - 사용자가 직접 선택하도록
+        // setTimeout(() => navigate('/login'), 2000);
       } else {
         setToastMessage(error.response?.data?.message || "댓글 등록에 실패했습니다.");
       }
@@ -223,7 +230,8 @@ const FeedDetailPage = () => {
       await FeedService.deleteFeed(feed.id);
       setToastMessage("피드가 삭제되었습니다.");
       setShowToast(true);
-      setTimeout(() => navigate('/feeds'), 1200);
+      // 자동 페이지 이동 제거 - 사용자가 직접 선택하도록
+      // setTimeout(() => navigate('/feeds'), 1200);
     } catch (error: any) {
       console.error('피드 삭제 실패:', error);
       const status = error?.response?.status;
@@ -367,43 +375,41 @@ const FeedDetailPage = () => {
             {/* 사용자 정보 */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
-                <img
-                  src={feed.user?.profileImg || "https://readdy.ai/api/search-image?query=default%20profile&width=60&height=60"}
-                  alt={feed.user?.nickname || "사용자"}
-                  className="w-12 h-12 rounded-full object-cover mr-3"
-                />
-                <div>
-                  <div className="flex items-center">
-                    <button
-                      onClick={() => navigate(`/my-feeds?userNickname=${feed.user?.nickname}`)}
-                      className="font-medium text-lg hover:text-[#87CEEB] transition duration-200 cursor-pointer"
-                    >
-                      {feed.user?.nickname || "사용자"}
-                    </button>
-                    {feed.user?.level && (
-                      <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
-                        <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
-                        <span>Lv.{feed.user.level}</span>
-                      </div>
-                    )}
+                {feed.user && (
+                  <FeedUserProfile
+                    userId={feed.user.id || 0}
+                    nickname={feed.user.nickname}
+                    profileImageUrl={feed.user.profileImg}
+                    showBodyInfo={true}
+                    size="large"
+                    onClick={() => {
+                      if (feed.user?.id) {
+                        navigate(`/my-feeds?userId=${feed.user.id}`);
+                      }
+                    }}
+                  />
+                )}
+                {feed.user?.level && (
+                  <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
+                    <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
+                    <span>Lv.{feed.user.level}</span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-500 mt-1">
-                    {feed.user?.gender && feed.user?.height && (
-                      <span>{feed.user.gender} · {feed.user.height}cm</span>
-                    )}
-                    {feed.instagramId && (
-                      <a
-                        href={`https://instagram.com/${feed.instagramId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-3 text-[#87CEEB] hover:underline"
-                      >
-                        <i className="fab fa-instagram mr-1"></i>
-                        {feed.instagramId}
-                      </a>
-                    )}
+                )}
+                {/* 팔로우 버튼 */}
+                {feed.user && user && feed.user.nickname !== user.nickname && (
+                  <div className="ml-3">
+                    <FollowButton
+                      targetUserId={feed.user.id}
+                      targetUserNickname={feed.user.nickname}
+                      size="medium"
+                      onFollowChange={(isFollowing: boolean) => {
+                        // 팔로우 상태 변경 시 즉시 반영
+                        console.log('팔로우 상태 변경:', isFollowing);
+                        // 필요시 여기에 추가 로직 구현
+                      }}
+                    />
                   </div>
-                </div>
+                )}
               </div>
               
               {canEdit && (

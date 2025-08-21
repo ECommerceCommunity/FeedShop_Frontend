@@ -203,7 +203,7 @@ const App: FC = () => {
                   }
                 />
                 <Route
-                  path="/my-feed"
+                  path="/my-feeds"
                   element={
                     <UserProtectedRoute requireLogin={true}>
                       <MyFeedPage />

@@ -1,4 +1,5 @@
 import React from "react";
+import FeedUserProfile from "./FeedUserProfile";
 
 interface FeedCardProps {
   feed: {
@@ -7,7 +8,9 @@ interface FeedCardProps {
     title: string;
     content: string;
     user?: {
+      id?: number;
       nickname: string;
+      profileImg?: string;
     };
     createdAt?: string;
     likeCount?: number;
@@ -36,8 +39,25 @@ const FeedCard: React.FC<FeedCardProps> = ({
       {feed.orderItem?.size && (
         <p className="text-gray-500 text-xs mb-1">신발 사이즈: {feed.orderItem.size}mm</p>
       )}
+      
+      {/* 사용자 정보 */}
+      {feed.user && (
+        <div className="mt-2 mb-2">
+          <FeedUserProfile
+            userId={feed.user.id || 0}
+            nickname={feed.user.nickname}
+            profileImageUrl={feed.user.profileImg}
+            showBodyInfo={true}
+            size="small"
+            onClick={() => {
+              // 사용자 프로필 페이지로 이동 로직 추가 가능
+              console.log('사용자 프로필 클릭:', feed.user?.nickname);
+            }}
+          />
+        </div>
+      )}
+      
       <div className="flex justify-between items-center text-xs text-gray-400 mt-auto">
-        {feed.user?.nickname && <span>{feed.user.nickname}</span>}
         {feed.createdAt && <span>{new Date(feed.createdAt).toLocaleDateString()}</span>}
       </div>
       
