@@ -200,16 +200,56 @@ const MyFeedPage = () => {
     try {
       let profile;
       if (targetUserId && !isCurrentUser) {
-        // 특정 사용자의 프로필 로드
+        // 특정 사용자의 프로필 로드 - UserProfileService 사용
+        console.log('특정 사용자 프로필 로드 시작:', targetUserId);
         const response = await axiosInstance.get(`/api/users/${targetUserId}/profile`);
-        profile = response.data.data;
+        console.log('백엔드 응답 전체:', response.data);
+        
+        // 백엔드 응답 구조에 맞게 데이터 매핑
+        const backendData = response.data.data;
+        profile = {
+          userId: backendData.userId || parseInt(targetUserId),
+          nickname: backendData.nickname || `사용자${targetUserId}`,
+          profileImageUrl: backendData.profileImageUrl || "",
+          name: backendData.name || backendData.nickname || `사용자${targetUserId}`,
+          username: backendData.username || "",
+          email: backendData.email || "",
+          phone: backendData.phone || "",
+          birthDate: backendData.birthDate || "",
+          gender: backendData.gender || "MALE",
+          height: backendData.height || 0,
+          weight: backendData.weight || 0,
+          footSize: backendData.footSize || 0,
+          footWidth: backendData.footWidth || "NORMAL"
+        };
+        console.log('매핑된 프로필 데이터:', profile);
       } else {
         // 현재 로그인한 사용자의 프로필 로드
         profile = await UserProfileService.getUserProfile();
       }
       setUserProfile(profile);
-    } catch (error) {
+    } catch (error: any) {
       console.error("사용자 프로필 로드 실패:", error);
+      console.error("에러 상세:", error.response?.data);
+      
+      // 에러 발생 시 기본값 설정
+      if (targetUserId && !isCurrentUser) {
+        setUserProfile({
+          userId: parseInt(targetUserId),
+          nickname: `사용자${targetUserId}`,
+          profileImageUrl: "",
+          name: `사용자${targetUserId}`,
+          username: "",
+          email: "",
+          phone: "",
+          birthDate: "",
+          gender: "MALE",
+          height: 0,
+          weight: 0,
+          footSize: 0,
+          footWidth: "NORMAL"
+        });
+      }
     }
   };
 
@@ -554,7 +594,7 @@ const MyFeedPage = () => {
               <h2 className="text-3xl font-bold mb-2">
                 {isCurrentUser 
                   ? `${userProfile?.nickname || user?.nickname || '나'}의 스타일 피드` 
-                  : `${userProfile?.nickname || targetUserNickname}님의 스타일 피드`
+                  : `${userProfile?.nickname || targetUserNickname || `사용자${targetUserId}`}님의 스타일 피드`
                 }
               </h2>
               <div className="flex items-center mb-3">
@@ -594,7 +634,7 @@ const MyFeedPage = () => {
               <p className="text-gray-600 mb-3">
                 {isCurrentUser 
                   ? "나만의 스타일을 공유하고 다른 사람들과 소통해보세요!"
-                  : `${targetUserNickname}님의 스타일을 확인해보세요!`
+                  : `${userProfile?.nickname || targetUserNickname || `사용자${targetUserId}`}님의 스타일을 확인해보세요!`
                 }
               </p>
             </div>
