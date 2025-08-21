@@ -339,15 +339,45 @@ const FeedListPage = () => {
   };
 
   // 검색 기능
-  const handleSearch = (term: string) => {
+  const handleSearch = async (term: string) => {
     setSearchTerm(term);
-    // 검색어가 있으면 피드 목록을 필터링
-    if (term.trim()) {
-      // 여기에 검색 로직을 추가할 수 있습니다
-      console.log('검색어:', term);
-    } else {
-      // 검색어가 없으면 모든 피드 표시
-      fetchFeeds();
+    setInitialLoading(true);
+    
+    try {
+      if (term.trim()) {
+        // 검색어가 있으면 검색 API 호출
+        console.log('검색어:', term);
+        const searchParams = {
+          q: term.trim(),
+          page: 0,
+          size: postsPerPage,
+          sort: (sortBy === 'latest' ? 'latest' : 'popular') as 'latest' | 'popular' | 'comments' | 'votes'
+        };
+        
+        const searchResult = await FeedService.searchFeeds(searchParams);
+        setFeedPosts(searchResult.content || []);
+        setCurrentPage(0);
+        setHasMore((searchResult as any).hasNext || false);
+        
+        // 백엔드에서 받은 isLiked 상태만 사용
+        const backendLikedIds = searchResult.content
+          .filter((feed: FeedPost) => feed.isLiked)
+          .map((feed: FeedPost) => feed.id);
+        
+        console.log('검색 결과 좋아요 상태 업데이트:', backendLikedIds);
+        updateLikedPosts(backendLikedIds);
+        
+      } else {
+        // 검색어가 없으면 모든 피드 표시
+        await fetchFeeds();
+      }
+    } catch (error) {
+      console.error('검색 실패:', error);
+      setToastMessage("검색 중 오류가 발생했습니다.");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    } finally {
+      setInitialLoading(false);
     }
   };
 
@@ -374,11 +404,25 @@ const FeedListPage = () => {
 
       {/* 헤더 - FEED 제목과 검색 아이콘 */}
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-4xl font-extrabold text-gray-800 tracking-tight">
-          <span className="bg-gradient-to-r from-[#87CEEB] to-blue-600 bg-clip-text text-transparent">
-            FEED
-          </span>
-        </h1>
+        <div className="flex items-center space-x-4">
+          <h1 className="text-4xl font-extrabold text-gray-800 tracking-tight">
+            <span className="bg-gradient-to-r from-[#87CEEB] to-blue-600 bg-clip-text text-transparent">
+              FEED
+            </span>
+          </h1>
+          {searchTerm && (
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-500">검색:</span>
+              <span className="text-sm font-medium text-[#87CEEB]">"{searchTerm}"</span>
+              <button
+                onClick={() => handleSearch('')}
+                className="text-gray-400 hover:text-red-500 text-xs"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+          )}
+        </div>
         <button
           onClick={() => setShowSearchModal(true)}
           className="text-gray-600 hover:text-[#87CEEB] transition-colors p-2 rounded-full hover:bg-gray-100"
