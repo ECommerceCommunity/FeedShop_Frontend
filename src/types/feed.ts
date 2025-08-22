@@ -56,13 +56,19 @@ export interface FeedPost {
 }
 
 export interface FeedComment {
-  id: number;
+  id: number; // 프론트엔드 호환성을 위해 유지
+  commentId: number; // 백엔드 응답 구조에 맞춤
   content: string;
   createdAt: string;
   updatedAt?: string;
   
-  // User 관계
-  user: {
+  // 백엔드 응답 구조에 맞춤
+  userId: number;
+  userNickname: string;
+  userProfileImage?: string;
+  
+  // 프론트엔드 호환성을 위한 user 객체 (백엔드 응답을 변환하여 사용)
+  user?: {
     id: number;
     nickname: string;
     level?: number;
@@ -96,6 +102,32 @@ export interface CreateCommentRequest {
 }
 
 // 이미지 업로드는 utils/imageUpload.ts에서 별도 처리
+
+// 좋아요한 피드 목록 관련 타입들
+export interface MyLikedFeedItemDto {
+  feedId: number; // Long -> number로 매핑
+  title: string;
+  content: string;
+  feedType: string;
+  imageUrl?: string;
+  likedAt: string; // LocalDateTime -> string으로 매핑
+  likeCount: number;
+  commentCount: number;
+  authorNickname: string;
+  authorProfileImage?: string;
+}
+
+export interface MyLikedFeedsResponseDto {
+  content: MyLikedFeedItemDto[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean; // 백엔드와 일치하도록 추가
+  last: boolean;  // 백엔드와 일치하도록 추가
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
 
 export interface FeedVoteRequest {
   eventId: number;
@@ -141,7 +173,10 @@ export interface PaginatedResponse<T> {
 
 export interface FeedListResponse extends PaginatedResponse<FeedPost> {}
 
-export interface CommentListResponse extends PaginatedResponse<FeedComment> {}
+export interface CommentListResponse {
+  pagination: PaginatedResponse<FeedComment>;
+  totalComments: number;
+}
 
 export interface ImageUploadResponse {
   imageId: number;

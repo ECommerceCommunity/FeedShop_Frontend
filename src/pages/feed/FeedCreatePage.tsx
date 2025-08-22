@@ -1,18 +1,17 @@
 // The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work.
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+
 import FeedService from "../../api/feedService";
 import OrderService from "../../api/orderService";
 import EventService, { FeedEventDto } from "../../api/eventService";
-import { CreateFeedRequest, FeedPost } from "../../types/feed";
+import { CreateFeedRequest } from "../../types/feed";
 import {
   uploadBase64Images,
   validateImageFile,
   createImagePreview,
-  compressImage,
 } from "../../utils/common/imageUpload";
-import { OrderItem, PurchasedProduct } from "types/order";
+import { PurchasedProduct } from "types/order";
 
 // Add global styles for animation
 const style = document.createElement("style");
@@ -29,14 +28,7 @@ animation: fadeInOut 3s ease-in-out forwards;
 `;
 document.head.appendChild(style);
 
-// 🔧 백엔드 연동 버전: 피드 생성 시 이미지 업로드 상태 타입
-interface ImageUploadState {
-  file: File;
-  preview: string;
-  uploaded: boolean;
-  uploading: boolean;
-  url?: string;
-}
+
 
 // 임시 구매 상품 데이터 (백엔드 연결 실패시 fallback용)
 const fallbackProducts = [
@@ -70,7 +62,7 @@ const FeedCreatePage: React.FC = () => {
   const searchParams = new URLSearchParams(location.search);
   const editId = searchParams.get("id");
   const navigate = useNavigate();
-  const { user } = useAuth();
+
 
   // 이벤트 목록에서 전달받은 이벤트 정보
   const incomingEventId = location.state?.selectedEventId;
@@ -81,7 +73,6 @@ const FeedCreatePage: React.FC = () => {
   const [content, setContent] = useState("");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [selectedProductId, setSelectedProductId] = useState("");
-  const [selectedSize, setSelectedSize] = useState("");
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [hashtagInput, setHashtagInput] = useState("");
   const [instagramLinked, setInstagramLinked] = useState(false);

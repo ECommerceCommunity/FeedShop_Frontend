@@ -380,6 +380,9 @@ function MyPage() {
             <NavItem to="/my-feed">
               <i className="fas fa-rss"></i> 내 피드
             </NavItem>
+            <NavItem to="/liked-feeds">
+              <i className="fas fa-heart"></i> 좋아요한 피드
+            </NavItem>
             <NavItem to="/wishlist">
               <i className="fas fa-heart"></i> 위시리스트
             </NavItem>
