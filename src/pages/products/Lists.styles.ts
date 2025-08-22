@@ -48,10 +48,12 @@ export const ProductGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
   margin-bottom: 40px;
+  align-items: start; /* 카드들을 상단 정렬 */
 `;
 
 export const ProductCard = styled(Link)`
-  display: block;
+  display: flex;
+  flex-direction: column;
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -59,6 +61,8 @@ export const ProductCard = styled(Link)`
   transition: all 0.3s ease;
   text-decoration: none;
   color: inherit;
+  height: 100%; /* 전체 높이 사용 */
+  min-height: 400px; /* 최소 높이 지정 */
 
   &:hover {
     transform: translateY(-4px);
@@ -74,6 +78,9 @@ export const ProductImage = styled.img`
 
 export const ProductInfo = styled.div`
   padding: 16px;
+  flex: 1; /* 남은 공간 모두 차지 */
+  display: flex;
+  flex-direction: column;
 `;
 
 export const ProductName = styled.h3`
@@ -82,12 +89,19 @@ export const ProductName = styled.h3`
   color: #1f2937;
   margin-bottom: 8px;
   line-height: 1.4;
+  min-height: 2.8rem; /* 최소 2줄 높이 확보 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 최대 2줄로 제한 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 export const ProductStore = styled.p`
   font-size: 0.875rem;
   color: #6b7280;
-  margin-bottom: 12px;
+  margin-bottom: auto; /* 자동 마진으로 가격 섹션을 아래로 푸시 */
+  flex: 1; /* 남은 공간 차지 */
 `;
 
 export const PriceSection = styled.div`
@@ -95,6 +109,7 @@ export const PriceSection = styled.div`
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
+  margin-top: auto; /* 상단 자동 마진으로 하단에 고정 */
 `;
 
 export const DiscountPrice = styled.span`
