@@ -281,6 +281,27 @@ const FeedListPage = () => {
     navigate(`/feed/${feed.id}`);
   };
 
+  // 투표 후 피드 목록 새로고침
+  const handleVoteSuccess = async (feedId: number, newVoteCount: number) => {
+    try {
+      // 현재 피드 목록에서 해당 피드의 투표 수 업데이트
+      setFeedPosts(prev => 
+        prev.map(feed => 
+          feed.id === feedId 
+            ? { ...feed, participantVoteCount: newVoteCount }
+            : feed
+        )
+      );
+      
+      // 성공 메시지 표시
+      setToastMessage("투표가 완료되었습니다!");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    } catch (error) {
+      console.error('투표 후 피드 업데이트 실패:', error);
+    }
+  };
+
   // 좋아요 수 클릭 시 좋아요한 사용자 목록 표시
   const handleLikeCountClick = async (feed: FeedPost) => {
     try {
@@ -501,6 +522,7 @@ const FeedListPage = () => {
             feeds={feedPosts.filter((f) => f.feedType === "EVENT")}
             onFeedClick={handleFeedClick}
             onVoteClick={handleVoteCardClick}
+            onVoteSuccess={handleVoteSuccess}
             onLikeClick={(feed) => handleLike(feed.id)}
             onLikeCountClick={handleLikeCountClick}
             likedPosts={likedPosts}

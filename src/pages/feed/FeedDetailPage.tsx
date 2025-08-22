@@ -3,7 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
 import { FeedPost, FeedComment } from "../../types/feed";
+import { FeedPost, FeedComment } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
+import FeedUserProfile from "../../components/feed/FeedUserProfile";
+import FollowButton from "../../components/feed/FollowButton";
+import FeedVoteButton from "../../components/feed/FeedVoteButton";
 
 // 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
 const formatKoreanTime = (dateString: string) => {
@@ -39,6 +43,8 @@ const FeedDetailPage = () => {
   const [likeUsersLoading, setLikeUsersLoading] = useState(false);
 
 
+
+
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -65,6 +71,7 @@ const FeedDetailPage = () => {
         
         // 백엔드 API 연동
         const feedData = await FeedService.getFeed(parseInt(id));
+        console.log('피드 데이터:', feedData);
         setFeed(feedData);
         
         // 백엔드에서 받은 isLiked 상태를 우선으로 설정
@@ -83,6 +90,13 @@ const FeedDetailPage = () => {
           createdAt: formatKoreanTime(comment.createdAt)
         }));
         setComments(commentsWithFormattedTime);
+        // 댓글도 API로 가져오기
+        const commentsData = await FeedService.getComments(parseInt(id));
+        const commentsWithFormattedTime = (commentsData.pagination.content || []).map(comment => ({
+          ...comment,
+          createdAt: formatKoreanTime(comment.createdAt)
+        }));
+        setComments(commentsWithFormattedTime);
         
       } catch (error: any) {
         console.error('피드 조회 실패:', error);
@@ -90,11 +104,13 @@ const FeedDetailPage = () => {
         if (error.response?.status === 404) {
           setToastMessage("피드를 찾을 수 없습니다.");
           setShowToast(true);
-          setTimeout(() => navigate('/feeds'), 2000);
+          // 자동 페이지 이동 제거 - 사용자가 직접 선택하도록
+          // setTimeout(() => navigate('/feeds'), 2000);
         } else {
           setToastMessage("피드 조회에 실패했습니다.");
           setShowToast(true);
-          setTimeout(() => navigate('/feeds'), 2000);
+          // 자동 페이지 이동 제거 - 사용자가 직접 선택하도록
+          // setTimeout(() => navigate('/feeds'), 2000);
         }
       } finally {
         setLoading(false);
@@ -136,7 +152,8 @@ const FeedDetailPage = () => {
       
       if (error.response?.status === 401) {
         setToastMessage("로그인이 필요합니다.");
-        setTimeout(() => navigate('/login'), 2000);
+        // 자동 페이지 이동 제거 - 사용자가 직접 선택하도록
+        // setTimeout(() => navigate('/login'), 2000);
       } else if (error.response?.status === 404) {
         setToastMessage("피드를 찾을 수 없습니다.");
       } else {
@@ -173,6 +190,7 @@ const FeedDetailPage = () => {
 
 
 
+
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim() || !feed) return;
@@ -191,8 +209,22 @@ const FeedDetailPage = () => {
       
       setComments([commentWithFormattedTime, ...comments]);
       setFeed(prev => prev ? { ...prev, commentCount: prev.commentCount + 1 } : null);
+      // 백엔드 API 연동
+      const newCommentObj = await FeedService.createComment(feed.id, {
+        content: newComment
+      });
+      
+      // 한국 시간으로 포맷팅
+      const commentWithFormattedTime = {
+        ...newCommentObj,
+        createdAt: formatKoreanTime(newCommentObj.createdAt)
+      };
+      
+      setComments([commentWithFormattedTime, ...comments]);
+      setFeed(prev => prev ? { ...prev, commentCount: prev.commentCount + 1 } : null);
       
       setNewComment("");
+      setToastMessage("댓글이 등록되었습니다.");
       setToastMessage("댓글이 등록되었습니다.");
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
@@ -202,7 +234,8 @@ const FeedDetailPage = () => {
       
       if (error.response?.status === 401) {
         setToastMessage("로그인이 필요합니다.");
-        setTimeout(() => navigate('/login'), 2000);
+        // 자동 페이지 이동 제거 - 사용자가 직접 선택하도록
+        // setTimeout(() => navigate('/login'), 2000);
       } else {
         setToastMessage(error.response?.data?.message || "댓글 등록에 실패했습니다.");
       }
@@ -222,7 +255,8 @@ const FeedDetailPage = () => {
       await FeedService.deleteFeed(feed.id);
       setToastMessage("피드가 삭제되었습니다.");
       setShowToast(true);
-      setTimeout(() => navigate('/feeds'), 1200);
+      // 자동 페이지 이동 제거 - 사용자가 직접 선택하도록
+      // setTimeout(() => navigate('/feeds'), 1200);
     } catch (error: any) {
       console.error('피드 삭제 실패:', error);
       const status = error?.response?.status;
@@ -241,6 +275,36 @@ const FeedDetailPage = () => {
   };
 
   const canEdit = user?.nickname && feed && feed.user.nickname === user.nickname;
+
+  const handleDeleteComment = async (commentId: number) => {
+    if (!feed || !window.confirm("정말로 이 댓글을 삭제하시겠습니까?")) return;
+    
+    try {
+      await FeedService.deleteComment(feed.id, commentId);
+      setComments(comments.filter(comment => comment.id !== commentId));
+      setFeed(prev => prev ? { ...prev, commentCount: prev.commentCount - 1 } : null);
+      
+      setToastMessage("댓글이 삭제되었습니다.");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+      
+    } catch (error: any) {
+      console.error('댓글 삭제 실패:', error);
+      
+      if (error.response?.status === 401) {
+        setToastMessage("로그인이 필요합니다.");
+      } else if (error.response?.status === 403) {
+        setToastMessage("본인 댓글만 삭제할 수 있습니다.");
+      } else if (error.response?.status === 404) {
+        setToastMessage("댓글을 찾을 수 없습니다.");
+      } else {
+        setToastMessage(error.response?.data?.message || "댓글 삭제에 실패했습니다.");
+      }
+      
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }
+  };
 
   const handleDeleteComment = async (commentId: number) => {
     if (!feed || !window.confirm("정말로 이 댓글을 삭제하시겠습니까?")) return;
@@ -366,43 +430,41 @@ const FeedDetailPage = () => {
             {/* 사용자 정보 */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
-                <img
-                  src={feed.user?.profileImg || "https://readdy.ai/api/search-image?query=default%20profile&width=60&height=60"}
-                  alt={feed.user?.nickname || "사용자"}
-                  className="w-12 h-12 rounded-full object-cover mr-3"
-                />
-                <div>
-                  <div className="flex items-center">
-                    <button
-                      onClick={() => navigate(`/my-feeds?userNickname=${feed.user?.nickname}`)}
-                      className="font-medium text-lg hover:text-[#87CEEB] transition duration-200 cursor-pointer"
-                    >
-                      {feed.user?.nickname || "사용자"}
-                    </button>
-                    {feed.user?.level && (
-                      <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
-                        <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
-                        <span>Lv.{feed.user.level}</span>
-                      </div>
-                    )}
+                {feed.user && (
+                  <FeedUserProfile
+                    userId={feed.user.id || 0}
+                    nickname={feed.user.nickname}
+                    profileImageUrl={feed.user.profileImg}
+                    showBodyInfo={true}
+                    size="large"
+                    onClick={() => {
+                      if (feed.user?.id) {
+                        navigate(`/my-feeds?userId=${feed.user.id}`);
+                      }
+                    }}
+                  />
+                )}
+                {feed.user?.level && (
+                  <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
+                    <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
+                    <span>Lv.{feed.user.level}</span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-500 mt-1">
-                    {feed.user?.gender && feed.user?.height && (
-                      <span>{feed.user.gender} · {feed.user.height}cm</span>
-                    )}
-                    {feed.instagramId && (
-                      <a
-                        href={`https://instagram.com/${feed.instagramId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-3 text-[#87CEEB] hover:underline"
-                      >
-                        <i className="fab fa-instagram mr-1"></i>
-                        {feed.instagramId}
-                      </a>
-                    )}
+                )}
+                {/* 팔로우 버튼 */}
+                {feed.user && user && feed.user.nickname !== user.nickname && (
+                  <div className="ml-3">
+                    <FollowButton
+                      targetUserId={feed.user.id}
+                      targetUserNickname={feed.user.nickname}
+                      size="medium"
+                      onFollowChange={(isFollowing: boolean) => {
+                        // 팔로우 상태 변경 시 즉시 반영
+                        console.log('팔로우 상태 변경:', isFollowing);
+                        // 필요시 여기에 추가 로직 구현
+                      }}
+                    />
                   </div>
-                </div>
+                )}
               </div>
               
               {canEdit && (
@@ -509,7 +571,29 @@ const FeedDetailPage = () => {
                 </div>
               </div>
 
-
+              {/* 이벤트 피드인 경우에만 투표 버튼 표시 */}
+              {feed.feedType === 'EVENT' && (
+                <FeedVoteButton
+                  feedId={feed.id}
+                  feedType={feed.feedType}
+                  participantVoteCount={feed.participantVoteCount || 0}
+                  isVoted={feed.isVoted}
+                  size="medium"
+                  onVoteSuccess={(voteCount) => {
+                    // 투표 성공 시 피드 정보 업데이트
+                    setFeed(prev => prev ? { ...prev, participantVoteCount: voteCount } : null);
+                    setToastMessage('투표가 완료되었습니다!');
+                    setShowToast(true);
+                    setTimeout(() => setShowToast(false), 3000);
+                  }}
+                  onVoteError={(error) => {
+                    console.error('투표 에러:', error);
+                    setToastMessage('투표에 실패했습니다.');
+                    setShowToast(true);
+                    setTimeout(() => setShowToast(false), 3000);
+                  }}
+                />
+              )}
             </div>
 
             {/* 댓글 섹션 */}
@@ -526,6 +610,27 @@ const FeedDetailPage = () => {
                       className="w-8 h-8 rounded-full object-cover"
                     />
                     <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center">
+                          <span className="font-medium text-sm">{comment.user?.nickname || comment.userNickname || "사용자"}</span>
+                          {comment.user?.level && (
+                            <div className="ml-2 bg-[#87CEEB] bg-opacity-10 text-[#87CEEB] text-xs px-2 py-0.5 rounded-full">
+                              Lv.{comment.user.level}
+                            </div>
+                          )}
+                          <span className="ml-2 text-xs text-gray-500">{comment.createdAt}</span>
+                        </div>
+                        {/* 댓글 작성자만 삭제 버튼 표시 */}
+                        {user?.nickname && (comment.user?.nickname || comment.userNickname) === user.nickname && (
+                          <button
+                            onClick={() => handleDeleteComment(comment.id)}
+                            className="text-red-500 hover:text-red-700 text-xs font-bold"
+                            title="댓글 삭제"
+                          >
+                            ✕
+                          </button>
+                        )}
+
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center">
                           <span className="font-medium text-sm">{comment.user?.nickname || comment.userNickname || "사용자"}</span>
@@ -576,6 +681,7 @@ const FeedDetailPage = () => {
           </div>
         </div>
       </div>
+
 
 
 
