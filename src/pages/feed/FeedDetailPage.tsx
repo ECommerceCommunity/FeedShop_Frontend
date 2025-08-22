@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
 import { FeedPost, FeedComment } from "../../types/feed";
-import { FeedPost, FeedComment } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
 import FeedUserProfile from "../../components/feed/FeedUserProfile";
 import FollowButton from "../../components/feed/FollowButton";
@@ -41,8 +40,6 @@ const FeedDetailPage = () => {
   const [likeUsersOpen, setLikeUsersOpen] = useState(false);
   const [likeUsers, setLikeUsers] = useState<Array<{ userId?: number; nickname: string; profileImg?: string }>>([]);
   const [likeUsersLoading, setLikeUsersLoading] = useState(false);
-
-
 
 
   const [showToast, setShowToast] = useState(false);
@@ -83,13 +80,6 @@ const FeedDetailPage = () => {
           updateLikedPosts([feedData.id]);
         }
         
-        // 댓글도 API로 가져오기
-        const commentsData = await FeedService.getComments(parseInt(id));
-        const commentsWithFormattedTime = (commentsData.pagination.content || []).map(comment => ({
-          ...comment,
-          createdAt: formatKoreanTime(comment.createdAt)
-        }));
-        setComments(commentsWithFormattedTime);
         // 댓글도 API로 가져오기
         const commentsData = await FeedService.getComments(parseInt(id));
         const commentsWithFormattedTime = (commentsData.pagination.content || []).map(comment => ({
@@ -190,7 +180,6 @@ const FeedDetailPage = () => {
 
 
 
-
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim() || !feed) return;
@@ -209,22 +198,8 @@ const FeedDetailPage = () => {
       
       setComments([commentWithFormattedTime, ...comments]);
       setFeed(prev => prev ? { ...prev, commentCount: prev.commentCount + 1 } : null);
-      // 백엔드 API 연동
-      const newCommentObj = await FeedService.createComment(feed.id, {
-        content: newComment
-      });
-      
-      // 한국 시간으로 포맷팅
-      const commentWithFormattedTime = {
-        ...newCommentObj,
-        createdAt: formatKoreanTime(newCommentObj.createdAt)
-      };
-      
-      setComments([commentWithFormattedTime, ...comments]);
-      setFeed(prev => prev ? { ...prev, commentCount: prev.commentCount + 1 } : null);
       
       setNewComment("");
-      setToastMessage("댓글이 등록되었습니다.");
       setToastMessage("댓글이 등록되었습니다.");
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
@@ -275,36 +250,6 @@ const FeedDetailPage = () => {
   };
 
   const canEdit = user?.nickname && feed && feed.user.nickname === user.nickname;
-
-  const handleDeleteComment = async (commentId: number) => {
-    if (!feed || !window.confirm("정말로 이 댓글을 삭제하시겠습니까?")) return;
-    
-    try {
-      await FeedService.deleteComment(feed.id, commentId);
-      setComments(comments.filter(comment => comment.id !== commentId));
-      setFeed(prev => prev ? { ...prev, commentCount: prev.commentCount - 1 } : null);
-      
-      setToastMessage("댓글이 삭제되었습니다.");
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 2000);
-      
-    } catch (error: any) {
-      console.error('댓글 삭제 실패:', error);
-      
-      if (error.response?.status === 401) {
-        setToastMessage("로그인이 필요합니다.");
-      } else if (error.response?.status === 403) {
-        setToastMessage("본인 댓글만 삭제할 수 있습니다.");
-      } else if (error.response?.status === 404) {
-        setToastMessage("댓글을 찾을 수 없습니다.");
-      } else {
-        setToastMessage(error.response?.data?.message || "댓글 삭제에 실패했습니다.");
-      }
-      
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
-    }
-  };
 
   const handleDeleteComment = async (commentId: number) => {
     if (!feed || !window.confirm("정말로 이 댓글을 삭제하시겠습니까?")) return;
@@ -631,27 +576,6 @@ const FeedDetailPage = () => {
                           </button>
                         )}
 
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center">
-                          <span className="font-medium text-sm">{comment.user?.nickname || comment.userNickname || "사용자"}</span>
-                          {comment.user?.level && (
-                            <div className="ml-2 bg-[#87CEEB] bg-opacity-10 text-[#87CEEB] text-xs px-2 py-0.5 rounded-full">
-                              Lv.{comment.user.level}
-                            </div>
-                          )}
-                          <span className="ml-2 text-xs text-gray-500">{comment.createdAt}</span>
-                        </div>
-                        {/* 댓글 작성자만 삭제 버튼 표시 */}
-                        {user?.nickname && (comment.user?.nickname || comment.userNickname) === user.nickname && (
-                          <button
-                            onClick={() => handleDeleteComment(comment.id)}
-                            className="text-red-500 hover:text-red-700 text-xs font-bold"
-                            title="댓글 삭제"
-                          >
-                            ✕
-                          </button>
-                        )}
-
                       </div>
                       <p className="text-sm text-gray-700">{comment.content}</p>
                     </div>
@@ -681,7 +605,6 @@ const FeedDetailPage = () => {
           </div>
         </div>
       </div>
-
 
 
 

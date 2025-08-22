@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import FeedList from "../../components/feed/FeedList";
 import FeedDetailModal from "../../components/feed/FeedDetailModal";
 import LikedUsersModal from "../../components/feed/LikedUsersModal";
@@ -13,22 +12,6 @@ import axiosInstance from "../../api/axios";
 import { FeedPost, FeedComment } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
 
-// 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
-const formatKoreanTime = (dateString: string) => {
-  try {
-    const date = new Date(dateString);
-    const koreanTime = new Intl.DateTimeFormat('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Asia/Seoul'
-    }).format(date);
-    return koreanTime;
-  } catch (error) {
-    return dateString; // 파싱 실패 시 원본 반환
-  }
 // 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
 const formatKoreanTime = (dateString: string) => {
   try {
@@ -178,9 +161,6 @@ const MyFeedPage = () => {
         if (activeTab !== "all") {
           params.feedType = activeTab;
         }
-        if (activeTab !== "all") {
-          params.feedType = activeTab;
-        }
 
         response = await FeedService.getMyFeeds(params);
       }
@@ -199,13 +179,10 @@ const MyFeedPage = () => {
       
     } catch (error: any) {
       console.error('피드 로드 실패:', error);
-      console.error('피드 로드 실패:', error);
       
       if (error.response?.status === 401) {
         setError("로그인이 필요합니다.");
         navigate('/login');
-      } else if (error.response?.status === 404) {
-        setError("사용자를 찾을 수 없습니다.");
       } else if (error.response?.status === 404) {
         setError("사용자를 찾을 수 없습니다.");
       } else {
@@ -330,22 +307,8 @@ const MyFeedPage = () => {
 
   // handleFeedClick: 상세 모달 오픈
   const handleFeedClick = async (post: FeedPost) => {
-  const handleFeedClick = async (post: FeedPost) => {
     setSelectedPost(post);
     setShowComments(false);
-    
-    // 댓글 로드
-    try {
-      const commentsData = await FeedService.getComments(post.id);
-      const commentsWithFormattedTime = (commentsData.pagination.content || []).map(comment => ({
-        ...comment,
-        createdAt: formatKoreanTime(comment.createdAt)
-      }));
-      setComments(commentsWithFormattedTime);
-    } catch (error: any) {
-      console.error('댓글 로드 실패:', error);
-      setComments([]);
-    }
     
     // 댓글 로드
     try {
@@ -369,11 +332,6 @@ const MyFeedPage = () => {
       const likeResult = await FeedService.likeFeed(postId);
       
       // 백엔드 응답에 따라 좋아요 상태 업데이트
-      const isCurrentlyLiked = isLiked(postId);
-      const updatedLikedPosts = isCurrentlyLiked 
-        ? likedPosts.filter((id: number) => id !== postId)
-        : [...likedPosts, postId];
-      updateLikedPosts(updatedLikedPosts);
       const isCurrentlyLiked = isLiked(postId);
       const updatedLikedPosts = isCurrentlyLiked 
         ? likedPosts.filter((id: number) => id !== postId)
@@ -449,7 +407,6 @@ const MyFeedPage = () => {
 
   // 댓글 등록
   const handleCommentSubmit = async (e: React.FormEvent) => {
-  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim() || !selectedPost) return;
 
@@ -463,21 +420,7 @@ const MyFeedPage = () => {
       const commentWithFormattedTime = {
         ...newCommentObj,
         createdAt: formatKoreanTime(newCommentObj.createdAt)
-    if (!newComment.trim() || !selectedPost) return;
-
-    try {
-      // 백엔드 API 연동
-      const newCommentObj = await FeedService.createComment(selectedPost.id, {
-        content: newComment
-      });
-      
-      // 한국 시간으로 포맷팅
-      const commentWithFormattedTime = {
-        ...newCommentObj,
-        createdAt: formatKoreanTime(newCommentObj.createdAt)
       };
-      
-      setComments([commentWithFormattedTime, ...comments]);
       
       setComments([commentWithFormattedTime, ...comments]);
       setNewComment("");
@@ -520,46 +463,7 @@ const MyFeedPage = () => {
         )
       );
       
-      // 피드의 댓글 수 업데이트
-      setFeedPosts(prev => 
-        prev.map(post => 
-          post.id === selectedPost.id 
-            ? { ...post, commentCount: post.commentCount + 1 }
-            : post
-        )
-      );
-      
     } catch (error: any) {
-      console.error('댓글 등록 실패:', error);
-      
-      if (error.response?.status === 401) {
-        alert("로그인이 필요합니다.");
-        navigate('/login');
-      } else {
-        alert(error.response?.data?.message || "댓글 등록에 실패했습니다.");
-      }
-    }
-  };
-
-  // 댓글 삭제
-  const handleDeleteComment = async (commentId: number) => {
-    if (!selectedPost || !window.confirm("정말로 이 댓글을 삭제하시겠습니까?")) return;
-    
-    try {
-      await FeedService.deleteComment(selectedPost.id, commentId);
-      setComments(comments.filter(comment => comment.id !== commentId));
-      
-      // 피드의 댓글 수 업데이트
-      setFeedPosts(prev => 
-        prev.map(post => 
-          post.id === selectedPost.id 
-            ? { ...post, commentCount: Math.max(0, post.commentCount - 1) }
-            : post
-        )
-      );
-      
-    } catch (error: any) {
-      console.error('댓글 삭제 실패:', error);
       console.error('댓글 삭제 실패:', error);
       
       if (error.response?.status === 401) {
@@ -568,23 +472,11 @@ const MyFeedPage = () => {
         alert("본인 댓글만 삭제할 수 있습니다.");
       } else if (error.response?.status === 404) {
         alert("댓글을 찾을 수 없습니다.");
-      } else if (error.response?.status === 403) {
-        alert("본인 댓글만 삭제할 수 있습니다.");
-      } else if (error.response?.status === 404) {
-        alert("댓글을 찾을 수 없습니다.");
       } else {
-        alert(error.response?.data?.message || "댓글 삭제에 실패했습니다.");
         alert(error.response?.data?.message || "댓글 삭제에 실패했습니다.");
       }
     }
   };
-
-  // 상세 모달 닫기
-  const handleCloseModal = () => {
-    setSelectedPost(null);
-    setShowComments(false);
-  };
-
 
   // 상세 모달 닫기
   const handleCloseModal = () => {
@@ -757,15 +649,6 @@ const MyFeedPage = () => {
               착용샷 올리기
             </button>
           )}
-          {isCurrentUser && (
-            <button
-              className="bg-[#87CEEB] text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-400 transition duration-200 flex items-center cursor-pointer"
-              onClick={() => navigate("/feed-create")}
-            >
-              <i className="fas fa-plus-circle mr-2"></i>
-              착용샷 올리기
-            </button>
-          )}
         </div>
 
         {/* 내 피드 모아보기 탭/정렬 */}
@@ -859,25 +742,7 @@ const MyFeedPage = () => {
                 : `${targetUserNickname}님은 아직 피드를 올리지 않았습니다.`
               }
             </p>
-            <p className="text-xl font-medium">
-              아직 피드가 없습니다
-            </p>
-            <p className="text-gray-500 mt-2">
-              {isCurrentUser 
-                ? "첫 번째 피드를 올려보세요!" 
-                : `${targetUserNickname}님은 아직 피드를 올리지 않았습니다.`
-              }
-            </p>
           </div>
-          {isCurrentUser && (
-            <button
-              onClick={() => navigate("/feed-create")}
-              className="bg-[#87CEEB] text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-400 transition duration-200"
-            >
-              <i className="fas fa-plus-circle mr-2"></i>
-              피드 올리기
-            </button>
-          )}
           {isCurrentUser && (
             <button
               onClick={() => navigate("/feed-create")}
@@ -912,7 +777,6 @@ const MyFeedPage = () => {
         onEdit={(() => {
           const isOwner = !!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname);
           if (!isOwner || !isCurrentUser) return undefined;
-          if (!isOwner || !isCurrentUser) return undefined;
           return () => {
             handleCloseModal();
             navigate(`/feed-edit?id=${selectedPost?.id}`);
@@ -921,10 +785,8 @@ const MyFeedPage = () => {
         onDelete={(() => {
           const isOwner = !!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname);
           if (!isOwner || !selectedPost || !isCurrentUser) return undefined;
-          if (!isOwner || !selectedPost || !isCurrentUser) return undefined;
           return () => handleDelete(selectedPost.id);
         })()}
-        showEditButton={!!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname && isCurrentUser)}
         showEditButton={!!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname && isCurrentUser)}
         newComment={newComment}
         onCommentChange={(e) => setNewComment(e.target.value)}
