@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import AddressManagementPage from "./AddressManagementPage";
 import CouponsPage from "./CouponsPage";
@@ -292,6 +292,7 @@ const MyPageDashboard = () => {
 function MyPage() {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
   const [imageLoadError, setImageLoadError] = useState(false);
 
@@ -377,7 +378,20 @@ function MyPage() {
             <NavItem to="/my-orders">
               <i className="fas fa-box"></i> 주문내역
             </NavItem>
-            <NavItem to="/my-feed">
+            <NavItem 
+              to="#"
+              onClick={async (e) => {
+                e.preventDefault();
+                try {
+                  const userProfile = await UserProfileService.getUserProfile();
+                  navigate(`/my-feeds?userId=${userProfile.userId}`);
+                } catch (error) {
+                  console.error('사용자 프로필 조회 실패:', error);
+                  // 실패 시 기본 경로로 이동
+                  navigate('/my-feeds');
+                }
+              }}
+            >
               <i className="fas fa-rss"></i> 내 피드
             </NavItem>
             <NavItem to="/liked-feeds">

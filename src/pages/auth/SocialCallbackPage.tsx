@@ -121,6 +121,7 @@ export default function SocialCallbackPage() {
         authLogin(
           nickname || email, // nickname이 없으면 email 사용
           name || nickname || email, // name이 없으면 nickname 또는 email 사용
+          email, // email 파라미터 추가
           role as "user" | "admin" | "seller",
           token
         );
