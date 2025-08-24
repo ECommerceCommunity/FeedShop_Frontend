@@ -21,14 +21,7 @@ const fadeInUp = keyframes`
   }
 `;
 
-const pulse = keyframes`
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-`;
+
 
 // 스타일 컴포넌트
 const Container = styled.div`
@@ -351,7 +344,7 @@ const FeedRewardDashboardPage: React.FC = () => {
   const [statistics, setStatistics] = useState<FeedRewardStatistics | null>(null);
   const [summary, setSummary] = useState<FeedRewardSummary | null>(null);
   const [recentEvents, setRecentEvents] = useState<FeedRewardEvent[]>([]);
-  const [dailyStats, setDailyStats] = useState<DailyStatistics>({});
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -365,20 +358,15 @@ const FeedRewardDashboardPage: React.FC = () => {
       setError(null);
 
       // 병렬로 데이터 로드
-      const [statsData, summaryData, eventsData, dailyData] = await Promise.all([
+      const [statsData, summaryData, eventsData] = await Promise.all([
         FeedRewardService.getFeedRewardStatistics(),
         FeedRewardService.getFeedRewardSummary(),
-        FeedRewardService.getFeedRewardEvents({ page: 0, size: 10, sortBy: 'createdAt', sortDirection: 'DESC' }),
-        FeedRewardService.getDailyStatistics(
-          new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          new Date().toISOString().split('T')[0]
-        )
+        FeedRewardService.getFeedRewardEvents({ page: 0, size: 10, sortBy: 'createdAt', sortDirection: 'DESC' })
       ]);
 
       setStatistics(statsData);
       setSummary(summaryData);
       setRecentEvents(eventsData.content);
-      setDailyStats(dailyData);
     } catch (err: any) {
       console.error('대시보드 데이터 로드 실패:', err);
       setError(err.response?.data?.message || '데이터를 불러오는데 실패했습니다.');
@@ -441,7 +429,7 @@ const FeedRewardDashboardPage: React.FC = () => {
   }, [loadDashboardData]);
 
   // 권한 확인
-  if (!user || user.role !== 'ADMIN') {
+  if (!user || user.userType !== 'admin') {
     return (
       <Container>
         <ErrorMessage>
@@ -568,7 +556,6 @@ const FeedRewardDashboardPage: React.FC = () => {
                     {event.eventStatus === 'FAILED' && (
                       <ActionButton
                         variant="primary"
-                        size="small"
                         onClick={() => handleProcessEvent(event.eventId)}
                         disabled={processingEvent === event.eventId}
                       >
