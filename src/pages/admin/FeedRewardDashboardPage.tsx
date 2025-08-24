@@ -316,7 +316,14 @@ const SuccessMessage = styled.div`
 `;
 
 // 리워드 타입 텍스트 변환 함수
-const getRewardTypeText = (type: string) => {
+// 리워드 타입 텍스트 변환 함수 - 백엔드에서 제공하는 displayName 사용
+const getRewardTypeText = (type: string, displayName?: string) => {
+  // 백엔드에서 displayName을 제공하면 그것을 사용, 없으면 기본 매핑
+  if (displayName) {
+    return displayName;
+  }
+  
+  // 기본 매핑 (fallback)
   switch (type) {
     case 'FEED_CREATION': return '피드 작성';
     case 'FEED_LIKES_MILESTONE': return '좋아요 달성';
@@ -327,8 +334,14 @@ const getRewardTypeText = (type: string) => {
   }
 };
 
-// 상태 텍스트 변환 함수
-const getStatusText = (status: string) => {
+// 상태 텍스트 변환 함수 - 백엔드에서 제공하는 displayName 사용
+const getStatusText = (status: string, displayName?: string) => {
+  // 백엔드에서 displayName을 제공하면 그것을 사용, 없으면 기본 매핑
+  if (displayName) {
+    return displayName;
+  }
+  
+  // 기본 매핑 (fallback)
   switch (status) {
     case 'PENDING': return '대기중';
     case 'PROCESSING': return '처리중';
@@ -338,7 +351,6 @@ const getStatusText = (status: string) => {
     default: return status;
   }
 };
-
 const FeedRewardDashboardPage: React.FC = () => {
   const { user } = useAuth();
   const [statistics, setStatistics] = useState<FeedRewardStatistics | null>(null);
@@ -542,9 +554,9 @@ const FeedRewardDashboardPage: React.FC = () => {
               recentEvents.map((event) => (
                 <EventItem key={event.eventId}>
                   <EventHeader>
-                    <EventTitle>{getRewardTypeText(event.rewardType)}</EventTitle>
+                    <EventTitle>{getRewardTypeText(event.rewardType, event.rewardTypeDisplayName)}</EventTitle>
                     <EventStatus status={event.eventStatus}>
-                      {getStatusText(event.eventStatus)}
+                      {getStatusText(event.eventStatus, event.eventStatusDisplayName)}
                     </EventStatus>
                   </EventHeader>
                   <EventDetails>
