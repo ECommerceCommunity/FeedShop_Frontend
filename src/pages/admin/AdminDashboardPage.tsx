@@ -2351,6 +2351,12 @@ const AdminDashboardPage: FC = () => {
                 </SidebarLink>
               </SidebarItem>
               <SidebarItem>
+                <SidebarLink onClick={() => navigate("/admin/feed-rewards")}>
+                  <SidebarIcon className="fas fa-gift sidebar-icon"></SidebarIcon>
+                  <SidebarText $isOpen={sidebarOpen}>피드 리워드</SidebarText>
+                </SidebarLink>
+              </SidebarItem>
+              <SidebarItem>
                 <SidebarLink onClick={() => navigate("/store")}>
                   <SidebarIcon className="fas fa-store sidebar-icon"></SidebarIcon>
                   <SidebarText $isOpen={sidebarOpen}>가게 관리</SidebarText>
