@@ -90,8 +90,7 @@ export const levelService = {
       // API 명세서에 따르면 직접 반환 (ApiResponse 래핑 없음)
       return response.data;
     } catch (error) {
-      console.error("사용자 레벨 정보를 불러오는데 실패했습니다.", error);
-      throw error;
+      throw new Error("사용자 레벨 정보를 불러오는데 실패했습니다.");
     }
   },
 
