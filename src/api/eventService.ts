@@ -7,12 +7,7 @@ import {
   EventDto,
   EventCreateRequestDto,
   EventUpdateRequestDto,
-  EventListResponse,
-  EventResultDto,
-  EventResultDetailDto,
-  EventParticipantDto,
-  EventRankingDto,
-  BattleMatchDto
+  EventListResponse
 } from '../types/event';
 
 class EventService {
@@ -145,111 +140,7 @@ class EventService {
     }
   }
 
-  // ===== 이벤트 결과 관리 API =====
 
-  /**
-   * 이벤트 결과 목록 조회 (개별 이벤트별로 조회)
-   */
-  async getEventResults(params?: {
-    page?: number;
-    size?: number;
-    status?: string;
-    keyword?: string;
-  }): Promise<{
-    content: EventResultDto[];
-    totalPages: number;
-    totalElements: number;
-    last: boolean;
-    first: boolean;
-    size: number;
-    number: number;
-  }> {
-    try {
-      console.log('이벤트 결과 목록 API 호출 파라미터:', params);
-      // 백엔드 API 경로 수정: /api/v2/events/{eventId}/results
-      // 현재는 개별 이벤트 결과만 조회 가능하므로 임시로 빈 배열 반환
-      console.log('이벤트 결과 목록 API - 백엔드에서 목록 API 미구현');
-      
-      return { 
-        content: [], 
-        totalPages: 0, 
-        totalElements: 0, 
-        last: true, 
-        first: true, 
-        size: 10, 
-        number: 0 
-      };
-    } catch (error) {
-      console.error('이벤트 결과 목록 조회 실패:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * 특정 이벤트 결과 상세 조회
-   */
-  async getEventResultDetail(eventId: number): Promise<EventResultDetailDto | null> {
-    try {
-      console.log('이벤트 결과 상세 조회 API 호출:', eventId);
-      // 백엔드 API 경로 수정: /api/v2/events/{eventId}/results
-      const response = await axiosInstance.get(`/api/v2/events/${eventId}/results`);
-      console.log('이벤트 결과 상세 API 응답:', response.data);
-      
-      const result = response.data.data || response.data || null;
-      return result;
-    } catch (error: any) {
-      console.error('이벤트 결과 상세 조회 실패:', error);
-      console.error('Error details:', error.response?.data);
-      return null;
-    }
-  }
-
-  /**
-   * 이벤트 결과 생성 (발표)
-   */
-  async announceEventResult(eventId: number): Promise<void> {
-    try {
-      console.log('이벤트 결과 생성 API 호출:', eventId);
-      // 백엔드 API 경로 수정: /api/v2/events/{eventId}/results
-      await axiosInstance.post(`/api/v2/events/${eventId}/results`, {
-        forceRecalculate: false
-      });
-      console.log('이벤트 결과 생성 성공');
-    } catch (error) {
-      console.error('이벤트 결과 생성 실패:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * 이벤트 결과 삭제 (발표 취소)
-   */
-  async cancelEventResultAnnouncement(eventId: number): Promise<void> {
-    try {
-      console.log('이벤트 결과 삭제 API 호출:', eventId);
-      // 백엔드 API 경로 수정: /api/v2/events/{eventId}/results
-      await axiosInstance.delete(`/api/v2/events/${eventId}/results`);
-      console.log('이벤트 결과 삭제 성공');
-    } catch (error) {
-      console.error('이벤트 결과 삭제 실패:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * 이벤트 결과 수동 마이그레이션
-   */
-  async migrateEventResult(eventId: number): Promise<void> {
-    try {
-      console.log('이벤트 결과 마이그레이션 API 호출:', eventId);
-      // 백엔드 API 경로 수정: /api/v2/events/migration/{eventId}
-      await axiosInstance.post(`/api/v2/events/migration/${eventId}`);
-      console.log('이벤트 결과 마이그레이션 성공');
-    } catch (error) {
-      console.error('이벤트 결과 마이그레이션 실패:', error);
-      throw error;
-    }
-  }
 
   /**
    * 문자열 rewards를 EventRewardDto[]로 변환

@@ -216,6 +216,45 @@ export interface Coupon {
   updatedAt: string;
 }
 
+export interface CouponResponse {
+  id: number;
+  code: string;
+  name: string;
+  description: string;
+  discountType: string;
+  discountValue: number;
+  minOrderAmount: number;
+  maxDiscountAmount?: number;
+  validFrom: string;
+  validTo: string;
+  usageLimit: number;
+  usedCount: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  // CouponsPage에서 사용하는 추가 속성들
+  couponCode?: string;
+  couponName?: string;
+  freeShipping?: boolean;
+  issuedAt?: string;
+  expiresAt?: string;
+  status?: string;
+  usedAt?: string;
+}
+
+export interface CouponIssueRequest {
+  email: string;
+  couponCode: string;
+}
+
+export interface CouponUseRequest {
+  email: string;
+  couponCode: string;
+  orderAmount: number;
+}
+
+export type UserCouponStatus = 'AVAILABLE' | 'USED' | 'EXPIRED';
+
 // 공통 응답 타입들
 export interface PaginatedResponse<T> {
   content: T[];

@@ -9,6 +9,7 @@ export type MatchStatus = "PENDING" | "ONGOING" | "COMPLETED";
 // 이벤트 보상 타입
 export interface EventRewardDto {
   id?: number;
+  rank?: number;
   conditionValue: string;
   reward: string;
   conditionType?: string;

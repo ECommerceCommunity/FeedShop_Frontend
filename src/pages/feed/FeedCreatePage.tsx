@@ -4,7 +4,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 import FeedService from "../../api/feedService";
 import OrderService from "../../api/orderService";
-import EventService, { FeedEventDto } from "../../api/eventService";
+import EventService from "../../api/eventService";
+import { FeedEventDto } from "../../types/event";
 import { CreateFeedRequest } from "../../types/feed";
 import {
   uploadBase64Images,
