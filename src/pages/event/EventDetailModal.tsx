@@ -1,21 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { EventDto, EventReward } from '../../api/eventService';
+import { EventDto, EventModalProps, EventRewardDto, EventType } from '../../types/event';
+import { formatDate, getEventTypeText, getEventStatusText, getEventTypeColor, getEventStatusColor } from '../../utils/eventUtils';
 import EventService from '../../api/eventService';
 
 interface EventDetailModalProps {
   open: boolean;
   onClose: () => void;
   event: EventDto | null;
-}
-
-// 날짜 포맷 함수 추가 (컴포넌트 상단)
-function formatDate(dateStr: string | undefined) {
-  if (!dateStr) return '-';
-  const d = new Date(dateStr);
-  if (isNaN(d as any)) return '-';
-  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
 }
 
 const EventDetailModal: React.FC<EventDetailModalProps> = ({
@@ -109,43 +102,6 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
     }
   };
 
-  // 공통 유틸리티 함수로 분리 권장
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'UPCOMING': return '예정';
-      case 'ONGOING': return '진행중';
-      case 'ENDED': return '완료';
-      default: return '알 수 없음';
-    }
-  };
-
-  const getTypeText = (type: string) => {
-    switch (type) {
-      case 'BATTLE': return '배틀';
-      case 'MISSION': return '미션';
-      case 'MULTIPLE': return '랭킹';
-      default: return '알 수 없음';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'UPCOMING': return 'bg-blue-600 text-white';
-      case 'ONGOING': return 'bg-green-600 text-white';
-      case 'ENDED': return 'bg-gray-600 text-white';
-      default: return 'bg-gray-600 text-white';
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'BATTLE': return 'bg-purple-600 text-white';
-      case 'MISSION': return 'bg-orange-600 text-white';
-      case 'MULTIPLE': return 'bg-pink-600 text-white';
-      default: return 'bg-gray-600 text-white';
-    }
-  };
-
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl max-w-5xl w-full max-h-[95vh] flex flex-col relative transition-all duration-300 overflow-hidden">
@@ -159,11 +115,11 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
           
           {/* 상태 및 타입 배지 */}
           <div className="absolute top-6 left-6 flex gap-3">
-            <span className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold shadow-lg backdrop-blur-sm ${getStatusColor(detail.status)}`}>
-              {getStatusText(detail.status)}
+            <span className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold shadow-lg backdrop-blur-sm ${getEventStatusColor(detail.status)}`}>
+              {getEventStatusText(detail.status)}
             </span>
-            <span className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold shadow-lg backdrop-blur-sm ${getTypeColor(detail.type)}`}>
-              {getTypeText(detail.type)}
+            <span className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold shadow-lg backdrop-blur-sm ${getEventTypeColor(detail.type)}`}>
+                              {getEventTypeText(detail.type as EventType)}
             </span>
           </div>
 
@@ -255,10 +211,10 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">이벤트 혜택</h3>
                 <div className="space-y-3">
-                  {detail.rewards.map((reward: EventReward, index: number) => (
+                  {detail.rewards.map((reward: EventRewardDto, index: number) => (
                     <div key={index} className="bg-gradient-to-r from-yellow-50 to-orange-50 text-orange-700 px-6 py-4 rounded-2xl text-base font-semibold border border-orange-200 shadow-sm hover:shadow-md transition-all duration-200">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-lg">{reward.rank || index + 1}등</span>
+                        <span className="font-bold text-lg">{reward.conditionValue || index + 1}등</span>
                         <span className="text-orange-600">{reward.reward}</span>
                       </div>
                     </div>
