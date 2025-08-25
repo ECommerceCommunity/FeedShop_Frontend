@@ -73,6 +73,12 @@ const SocialCallbackPage = lazy(
   () => import("./pages/auth/SocialCallbackPage")
 );
 const SocialCallbackPage = lazy(() => import("./pages/auth/SocialCallbackPage"));
+const MfaSetupPage = lazy(() => import("./pages/admin/MfaSetupPage"));
+const MfaVerificationPage = lazy(
+  () => import("./pages/auth/MfaVerificationPage")
+);
+const AdminSettingsPage = lazy(() => import("./pages/admin/AdminSettingsPage"));
+const AdminProfilePage = lazy(() => import("./pages/admin/AdminProfilePage"));
 const MyCommentsPage = lazy(() => import("./pages/auth/MyComments"));
 
 const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY || "";
@@ -316,6 +322,30 @@ const App: FC = () => {
                     </AdminProtectedRoute>
                   }
                 />
+                <Route
+                  path="/mfa-setup"
+                  element={
+                    <AdminProtectedRoute>
+                      <MfaSetupPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/settings"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminSettingsPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/profile"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminProfilePage />
+                    </AdminProtectedRoute>
+                  }
+                />
 
                 {/* 기존 상품 등록/수정 페이지 (제거 예정 - 가게 페이지에서 처리) */}
                 <Route
@@ -343,6 +373,10 @@ const App: FC = () => {
               </Route>
               {/* Layout 없이 보여야 하는 페이지들 */}
               <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/mfa-verification"
+                element={<MfaVerificationPage />}
+              />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/find-account" element={<FindAccountPage />} />
               <Route path="/find-password" element={<FindPasswordPage />} />
