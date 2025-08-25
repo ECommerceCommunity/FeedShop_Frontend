@@ -71,6 +71,7 @@ const ReviewListPage = lazy(() => import("./pages/reviews/ReviewListPage"));
 const ReviewWritePage = lazy(() => import("./pages/reviews/ReviewWritePage"));
 const SocialCallbackPage = lazy(() => import("./pages/auth/SocialCallbackPage"));
 
+
 const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY || "";
 
 // reCAPTCHA 키가 설정되었는지 확인
@@ -202,7 +203,7 @@ const App: FC = () => {
                   }
                 />
                 <Route
-                  path="/my-feed"
+                  path="/my-feeds"
                   element={
                     <UserProtectedRoute requireLogin={true}>
                       <MyFeedPage />

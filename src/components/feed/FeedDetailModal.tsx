@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FeedPost } from '../../types/feed';
 import FeedVoteButton from './FeedVoteButton';
+import FeedUserProfile from './FeedUserProfile';
+import FollowButton from './FollowButton';
+import { useAuth } from '../../contexts/AuthContext';
+import { UserProfileService } from '../../api/userProfileService';
 
 // 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
 const formatKoreanTime = (dateString: string) => {
@@ -42,7 +46,8 @@ interface FeedDetailModalProps {
   onShowLikeUsers?: () => void;
   onDeleteComment?: (commentId: number) => void;
   currentUser?: { nickname?: string };
-  onUserClick?: (userId: number) => void;
+  onUserClick?: (userId: number) => void; // 사용자 클릭 핸들러 추가
+  onFollowChange?: (isFollowing: boolean) => void; // 팔로우 상태 변경 핸들러 추가
 }
 
 const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
@@ -67,10 +72,31 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
   onDeleteComment,
   currentUser,
   onUserClick,
+  onFollowChange,
 }) => {
+  const { user } = useAuth();
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
+  // 현재 사용자 ID 가져오기
+  useEffect(() => {
+    const getCurrentUserId = async () => {
+      try {
+        const userProfile = await UserProfileService.getUserProfile();
+        setCurrentUserId(userProfile.userId || null);
+      } catch (error) {
+        console.error('사용자 ID 가져오기 실패:', error);
+      }
+    };
+
+    if (user) {
+      getCurrentUserId();
+    }
+  }, [user]);
+  
   if (!open || !feed) return null;
   const heroImage = feed.images && feed.images.length > 0 ? feed.images[0].imageUrl : 'https://via.placeholder.com/600x800?text=No+Image';
   const canShowDelete = (showDeleteButton ?? showEditButton) && !!onDelete;
+  
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
@@ -88,40 +114,32 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
           </div>
           {/* 상세 정보 */}
           <div className="md:w-1/2 p-6">
-            <div className="flex items-center mb-6">
-              <img src={feed.user?.profileImg || 'https://via.placeholder.com/60'} alt={feed.user?.nickname || '사용자'} className="w-12 h-12 rounded-full object-cover mr-3" />
-              <div>
-                <div className="flex items-center">
-                  <button
+            <div className="mb-6">
+              {feed.user && (
+                <div className="flex items-center justify-between">
+                  <FeedUserProfile
+                    userId={feed.user.id || 0}
+                    nickname={feed.user.nickname}
+                    profileImageUrl={feed.user.profileImg}
+                    showBodyInfo={true}
+                    size="large"
                     onClick={() => {
-                      // userId 대신 nickname을 사용하여 필터링
-                      if (feed.user?.nickname) {
-                        window.location.href = `/my-feeds?userNickname=${feed.user.nickname}`;
+                      if (feed.user?.id) {
+                        window.location.href = `/my-feeds?userId=${feed.user.id}`;
                       }
                     }}
-                    className="font-medium text-lg hover:text-[#87CEEB] transition duration-200 cursor-pointer"
-                  >
-                    {feed.user?.nickname || '사용자'}
-                  </button>
-                  {feed.user?.level && (
-                    <div className="ml-2 bg-[#87CEEB] text-white text-xs px-2 py-0.5 rounded-full flex items-center">
-                      <i className="fas fa-crown text-yellow-300 mr-1 text-xs"></i>
-                      <span>Lv.{feed.user.level}</span>
-                    </div>
+                  />
+                  {/* 팔로우 버튼 */}
+                  {feed.user && user && currentUserId && feed.user.id !== currentUserId && (
+                    <FollowButton
+                      targetUserId={feed.user.id}
+                      targetUserNickname={feed.user.nickname}
+                      size="small"
+                      onFollowChange={onFollowChange}
+                    />
                   )}
                 </div>
-                <div className="flex items-center text-sm text-gray-500 mt-1">
-                  {feed.user?.gender && feed.user?.height && (
-                    <span>{feed.user.gender} · {feed.user.height}cm</span>
-                  )}
-                  {feed.instagramId && (
-                    <a href={`https://instagram.com/${feed.instagramId}`} target="_blank" rel="noopener noreferrer" className="ml-3 text-[#87CEEB] hover:underline cursor-pointer">
-                      <i className="fab fa-instagram mr-1"></i>
-                      {feed.instagramId}
-                    </a>
-                  )}
-                </div>
-              </div>
+              )}
             </div>
             <div className="mb-6">
               <h2 className="text-xl font-bold mb-2">{feed.title}</h2>
@@ -205,16 +223,15 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
             )}
             {/* 댓글 섹션 */}
             {showComments && (
-              <div className="mt-6 border-t border-gray-200 pt-6">
+              <div className="border-t border-gray-200 pt-6 mt-6">
                 <h3 className="font-medium mb-4">댓글 {comments.length}개</h3>
-                {/* 댓글 목록 */}
                 <div className="space-y-4 mb-6 max-h-60 overflow-y-auto">
                   {comments.map((comment) => (
                     <div key={comment.id} className="flex space-x-3">
-                      <img 
-                        src={comment.user?.profileImg || "https://readdy.ai/api/search-image?query=default%20profile&width=40&height=40"} 
-                        alt={comment.user?.nickname || comment.userNickname || "사용자"} 
-                        className="w-8 h-8 rounded-full object-cover" 
+                      <img
+                        src={comment.user?.profileImg || "https://readdy.ai/api/search-image?query=default%20profile&width=40&height=40"}
+                        alt={comment.user?.nickname || "사용자"}
+                        className="w-8 h-8 rounded-full object-cover"
                       />
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
@@ -225,7 +242,7 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                                 Lv.{comment.user.level}
                               </div>
                             )}
-                            <span className="ml-2 text-xs text-gray-500">{formatKoreanTime(comment.createdAt)}</span>
+                            <span className="ml-2 text-xs text-gray-500">{comment.createdAt}</span>
                           </div>
                           {/* 댓글 작성자만 삭제 버튼 표시 */}
                           {currentUser?.nickname && (comment.user?.nickname || comment.userNickname) === currentUser.nickname && onDeleteComment && (
@@ -255,7 +272,7 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                   />
                   <button
                     type="submit"
-                    className="bg-[#87CEEB] text-white px-4 py-2 rounded-lg hover:bg-blue-400 transition duration-200 cursor-pointer"
+                    className="bg-[#87CEEB] text-white px-4 py-2 rounded-lg hover:bg-blue-400 transition duration-200"
                     disabled={!newComment.trim()}
                   >
                     등록
