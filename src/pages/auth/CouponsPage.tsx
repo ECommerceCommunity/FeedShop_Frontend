@@ -186,55 +186,24 @@ const CouponsPage = () => {
       // 쿠폰 목록 조회
       const allCoupons = await couponService.getUserCoupons(userProfile.email);
 
-      setCoupons(allCoupons);
+      // 백엔드 응답 구조에 따라 데이터 처리
+      const processedCoupons = allCoupons.map(coupon => ({
+        ...coupon,
+        // 백엔드에서 오는 필드명을 프론트엔드에서 사용하는 필드명으로 매핑
+        couponCode: coupon.code || coupon.couponCode,
+        couponName: coupon.name || coupon.couponName,
+        expiresAt: coupon.validTo || coupon.expiresAt,
+        issuedAt: coupon.createdAt || coupon.issuedAt,
+        status: coupon.isActive ? "ACTIVE" : "EXPIRED"
+      }));
+
+      setCoupons(processedCoupons);
     } catch (err: any) {
       console.error("쿠폰 로드 실패:", err);
-
-      // 개발 환경에서는 임시 테스트 데이터 사용
-      if (process.env.NODE_ENV === "development") {
-        const testCoupons: CouponResponse[] = [
-          {
-            id: 1,
-            couponCode: "WELCOME15",
-            couponName: "신규가입 15% 할인",
-            discountType: "PERCENTAGE",
-            discountValue: 15,
-            freeShipping: false,
-            issuedAt: "2024-01-01T00:00:00",
-            expiresAt: "2025-12-31T23:59:59",
-            status: "ACTIVE",
-          },
-          {
-            id: 2,
-            couponCode: "FREESHIP",
-            couponName: "무료배송 쿠폰",
-            discountType: "FIXED_AMOUNT",
-            discountValue: 0,
-            freeShipping: true,
-            issuedAt: "2024-01-01T00:00:00",
-            expiresAt: "2025-06-30T23:59:59",
-            status: "ACTIVE",
-          },
-          {
-            id: 3,
-            couponCode: "EXPIRED10",
-            couponName: "만료된 10% 할인",
-            discountType: "PERCENTAGE",
-            discountValue: 10,
-            freeShipping: false,
-            issuedAt: "2024-01-01T00:00:00",
-            expiresAt: "2024-12-31T23:59:59",
-            status: "EXPIRED",
-          },
-        ];
-        setCoupons(testCoupons);
-        setError(null);
-      } else {
-        setError(
-          "쿠폰 정보를 불러오는데 실패했습니다. 에러: " +
-            (err.response?.data?.message || err.message)
-        );
-      }
+      setError(
+        "쿠폰 정보를 불러오는데 실패했습니다. 에러: " +
+          (err.response?.data?.message || err.message)
+      );
     } finally {
       setLoading(false);
     }
@@ -261,8 +230,8 @@ const CouponsPage = () => {
 
         // status 필드가 없는 경우 날짜와 사용 여부로 판단
         const now = new Date();
-        const expiryDate = new Date(coupon.expiresAt);
-        const isNotExpired = expiryDate > now;
+        const expiryDate = coupon.expiresAt ? new Date(coupon.expiresAt) : null;
+        const isNotExpired = expiryDate ? expiryDate > now : true;
         const isNotUsed = !coupon.usedAt;
 
         return isNotExpired && isNotUsed;
@@ -280,8 +249,8 @@ const CouponsPage = () => {
 
         // status 필드가 없는 경우 날짜와 사용 여부로 판단
         const now = new Date();
-        const expiryDate = new Date(coupon.expiresAt);
-        const isExpired = expiryDate <= now;
+        const expiryDate = coupon.expiresAt ? new Date(coupon.expiresAt) : null;
+        const isExpired = expiryDate ? expiryDate <= now : false;
         const isUsed = !!coupon.usedAt;
 
         return isExpired || isUsed;
@@ -299,8 +268,8 @@ const CouponsPage = () => {
     }
     // status가 없으면 날짜와 사용 여부로 판단
     const now = new Date();
-    const expiryDate = new Date(c.expiresAt);
-    return expiryDate > now && !c.usedAt;
+    const expiryDate = c.expiresAt ? new Date(c.expiresAt) : null;
+    return expiryDate ? expiryDate > now && !c.usedAt : false;
   }).length;
 
   const expiredCouponsCount = coupons.filter((c) => {
@@ -310,8 +279,8 @@ const CouponsPage = () => {
     }
     // status가 없으면 날짜와 사용 여부로 판단
     const now = new Date();
-    const expiryDate = new Date(c.expiresAt);
-    return expiryDate <= now || !!c.usedAt;
+    const expiryDate = c.expiresAt ? new Date(c.expiresAt) : null;
+    return expiryDate ? expiryDate <= now || !!c.usedAt : false;
   }).length;
 
   // 로딩 상태
@@ -430,7 +399,7 @@ const CouponsPage = () => {
                       </CouponDescription>
                     </CouponHeader>
                     <CouponFooter>
-                      <ExpiryDate>~ {formatDate(coupon.expiresAt)}</ExpiryDate>
+                      <ExpiryDate>~ {coupon.expiresAt ? formatDate(coupon.expiresAt) : '날짜 없음'}</ExpiryDate>
                       <Discount>{getDiscountDisplay(coupon)}</Discount>
                     </CouponFooter>
                   </CouponCard>

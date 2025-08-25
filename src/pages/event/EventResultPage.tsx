@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../api/axios";
-import { Event, EventRanking } from "../../types/types";
 import { 
   EventResultDto, 
   EventResultDetailDto, 
@@ -10,11 +9,6 @@ import {
   BattleMatchDto 
 } from "../../types/event";
 import EventService from "../../api/eventService";
-
-interface EventWithRanking extends Event {
-  participantCount: number;
-  rankings?: EventRanking[];
-}
 
 const EventResultPage = () => {
   const navigate = useNavigate();
