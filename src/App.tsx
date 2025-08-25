@@ -69,15 +69,14 @@ const BecomeSellerPage = lazy(() => import("./pages/seller/BecomeSellerPage"));
 const SellerMyPage = lazy(() => import("./pages/seller/SellerMyPage"));
 const ReviewListPage = lazy(() => import("./pages/reviews/ReviewListPage"));
 const ReviewWritePage = lazy(() => import("./pages/reviews/ReviewWritePage"));
-const SocialCallbackPage = lazy(
-  () => import("./pages/auth/SocialCallbackPage")
-);
+const SocialCallbackPage = lazy(() => import("./pages/auth/SocialCallbackPage"));
 const MfaSetupPage = lazy(() => import("./pages/admin/MfaSetupPage"));
 const MfaVerificationPage = lazy(
   () => import("./pages/auth/MfaVerificationPage")
 );
 const AdminSettingsPage = lazy(() => import("./pages/admin/AdminSettingsPage"));
 const AdminProfilePage = lazy(() => import("./pages/admin/AdminProfilePage"));
+const MyCommentsPage = lazy(() => import("./pages/auth/MyComments"));
 
 const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY || "";
 
@@ -225,6 +224,14 @@ const App: FC = () => {
                   element={
                     <UserProtectedRoute requireLogin={true}>
                       <LikedFeedsPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/mypage/comments"
+                  element={
+                    <UserProtectedRoute requireLogin={true}>
+                      <MyCommentsPage />
                     </UserProtectedRoute>
                   }
                 />
