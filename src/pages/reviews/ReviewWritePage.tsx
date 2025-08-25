@@ -556,7 +556,6 @@ export const ReviewWritePage: React.FC = () => {
         }
 
         // 2. 유효성 검사
-
         const newErrors: FormErrors = {};
 
         // 제목 유효성 검사
@@ -578,7 +577,7 @@ export const ReviewWritePage: React.FC = () => {
             setErrors(newErrors);
             return;
         }
-      
+
         // 3. 리뷰 생성 요청
         try {
             await createReview({
