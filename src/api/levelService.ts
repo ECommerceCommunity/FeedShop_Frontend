@@ -25,7 +25,12 @@ export interface UserLevelInfo {
 
 export interface UserActivity {
   activityId: number;
-  activityType: "PURCHASE_COMPLETION" | "REVIEW_CREATION" | "FEED_CREATION" | "EVENT_PARTICIPATION" | "VOTE_PARTICIPATION";
+  activityType:
+    | "PURCHASE_COMPLETION"
+    | "REVIEW_CREATION"
+    | "FEED_CREATION"
+    | "EVENT_PARTICIPATION"
+    | "VOTE_PARTICIPATION";
   description: string;
   pointsEarned: number;
   referenceId: number;
@@ -42,7 +47,12 @@ export interface UserActivityPage {
 }
 
 export interface ActivityRecordRequest {
-  activityType: "PURCHASE_COMPLETION" | "REVIEW_CREATION" | "FEED_CREATION" | "EVENT_PARTICIPATION" | "VOTE_PARTICIPATION";
+  activityType:
+    | "PURCHASE_COMPLETION"
+    | "REVIEW_CREATION"
+    | "FEED_CREATION"
+    | "EVENT_PARTICIPATION"
+    | "VOTE_PARTICIPATION";
   description: string;
   referenceId: number;
   referenceType: string;
@@ -80,7 +90,7 @@ export const levelService = {
       // API 명세서에 따르면 직접 반환 (ApiResponse 래핑 없음)
       return response.data;
     } catch (error) {
-      console.error("사용자 레벨 정보 조회 실패:", error);
+      console.error("사용자 레벨 정보를 불러오는데 실패했습니다.", error);
       throw error;
     }
   },
@@ -96,9 +106,12 @@ export const levelService = {
     size: number = 20
   ): Promise<UserActivityPage> => {
     try {
-      const response = await axiosInstance.get("/api/users/level/me/activities", {
-        params: { page, size }
-      });
+      const response = await axiosInstance.get(
+        "/api/users/level/me/activities",
+        {
+          params: { page, size },
+        }
+      );
       // API 명세서에 따르면 직접 반환 (ApiResponse 래핑 없음)
       return response.data;
     } catch (error) {
@@ -112,7 +125,9 @@ export const levelService = {
    * @param request 활동 기록 요청 데이터
    * @returns 활동 기록 응답
    */
-  recordUserActivity: async (request: ActivityRecordRequest): Promise<ActivityRecordResponse> => {
+  recordUserActivity: async (
+    request: ActivityRecordRequest
+  ): Promise<ActivityRecordResponse> => {
     try {
       const response = await axiosInstance.post<ActivityRecordResponse>(
         "/api/users/level/activity",
