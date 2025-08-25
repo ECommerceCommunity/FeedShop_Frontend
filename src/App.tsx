@@ -40,6 +40,9 @@ const ReportManagePage = lazy(() => import("./pages/admin/ReportManagePage"));
 const AdminDashboardPage = lazy(
   () => import("./pages/admin/AdminDashboardPage")
 );
+const FeedRewardDashboardPage = lazy(
+  () => import("./pages/admin/FeedRewardDashboardPage")
+);
 const StatsDashboardPage = lazy(
   () => import("./pages/admin/StatsDashboardPage")
 );
@@ -72,7 +75,6 @@ const ReviewWritePage = lazy(() => import("./pages/reviews/ReviewWritePage"));
 const SocialCallbackPage = lazy(
   () => import("./pages/auth/SocialCallbackPage")
 );
-const SocialCallbackPage = lazy(() => import("./pages/auth/SocialCallbackPage"));
 const MfaSetupPage = lazy(() => import("./pages/admin/MfaSetupPage"));
 const MfaVerificationPage = lazy(
   () => import("./pages/auth/MfaVerificationPage")
@@ -319,6 +321,14 @@ const App: FC = () => {
                   element={
                     <AdminProtectedRoute>
                       <StatsDashboardPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/feed-rewards"
+                  element={
+                    <AdminProtectedRoute>
+                      <FeedRewardDashboardPage />
                     </AdminProtectedRoute>
                   }
                 />
