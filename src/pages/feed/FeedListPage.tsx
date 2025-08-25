@@ -1,94 +1,39 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedList from "../../components/feed/FeedList";
+import LikedUsersModal from "../../components/feed/LikedUsersModal";
+import FeedSearchModal from "../../components/feed/FeedSearchModal";
 import FeedService from "../../api/feedService";
+import { EventDto } from "../../api/eventService";
+import axiosInstance from "../../api/axios";
 import { FeedPost, FeedListParams } from "../../types/feed";
+import { useLikedPosts } from "../../hooks/useLikedPosts";
 
-// 더미 데이터 생성 함수 (백엔드 연동 실패시 fallback용)
-function getSecureRandomInt(min: number, max: number): number {
-  const array = new Uint32Array(1);
-  window.crypto.getRandomValues(array);
-  return min + (array[0] % (max - min));
-}
+// 디바운싱 훅
+const useDebounce = (value: string, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
 
-const generateDummyFeed = (id: number): FeedPost => ({
-  id,
-  title: `트렌디 아이템 ${id}`,
-  content: `트렌디한 스타일의 아이템입니다. 데일리룩으로 활용하기 좋아요. ${id}`,
-  instagramId: `fashion_lover${id}`,
-  feedType: ["DAILY", "EVENT", "RANKING"][getSecureRandomInt(0, 3)] as "DAILY" | "EVENT" | "RANKING",
-  likeCount: getSecureRandomInt(50, 250),
-  commentCount: getSecureRandomInt(5, 25),
-  participantVoteCount: getSecureRandomInt(10, 60),
-  user: {
-    id,
-    nickname: `패션러버${id}`,
-    level: getSecureRandomInt(1, 6),
-    profileImg: `https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait&width=60&height=60&seq=profile${id}`,
-    gender: getSecureRandomInt(0, 2) === 0 ? "여성" : "남성",
-    height: getSecureRandomInt(155, 185),
-  },
-  orderItem: {
-    id,
-    productName: `트렌디 아이템 ${id}`,
-    size: [220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300][getSecureRandomInt(0, 17)],
-  },
-  images: [
-    {
-      id: id * 10 + 1,
-      imageUrl: `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20trendy%20outfit&width=400&height=500&seq=post${id}`,
-      sortOrder: 0,
-    },
-    {
-      id: id * 10 + 2,
-      imageUrl: `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20casual%20streetwear&width=400&height=500&seq=post${id}a`,
-      sortOrder: 1,
-    },
-  ],
-  hashtags: [
-    { id: id * 10 + 1, tag: "데일리룩" },
-    { id: id * 10 + 2, tag: "패션" },
-  ],
-  createdAt: "2025-06-12",
-  isLiked: false,
-});
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
 
-const events = [
-  {
-    id: 1,
-    title: "여름 스타일 챌린지",
-    description: "여름 시즌 베스트 코디를 공유하고 투표에 참여하세요!",
-    purchasePeriod: "2025.06.25 - 2025.07.07",
-    votePeriod: "2025.07.08 - 2025.07.14",
-    announcementDate: "2025.07.15",
-    image: "https://readdy.ai/api/search-image?query=summer%20fashion%20event%20promotional%20image&width=600&height=300&seq=event1&orientation=landscape",
-    rewards: [
-      { rank: 1, reward: "전액 환급 또는 한정판 상품" },
-      { rank: 2, reward: "50,000원 쿠폰" },
-      { rank: 3, reward: "30,000원 쿠폰" },
-    ],
-  },
-  {
-    id: 2,
-    title: "가을 트렌드 페스티벌",
-    description: "다가오는 가을, 트렌디한 스타일을 공유하고 특별한 혜택을 받아가세요!",
-    purchasePeriod: "2025.08.01 - 2025.08.15",
-    votePeriod: "2025.08.16 - 2025.08.22",
-    announcementDate: "2025.08.23",
-    image: "https://readdy.ai/api/search-image?query=autumn%20fashion%20event%20promotional%20image&width=600&height=300&seq=event2&orientation=landscape",
-    rewards: [
-      { rank: 1, reward: "100만원 상당 브랜드 상품권" },
-      { rank: 2, reward: "30만원 상당 브랜드 상품권" },
-      { rank: 3, reward: "10만원 상당 브랜드 상품권" },
-    ],
-  },
-];
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
+
+// 더미 이벤트 데이터 제거 - 백엔드에서 가져옴
 
 const FeedListPage = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [sortBy, setSortBy] = useState("latest");
-  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
   // 🔧 백엔드 연동 버전: 실제 Feed Entity 구조 사용
@@ -100,12 +45,117 @@ const FeedListPage = () => {
   const postsPerPage = 6;
 
   // 좋아요 상태
-  const [likedPosts, setLikedPosts] = useState<number[]>([]);
+  const { likedPosts, updateLikedPosts } = useLikedPosts();
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
+  // 좋아요 사용자 모달 상태
+  const [showLikedUsersModal, setShowLikedUsersModal] = useState(false);
+  const [likedUsers, setLikedUsers] = useState<{ id: number; nickname: string; profileImg?: string; }[]>([]);
+
+  // 검색 관련 상태
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchInput, setSearchInput] = useState(''); // 실제 입력값
+  const debouncedSearchTerm = useDebounce(searchInput, 300); // 디바운싱된 검색어
+
+  // 🔧 백엔드 연동: 이벤트 데이터
+  const [events, setEvents] = useState<EventDto[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // 🔧 백엔드에서 이벤트 목록 가져오기
+  const fetchEvents = async () => {
+    try {
+      setEventsLoading(true);
+      
+      // EventListPage와 동일한 방식으로 API 호출
+      const params: any = {
+        page: 1, // 백엔드는 1-based pagination 사용
+        size: 10,
+        sort: "createdAt,desc" // 최신순
+      };
+      
+      // 상태 필터링 제거 - 모든 이벤트를 가져온 후 프론트엔드에서 날짜 기준으로 필터링
+      
+      const response = await axiosInstance.get('/api/events/all', { params });
+      
+      // EventListPage와 동일한 방식으로 데이터 추출
+      const eventsData = response.data.content || [];
+      
+      // 디버깅을 위한 임시 로그
+      console.log('전체 이벤트 데이터:', eventsData);
+      eventsData.forEach((event: any, index: number) => {
+        console.log(`이벤트 ${index + 1}:`, {
+          id: event.eventId || event.id,
+          title: event.title,
+          status: event.status,
+          deletedAt: event.deletedAt || event.deleted_at
+        });
+      });
+      
+      // 현재 날짜 기준으로 이벤트 기간 안에 진행중인 이벤트만 필터링
+      const currentDate = new Date();
+      const activeEvents = eventsData.filter((event: any) => {
+        // 삭제 여부 확인
+        const deletedAt = event.deletedAt || event.deleted_at;
+        const isDeleted = deletedAt !== null && deletedAt !== undefined && deletedAt !== '';
+        
+        // 백엔드에서 제공하는 참여 가능 여부 확인 (우선순위)
+        const isParticipatable = event.isParticipatable;
+        
+        // 백엔드에서 isParticipatable 필드를 제공하는 경우 해당 값 사용
+        if (isParticipatable !== undefined) {
+          const isActive = isParticipatable && !isDeleted;
+          
+          console.log(`이벤트 ${event.eventId || event.id} 필터링 결과 (백엔드 기준):`, {
+            title: event.title,
+            isParticipatable,
+            isDeleted,
+            isActive
+          });
+          
+          return isActive;
+        }
+        
+        // 백엔드에서 isParticipatable 필드를 제공하지 않는 경우 프론트엔드에서 계산
+        const eventStartDate = new Date(event.eventStartDate);
+        const eventEndDate = new Date(event.eventEndDate);
+        
+        // 종료일을 다음날 자정으로 설정하여 당일까지 이벤트가 유효하도록 함
+        const adjustedEndDate = new Date(eventEndDate);
+        adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
+        
+        // 현재 날짜가 이벤트 기간 안에 있고, 삭제되지 않은 이벤트만
+        const isInProgress = currentDate >= eventStartDate && currentDate < adjustedEndDate;
+        const isActive = isInProgress && !isDeleted;
+        
+        console.log(`이벤트 ${event.eventId || event.id} 필터링 결과 (프론트엔드 계산):`, {
+          title: event.title,
+          eventStartDate: event.eventStartDate,
+          eventEndDate: event.eventEndDate,
+          adjustedEndDate: adjustedEndDate.toISOString(),
+          currentDate: currentDate.toISOString(),
+          isInProgress,
+          isDeleted,
+          isActive
+        });
+        
+        return isActive;
+      });
+      
+      console.log('최종 활성 이벤트 개수:', activeEvents.length);
+      
+      setEvents(activeEvents);
+    } catch (error: any) {
+      console.error('이벤트 목록 조회 실패:', error);
+      setEvents([]);
+    } finally {
+      setEventsLoading(false);
+    }
+  };
 
   // 🔧 백엔드에서 피드 목록 가져오기
   const fetchFeeds = async (page: number = 1, feedType?: string) => {
@@ -130,21 +180,6 @@ const FeedListPage = () => {
       
     } catch (error: any) {
       console.error('피드 목록 조회 실패:', error);
-      
-      // 백엔드 연결 실패시 더미 데이터 사용
-      if (error.code === 'NETWORK_ERROR' || error.response?.status >= 500) {
-        console.warn('백엔드 서버 연결 실패 - 더미 데이터 사용');
-        const dummyFeeds = Array.from({ length: postsPerPage }, (_, i) => 
-          generateDummyFeed((page - 1) * postsPerPage + i + 1)
-        );
-        
-        return {
-          feeds: dummyFeeds,
-          hasMore: page < 3,
-          totalPages: 3
-        };
-      }
-      
       return { feeds: [], hasMore: false, totalPages: 0 };
     }
   };
@@ -155,21 +190,32 @@ const FeedListPage = () => {
       setInitialLoading(true);
       const result = await fetchFeeds(1, activeTab);
       setFeedPosts(result.feeds);
+      
+      // 백엔드에서 받은 isLiked 상태를 기준으로 좋아요 상태 설정
+      // 백엔드에서 좋아요한 피드 ID들만 사용 (백엔드의 isLiked 필드 기반)
+      const backendLikedIds = result.feeds
+        .filter(feed => feed.isLiked)
+        .map(feed => feed.id);
+      
+      updateLikedPosts(backendLikedIds);
+      
       setHasMore(result.hasMore);
       setCurrentPage(1);
       setInitialLoading(false);
     };
 
     loadInitialData();
+    fetchEvents(); // 이벤트 데이터도 함께 가져오기
   }, [activeTab, sortBy]);
 
-  const handleFilterToggle = (filter: string) => {
-    if (selectedFilters.includes(filter)) {
-      setSelectedFilters(selectedFilters.filter((f) => f !== filter));
-    } else {
-      setSelectedFilters([...selectedFilters, filter]);
+  // 사용자 로그아웃 시 좋아요 상태 초기화
+  useEffect(() => {
+    if (!user) {
+      updateLikedPosts([]);
     }
-  };
+  }, [user]);
+
+
 
   // 🔧 백엔드 연동 버전: 더보기 버튼
   const handleLoadMore = async () => {
@@ -180,6 +226,20 @@ const FeedListPage = () => {
     const result = await fetchFeeds(nextPage, activeTab);
     
     setFeedPosts([...feedPosts, ...result.feeds]);
+    
+    // 새로 로드된 피드들의 좋아요 상태를 업데이트 (백엔드 isLiked 필드 기반)
+    const newLikedFeedIds = result.feeds
+      .filter(feed => feed.isLiked)
+      .map(feed => feed.id);
+    
+    // 현재 좋아요 상태에 새로 로드된 좋아요한 피드들 추가
+    const updatedLikedPosts = [
+      ...likedPosts.filter((id: number) => !result.feeds.map(f => f.id).includes(id)), // 기존 상태에서 새로 로드된 피드들 제거
+      ...newLikedFeedIds // 새로 로드된 피드 중 좋아요한 것들 추가
+    ];
+    
+    updateLikedPosts(updatedLikedPosts);
+    
     setHasMore(result.hasMore);
     setCurrentPage(nextPage);
     setIsLoading(false);
@@ -187,7 +247,11 @@ const FeedListPage = () => {
 
   // 피드 상세 페이지로 이동
   const handleFeedClick = (feed: FeedPost) => {
-    navigate(`/feed/${feed.id}`);
+    console.log('피드 클릭됨:', feed);
+    console.log('피드 ID:', feed.id, '타입:', typeof feed.id);
+    const url = `/feed/${feed.id}`;
+    console.log('이동할 URL:', url);
+    navigate(url);
   };
 
   // 🔧 백엔드 연동 버전: 좋아요 토글
@@ -199,13 +263,18 @@ const FeedListPage = () => {
       
       // 백엔드 응답에 따라 좋아요 상태 업데이트
       if (likeResult.liked) {
-        setLikedPosts([...likedPosts, postId]);
+        updateLikedPosts([...likedPosts, postId]);
       } else {
-        setLikedPosts(likedPosts.filter(id => id !== postId));
+        updateLikedPosts(likedPosts.filter((id: number) => id !== postId));
       }
       
+      // 피드 목록에서도 isLiked 상태 업데이트
       setFeedPosts((prev) =>
-        prev.map((p) => (p.id === postId ? { ...p, likeCount: likeResult.likeCount } : p))
+        prev.map((p) => (p.id === postId ? { 
+          ...p, 
+          likeCount: likeResult.likeCount,
+          isLiked: likeResult.liked 
+        } : p))
       );
       
       const message = likeResult.liked ? "좋아요가 추가되었습니다!" : "좋아요가 취소되었습니다!";
@@ -219,6 +288,8 @@ const FeedListPage = () => {
       if (error.response?.status === 401) {
         setToastMessage("로그인이 필요합니다.");
         setTimeout(() => navigate('/login'), 2000);
+      } else if (error.response?.status === 404) {
+        setToastMessage("피드를 찾을 수 없습니다.");
       } else {
         setToastMessage(error.response?.data?.message || "좋아요 처리에 실패했습니다.");
       }
@@ -232,6 +303,108 @@ const FeedListPage = () => {
   const handleVoteCardClick = (feed: FeedPost) => {
     navigate(`/feed/${feed.id}`);
   };
+
+  // 투표 후 피드 목록 새로고침
+  const handleVoteSuccess = async (feedId: number, newVoteCount: number) => {
+    try {
+      // 현재 피드 목록에서 해당 피드의 투표 수 업데이트
+      setFeedPosts(prev => 
+        prev.map(feed => 
+          feed.id === feedId 
+            ? { ...feed, participantVoteCount: newVoteCount }
+            : feed
+        )
+      );
+      
+      // 성공 메시지 표시
+      setToastMessage("투표가 완료되었습니다!");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    } catch (error) {
+      console.error('투표 후 피드 업데이트 실패:', error);
+    }
+  };
+
+  // 좋아요 수 클릭 시 좋아요한 사용자 목록 표시
+  const handleLikeCountClick = async (feed: FeedPost) => {
+    try {
+      const users = await FeedService.getFeedLikes(feed.id);
+      // userId를 id로 매핑
+      const mappedUsers = users.map(user => ({
+        id: user.userId || 0,
+        nickname: user.nickname,
+        profileImg: user.profileImg
+      }));
+      setLikedUsers(mappedUsers);
+      setShowLikedUsersModal(true);
+    } catch (error) {
+      console.error('좋아요한 사용자 목록 조회 실패:', error);
+      setToastMessage("좋아요한 사용자 목록을 불러오는데 실패했습니다.");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    }
+  };
+
+  // 이벤트 참여하기 버튼 클릭 시 피드 생성 페이지로 이동
+  const handleEventParticipate = (eventId: number) => {
+    // 선택한 이벤트 정보를 피드 생성 페이지로 전달
+    navigate('/feed-create', { 
+      state: { 
+        selectedEventId: eventId,
+        fromEventList: true 
+      } 
+    });
+  };
+
+  // 검색 기능 (디바운싱 적용)
+  const handleSearch = useCallback(async (term: string) => {
+    setSearchTerm(term);
+    setInitialLoading(true);
+    
+    try {
+      if (term.trim()) {
+        // 검색어가 있으면 검색 API 호출
+        console.log('검색어:', term);
+        const searchParams = {
+          q: term.trim(),
+          page: 0,
+          size: postsPerPage,
+          sort: (sortBy === 'latest' ? 'latest' : 'popular') as 'latest' | 'popular'
+        };
+        
+        const searchResult = await FeedService.searchFeeds(searchParams);
+        setFeedPosts(searchResult.content || []);
+        setCurrentPage(0);
+        setHasMore((searchResult as any).hasNext || false);
+        
+        // 백엔드에서 받은 isLiked 상태만 사용
+        const backendLikedIds = searchResult.content
+          .filter((feed: FeedPost) => feed.isLiked)
+          .map((feed: FeedPost) => feed.id);
+        
+        console.log('검색 결과 좋아요 상태 업데이트:', backendLikedIds);
+        updateLikedPosts(backendLikedIds);
+        
+      } else {
+        // 검색어가 없으면 모든 피드 표시
+        await fetchFeeds();
+      }
+    } catch (error) {
+      console.error('검색 실패:', error);
+      setToastMessage("검색 중 오류가 발생했습니다.");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    } finally {
+      setInitialLoading(false);
+    }
+  }, [sortBy, postsPerPage, updateLikedPosts]);
+
+  // 디바운싱된 검색어가 변경될 때 검색 실행
+  useEffect(() => {
+    if (debouncedSearchTerm !== searchTerm) {
+      handleSearch(debouncedSearchTerm);
+    }
+  }, [debouncedSearchTerm, handleSearch, searchTerm]);
 
   if (initialLoading) {
     return (
@@ -253,6 +426,35 @@ const FeedListPage = () => {
           </div>
         </div>
       )}
+
+      {/* 헤더 - FEED 제목과 검색 아이콘 */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center space-x-4">
+          <h1 className="text-4xl font-extrabold text-gray-800 tracking-tight">
+            <span className="bg-gradient-to-r from-[#87CEEB] to-blue-600 bg-clip-text text-transparent">
+              FEED
+            </span>
+          </h1>
+          {searchTerm && (
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-500">검색:</span>
+              <span className="text-sm font-medium text-[#87CEEB]">"{searchTerm}"</span>
+              <button
+                onClick={() => handleSearch('')}
+                className="text-gray-400 hover:text-red-500 text-xs"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+          )}
+        </div>
+        <button
+          onClick={() => setShowSearchModal(true)}
+          className="text-gray-600 hover:text-[#87CEEB] transition-colors p-2 rounded-full hover:bg-gray-100"
+        >
+          <i className="fas fa-search text-2xl"></i>
+        </button>
+      </div>
 
       {/* 탭 네비게이션 */}
       <div className="flex border-b border-gray-200 mb-6 overflow-x-auto">
@@ -345,12 +547,33 @@ const FeedListPage = () => {
       {/* 일상 피드 */}
       {activeTab === "all" && (
         <div className="mb-8">
-          <FeedList
-            feeds={feedPosts.filter((f) => f.feedType === "DAILY")}
-            onFeedClick={handleFeedClick}
-            onLikeClick={(feed) => handleLike(feed.id)}
-            likedPosts={likedPosts}
-          />
+          {searchTerm && feedPosts.filter((f) => f.feedType === "DAILY").length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-gray-400 mb-4">
+                <i className="fas fa-search text-6xl"></i>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                검색 결과가 없습니다
+              </h3>
+              <p className="text-gray-500 mb-4">
+                "{searchTerm}"에 대한 검색 결과를 찾을 수 없습니다.
+              </p>
+              <button
+                onClick={() => handleSearch('')}
+                className="bg-[#87CEEB] text-white px-6 py-2 rounded-lg hover:bg-blue-400 transition-colors"
+              >
+                전체 피드 보기
+              </button>
+            </div>
+          ) : (
+            <FeedList
+              feeds={feedPosts.filter((f) => f.feedType === "DAILY")}
+              onFeedClick={handleFeedClick}
+              onLikeClick={(feed) => handleLike(feed.id)}
+              onLikeCountClick={handleLikeCountClick}
+              likedPosts={likedPosts}
+            />
+          )}
         </div>
       )}
 
@@ -358,50 +581,72 @@ const FeedListPage = () => {
       {activeTab === "event" && (
         <div className="mb-8">
           {/* 이벤트 정보 카드 */}
-          {events.map((event) => (
-            <div key={event.id} className="bg-white rounded-lg shadow-sm p-6 mb-6">
-              <div className="flex items-start mb-4">
-                <img
-                  src={event.image}
-                  alt={event.title}
-                  className="w-24 h-24 rounded-lg object-cover mr-4"
-                />
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">
-                    {event.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {event.description}
-                  </p>
-                  <div className="flex gap-4 text-xs text-gray-500 mb-2">
-                    <span>구매기간: {event.purchasePeriod}</span>
-                    <span>투표기간: {event.votePeriod}</span>
-                    <span>발표일: {event.announcementDate}</span>
+          {eventsLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+              <p className="text-gray-500 mt-2">이벤트를 불러오는 중...</p>
+            </div>
+          ) : events.length > 0 ? (
+            events.map((event) => (
+              <div key={event.eventId} className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div className="flex items-start mb-4">
+                  <img
+                    src={event.imageUrl || "https://readdy.ai/api/search-image?query=event%20promotional%20image&width=600&height=300&seq=event"}
+                    alt={event.title}
+                    className="w-24 h-24 rounded-lg object-cover mr-4"
+                  />
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">
+                      {event.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {event.description}
+                    </p>
+                    <div className="flex gap-4 text-xs text-gray-500 mb-2">
+                      <span>구매기간: {event.purchasePeriod || `${event.purchaseStartDate} - ${event.purchaseEndDate}`}</span>
+                      <span>투표기간: {event.votePeriod || `${event.eventStartDate} - ${event.eventEndDate}`}</span>
+                      <span>발표일: {event.announcementDate}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      {typeof event.rewards === 'string' ? (
+                        <span className="bg-[#87CEEB] bg-opacity-10 px-2 py-1 rounded text-[#87CEEB] font-bold">
+                          {event.rewards}
+                        </span>
+                      ) : (
+                        event.rewards.map((reward, idx) => (
+                          <span
+                            key={idx}
+                            className="bg-[#87CEEB] bg-opacity-10 px-2 py-1 rounded text-[#87CEEB] font-bold"
+                          >
+                            {reward.rank}위: {reward.reward}
+                          </span>
+                        ))
+                      )}
+                    </div>
+                    <button 
+                      onClick={() => handleEventParticipate(event.eventId)}
+                      className="mt-4 bg-[#87CEEB] text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-400 transition duration-200 cursor-pointer"
+                    >
+                      이벤트 참여하기
+                    </button>
                   </div>
-                  <div className="flex gap-2">
-                    {event.rewards.map((reward, idx) => (
-                      <span
-                        key={idx}
-                        className="bg-[#87CEEB] bg-opacity-10 px-2 py-1 rounded text-[#87CEEB] font-bold"
-                      >
-                        {reward.rank}위: {reward.reward}
-                      </span>
-                    ))}
-                  </div>
-                  <button className="mt-4 bg-[#87CEEB] text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-400 transition duration-200 cursor-pointer">
-                    이벤트 참여하기
-                  </button>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">현재 진행 중인 이벤트가 없습니다.</p>
             </div>
-          ))}
+          )}
           
           {/* 이벤트 피드용 피드 카드 */}
           <FeedList
             feeds={feedPosts.filter((f) => f.feedType === "EVENT")}
             onFeedClick={handleFeedClick}
             onVoteClick={handleVoteCardClick}
+            onVoteSuccess={handleVoteSuccess}
             onLikeClick={(feed) => handleLike(feed.id)}
+            onLikeCountClick={handleLikeCountClick}
             likedPosts={likedPosts}
           />
         </div>
@@ -418,6 +663,7 @@ const FeedListPage = () => {
             feeds={feedPosts.filter((f) => f.feedType === "RANKING")}
             onFeedClick={handleFeedClick}
             onLikeClick={(feed) => handleLike(feed.id)}
+            onLikeCountClick={handleLikeCountClick}
             likedPosts={likedPosts}
           />
         </div>
@@ -442,6 +688,21 @@ const FeedListPage = () => {
           </button>
         </div>
       )}
+
+      {/* 좋아요 사용자 모달 */}
+      {showLikedUsersModal && (
+        <LikedUsersModal
+          users={likedUsers}
+          onClose={() => setShowLikedUsersModal(false)}
+        />
+      )}
+
+      {/* 검색 모달 */}
+      <FeedSearchModal
+        open={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        onSearch={handleSearch}
+      />
     </div>
   );
 };

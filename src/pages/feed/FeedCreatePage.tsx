@@ -1,21 +1,20 @@
 // The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work.
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import FeedService from '../../api/feedService';
-import OrderService from '../../api/orderService';
-import EventService, { FeedEventDto } from '../../api/eventService';
-import { CreateFeedRequest, FeedPost } from '../../types/feed';
-import { OrderItem } from '../../api/orderService';
-import { 
-  uploadBase64Images, 
-  validateImageFile, 
-  createImagePreview, 
-  compressImage 
-} from '../../utils/imageUpload';
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+
+import FeedService from "../../api/feedService";
+import OrderService from "../../api/orderService";
+import EventService, { FeedEventDto } from "../../api/eventService";
+import { CreateFeedRequest } from "../../types/feed";
+import {
+  uploadBase64Images,
+  validateImageFile,
+  createImagePreview,
+} from "../../utils/common/imageUpload";
+import { PurchasedProduct } from "types/order";
 
 // Add global styles for animation
-const style = document.createElement('style');
+const style = document.createElement("style");
 style.textContent = `
 @keyframes fadeInOut {
 0% { opacity: 0; transform: translateY(-10px); }
@@ -29,55 +28,74 @@ animation: fadeInOut 3s ease-in-out forwards;
 `;
 document.head.appendChild(style);
 
-// 🔧 백엔드 연동 버전: 피드 생성 시 이미지 업로드 상태 타입
-interface ImageUploadState {
-  file: File;
-  preview: string;
-  uploaded: boolean;
-  uploading: boolean;
-  url?: string;
-}
+
 
 // 임시 구매 상품 데이터 (백엔드 연결 실패시 fallback용)
 const fallbackProducts = [
-  { orderItemId: 1, productId: 1, productName: '나이키 에어맥스 97', productImageUrl: 'https://static.nike.com/a/images/t_PDP_864_v1/f_auto,q_auto:eco/air-max-97-shoe.jpg', orderedAt: new Date().toISOString() },
-  { orderItemId: 2, productId: 2, productName: '아디다스 울트라부스트 21', productImageUrl: 'https://assets.adidas.com/images/ultraboost-21.jpg', orderedAt: new Date().toISOString() },
-  { orderItemId: 3, productId: 3, productName: '뉴발란스 990v5', productImageUrl: 'https://nb.scene7.com/is/image/NB/m990gl5_nb_02_i?$pdpflexf2$&wid=440&hei=440', orderedAt: new Date().toISOString() },
+  {
+    orderItemId: 1,
+    productId: 1,
+    productName: "나이키 에어맥스 97",
+    imageUrl:
+      "https://static.nike.com/a/images/t_PDP_864_v1/f_auto,q_auto:eco/air-max-97-shoe.jpg",
+    purchaseDate: new Date().toISOString(),
+  },
+  {
+    orderItemId: 2,
+    productId: 2,
+    productName: "아디다스 울트라부스트 21",
+    imageUrl: "https://assets.adidas.com/images/ultraboost-21.jpg",
+    purchaseDate: new Date().toISOString(),
+  },
+  {
+    orderItemId: 3,
+    productId: 3,
+    productName: "뉴발란스 990v5",
+    imageUrl:
+      "https://nb.scene7.com/is/image/NB/m990gl5_nb_02_i?$pdpflexf2$&wid=440&hei=440",
+    purchaseDate: new Date().toISOString(),
+  },
 ];
 
 const FeedCreatePage: React.FC = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const editId = searchParams.get('id');
+  const editId = searchParams.get("id");
   const navigate = useNavigate();
-  const { user } = useAuth();
+
+
+  // 이벤트 목록에서 전달받은 이벤트 정보
+  const incomingEventId = location.state?.selectedEventId;
+  const fromEventList = location.state?.fromEventList;
 
   // 폼 상태
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [selectedProductId, setSelectedProductId] = useState('');
-  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedProductId, setSelectedProductId] = useState("");
   const [hashtags, setHashtags] = useState<string[]>([]);
-  const [hashtagInput, setHashtagInput] = useState('');
+  const [hashtagInput, setHashtagInput] = useState("");
   const [instagramLinked, setInstagramLinked] = useState(false);
-  const [instagramId, setInstagramId] = useState('');
+  const [instagramId, setInstagramId] = useState("");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  
+
   // 🔧 백엔드 연동: 구매 상품 목록
-  const [purchasedProducts, setPurchasedProducts] = useState<OrderItem[]>([]);
+  const [purchasedProducts, setPurchasedProducts] = useState<
+    PurchasedProduct[]
+  >([]);
   const [productsLoading, setProductsLoading] = useState(true);
-  
-  // 🔧 백엔드 연동: 이벤트 목록
+
+  // 🔧 백엔드 연동: 이벤트 목록 (캐싱 최적화)
   const [availableEvents, setAvailableEvents] = useState<FeedEventDto[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
-  
+  const [eventsCacheTime, setEventsCacheTime] = useState<number>(0);
+
   // UI 상태
   const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [toastType, setToastType] = useState<'success' | 'error'>('success');
-  
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const MAX_IMAGES = 5;
 
@@ -86,12 +104,14 @@ const FeedCreatePage: React.FC = () => {
     const fetchPurchasedProducts = async () => {
       try {
         setProductsLoading(true);
-        const response = await OrderService.getPurchasedItems();
-        setPurchasedProducts(response.items);
+        console.log('구매 상품 목록 조회 시작');
+        const response = await OrderService.getPurchasedProducts();
+        console.log('구매 상품 목록 조회 성공:', response);
+        setPurchasedProducts(response);
       } catch (error: any) {
-        console.error('구매 상품 목록 조회 실패:', error);
+        console.error("구매 상품 목록 조회 실패:", error);
         // 백엔드 연결 실패시 fallback 데이터 사용
-        console.warn('백엔드 연결 실패 - fallback 데이터 사용');
+        console.warn("백엔드 연결 실패 - fallback 데이터 사용");
         setPurchasedProducts(fallbackProducts as any);
       } finally {
         setProductsLoading(false);
@@ -105,11 +125,26 @@ const FeedCreatePage: React.FC = () => {
   useEffect(() => {
     const fetchAvailableEvents = async () => {
       try {
+        // 캐시 시간 확인 (5분 = 300초)
+        const now = Date.now();
+        const cacheExpiry = 5 * 60 * 1000; // 5분
+        
+        // 캐시가 유효한 경우 재사용
+        if (eventsCacheTime > 0 && (now - eventsCacheTime) < cacheExpiry && availableEvents.length > 0) {
+          return;
+        }
+        
         setEventsLoading(true);
-        const events = await EventService.getFeedAvailableEvents();
+        const response = await EventService.getFeedAvailableEvents();
+        
+        // 백엔드 응답 구조에 맞게 처리
+        const events = Array.isArray(response) ? response : [];
         setAvailableEvents(events);
+        setEventsCacheTime(now);
+        
+        console.log('이벤트 목록 조회 성공:', events);
       } catch (error: any) {
-        console.error('이벤트 목록 조회 실패:', error);
+        console.error("이벤트 목록 조회 실패:", error);
         setAvailableEvents([]);
       } finally {
         setEventsLoading(false);
@@ -119,51 +154,81 @@ const FeedCreatePage: React.FC = () => {
     fetchAvailableEvents();
   }, []);
 
+  // 이벤트 목록에서 전달받은 이벤트 정보 처리
+  useEffect(() => {
+    if (incomingEventId && fromEventList) {
+      // 선택된 이벤트 ID를 상태에 설정 (숫자로 변환)
+      const eventIdNumber = parseInt(incomingEventId.toString());
+      setSelectedEventId(eventIdNumber.toString());
+      
+      // 이벤트 정보를 가져와서 제목과 내용에 자동 설정
+      const selectedEvent = availableEvents.find(event => event.eventId === eventIdNumber);
+      if (selectedEvent) {
+        setTitle(`${selectedEvent.title} 참여 피드`);
+        setContent(`${selectedEvent.title} 이벤트에 참여합니다!`);
+        
+        // 이벤트 관련 해시태그 자동 추가
+        const eventHashtags = ["이벤트참여", selectedEvent.title.replace(/\s+/g, ""), "피드챌린지"];
+        setHashtags(eventHashtags);
+        
+        console.log('이벤트 자동 선택 완료:', selectedEvent);
+      } else {
+        console.warn('선택된 이벤트를 찾을 수 없음:', eventIdNumber, availableEvents);
+      }
+    }
+  }, [incomingEventId, fromEventList, availableEvents]);
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    
+
     if (uploadedImages.length + files.length > MAX_IMAGES) {
-      showToastMessage(`이미지는 최대 ${MAX_IMAGES}개까지 업로드 가능합니다.`, 'error');
+      showToastMessage(
+        `이미지는 최대 ${MAX_IMAGES}개까지 업로드 가능합니다.`,
+        "error"
+      );
       return;
     }
 
-    files.forEach(async file => {
+    files.forEach(async (file) => {
       if (validateImageFile(file)) {
         const preview = await createImagePreview(file);
-        setUploadedImages(prev => [...prev, preview]);
+        setUploadedImages((prev) => [...prev, preview]);
       }
     });
   };
 
   const removeImage = (index: number) => {
-    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+    setUploadedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleAddHashtag = () => {
     if (hashtagInput.trim() && !hashtags.includes(hashtagInput.trim())) {
-      setHashtags(prev => [...prev, hashtagInput.trim()]);
-      setHashtagInput('');
+      setHashtags((prev) => [...prev, hashtagInput.trim()]);
+      setHashtagInput("");
     }
   };
 
   const handleHashtagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       handleAddHashtag();
     }
   };
 
   const removeHashtag = (tag: string) => {
-    setHashtags(prev => prev.filter(t => t !== tag));
+    setHashtags((prev) => prev.filter((t) => t !== tag));
   };
 
   const addRecommendedHashtag = (tag: string) => {
     if (!hashtags.includes(tag)) {
-      setHashtags(prev => [...prev, tag]);
+      setHashtags((prev) => [...prev, tag]);
     }
   };
 
-  const showToastMessage = (message: string, type: 'success' | 'error' = 'success') => {
+  const showToastMessage = (
+    message: string,
+    type: "success" | "error" = "success"
+  ) => {
     setToastMessage(message);
     setToastType(type);
     setShowToast(true);
@@ -172,58 +237,83 @@ const FeedCreatePage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    console.log('피드 생성 시도:', {
+      title: title.trim(),
+      content: content.trim(),
+      selectedProductId,
+      selectedEventId,
+      purchasedProducts: purchasedProducts.length,
+      availableEvents: availableEvents.length
+    });
+
     if (!title.trim()) {
-      showToastMessage('제목을 입력해주세요.', 'error');
+      showToastMessage("제목을 입력해주세요.", "error");
       return;
     }
 
     if (!content.trim()) {
-      showToastMessage('내용을 입력해주세요.', 'error');
+      showToastMessage("내용을 입력해주세요.", "error");
       return;
     }
 
-    if (uploadedImages.length === 0) {
-      showToastMessage('최소 1개의 이미지를 업로드해주세요.', 'error');
+    // 🔧 백엔드 연동: orderItemId는 필수 필드
+    if (!selectedProductId) {
+      console.error('구매 상품이 선택되지 않음');
+      showToastMessage("구매 상품을 선택해주세요.", "error");
       return;
     }
 
     try {
       setIsLoading(true);
 
-      // 🔧 백엔드 연동: 이미지 업로드
-      const imageUrls = await uploadBase64Images(uploadedImages);
+      // 🔧 백엔드 연동: 이미지 업로드 (선택사항)
+      const imageUrls = uploadedImages.length > 0 
+        ? await uploadBase64Images(uploadedImages)
+        : [];
 
+      // 🔧 백엔드 API 구조에 맞춰 수정
       const feedData: CreateFeedRequest = {
         title: title.trim(),
         content: content.trim(),
+        orderItemId: parseInt(selectedProductId), // 필수 필드
         imageUrls: imageUrls,
         hashtags: hashtags,
-        orderItemId: selectedProductId ? parseInt(selectedProductId) : 0,
         eventId: selectedEventId ? parseInt(selectedEventId) : undefined,
-        feedType: selectedEventId ? 'EVENT' : 'DAILY',
-        instagramId: instagramLinked ? instagramId : undefined
+        instagramId: instagramLinked ? instagramId : undefined,
       };
+
+      // 디버깅: 이벤트 참여 정보 확인
+      console.log('피드 생성 데이터:', {
+        selectedEventId,
+        eventId: feedData.eventId,
+        title: feedData.title,
+        content: feedData.content,
+        hashtags: feedData.hashtags
+      });
 
       if (editId) {
         // 수정 모드
         await FeedService.updateFeed(parseInt(editId), feedData);
-        showToastMessage('피드가 성공적으로 수정되었습니다!', 'success');
+        showToastMessage("피드가 성공적으로 수정되었습니다!", "success");
+        // 수정 후 피드 목록 페이지로 이동
+        setTimeout(() => {
+          navigate("/feeds");
+        }, 1000);
       } else {
         // 생성 모드
         await FeedService.createFeed(feedData);
-        showToastMessage('피드가 성공적으로 생성되었습니다!', 'success');
+        showToastMessage("피드가 성공적으로 생성되었습니다!", "success");
+        // 생성 후 피드 목록 페이지로 이동
+        setTimeout(() => {
+          navigate("/feeds");
+        }, 1000);
       }
-
-      // 성공 후 피드 목록 페이지로 이동
-      setTimeout(() => {
-        navigate('/feeds');
-      }, 1500);
-
     } catch (error: any) {
-      console.error('피드 생성 실패:', error);
-      const errorMessage = error.response?.data?.message || '피드 생성에 실패했습니다.';
-      showToastMessage(errorMessage, 'error');
+      console.error("피드 생성 실패:", error);
+      const errorMessage =
+        error.response?.data?.message || "피드 생성에 실패했습니다.";
+      showToastMessage(errorMessage, "error");
     } finally {
       setIsLoading(false);
     }
@@ -235,18 +325,22 @@ const FeedCreatePage: React.FC = () => {
         {/* 헤더 */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {editId ? '피드 수정' : '새 피드 작성'}
+            {editId ? "피드 수정" : "새 피드 작성"}
           </h1>
           <p className="text-gray-600">
-            {editId ? '피드 내용을 수정해주세요.' : '새로운 피드를 작성해주세요.'}
+            {editId
+              ? "피드 내용을 수정해주세요."
+              : "새로운 피드를 작성해주세요."}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* 기본 정보 */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">기본 정보</h2>
-            
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              기본 정보
+            </h2>
+
             {/* 제목 */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -281,10 +375,49 @@ const FeedCreatePage: React.FC = () => {
             </div>
           </div>
 
+          {/* 구매 상품 선택 - 필수 필드로 변경 */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              구매 상품 선택 *
+            </h2>
+
+            {productsLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                <p className="text-gray-500 mt-2">구매 상품을 불러오는 중...</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <select
+                  value={selectedProductId}
+                  onChange={(e) => setSelectedProductId(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">구매 상품을 선택하세요 *</option>
+                  {purchasedProducts.map((product) => (
+                    // 🔧 백엔드 연동: orderItemId 사용
+                    <option key={product.orderItemId} value={product.orderItemId}>
+                      {product.productName}
+                    </option>
+                  ))}
+                </select>
+
+                {purchasedProducts.length === 0 && (
+                  <p className="text-gray-500 text-sm">
+                    구매한 상품이 없습니다. 상품을 구매한 후 피드를 작성할 수 있습니다.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* 이미지 업로드 */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">이미지 업로드</h2>
-            
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              이미지 업로드 (선택사항)
+            </h2>
+
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
               <input
                 ref={fileInputRef}
@@ -302,14 +435,16 @@ const FeedCreatePage: React.FC = () => {
                 이미지 선택
               </button>
               <p className="text-sm text-gray-500 mt-2">
-                JPG, PNG, GIF 파일만 업로드 가능합니다. (최대 {MAX_IMAGES}개)
+                JPG, PNG, GIF 파일만 업로드 가능합니다. (최대 {MAX_IMAGES}개) - 선택사항
               </p>
             </div>
-            
+
             {/* 이미지 미리보기 */}
             {uploadedImages.length > 0 && (
               <div className="mt-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">업로드된 이미지</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  업로드된 이미지
+                </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {uploadedImages.map((image, index) => (
                     <div key={index} className="relative">
@@ -332,64 +467,12 @@ const FeedCreatePage: React.FC = () => {
             )}
           </div>
 
-          {/* 구매 상품 선택 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">구매 상품 선택</h2>
-            
-            {productsLoading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-                <p className="text-gray-500 mt-2">구매 상품을 불러오는 중...</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <select
-                  value={selectedProductId}
-                  onChange={(e) => setSelectedProductId(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">구매 상품을 선택하세요 (선택사항)</option>
-                  {purchasedProducts.map((product) => (
-                    <option key={product.orderItemId} value={product.productId}>
-                      {product.productName}
-                    </option>
-                  ))}
-                </select>
-                
-                {selectedProductId && (
-                  <select
-                    value={selectedSize}
-                    onChange={(e) => setSelectedSize(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">사이즈를 선택하세요 (선택사항)</option>
-                    <option value="220">220</option>
-                    <option value="225">225</option>
-                    <option value="230">230</option>
-                    <option value="235">235</option>
-                    <option value="240">240</option>
-                    <option value="245">245</option>
-                    <option value="250">250</option>
-                    <option value="255">255</option>
-                    <option value="260">260</option>
-                    <option value="265">265</option>
-                    <option value="270">270</option>
-                    <option value="275">275</option>
-                    <option value="280">280</option>
-                    <option value="285">285</option>
-                    <option value="290">290</option>
-                    <option value="295">295</option>
-                    <option value="300">300</option>
-                  </select>
-                )}
-              </div>
-            )}
-          </div>
-
           {/* 이벤트 선택 */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">이벤트 참여</h2>
-            
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              이벤트 참여 (선택사항)
+            </h2>
+
             {eventsLoading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
@@ -397,8 +480,19 @@ const FeedCreatePage: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-4">
+                {/* 이벤트 목록에서 넘어온 경우 안내 메시지 */}
+                {fromEventList && incomingEventId && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-center">
+                      <i className="fas fa-info-circle text-blue-500 mr-2"></i>
+                      <span className="text-blue-700 font-medium">
+                        이벤트 참여를 위해 자동으로 이벤트가 선택되었습니다.
+                      </span>
+                    </div>
+                  </div>
+                )} 
                 <select
-                  value={selectedEventId || ''}
+                  value={selectedEventId || ""}
                   onChange={(e) => setSelectedEventId(e.target.value || null)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
@@ -409,11 +503,11 @@ const FeedCreatePage: React.FC = () => {
                     </option>
                   ))}
                 </select>
-                
+
                 {availableEvents.length === 0 && (
-                  <p className="text-gray-500 text-sm">
-                    현재 참여 가능한 이벤트가 없습니다.
-                  </p>
+                  <div className="text-gray-500 text-sm">
+                    <p>현재 참여 가능한 이벤트가 없습니다.</p>
+                  </div>
                 )}
               </div>
             )}
@@ -421,8 +515,10 @@ const FeedCreatePage: React.FC = () => {
 
           {/* 해시태그 */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">해시태그</h2>
-            
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              해시태그 (선택사항)
+            </h2>
+
             <div className="space-y-4">
               <div className="flex gap-2">
                 <input
@@ -441,24 +537,26 @@ const FeedCreatePage: React.FC = () => {
                   추가
                 </button>
               </div>
-              
+
               {/* 추천 해시태그 */}
               <div>
                 <p className="text-sm text-gray-600 mb-2">추천 해시태그:</p>
                 <div className="flex flex-wrap gap-2">
-                  {['#스니커즈', '#운동화', '#패션', '#스타일', '#코디'].map((tag) => (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => addRecommendedHashtag(tag)}
-                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition-colors"
-                    >
-                      {tag}
-                    </button>
-                  ))}
+                  {["#스니커즈", "#운동화", "#패션", "#스타일", "#코디"].map(
+                    (tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => addRecommendedHashtag(tag)}
+                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition-colors"
+                      >
+                        {tag}
+                      </button>
+                    )
+                  )}
                 </div>
               </div>
-              
+
               {/* 추가된 해시태그 */}
               {hashtags.length > 0 && (
                 <div>
@@ -487,8 +585,10 @@ const FeedCreatePage: React.FC = () => {
 
           {/* 인스타그램 연동 */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">인스타그램 연동</h2>
-            
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              인스타그램 연동 (선택사항)
+            </h2>
+
             <div className="space-y-4">
               <label className="flex items-center">
                 <input
@@ -497,9 +597,11 @@ const FeedCreatePage: React.FC = () => {
                   onChange={(e) => setInstagramLinked(e.target.checked)}
                   className="mr-2"
                 />
-                <span className="text-sm text-gray-700">인스타그램과 연동하기</span>
+                <span className="text-sm text-gray-700">
+                  인스타그램과 연동하기
+                </span>
               </label>
-              
+
               {instagramLinked && (
                 <input
                   type="text"
@@ -516,7 +618,7 @@ const FeedCreatePage: React.FC = () => {
           <div className="flex justify-end gap-4">
             <button
               type="button"
-              onClick={() => navigate('/feeds')}
+              onClick={() => navigate("/feeds")}
               className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
               취소
@@ -526,7 +628,13 @@ const FeedCreatePage: React.FC = () => {
               disabled={isLoading}
               className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? (editId ? '수정 중...' : '생성 중...') : (editId ? '피드 수정' : '피드 생성')}
+              {isLoading
+                ? editId
+                  ? "수정 중..."
+                  : "생성 중..."
+                : editId
+                ? "피드 수정"
+                : "피드 생성"}
             </button>
           </div>
         </form>
@@ -534,9 +642,13 @@ const FeedCreatePage: React.FC = () => {
 
       {/* 토스트 메시지 */}
       {showToast && (
-        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg animate-fade-in-out ${
-          toastType === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-        }`}>
+        <div
+          className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg animate-fade-in-out ${
+            toastType === "success"
+              ? "bg-green-500 text-white"
+              : "bg-red-500 text-white"
+          }`}
+        >
           {toastMessage}
         </div>
       )}

@@ -9,16 +9,22 @@ import theme from "./theme";
 // 보호 라우트 컴포넌트 임포트
 import SellerProtectedRoute from "./components/SellerProtectedRoute";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
+import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
+import UserProtectedRoute from "./components/UserProtectedRoute";
+import MyPosts from "pages/auth/MyPosts";
+import CouponsPage from "pages/auth/CouponsPage";
 
 // 페이지 컴포넌트들
 const HomePage = lazy(() => import("./pages/common/HomePage"));
 const ProductsPage = lazy(() => import("./pages/products/Lists"));
 const ProductDetailPage = lazy(() => import("./pages/products/DetailPage"));
+const CategoriesPage = lazy(() => import("./pages/products/CategoriesPage"));
 const MyPage = lazy(() => import("./pages/auth/MyPage"));
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const SignUp = lazy(() => import("./pages/auth/SignUp"));
 const FindAccountPage = lazy(() => import("./pages/auth/FindAccountPage"));
 const FindPasswordPage = lazy(() => import("./pages/auth/FindPasswordPage"));
+const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage"));
 const PrivacyPolicy = lazy(() => import("./pages/common/PrivacyPolicy"));
 const ProductUploadPage = lazy(
   () => import("./pages/products/registerProduct/RegisterProductPage")
@@ -40,7 +46,8 @@ const StatsDashboardPage = lazy(
 const StoreHomePage = lazy(() => import("./pages/stores/StoreHomePage"));
 const CartPage = lazy(() => import("./pages/cart/CartPage"));
 const PaymentPage = lazy(() => import("./pages/order/PaymentPage"));
-const OrdersPage = lazy(() => import("./pages/order/OrdersPage"));
+const SellerOrdersPage = lazy(() => import("./pages/order/SellerOrdersPage"));
+const UserOrdersPage = lazy(() => import("./pages/order/UserOrdersPage"));
 const CheckoutPage = lazy(() => import("./pages/order/CheckoutPage"));
 const WishListPage = lazy(() => import("./pages/cart/WishListPage"));
 const RecentViewPage = lazy(() => import("./pages/cart/RecentViewPage"));
@@ -53,98 +60,333 @@ const FeedDetailPage = lazy(() => import("./pages/feed/FeedDetailPage"));
 const FeedCreatePage = lazy(() => import("./pages/feed/FeedCreatePage"));
 const FeedEditPage = lazy(() => import("./pages/feed/FeedEditPage"));
 const MyFeedPage = lazy(() => import("./pages/feed/MyFeedPage"));
+const LikedFeedsPage = lazy(() => import("./pages/feed/LikedFeedsPage"));
 const EventListPage = lazy(() => import("./pages/event/EventListPage"));
 const EventCreatePage = lazy(() => import("./pages/event/EventCreatePage"));
 const EventEditPage = lazy(() => import("./pages/event/EventEditPage"));
 const EventResultPage = lazy(() => import("./pages/event/EventResultPage"));
 const BecomeSellerPage = lazy(() => import("./pages/seller/BecomeSellerPage"));
 const SellerMyPage = lazy(() => import("./pages/seller/SellerMyPage"));
+const ReviewListPage = lazy(() => import("./pages/reviews/ReviewListPage"));
+const ReviewWritePage = lazy(() => import("./pages/reviews/ReviewWritePage"));
+const SocialCallbackPage = lazy(
+  () => import("./pages/auth/SocialCallbackPage")
+);
+const SocialCallbackPage = lazy(() => import("./pages/auth/SocialCallbackPage"));
+const MfaSetupPage = lazy(() => import("./pages/admin/MfaSetupPage"));
+const MfaVerificationPage = lazy(
+  () => import("./pages/auth/MfaVerificationPage")
+);
+const AdminSettingsPage = lazy(() => import("./pages/admin/AdminSettingsPage"));
+const AdminProfilePage = lazy(() => import("./pages/admin/AdminProfilePage"));
+const MyCommentsPage = lazy(() => import("./pages/auth/MyComments"));
+
+const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY || "";
+
+// reCAPTCHA 키가 설정되었는지 확인
+if (!RECAPTCHA_SITE_KEY) {
+  // 개발 환경에서만 경고를 띄웁니다.
+  if (process.env.NODE_ENV !== "production") {
+    console.warn(
+      "reCAPTCHA site key is not defined. Please check your .env file."
+    );
+  }
+}
 
 const App: FC = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <AuthProvider>
-        <ScrollToTop />
-        <Suspense fallback={<div>로딩중...</div>}>
-          <Routes>
-            {/* Layout이 필요한 페이지들 */}
-            <Route element={<Layout />}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/products" element={<ProductsPage />} />
-              <Route path="/products/:id" element={<ProductDetailPage />} />
-              <Route path="/mypage/*" element={<MyPage />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/product/upload" element={<ProductUploadPage />} />
-              <Route path="/products/edit/:id" element={<ProductEditPage />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/reviews" element={<ReviewsPage />} />
-              <Route path="/report-manage" element={<ReportManagePage />} />
-              <Route path="/user-manage" element={<UserManagePage />} />
-              <Route
-                path="/admin-dashboard"
-                element={
-                  <AdminProtectedRoute redirectPath="/">
-                    {" "}
-                    {/* admin만 허용, 아니면 메인으로 리디렉션 */}
-                    <AdminDashboardPage />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route
-                path="/stats-dashboard" // 통계 대시보드 경로
-                element={
-                  <AdminProtectedRoute redirectPath="/">
-                    {" "}
-                    {/* admin만 허용, 아니면 메인으로 리디렉션 */}
-                    <StatsDashboardPage />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route path="/store-home" element={<StoreHomePage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/orders" element={<OrdersPage />} />
-              <Route path="/payment" element={<PaymentPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/wishlist" element={<WishListPage />} />
-              <Route path="/recentview" element={<RecentViewPage />} />
-              <Route path="/reviews/edit" element={<ReviewEditPage />} />
-              <Route
-                path="/profile-settings"
-                element={<ProfileSettingsPage />}
-              />
-              <Route path="/feed-list" element={<FeedListPage />} />
-              <Route path="/feed/:id" element={<FeedDetailPage />} />
-              <Route path="/feed-create" element={<FeedCreatePage />} />
-              <Route path="/feed-edit" element={<FeedEditPage />} />
-              <Route path="/my-feed" element={<MyFeedPage />} />
-              <Route path="/event-list" element={<EventListPage />} />
-              <Route path="/events/create" element={<EventCreatePage />} />
-              <Route path="/events/edit/:id" element={<EventEditPage />} />
-              <Route path="/events/result" element={<EventResultPage />} />
-              <Route path="/become-seller" element={<BecomeSellerPage />} />
-              <Route
-                path="/seller-mypage"
-                element={
-                  <SellerProtectedRoute
-                    allowedUserType="seller"
-                    redirectPath="/"
-                  >
-                    <SellerMyPage />
-                  </SellerProtectedRoute>
-                }
-              />
-            </Route>
+    <GoogleReCaptchaProvider reCaptchaKey={RECAPTCHA_SITE_KEY}>
+      <ThemeProvider theme={theme}>
+        <AuthProvider>
+          <ScrollToTop />
+          <Suspense fallback={<div>로딩중...</div>}>
+            <Routes>
+              {/* Layout이 필요한 페이지들 */}
+              <Route element={<Layout />}>
+                {/* 공개 페이지들 (권한 불필요) */}
+                <Route path="/" element={<HomePage />} />
+                <Route path="/products" element={<ProductsPage />} />
+                <Route path="/products/:id" element={<ProductDetailPage />} />
+                <Route
+                  path="/products/:productId/reviews"
+                  element={<ReviewListPage />}
+                />
+                <Route path="/categories" element={<CategoriesPage />} />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                {/* 최근 본 상품 (모든 사용자 접근 가능) */}
+                <Route path="/recentview" element={<RecentViewPage />} />
+                {/* USER 권한 필요 페이지들 */}
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/payment" element={<PaymentPage />} />
+                <Route
+                  path="/checkout"
+                  element={
+                    <UserProtectedRoute requireUserRole={true}>
+                      <CheckoutPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/orders"
+                  element={
+                    <UserProtectedRoute requireUserRole={true}>
+                      <SellerOrdersPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/my-orders"
+                  element={
+                    <UserProtectedRoute requireUserRole={true}>
+                      <UserOrdersPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route path="/wishlist" element={<WishListPage />} />
 
-            {/* Layout 없이 보여야 하는 페이지들 */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/find-account" element={<FindAccountPage />} />
-            <Route path="/find-password" element={<FindPasswordPage />} />
-          </Routes>
-        </Suspense>
-      </AuthProvider>
-    </ThemeProvider>
+                {/* 마이페이지 관련 라우트들 */}
+                <Route
+                  path="/mypage/*"
+                  element={
+                    <UserProtectedRoute requireLogin={true} showNotice={false}>
+                      <MyPage />
+                    </UserProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/profile"
+                  element={
+                    <UserProtectedRoute requireLogin={true} showNotice={false}>
+                      <ProfilePage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile-settings"
+                  element={
+                    <UserProtectedRoute requireLogin={true} showNotice={false}>
+                      <ProfileSettingsPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/reviews"
+                  element={
+                    <UserProtectedRoute requireLogin={true} showNotice={false}>
+                      <ReviewsPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/reviews/write"
+                  element={
+                    <UserProtectedRoute requireLogin={true}>
+                      <ReviewWritePage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/reviews/edit"
+                  element={
+                    <UserProtectedRoute requireLogin={true} showNotice={false}>
+                      <ReviewEditPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                {/* 피드 관련 페이지들 */}
+                <Route path="/feeds" element={<FeedListPage />} />
+                <Route path="/feed/:id" element={<FeedDetailPage />} />
+                <Route
+                  path="/feed-create"
+                  element={
+                    <UserProtectedRoute requireLogin={true}>
+                      <FeedCreatePage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/feed-edit"
+                  element={
+                    <UserProtectedRoute requireLogin={true}>
+                      <FeedEditPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/my-feeds"
+                  element={
+                    <UserProtectedRoute requireLogin={true}>
+                      <MyFeedPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/liked-feeds"
+                  element={
+                    <UserProtectedRoute requireLogin={true}>
+                      <LikedFeedsPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/mypage/comments"
+                  element={
+                    <UserProtectedRoute requireLogin={true}>
+                      <MyCommentsPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                {/* 이벤트 관련 페이지들 */}
+                <Route path="/event-list" element={<EventListPage />} />
+                <Route
+                  path="/events/create"
+                  element={
+                    <AdminProtectedRoute>
+                      <EventCreatePage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/events/edit/:id"
+                  element={
+                    <AdminProtectedRoute>
+                      <EventEditPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/events/result"
+                  element={
+                    <AdminProtectedRoute>
+                      <EventResultPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+
+                {/* 판매자 관련 페이지들 */}
+                <Route
+                  path="/become-seller"
+                  element={
+                    <UserProtectedRoute requireLogin={true} showNotice={false}>
+                      <BecomeSellerPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/seller-mypage"
+                  element={
+                    <SellerProtectedRoute
+                      allowedUserType="seller"
+                      redirectPath="/"
+                    >
+                      <SellerMyPage />
+                    </SellerProtectedRoute>
+                  }
+                />
+
+                {/* 가게 페이지 (판매자 전용) */}
+                <Route path="/store" element={<StoreHomePage />} />
+
+                {/* 관리자 전용 페이지들 */}
+                <Route
+                  path="/user-manage"
+                  element={
+                    <AdminProtectedRoute>
+                      <UserManagePage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/report-manage"
+                  element={
+                    <AdminProtectedRoute>
+                      <ReportManagePage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/dashboard"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminDashboardPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/stats-dashboard"
+                  element={
+                    <AdminProtectedRoute>
+                      <StatsDashboardPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/mfa-setup"
+                  element={
+                    <AdminProtectedRoute>
+                      <MfaSetupPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/settings"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminSettingsPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/profile"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminProfilePage />
+                    </AdminProtectedRoute>
+                  }
+                />
+
+                {/* 기존 상품 등록/수정 페이지 (제거 예정 - 가게 페이지에서 처리) */}
+                <Route
+                  path="/products/upload"
+                  element={
+                    <SellerProtectedRoute
+                      allowedUserType="seller"
+                      redirectPath="/store"
+                    >
+                      <ProductUploadPage />
+                    </SellerProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/products/edit/:id"
+                  element={
+                    <SellerProtectedRoute
+                      allowedUserType="seller"
+                      redirectPath="/store"
+                    >
+                      <ProductEditPage />
+                    </SellerProtectedRoute>
+                  }
+                />
+              </Route>
+              {/* Layout 없이 보여야 하는 페이지들 */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/mfa-verification"
+                element={<MfaVerificationPage />}
+              />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/find-account" element={<FindAccountPage />} />
+              <Route path="/find-password" element={<FindPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/auth/callback" element={<SocialCallbackPage />} />
+            </Routes>
+          </Suspense>
+        </AuthProvider>
+      </ThemeProvider>
+    </GoogleReCaptchaProvider>
   );
 };
 

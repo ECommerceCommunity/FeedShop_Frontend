@@ -1,728 +1,580 @@
-import { useState, useRef, ChangeEvent, FC } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef, ChangeEvent, FC, useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import {
+  UserProfileService,
+  UserProfileData,
+  UpdateUserProfileRequest,
+} from "../../api/userProfileService";
+import { convertMockUrlToCdnUrl } from "../../utils/common/images";
 
 const ProfileSettingsPage: FC = () => {
-  const navigate = useNavigate();
+  const { user, handleUnauthorized } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  // 프로필 정보 상태
-  const [profileInfo, setProfileInfo] = useState({
-    name: "김민지",
-    nickname: "쇼핑하는민지",
-    email: "minji@example.com",
-    phone: "010-1234-5678",
-    profileImage:
-      "https://readdy.ai/api/search-image?query=casual%20portrait%20photo%20of%20a%20young%20Asian%20woman%20with%20friendly%20smile%20natural%20makeup%20simple%20clean%20background%20high%20quality%20professional%20headshot%20minimalist%20style%20soft%20lighting%20warm%20expression&width=120&height=120&seq=1&orientation=squarish",
-    userId: "minji2025",
-    level: "GOLD",
-    points: 12500,
-    coupons: [
-      { id: 1, name: "신규 가입 15% 할인", expiry: "2025-07-29", discount: 15 },
-      {
-        id: 2,
-        name: "여름 시즌 10,000원 할인",
-        expiry: "2025-08-31",
-        minPurchase: 50000,
-        discount: 10000,
-      },
-      { id: 3, name: "VIP 무료배송", expiry: "2025-12-31", type: "shipping" },
-    ],
-    purchaseAmount: 1250000,
-    reviewCount: 25,
-    lastLogin: "2025-06-28 15:45:32",
-    createdAt: "2024-03-15",
+  const [profileInfo, setProfileInfo] = useState<UserProfileData>({
+    name: user?.name || "",
+    nickname: user?.nickname || "",
+    phone: "",
+    birthDate: "",
+    gender: "MALE",
+    height: undefined,
+    weight: undefined,
+    footWidth: "NORMAL",
+    footSize: undefined,
+    profileImageUrl: "",
   });
 
-  // 알림 설정 상태
-  const [notifications, setNotifications] = useState({
-    email: {
-      notice: true,
-      security: true,
-      marketing: false,
-    },
-    push: {
-      chat: true,
-      comment: true,
-      like: false,
-    },
-  });
-
-  // 파일 입력 참조
+  const [originalProfile, setOriginalProfile] =
+    useState<UserProfileData | null>(null);
+  const [imageLoadError, setImageLoadError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 변경 여부 상태
-  const [isChanged, setIsChanged] = useState(false);
+  // 프로필 정보 로드
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) {
+        console.log("사용자 정보 없음: 로그인 페이지로 리다이렉트");
+        window.location.href = "/login";
+        return;
+      }
 
-  // 프로필 정보 변경 핸들러
-  const handleProfileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setProfileInfo({
-      ...profileInfo,
-      [name]: value,
-    });
-    setIsChanged(true);
+      try {
+        setLoading(true);
+        const profileData = await UserProfileService.getUserProfile();
+        console.log("로드된 프로필 데이터:", profileData);
+        console.log("프로필 이미지 URL:", profileData.profileImageUrl);
+        setProfileInfo(profileData);
+        setOriginalProfile(profileData);
+        setImageLoadError(false); // 새 프로필 로드 시 이미지 에러 상태 초기화
+      } catch (err: any) {
+        console.error("프로필 로드 실패:", err);
+
+        // 401 에러 시 자동 로그아웃 처리
+        if (err.response?.status === 401) {
+          console.log("프로필 로드 중 401 에러: 자동 로그아웃 처리");
+          handleUnauthorized();
+          return;
+        }
+
+        // 더 구체적인 에러 메시지 표시
+        if (err.response?.status === 500) {
+          setError("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        } else {
+          setError("프로필 정보를 불러오는데 실패했습니다.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [user, handleUnauthorized]);
+
+  // 변경사항 감지
+  const hasChanges = () => {
+    if (!originalProfile) return false;
+
+    return (
+      profileInfo.name !== originalProfile.name ||
+      profileInfo.nickname !== originalProfile.nickname ||
+      profileInfo.phone !== originalProfile.phone ||
+      profileInfo.birthDate !== originalProfile.birthDate ||
+      profileInfo.gender !== originalProfile.gender ||
+      profileInfo.height !== originalProfile.height ||
+      profileInfo.footSize !== originalProfile.footSize ||
+      profileInfo.profileImageUrl !== originalProfile.profileImageUrl
+    );
   };
 
-  // 알림 설정 변경 핸들러
-  const handleNotificationChange = (
-    category: "email" | "push",
-    type: string
+  const handleProfileChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    setNotifications({
-      ...notifications,
-      [category]: {
-        ...notifications[category],
-        [type]:
-          !notifications[category][
-            type as keyof (typeof notifications)[typeof category]
-          ],
-      },
-    });
-    setIsChanged(true);
+    const { name, value } = e.target;
+    setProfileInfo((prev: UserProfileData) => ({ ...prev, [name]: value }));
   };
 
-  // 프로필 이미지 변경 핸들러
+  const handleNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const numValue = value === "" ? undefined : parseInt(value);
+    setProfileInfo((prev: UserProfileData) => ({ ...prev, [name]: numValue }));
+  };
+
+  // 데이터 검증 함수 추가
+  const validateProfileData = (
+    data: UserProfileData
+  ): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+
+    // 필수 필드 검증
+    if (!data.name || data.name.trim().length < 2) {
+      errors.push("이름은 2자 이상 입력해주세요.");
+    }
+
+    if (!data.nickname || data.nickname.trim().length < 2) {
+      errors.push("닉네임은 2자 이상 입력해주세요.");
+    }
+
+    if (
+      !data.phone ||
+      !/^[0-9-]{10,11}$/.test(data.phone.replace(/[^0-9-]/g, ""))
+    ) {
+      errors.push("전화번호는 10-11자리 숫자로 입력해주세요.");
+    }
+
+    // 신체 정보 범위 검증
+    if (data.height && (data.height < 100 || data.height > 250)) {
+      errors.push("키는 100cm ~ 250cm 범위로 입력해주세요.");
+    }
+
+    if (data.weight && (data.weight < 30 || data.weight > 200)) {
+      errors.push("몸무게는 30kg ~ 200kg 범위로 입력해주세요.");
+    }
+
+    if (data.footSize && (data.footSize < 200 || data.footSize > 350)) {
+      errors.push("발 사이즈는 200mm ~ 350mm 범위로 입력해주세요.");
+    }
+
+    return { isValid: errors.length === 0, errors };
+  };
+
   const handleProfileImageClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
+    fileInputRef.current?.click();
   };
 
-  // 파일 선택 핸들러
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileInfo({
-          ...profileInfo,
-          profileImage: reader.result as string,
-        });
-        setIsChanged(true);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    try {
+      setLoading(true);
+      const result = await UserProfileService.uploadProfileImage(file);
+      console.log("업로드된 이미지 URL:", result.profileImageUrl);
+
+      setProfileInfo((prev: UserProfileData) => ({
+        ...prev,
+        profileImageUrl: convertMockUrlToCdnUrl(result.profileImageUrl),
+      }));
+      setImageLoadError(false); // 새 이미지 업로드 시 에러 상태 초기화
+      setSuccess("프로필 이미지가 업로드되었습니다.");
+    } catch (err: any) {
+      console.error("이미지 업로드 실패:", err);
+
+      if (err.response?.status === 400) {
+        setError(
+          "이미지 형식이 올바르지 않습니다. JPG, PNG 파일을 사용해주세요."
+        );
+      } else if (err.response?.status === 413) {
+        setError("이미지 파일이 너무 큽니다. 5MB 이하의 파일을 사용해주세요.");
+      } else if (err.response?.status === 401) {
+        console.log("이미지 업로드 중 401 에러: 자동 로그아웃 처리");
+        handleUnauthorized();
+        return;
+      } else {
+        setError("이미지 업로드에 실패했습니다. 다시 시도해주세요.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  // 프로필 이미지 삭제 핸들러
   const handleRemoveProfileImage = () => {
-    setProfileInfo({
-      ...profileInfo,
-      profileImage:
-        "https://readdy.ai/api/search-image?query=minimal%20placeholder%20profile%20avatar%20icon%20with%20light%20gray%20background%20simple%20outline%20of%20a%20person%20silhouette%20professional%20clean%20design&width=120&height=120&seq=2&orientation=squarish",
-    });
-    setIsChanged(true);
+    setProfileInfo((prev: UserProfileData) => ({
+      ...prev,
+      profileImageUrl: "",
+    }));
+    setImageLoadError(false);
   };
 
-  // 저장 핸들러
-  const handleSave = () => {
-    // 실제 구현에서는 API 호출로 저장
-    alert("변경사항이 저장되었습니다.");
-    setIsChanged(false);
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+
+      // 데이터 검증
+      const validation = validateProfileData(profileInfo);
+      if (!validation.isValid) {
+        setError(validation.errors.join("\n"));
+        return;
+      }
+
+      const updateData: UpdateUserProfileRequest = {
+        name: profileInfo.name,
+        nickname: profileInfo.nickname,
+        phone: profileInfo.phone,
+        birthDate: profileInfo.birthDate,
+        gender: profileInfo.gender,
+        height: profileInfo.height,
+        weight: profileInfo.weight, // weight 필드 추가
+        footSize: profileInfo.footSize,
+        profileImageUrl: convertMockUrlToCdnUrl(
+          profileInfo.profileImageUrl || ""
+        ),
+      };
+
+      const updatedProfile = await UserProfileService.updateUserProfile(
+        updateData
+      );
+      setProfileInfo(updatedProfile);
+      setOriginalProfile(updatedProfile);
+      setImageLoadError(false);
+      setSuccess("프로필 정보가 성공적으로 저장되었습니다! 🎉");
+
+      // 성공 메시지를 3초 후 자동으로 제거
+      setTimeout(() => {
+        setSuccess(null);
+      }, 3000);
+    } catch (err: any) {
+      console.error("프로필 저장 실패:", err);
+
+      // 더 구체적인 에러 메시지 표시
+      if (err.response?.status === 400) {
+        setError("입력한 정보가 올바르지 않습니다. 필수 항목을 확인해주세요.");
+      } else if (err.response?.status === 401) {
+        console.log("프로필 저장 중 401 에러: 자동 로그아웃 처리");
+        handleUnauthorized();
+        return;
+      } else if (err.response?.status === 500) {
+        setError("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      } else {
+        setError("프로필 저장에 실패했습니다. 다시 시도해주세요.");
+      }
+    } finally {
+      setSaving(false);
+    }
   };
 
-  // 취소 핸들러
   const handleCancel = () => {
-    // 원래 상태로 되돌리기
-    window.location.reload();
+    if (originalProfile) {
+      setProfileInfo(originalProfile);
+      setImageLoadError(false); // 취소 시 이미지 에러 상태 초기화
+    }
   };
+
+  // 사용자가 로그인하지 않은 경우
+  if (!user) {
+    console.log("사용자 정보 없음: 로그인 페이지로 리다이렉트");
+    // 즉시 리다이렉트
+    window.location.href = "/login";
+    return null; // 리다이렉트 중에는 아무것도 렌더링하지 않음
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p>프로필 정보를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* 메인 콘텐츠 */}
-      <div className="flex flex-1 pt-4">
-        {/* 메인 콘텐츠 영역 */}
-        <main className="flex-1">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            {/* 페이지 헤더 */}
-            <div className="mb-6">
-              <div className="flex items-center">
-                <h1 className="text-2xl font-bold text-gray-900">
-                  프로필 설정
-                </h1>
-              </div>
-              <nav className="flex mt-2" aria-label="Breadcrumb">
-                <ol className="flex items-center space-x-1 text-sm text-gray-500">
-                  <li>
-                    <a href="#" className="hover:text-gray-700">
-                      홈
-                    </a>
-                  </li>
-                  <li className="flex items-center">
-                    <i className="fas fa-chevron-right text-xs mx-1"></i>
-                    <span className="text-gray-700">프로필 설정</span>
-                  </li>
-                </ol>
-              </nav>
-            </div>
+    <div className="min-h-screen bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <header className="mb-12 text-center">
+          <h1 className="text-5xl font-extrabold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-red-500">
+            프로필 설정
+          </h1>
+          <p className="text-xl text-gray-400">
+            개인 정보를 관리하고 업데이트하세요
+          </p>
+        </header>
 
-            {/* 프로필 정보 섹션 */}
-            <div className="bg-white shadow rounded-lg mb-6 overflow-hidden">
-              <div className="px-6 py-5 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">
-                  프로필 정보
-                </h2>
-                <p className="mt-1 text-sm text-gray-500">
-                  계정의 기본 정보를 관리합니다.
-                </p>
-              </div>
-              <div className="px-6 py-5">
-                <div className="flex flex-col md:flex-row">
-                  {/* 프로필 이미지 영역 */}
-                  <div className="flex flex-col items-center md:w-1/3 mb-6 md:mb-0">
-                    <div className="relative">
-                      <div
-                        className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border-4 border-white shadow-lg cursor-pointer"
-                        onClick={handleProfileImageClick}
-                      >
-                        <img
-                          src={profileInfo.profileImage}
-                          alt="프로필 이미지"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                      />
-                      <button
-                        className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-2 shadow-md hover:bg-blue-600 transition-colors cursor-pointer"
-                        onClick={handleProfileImageClick}
-                      >
-                        <i className="fas fa-camera"></i>
-                      </button>
-                    </div>
-                    <div className="mt-4 flex space-x-2">
-                      <button
-                        className="bg-blue-50 text-blue-700 px-3 py-1 rounded text-sm font-medium hover:bg-blue-100 transition-colors cursor-pointer"
-                        onClick={handleProfileImageClick}
-                      >
-                        이미지 변경
-                      </button>
-                      <button
-                        className="bg-gray-50 text-gray-700 px-3 py-1 rounded text-sm font-medium hover:bg-gray-100 transition-colors cursor-pointer"
-                        onClick={handleRemoveProfileImage}
-                      >
-                        삭제
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 기본 정보 입력 폼 */}
-                  <div className="md:w-2/3 md:pl-8">
-                    <div className="space-y-4">
-                      <div>
-                        <label
-                          htmlFor="name"
-                          className="block text-sm font-medium text-gray-700 mb-1"
-                        >
-                          이름
-                        </label>
-                        <input
-                          type="text"
-                          id="name"
-                          name="name"
-                          value={profileInfo.name}
-                          onChange={handleProfileChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="nickname"
-                          className="block text-sm font-medium text-gray-700 mb-1"
-                        >
-                          닉네임
-                        </label>
-                        <input
-                          type="text"
-                          id="nickname"
-                          name="nickname"
-                          value={profileInfo.nickname}
-                          onChange={handleProfileChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="email"
-                          className="block text-sm font-medium text-gray-700 mb-1"
-                        >
-                          이메일
-                        </label>
-                        <input
-                          type="email"
-                          id="email"
-                          name="email"
-                          value={profileInfo.email}
-                          readOnly
-                          className="w-full px-3 py-2 border border-gray-200 rounded-md shadow-sm bg-gray-50 text-gray-500 text-sm"
-                        />
-                        <p className="mt-1 text-xs text-gray-500">
-                          이메일은 변경할 수 없습니다.
-                        </p>
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="phone"
-                          className="block text-sm font-medium text-gray-700 mb-1"
-                        >
-                          연락처
-                        </label>
-                        <input
-                          type="tel"
-                          id="phone"
-                          name="phone"
-                          value={profileInfo.phone}
-                          onChange={handleProfileChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 멤버십 정보 섹션 */}
-            <div className="bg-white shadow rounded-lg mb-6 overflow-hidden">
-              <div className="px-6 py-5 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">
-                  멤버십 정보
-                </h2>
-                <p className="mt-1 text-sm text-gray-500">
-                  회원 등급 및 혜택 정보입니다.
-                </p>
-              </div>
-              <div className="px-6 py-5">
-                <div className="flex flex-col md:flex-row items-start gap-8">
-                  {/* 등급 및 포인트 정보 */}
-                  <div className="w-full md:w-1/2">
-                    <div className="bg-gradient-to-r from-yellow-100 to-yellow-50 rounded-lg p-6 mb-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <p className="text-sm text-gray-600">현재 등급</p>
-                          <h3 className="text-2xl font-bold text-yellow-700">
-                            {profileInfo.level}
-                          </h3>
-                        </div>
-                        <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center">
-                          <i className="fas fa-crown text-3xl text-white"></i>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">
-                            누적 구매금액
-                          </span>
-                          <span className="text-sm font-medium">
-                            {profileInfo.purchaseAmount.toLocaleString()}원
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">
-                            작성 리뷰
-                          </span>
-                          <span className="text-sm font-medium">
-                            {profileInfo.reviewCount}개
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="bg-blue-50 rounded-lg p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <p className="text-sm text-gray-600">보유 포인트</p>
-                          <h3 className="text-2xl font-bold text-blue-600">
-                            {profileInfo.points.toLocaleString()}P
-                          </h3>
-                        </div>
-                        <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
-                          <i className="fas fa-coins text-3xl text-white"></i>
-                        </div>
-                      </div>
-                      <button className="w-full mt-4 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
-                        포인트 내역 보기
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 보유 쿠폰 */}
-                  <div className="w-full md:w-1/2">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-medium text-gray-900">
-                        보유 쿠폰
-                      </h3>
-                      <button className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
-                        전체 쿠폰 보기
-                      </button>
-                    </div>
-                    <div className="space-y-4">
-                      {profileInfo.coupons.map((coupon) => (
-                        <div
-                          key={coupon.id}
-                          className="border border-gray-200 rounded-lg p-4"
-                        >
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="text-md font-medium text-gray-900">
-                                {coupon.name}
-                              </h4>
-                              <p className="text-sm text-gray-500 mt-1">
-                                {coupon.type === "shipping"
-                                  ? "무료배송"
-                                  : coupon.discount && coupon.discount > 100
-                                  ? `${coupon.discount.toLocaleString()}원 할인`
-                                  : coupon.discount
-                                  ? `${coupon.discount}% 할인`
-                                  : "할인"}
-                              </p>
-                              {coupon.minPurchase && (
-                                <p className="text-xs text-gray-500 mt-1">
-                                  {coupon.minPurchase.toLocaleString()}원 이상
-                                  구매시
-                                </p>
-                              )}
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs text-gray-500">유효기간</p>
-                              <p className="text-sm text-gray-700">
-                                {coupon.expiry}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 계정 정보 섹션 */}
-            <div className="bg-white shadow rounded-lg mb-6 overflow-hidden">
-              <div className="px-6 py-5 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">계정 정보</h2>
-                <p className="mt-1 text-sm text-gray-500">
-                  기본 계정 정보입니다.
-                </p>
-              </div>
-              <div className="px-6 py-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <div className="flex justify-between py-3 border-b border-gray-100">
-                      <span className="text-sm font-medium text-gray-500">
-                        아이디
-                      </span>
-                      <span className="text-sm font-medium text-gray-900">
-                        {profileInfo.userId}
-                      </span>
-                    </div>
-                    <div className="flex justify-between py-3 border-b border-gray-100">
-                      <span className="text-sm font-medium text-gray-500">
-                        닉네임
-                      </span>
-                      <span className="text-sm font-medium text-blue-600">
-                        {profileInfo.nickname}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between py-3 border-b border-gray-100">
-                      <span className="text-sm font-medium text-gray-500">
-                        마지막 로그인
-                      </span>
-                      <span className="text-sm text-gray-900">
-                        {profileInfo.lastLogin}
-                      </span>
-                    </div>
-                    <div className="flex justify-between py-3 border-b border-gray-100">
-                      <span className="text-sm font-medium text-gray-500">
-                        가입일
-                      </span>
-                      <span className="text-sm text-gray-900">
-                        {profileInfo.createdAt}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 알림 설정 섹션 */}
-            <div className="bg-white shadow rounded-lg mb-6 overflow-hidden">
-              <div className="px-6 py-5 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">알림 설정</h2>
-                <p className="mt-1 text-sm text-gray-500">
-                  알림 수신 방법을 설정합니다.
-                </p>
-              </div>
-              <div className="px-6 py-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* 이메일 알림 설정 */}
-                  <div>
-                    <h3 className="text-md font-medium text-gray-900 mb-4">
-                      이메일 알림
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">
-                            공지사항 알림
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            새로운 공지사항이 등록되면 알림을 받습니다.
-                          </p>
-                        </div>
-                        <div className="relative inline-block w-12 mr-2 align-middle select-none">
-                          <input
-                            type="checkbox"
-                            id="notice-toggle"
-                            checked={notifications.email.notice}
-                            onChange={() =>
-                              handleNotificationChange("email", "notice")
-                            }
-                            className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                          />
-                          <label
-                            htmlFor="notice-toggle"
-                            className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${
-                              notifications.email.notice
-                                ? "bg-blue-500"
-                                : "bg-gray-300"
-                            }`}
-                          ></label>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">
-                            보안 알림
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            계정 보안 관련 변경사항을 알립니다.
-                          </p>
-                        </div>
-                        <div className="relative inline-block w-12 mr-2 align-middle select-none">
-                          <input
-                            type="checkbox"
-                            id="security-toggle"
-                            checked={notifications.email.security}
-                            onChange={() =>
-                              handleNotificationChange("email", "security")
-                            }
-                            className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                          />
-                          <label
-                            htmlFor="security-toggle"
-                            className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${
-                              notifications.email.security
-                                ? "bg-blue-500"
-                                : "bg-gray-300"
-                            }`}
-                          ></label>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">
-                            마케팅 알림
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            새로운 기능 및 이벤트 정보를 받습니다.
-                          </p>
-                        </div>
-                        <div className="relative inline-block w-12 mr-2 align-middle select-none">
-                          <input
-                            type="checkbox"
-                            id="marketing-toggle"
-                            checked={notifications.email.marketing}
-                            onChange={() =>
-                              handleNotificationChange("email", "marketing")
-                            }
-                            className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                          />
-                          <label
-                            htmlFor="marketing-toggle"
-                            className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${
-                              notifications.email.marketing
-                                ? "bg-blue-500"
-                                : "bg-gray-300"
-                            }`}
-                          ></label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 푸시 알림 설정 */}
-                  <div>
-                    <h3 className="text-md font-medium text-gray-900 mb-4">
-                      푸시 알림
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">
-                            채팅 메시지 알림
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            새로운 채팅 메시지를 받으면 알립니다.
-                          </p>
-                        </div>
-                        <div className="relative inline-block w-12 mr-2 align-middle select-none">
-                          <input
-                            type="checkbox"
-                            id="chat-toggle"
-                            checked={notifications.push.chat}
-                            onChange={() =>
-                              handleNotificationChange("push", "chat")
-                            }
-                            className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                          />
-                          <label
-                            htmlFor="chat-toggle"
-                            className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${
-                              notifications.push.chat
-                                ? "bg-blue-500"
-                                : "bg-gray-300"
-                            }`}
-                          ></label>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">
-                            댓글 알림
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            내 게시글에 새 댓글이 달리면 알립니다.
-                          </p>
-                        </div>
-                        <div className="relative inline-block w-12 mr-2 align-middle select-none">
-                          <input
-                            type="checkbox"
-                            id="comment-toggle"
-                            checked={notifications.push.comment}
-                            onChange={() =>
-                              handleNotificationChange("push", "comment")
-                            }
-                            className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                          />
-                          <label
-                            htmlFor="comment-toggle"
-                            className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${
-                              notifications.push.comment
-                                ? "bg-blue-500"
-                                : "bg-gray-300"
-                            }`}
-                          ></label>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">
-                            좋아요 알림
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            내 게시글에 좋아요를 받으면 알립니다.
-                          </p>
-                        </div>
-                        <div className="relative inline-block w-12 mr-2 align-middle select-none">
-                          <input
-                            type="checkbox"
-                            id="like-toggle"
-                            checked={notifications.push.like}
-                            onChange={() =>
-                              handleNotificationChange("push", "like")
-                            }
-                            className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                          />
-                          <label
-                            htmlFor="like-toggle"
-                            className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${
-                              notifications.push.like
-                                ? "bg-blue-500"
-                                : "bg-gray-300"
-                            }`}
-                          ></label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 하단 버튼 영역 */}
-            <div className="flex justify-end space-x-4 mb-8">
-              <button
-                onClick={handleCancel}
-                className="px-6 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={!isChanged}
-                className={`px-6 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer ${
-                  isChanged
-                    ? "bg-blue-600 hover:bg-blue-700"
-                    : "bg-blue-300 cursor-not-allowed"
-                }`}
-              >
-                변경사항 저장
-              </button>
-            </div>
+        {/* 알림 메시지 */}
+        {error && (
+          <div className="mb-6 bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded-lg">
+            {error}
           </div>
-        </main>
-      </div>
+        )}
+        {success && (
+          <div className="mb-6 bg-green-900 border border-green-700 text-green-200 px-4 py-3 rounded-lg">
+            {success}
+          </div>
+        )}
 
-      {/* 푸터 */}
-      <footer className="bg-white shadow-inner mt-auto">
-        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-center md:text-left mb-4 md:mb-0">
-              <p className="text-sm text-gray-500">
-                © 2025 E-Commerce + 커뮤니티 채팅 서비스. All rights reserved.
-              </p>
-            </div>
-            <div className="flex space-x-6">
-              <a href="#" className="text-sm text-gray-500 hover:text-gray-900">
-                이용약관
-              </a>
-              <a href="#" className="text-sm text-gray-500 hover:text-gray-900">
-                개인정보처리방침
-              </a>
-              <a href="#" className="text-sm text-gray-500 hover:text-gray-900">
-                고객센터
-              </a>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Left Column - 프로필 이미지 및 기본 정보 */}
+          <div className="lg:col-span-1 space-y-8">
+            <section className="bg-gray-800 p-6 rounded-2xl shadow-lg">
+              <div className="flex flex-col items-center">
+                <div className="relative w-32 h-32 mb-4">
+                  <img
+                    src={
+                      imageLoadError || !profileInfo.profileImageUrl
+                        ? "https://via.placeholder.com/128x128/374151/9CA3AF?text=프로필"
+                        : convertMockUrlToCdnUrl(profileInfo.profileImageUrl)
+                    }
+                    alt="프로필"
+                    className="w-full h-full rounded-full object-cover border-4 border-gray-700 shadow-md"
+                    onError={(e) => {
+                      if (!imageLoadError) {
+                        console.log("이미지 로드 실패:", e.currentTarget.src);
+                        setImageLoadError(true);
+                      }
+                    }}
+                    onLoad={() => {
+                      if (profileInfo.profileImageUrl && !imageLoadError) {
+                        console.log(
+                          "이미지 로드 성공:",
+                          convertMockUrlToCdnUrl(profileInfo.profileImageUrl)
+                        );
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={handleProfileImageClick}
+                    className="absolute bottom-0 right-0 w-10 h-10 bg-orange-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-orange-600 transition-transform transform hover:scale-110"
+                  >
+                    <i className="fas fa-camera"></i>
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  {profileInfo.name || "이름 없음"}
+                </h2>
+                <p className="text-gray-400 mb-4">
+                  @{profileInfo.nickname || "닉네임 없음"}
+                </p>
+                {profileInfo.profileImageUrl &&
+                  profileInfo.profileImageUrl !== "" && (
+                    <button
+                      onClick={handleRemoveProfileImage}
+                      className="text-sm text-gray-500 hover:text-red-500 transition-colors"
+                    >
+                      사진 삭제
+                    </button>
+                  )}
+              </div>
+            </section>
+
+            {/* 신체 정보 */}
+            <section className="bg-gray-800 p-6 rounded-2xl shadow-lg">
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center">
+                <i className="fas fa-ruler-combined text-orange-500 mr-2"></i>
+                신체 정보
+              </h2>
+
+              {/* 신체 정보 그리드 */}
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="bg-gray-700 p-3 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-xs font-medium text-gray-400 mb-1 flex items-center">
+                    <i className="fas fa-arrows-alt-v text-orange-400 mr-1"></i>
+                    키 (cm)
+                  </label>
+                  <input
+                    type="number"
+                    name="height"
+                    value={profileInfo.height || ""}
+                    onChange={handleNumberChange}
+                    placeholder="170"
+                    className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white text-sm"
+                  />
+                </div>
+
+                <div className="bg-gray-700 p-3 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-xs font-medium text-gray-400 mb-1 flex items-center">
+                    <i className="fas fa-weight text-orange-400 mr-1"></i>
+                    몸무게 (kg)
+                  </label>
+                  <input
+                    type="number"
+                    name="weight"
+                    value={profileInfo.weight || ""}
+                    onChange={handleNumberChange}
+                    placeholder="65"
+                    className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white text-sm"
+                  />
+                </div>
+
+                <div className="bg-gray-700 p-3 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-xs font-medium text-gray-400 mb-1 flex items-center">
+                    <i className="fas fa-shoe-prints text-orange-400 mr-1"></i>
+                    발 사이즈 (mm)
+                  </label>
+                  <input
+                    type="number"
+                    name="footSize"
+                    value={profileInfo.footSize || ""}
+                    onChange={handleNumberChange}
+                    placeholder="260"
+                    className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white text-sm"
+                  />
+                </div>
+
+                <div className="bg-gray-700 p-3 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-xs font-medium text-gray-400 mb-1 flex items-center">
+                    <i className="fas fa-expand-arrows-alt text-orange-400 mr-1"></i>
+                    발 너비
+                  </label>
+                  <select
+                    name="footWidth"
+                    value={profileInfo.footWidth || "NORMAL"}
+                    onChange={handleProfileChange}
+                    className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white text-sm"
+                  >
+                    <option value="NARROW">좁음</option>
+                    <option value="NORMAL">보통</option>
+                    <option value="WIDE">넓음</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* 신체 정보 요약 */}
+              <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 p-3 rounded-lg border border-orange-500/20">
+                <p className="text-xs text-gray-400 text-center">
+                  <i className="fas fa-info-circle text-orange-400 mr-1"></i>
+                  신체 정보는 의류 및 신발 추천에 활용됩니다
+                </p>
+              </div>
+            </section>
+          </div>
+
+          {/* Right Column - 상세 정보 */}
+          <div className="lg:col-span-2 space-y-8">
+            <section className="bg-gray-800 p-8 rounded-2xl shadow-lg">
+              <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+                <i className="fas fa-user-edit text-orange-500 mr-3"></i>
+                기본 정보
+              </h2>
+
+              {/* 필수 정보 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="bg-gray-700 p-4 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center">
+                    <i className="fas fa-user text-orange-400 mr-2"></i>
+                    이름 *
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={profileInfo.name}
+                    onChange={handleProfileChange}
+                    placeholder="홍길동"
+                    className="w-full px-4 py-3 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
+                  />
+                </div>
+
+                <div className="bg-gray-700 p-4 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center">
+                    <i className="fas fa-at text-orange-400 mr-2"></i>
+                    닉네임 *
+                  </label>
+                  <input
+                    type="text"
+                    name="nickname"
+                    value={profileInfo.nickname}
+                    onChange={handleProfileChange}
+                    placeholder="쇼핑러버"
+                    className="w-full px-4 py-3 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
+                  />
+                </div>
+
+                <div className="bg-gray-700 p-4 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center">
+                    <i className="fas fa-phone text-orange-400 mr-2"></i>
+                    전화번호 *
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={profileInfo.phone}
+                    onChange={handleProfileChange}
+                    placeholder="010-1234-5678"
+                    className="w-full px-4 py-3 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
+                  />
+                </div>
+
+                <div className="bg-gray-700 p-4 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors">
+                  <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center">
+                    <i className="fas fa-birthday-cake text-orange-400 mr-2"></i>
+                    생년월일
+                  </label>
+                  <input
+                    type="date"
+                    name="birthDate"
+                    value={profileInfo.birthDate || ""}
+                    onChange={handleProfileChange}
+                    className="w-full px-4 py-3 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
+                  />
+                </div>
+
+                <div className="bg-gray-700 p-4 rounded-xl border border-gray-600 hover:border-orange-500 transition-colors md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center">
+                    <i className="fas fa-venus-mars text-orange-400 mr-2"></i>
+                    성별
+                  </label>
+                  <select
+                    name="gender"
+                    value={profileInfo.gender || "MALE"}
+                    onChange={handleProfileChange}
+                    className="w-full px-4 py-3 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
+                  >
+                    <option value="MALE">남성</option>
+                    <option value="FEMALE">여성</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* 정보 안내 */}
+              <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 p-4 rounded-xl border border-orange-500/20">
+                <h3 className="text-sm font-semibold text-orange-400 mb-2 flex items-center">
+                  <i className="fas fa-info-circle mr-2"></i>
+                  입력 가이드
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-gray-400">
+                  <div className="flex items-center">
+                    <i className="fas fa-check text-green-400 mr-2"></i>
+                    닉네임은 2자 이상
+                  </div>
+                  <div className="flex items-center">
+                    <i className="fas fa-check text-green-400 mr-2"></i>
+                    전화번호 10-11자리
+                  </div>
+                  <div className="flex items-center">
+                    <i className="fas fa-check text-green-400 mr-2"></i>
+                    신체 정보는 선택사항
+                  </div>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
-      </footer>
 
-      {/* 토글 스위치 스타일 */}
-      <style>{`
-        .toggle-checkbox:checked {
-          right: 0;
-          border-color: #ffffff;
-        }
-        .toggle-checkbox:checked + .toggle-label {
-          background-color: #3b82f6;
-        }
-        .toggle-checkbox {
-          right: 0;
-          z-index: 1;
-          border-color: #e5e7eb;
-          transition: all 0.3s;
-        }
-        .toggle-label {
-          transition: background-color 0.3s;
-        }
-      `}</style>
+        {/* 하단 버튼 */}
+        <footer className="mt-12 flex justify-end space-x-4">
+          <button
+            onClick={handleCancel}
+            disabled={!hasChanges()}
+            className="px-6 py-3 border border-gray-600 rounded-lg text-gray-300 font-semibold hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            취소
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={!hasChanges() || saving}
+            className="px-6 py-3 border border-transparent rounded-lg text-white font-semibold bg-gradient-to-r from-orange-500 to-red-600 hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            {saving ? (
+              <>
+                <i className="fas fa-spinner fa-spin mr-2"></i>
+                저장 중...
+              </>
+            ) : (
+              "변경사항 저장"
+            )}
+          </button>
+        </footer>
+      </div>
     </div>
   );
 };

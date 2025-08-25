@@ -1,510 +1,164 @@
-import { useState } from "react";
-import styled from "styled-components";
-import { useLocation, useNavigate } from "react-router-dom";
-import { CartItem } from "types/types";
-import Fail from "components/modal/Fail";
+import React, { useState } from "react";
+// 모달 컴포넌트
+import Fail from "../../components/modal/Fail"; // 에러 알림 모달
+// 결제 관련 커스텀 훅
+import { usePaymentData } from "../../hooks/order/usePaymentData"; // 결제 데이터 관리 훅
+import { usePaymentActions } from "../../hooks/order/usePaymentActions"; // 결제 액션 관리 훅
+// 유틸리티 함수
+import { formatPrice } from "../../utils/order/formatters"; // 가격 포맷팅 함수
+// 결제 페이지 UI 컴포넌트들
+import { ProductPreviewSection } from "../../components/order/ProductPreviewSection"; // 상품 미리보기 섹션
+import { ShippingInfoSection } from "../../components/order/ShippingInfoSection"; // 배송 정보 입력 섹션
+import { PointSection } from "../../components/order/PointSection"; // 기존 포인트 사용 섹션
+import { EnhancedPointSection } from "../../components/order/EnhancedPointSection"; // 향상된 포인트 사용 섹션
+import { PaymentMethodSection } from "../../components/order/PaymentMethodSection"; // 결제수단 선택 섹션
+import { PaymentSummary } from "../../components/order/PaymentSummary"; // 결제 요약 및 결제 버튼
+import { LoadingOverlay } from "../../components/order/LoadingOverlay"; // 결제 처리 중 로딩 오버레이
+// 새로 추가된 섹션들
+import { AddressSelectionSection } from "../../components/order/AddressSelectionSection"; // 배송지 선택 섹션
+import { CouponSelectionSection } from "../../components/order/CouponSelectionSection"; // 쿠폰 선택 섹션
+// 스타일 컴포넌트
+import { Container, FormSection, SummarySection } from "./PaymentPage.styles";
 
-const Container = styled.div`
-  max-width: 1100px;
-  margin: 40px auto;
-  display: flex;
-  gap: 32px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    padding: 16px;
-  }
-`;
-
-const FormSection = styled.div`
-  flex: 2;
-  background: #fff;
-  padding: 32px;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
-
-  @media (max-width: 768px) {
-    padding: 20px;
-  }
-`;
-
-const SummarySection = styled.div`
-  flex: 1;
-
-  @media (max-width: 768px) {
-    margin-top: 24px;
-  }
-`;
-
-const SectionTitle = styled.h3`
-  margin-bottom: 16px;
-`;
-
-const InputRow = styled.div`
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 8px;
-  }
-`;
-
-const Input = styled.input`
-  flex: 1;
-  padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  min-width: 200px;
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  margin-bottom: 16px;
-`;
-
-const PaymentMethods = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`;
-
-const PaymentButton = styled.button<{ selected: boolean }>`
-  flex: 1;
-  padding: 10px;
-  border-radius: 6px;
-  border: 2px solid ${(props) => (props.selected ? "#3b82f6" : "#e5e7eb")};
-  background: ${(props) => (props.selected ? "#eff6ff" : "#f9fafb")};
-  color: ${(props) => (props.selected ? "#2563eb" : "#374151")};
-  font-weight: 600;
-  cursor: pointer;
-
-  @media (max-width: 768px) {
-    flex: unset;
-    width: 100%;
-  }
-`;
-
-const SummaryCard = styled.div`
-  background: #fff;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
-  margin-bottom: 24px;
-
-  @media (max-width: 768px) {
-    padding: 16px;
-  }
-`;
-
-const SummaryRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 12px;
-`;
-
-const TotalPrice = styled.div`
-  font-size: 22px;
-  font-weight: 700;
-  color: #3b82f6;
-  text-align: right;
-  margin-bottom: 18px;
-`;
-
-const Button = styled.button`
-  width: 100%;
-  padding: 14px 0;
-  font-size: 16px;
-  font-weight: 700;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-`;
-
-const PrimaryButton = styled(Button)<{ disabled?: boolean }>`
-  background: ${({ disabled }) =>
-    disabled ? "#a5b4fc" : "linear-gradient(90deg, #60a5fa, #3b82f6)"};
-  color: #fff;
-  margin-bottom: 12px;
-  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
-  opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
-`;
-
-const SecondaryButton = styled(Button)`
-  background: #e5e7eb;
-  color: #374151;
-`;
-
-const Notice = styled.div`
-  background: #f3f6fa;
-  padding: 14px;
-  border-radius: 8px;
-  color: #64748b;
-  font-size: 14px;
-  margin-top: 16px;
-`;
-
-const CheckLabel = styled.label`
-  display: block;
-  margin-top: 16px;
-  color: #64748b;
-  font-size: 14px;
-  cursor: pointer;
-`;
-
-const ProductHeader = styled.div`
-  font-weight: bold;
-  font-size: 16px;
-  margin-bottom: 8px;
-`;
-
-const ProductPreview = styled.div`
-  border: 1px solid #f1f5f9;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 24px;
-  font-size: 14px;
-  color: #374151;
-`;
-
+/**
+ * 결제 페이지 컴포넌트
+ * 
+ * 기능:
+ * - 주문할 상품들의 미리보기 표시
+ * - 배송 정보 입력 (이름, 전화번호, 주소, 배송 요청사항)
+ * - 포인트 사용 여부 및 사용할 포인트 설정
+ * - 결제 수단 선택 (카드, 무통장입금, 휴대폰 결제 등)
+ * - 결제 금액 요약 및 최종 결제 처리
+ * - 직접 주문(DetailPage에서 바로 주문) 차단 기능
+ * 
+ * 라우팅:
+ * - 장바구니에서 "주문하기" 클릭 시 이동
+ * - DetailPage에서 "바로 주문하기" 클릭 시 이동 (현재 차단됨)
+ * - 결제 완료 후 CheckoutPage로 이동
+ * 
+ * 사용되는 커스텀 훅:
+ * - usePaymentData: 결제 관련 데이터 및 상태 관리
+ * - usePaymentActions: 결제 처리 및 검증 로직
+ */
 const PaymentPage: React.FC = () => {
-  const nav = useNavigate();
-  const location = useLocation();
-  const items: CartItem[] = location.state?.items ?? [];
-  const [isAgree, setIsAgree] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState("카드");
-  const [usePoint, setUsePoint] = useState(false);
-  const [usedPoints, setUsedPoints] = useState(0);
-  const maxPoints = 5000;
-  const [shippingInfo, setShippingInfo] = useState({
-    name: "",
-    phone: "",
-    zipcode: "",
-    address: "",
-    detailAddress: "",
-    request: "",
-    cardNumber: "",
-    cardExpiry: "",
-    cardCvv: "",
+  // 에러 모달 관련 로컬 상태
+  const [errorMessage, setErrorMessage] = useState(""); // 에러 메시지 텍스트
+  const [showErrorModal, setErrorModal] = useState(false); // 에러 모달 표시 여부
+
+  // 결제 데이터 관리 훅 (장바구니 아이템, 배송정보, 포인트 등)
+  const paymentData = usePaymentData();
+
+  /**
+   * 에러 처리 핸들러
+   * 결제 과정에서 발생하는 모든 에러를 모달로 표시
+   * @param message - 표시할 에러 메시지
+   */
+  const handleError = (message: string) => {
+    setErrorMessage(message);
+    setErrorModal(true);
+  };
+
+  // 결제 액션 관리 훅 (포인트 계산, 결제 처리 등)
+  const {
+    calculateTotals,    // 총 결제 금액 계산 함수
+    handlePointsChange, // 포인트 사용량 변경 핸들러
+    handleUseAllPoints, // 전체 포인트 사용 핸들러
+    handlePayment,      // 최종 결제 처리 핸들러
+  } = usePaymentActions({
+    paymentData,
+    setUsedPoints: paymentData.setUsedPoints,
+    setIsProcessing: paymentData.setIsProcessing,
+    onError: handleError,
   });
-  const [showAgreeModal, setShowAgreeModal] = useState(false);
-  const [showAddressModal, setShowAddressModal] = useState(false);
-  const [showCardInfoModal, setShowCardInfoModal] = useState(false);
 
-  const handleDeliveryChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setShippingInfo((prev) => ({ ...prev, [name]: value }));
-  };
+  // 현재 결제 금액 요약 정보 계산
+  const totals = calculateTotals();
 
-  const totalOriginalPrice = items.reduce(
-    (sum, item) => sum + item.originalPrice * item.quantity,
-    0
-  );
-
-  const totalDiscount = items.reduce(
-    (sum, item) => sum + (item.originalPrice - item.price) * item.quantity,
-    0
-  );
-
-  const shipping = totalOriginalPrice - totalDiscount > 50000 ? 0 : 3000;
-  const tempTotal = totalOriginalPrice - totalDiscount + shipping;
-  const finalPaidAmount = Math.max(tempTotal - usedPoints, 0);
-  const earnedPoints = Math.floor(finalPaidAmount * 0.1);
-
-  const onClickPayment = () => {
-    if (!isAgree) {
-      setShowAgreeModal(true);
-      return;
-    }
-
-    if (
-      !shippingInfo.name ||
-      !shippingInfo.phone ||
-      !shippingInfo.address ||
-      !shippingInfo.detailAddress
-    ) {
-      setShowAddressModal(true);
-      return;
-    }
-    if (
-      selectedMethod === "카드" &&
-      (!shippingInfo.cardNumber ||
-        !shippingInfo.cardExpiry ||
-        !shippingInfo.cardCvv)
-    ) {
-      setShowCardInfoModal(true);
-      return;
-    }
-
-    const orderId = generateRandomOrderId();
-
-    const orderData = {
-      orderId,
-      status: "ORDERED",
-      orderedAt: new Date().toISOString(),
-      usedPoints: usePoint ? usedPoints : 0,
-      earnedPoints: earnedPoints,
-      currency: "KRW",
-      deliveryFee: shipping,
-      totalDiscountPrice: totalDiscount,
-      totalPrice: finalPaidAmount,
-      shippingInfo: {
-        recipientName: shippingInfo.name,
-        recipientPhone: shippingInfo.phone,
-        postalCode: shippingInfo.zipcode,
-        deliveryAddress: shippingInfo.address,
-        detailDeliveryAddress: shippingInfo.detailAddress,
-        deliveryMessage: shippingInfo.request,
-      },
-      paymentInfo: {
-        paymentMethod: selectedMethod,
-        card_number: selectedMethod === "카드" ? shippingInfo.cardNumber : null,
-        card_expiry: selectedMethod === "카드" ? shippingInfo.cardExpiry : null,
-        card_cvc: selectedMethod === "카드" ? shippingInfo.cardCvv : null,
-      },
-      items: items,
-      deletedAt: null,
-    };
-
-    const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]");
-    existingOrders.push(orderData);
-    localStorage.setItem("orders", JSON.stringify(existingOrders));
-
-    nav("/checkout?result=success", {
-      state: { orderId },
-    });
-  };
-
-  const generateRandomOrderId = () => {
-    const array = new Uint32Array(1);
-    window.crypto.getRandomValues(array);
-    return 1000000 + (array[0] % 9000000); // 1000000 ~ 9999999
-  };
-
+  // 메인 렌더링: 결제 페이지 UI
   return (
     <>
-      {showAgreeModal && (
+      {/* 결제 처리 중일 때 전체 화면을 덮는 로딩 오버레이 */}
+      <LoadingOverlay isVisible={paymentData.isProcessing} />
+
+      {/* 에러 발생 시 표시되는 모달 */}
+      {showErrorModal && (
         <Fail
-          title="결제 동의 필요"
-          message="결제 동의에 체크해 주세요."
-          onClose={() => setShowAgreeModal(false)}
+          title="확인 필요"
+          message={errorMessage}
+          onClose={() => setErrorModal(false)}
         />
       )}
 
-      {showAddressModal && (
-        <Fail
-          title="배송 정보 필요"
-          message="배송 정보를 입력해 주세요."
-          onClose={() => setShowAddressModal(false)}
-        />
-      )}
-
-      {showCardInfoModal && (
-        <Fail
-          title="카드 정보 필요"
-          message="카드 정보를 모두 입력해 주세요."
-          onClose={() => setShowCardInfoModal(false)}
-        />
-      )}
       <Container>
+        {/* 결제 정보 입력 섹션 (좌측) */}
         <FormSection>
-          <ProductHeader>구매 상품 정보</ProductHeader>
-          <ProductPreview>
-            {items.map((product) => (
-              <div key={product.id}>
-                {product.name} / {product.price.toLocaleString()}원 /{" "}
-                {product.option} × {product.quantity}개
-              </div>
-            ))}
-          </ProductPreview>
 
-          <SectionTitle>포인트 사용</SectionTitle>
-          <CheckLabel>
-            <input
-              type="checkbox"
-              checked={usePoint}
-              onChange={(e) => setUsePoint(e.target.checked)}
-              style={{ marginRight: 8, marginBottom: 16 }}
-            />
-            포인트 사용하기
-          </CheckLabel>
-          {usePoint && (
-            <InputRow>
-              <Input
-                type="text"
-                min={0}
-                max={maxPoints}
-                value={usedPoints}
-                onChange={(e) =>
-                  setUsedPoints(Math.min(Number(e.target.value), maxPoints))
-                }
-                placeholder="사용할 포인트를 입력하세요"
-              />
-              <span style={{ fontSize: 14, color: "#6b7280" }}>
-                보유 포인트: {maxPoints.toLocaleString()}P
-              </span>
-            </InputRow>
-          )}
-          <SectionTitle>배송 정보</SectionTitle>
-          <InputRow>
-            <Input
-              name="name"
-              value={shippingInfo.name}
-              onChange={handleDeliveryChange}
-              placeholder="이름을 입력하세요"
-            />
-            <Input
-              name="phone"
-              value={shippingInfo.phone}
-              onChange={handleDeliveryChange}
-              placeholder="연락처를 입력하세요"
-            />
-          </InputRow>
-          <InputRow>
-            <Input
-              name="zipcode"
-              value={shippingInfo.zipcode}
-              onChange={handleDeliveryChange}
-              placeholder="우편번호"
-            />
-            <Button style={{ maxWidth: 120 }}>우편번호 검색</Button>
-          </InputRow>
-          <InputRow>
-            <Input
-              name="address"
-              value={shippingInfo.address}
-              onChange={handleDeliveryChange}
-              placeholder="기본 주소"
-            />
-            <Input
-              name="detailAddress"
-              value={shippingInfo.detailAddress}
-              onChange={handleDeliveryChange}
-              placeholder="상세 주소를 입력하세요"
-            />
-          </InputRow>
-          <Select
-            name="request"
-            value={shippingInfo.request}
-            onChange={handleDeliveryChange}
-          >
-            <option value="">배송 요청사항을 선택하세요</option>
-            <option value="문 앞에 두고 벨 눌러주세요">
-              문 앞에 두고 벨 눌러주세요
-            </option>
-            <option value="경비실에 맡겨주세요">경비실에 맡겨주세요</option>
-          </Select>
+          {/* 주문 상품 미리보기 */}
+          <ProductPreviewSection
+            items={paymentData.items} // 주문할 상품 목록
+            formatPrice={formatPrice}
+          />
 
-          <SectionTitle>결제 방법</SectionTitle>
-          <PaymentMethods>
-            {["카드", "무통장입금", "간편결제", "휴대폰결제"].map((method) => (
-              <PaymentButton
-                key={method}
-                onClick={() => setSelectedMethod(method)}
-                selected={selectedMethod === method}
-              >
-                {method}
-              </PaymentButton>
-            ))}
-          </PaymentMethods>
+          {/* 배송지 선택 섹션 */}
+          <AddressSelectionSection
+            addresses={paymentData.addresses}
+            selectedAddress={paymentData.selectedAddress}
+            onAddressSelect={paymentData.setSelectedAddress}
+          />
 
-          {selectedMethod === "카드" && (
-            <>
-              <Input
-                style={{ marginBottom: 14 }}
-                name="cardNumber"
-                placeholder="카드 번호"
-                onChange={handleDeliveryChange}
-              />
-              <InputRow>
-                <Input
-                  name="cardExpiry"
-                  placeholder="MM/YY"
-                  onChange={handleDeliveryChange}
-                />
-                <Input
-                  name="cardCvv"
-                  placeholder="CVV"
-                  maxLength={3}
-                  onChange={handleDeliveryChange}
-                />
-              </InputRow>
-            </>
-          )}
+          {/* 배송 정보 입력 (이름, 전화번호, 주소, 배송 요청사항) */}
+          <ShippingInfoSection
+            shippingInfo={paymentData.shippingInfo}
+            isProcessing={paymentData.isProcessing}
+            onInputChange={paymentData.updateShippingInfo}
+            onDeliveryRequestChange={paymentData.handleDeliveryRequestChange}
+          />
+
+          {/* 쿠폰 선택 섹션 */}
+          <CouponSelectionSection
+            coupons={paymentData.availableCoupons}
+            selectedCoupon={paymentData.selectedCoupon}
+            onCouponSelect={paymentData.setSelectedCoupon}
+            formatPrice={formatPrice}
+            onCouponCodeApply={paymentData.applyCouponByCode}
+          />
+
+          {/* 향상된 포인트 사용 섹션 */}
+          <EnhancedPointSection
+            usePoint={paymentData.usePoint}
+            usedPoints={paymentData.usedPoints}
+            pointBalance={paymentData.pointBalance}
+            isProcessing={paymentData.isProcessing}
+            formatPrice={formatPrice}
+            onPointToggle={paymentData.handlePointToggle}
+            onPointsChange={handlePointsChange}
+            onUseAllPoints={handleUseAllPoints}
+          />
+
+          {/* 결제 수단 선택 (카드, 무통장입금, 휴대폰 결제 등) */}
+          <PaymentMethodSection
+            selectedMethod={paymentData.selectedMethod}
+            shippingInfo={paymentData.shippingInfo}
+            isProcessing={paymentData.isProcessing}
+            onMethodChange={paymentData.setSelectedMethod}
+            onInputChange={paymentData.updateShippingInfo}
+          />
         </FormSection>
 
+        {/* 결제 요약 섹션 (우측) */}
         <SummarySection>
-          <SummaryCard>
-            <h4 style={{ marginBottom: 18 }}>주문 요약</h4>
-            <SummaryRow>
-              <span>상품 금액</span>
-              <span>{totalOriginalPrice.toLocaleString()}원</span>
-            </SummaryRow>
-            <SummaryRow>
-              <span>할인 금액</span>
-              <span style={{ color: "#ef4444" }}>
-                -{totalDiscount.toLocaleString()}원
-              </span>
-            </SummaryRow>
-            <SummaryRow>
-              <span>포인트 사용</span>
-              <span>-{usePoint ? usedPoints.toLocaleString() : 0}원</span>
-            </SummaryRow>
-            <SummaryRow>
-              <span>배송비</span>
-              <span>
-                {shipping === 0 ? "무료" : `${shipping.toLocaleString()}원`}
-              </span>
-            </SummaryRow>
-            <hr style={{ margin: "16px 0" }} />
-            <TotalPrice>{finalPaidAmount.toLocaleString()}원</TotalPrice>
-
-            <SummaryRow>
-              <span style={{ fontSize: 14, color: "#6b7280" }}>
-                적립 예정 포인트
-              </span>
-              <span style={{ fontSize: 14, fontWeight: 600 }}>
-                {earnedPoints.toLocaleString()}P
-              </span>
-            </SummaryRow>
-            <PrimaryButton onClick={onClickPayment} disabled={!isAgree}>
-              결제하기
-            </PrimaryButton>
-            <SecondaryButton onClick={() => nav("/products")}>
-              계속 쇼핑하기
-            </SecondaryButton>
-
-            <Notice>
-              <b>안내사항</b>
-              <br />
-              50,000원 이상 구매 시 배송비 무료
-              <br />
-              주문 완료 후 배송 조회는 마이페이지에서 가능합니다.
-              <br />
-              무통장입금은 입금 확인 후 배송이 시작됩니다.
-            </Notice>
-
-            <CheckLabel>
-              <input
-                type="checkbox"
-                checked={isAgree}
-                onChange={(e) => setIsAgree(e.target.checked)}
-                style={{ marginRight: 8 }}
-              />
-              주문 내용을 확인하였으며, 결제에 동의합니다.
-            </CheckLabel>
-          </SummaryCard>
+          <PaymentSummary
+            totals={totals} // 계산된 결제 금액 정보 (쿠폰 할인 포함)
+            items={paymentData.items}
+            isAgree={paymentData.isAgree} // 약관 동의 여부
+            isProcessing={paymentData.isProcessing}
+            usePoint={paymentData.usePoint}
+            usedPoints={paymentData.usedPoints}
+            selectedCoupon={paymentData.selectedCoupon} // 선택된 쿠폰 정보
+            formatPrice={formatPrice}
+            onAgreeChange={paymentData.setIsAgree} // 약관 동의 체크박스 변경
+            onPayment={handlePayment} // 최종 결제 버튼 클릭
+          />
         </SummarySection>
       </Container>
     </>

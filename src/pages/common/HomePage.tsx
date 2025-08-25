@@ -1,7 +1,10 @@
-import { FC } from "react";
+import { FC, useState, useEffect } from "react";
 import styled, { keyframes } from "styled-components";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { ProductService } from "../../api/productService";
+import { ProductListItem } from "../../types/products";
+import { toUrl } from "utils/common/images";
 
 // 애니메이션 정의
 const fadeInUp = keyframes`
@@ -280,6 +283,7 @@ const ProductsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(1, 1fr);
   gap: 2rem;
+  align-items: start; /* 카드들을 상단 정렬 */
 
   @media (min-width: 640px) {
     grid-template-columns: repeat(2, 1fr);
@@ -299,6 +303,10 @@ const ProductCard = styled.div`
   position: relative;
   animation: ${fadeInUp} 1s ease-out;
   border: 1px solid rgba(249, 115, 22, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* 전체 높이 사용 */
+  min-height: 480px; /* 최소 높이 지정 */
 
   &:hover {
     transform: translateY(-12px) scale(1.02);
@@ -398,24 +406,24 @@ const ProductInfo = styled.div`
     rgba(248, 250, 252, 0.95) 100%
   );
   backdrop-filter: blur(10px);
-  padding: 2rem 1.5rem;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(248, 250, 252, 0.95) 100%
-  );
-  backdrop-filter: blur(10px);
+  flex: 1; /* 남은 공간 모두 차지 */
+  display: flex;
+  flex-direction: column;
 `;
 
 const ProductName = styled.h3`
   font-size: 1.2rem;
-  font-size: 1.2rem;
   font-weight: 700;
-  margin-bottom: 0.75rem;
   margin-bottom: 0.75rem;
   color: #1f2937;
   line-height: 1.4;
   transition: color 0.3s ease;
+  min-height: 3.2rem; /* 최소 2줄 높이 확보 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 최대 2줄로 제한 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   &:hover {
     color: #f97316;
@@ -436,11 +444,9 @@ const ProductPrice = styled.p`
 const ProductDescription = styled.p`
   color: #6b7280;
   font-size: 0.95rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: auto; /* 자동 마진으로 버튼을 아래로 푸시 */
   line-height: 1.6;
-  font-size: 0.95rem;
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
+  flex: 1; /* 남은 공간 차지 */
 `;
 
 const ViewMoreButton = styled(Link)`
@@ -455,6 +461,7 @@ const ViewMoreButton = styled(Link)`
   border-radius: 12px;
   background: rgba(249, 115, 22, 0.1);
   border: 1px solid rgba(249, 115, 22, 0.2);
+  margin-top: 1rem; /* 상단 마진 추가 */
 
   &:hover {
     color: #dc2626;
@@ -669,7 +676,7 @@ const CTASubtitle = styled.p`
   z-index: 2;
 `;
 
-const CTAButton = styled.button`
+const CTAButton = styled(Link)`
   background: linear-gradient(135deg, #f97316, #ea580c, #dc2626);
   color: white;
   border: none;
@@ -683,6 +690,10 @@ const CTAButton = styled.button`
   position: relative;
   z-index: 2;
   overflow: hidden;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
   &::before {
     content: "";
@@ -788,42 +799,37 @@ const FooterCopyright = styled.div`
 
 const HomePage: FC = () => {
   const { user } = useAuth();
+  const [popularProducts, setPopularProducts] = useState<ProductListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 임시 상품 데이터
-  const products = [
-    {
-      id: 1,
-      name: "프리미엄 티셔츠",
-      price: "29,000원",
-      description: "부드러운 코튼 소재의 프리미엄 티셔츠",
-      image:
-        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=300&fit=crop",
-    },
-    {
-      id: 2,
-      name: "클래식 청바지",
-      price: "59,000원",
-      description: "클래식한 디자인의 슬림핏 청바지",
-      image:
-        "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=300&fit=crop",
-    },
-    {
-      id: 3,
-      name: "가죽 크로스백",
-      price: "89,000원",
-      description: "고급스러운 가죽 소재의 크로스백",
-      image:
-        "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=300&fit=crop",
-    },
-    {
-      id: 4,
-      name: "스니커즈",
-      price: "79,000원",
-      description: "편안한 착용감의 캐주얼 스니커즈",
-      image:
-        "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop",
-    },
-  ];
+  // 인기 상품 데이터 가져오기 (wishNumber 기준 정렬)
+  useEffect(() => {
+    const fetchPopularProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await ProductService.getFilteredProducts({
+          sort: "popular",
+          size: 4, // 상위 4개 상품만
+          page: 0
+        });
+        setPopularProducts(response.content);
+      } catch (err) {
+        console.error("인기 상품 조회 실패:", err);
+        setError("인기 상품을 불러오는 중 오류가 발생했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPopularProducts();
+  }, []);
+
+  // 가격 포맷팅 함수
+  const formatPrice = (price: number): string => {
+    return `${price.toLocaleString()}원`;
+  };
 
   return (
     <HomeContainer>
@@ -844,7 +850,7 @@ const HomePage: FC = () => {
                       관리자 대시보드
                     </PrimaryButton>
                   ) : (
-                    <PrimaryButton to="/store-home">
+                    <PrimaryButton to="/products">
                       <i
                         className="fas fa-shopping-bag"
                         style={{ marginRight: "8px" }}
@@ -922,25 +928,126 @@ const HomePage: FC = () => {
             고객들이 가장 많이 찾는 인기 상품들을 만나보세요
           </SectionSubtitle>
           <ProductsGrid>
-            {products.map((product, index) => (
-              <ProductCard
-                key={product.id}
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <ProductImage>
-                  <img src={product.image} alt={product.name} />
-                </ProductImage>
-                <ProductInfo>
-                  <ProductName>{product.name}</ProductName>
-                  <ProductPrice>{product.price}</ProductPrice>
-                  <ProductDescription>{product.description}</ProductDescription>
-                  <ViewMoreButton to={`/product/${product.id}`}>
-                    자세히 보기
-                    <i className="fas fa-arrow-right"></i>
-                  </ViewMoreButton>
-                </ProductInfo>
-              </ProductCard>
-            ))}
+            {loading ? (
+              // 로딩 상태 표시
+              Array.from({ length: 4 }).map((_, index) => (
+                <ProductCard key={`loading-${index}`} style={{ animationDelay: `${index * 0.1}s` }}>
+                  <ProductImage style={{ background: "linear-gradient(135deg, #f8fafc, #e2e8f0)" }}>
+                    <div style={{ 
+                      display: "flex", 
+                      alignItems: "center", 
+                      justifyContent: "center", 
+                      height: "100%", 
+                      color: "#9ca3af",
+                      fontSize: "1rem"
+                    }}>
+                      로딩 중...
+                    </div>
+                  </ProductImage>
+                  <ProductInfo>
+                    <div style={{ 
+                      height: "20px", 
+                      background: "linear-gradient(135deg, #f8fafc, #e2e8f0)", 
+                      borderRadius: "4px", 
+                      marginBottom: "0.75rem" 
+                    }}></div>
+                    <div style={{ 
+                      height: "24px", 
+                      background: "linear-gradient(135deg, #f8fafc, #e2e8f0)", 
+                      borderRadius: "4px", 
+                      marginBottom: "0.75rem", 
+                      width: "60%" 
+                    }}></div>
+                  </ProductInfo>
+                </ProductCard>
+              ))
+            ) : error ? (
+              // 에러 상태 표시
+              <div style={{
+                gridColumn: "1 / -1",
+                textAlign: "center",
+                padding: "2rem",
+                color: "#ef4444",
+                fontSize: "1.1rem"
+              }}>
+                {error}
+                <div style={{ marginTop: "1rem" }}>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    style={{
+                      background: "#f97316",
+                      color: "white",
+                      border: "none",
+                      padding: "0.5rem 1rem",
+                      borderRadius: "8px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    다시 시도
+                  </button>
+                </div>
+              </div>
+            ) : popularProducts.length === 0 ? (
+              // 상품이 없는 경우
+              <div style={{
+                gridColumn: "1 / -1",
+                textAlign: "center",
+                padding: "2rem",
+                color: "#6b7280",
+                fontSize: "1.1rem"
+              }}>
+                현재 인기 상품이 없습니다.
+              </div>
+            ) : (
+              // 정상적인 상품 목록 표시
+              popularProducts.map((product, index) => (
+                <ProductCard
+                  key={product.productId}
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <ProductImage>
+                    {product.mainImageUrl ? (
+                      <img src={toUrl(product.mainImageUrl)} alt={product.name} />
+                    ) : (
+                      <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        height: "100%",
+                        background: "linear-gradient(135deg, #f8fafc, #e2e8f0)",
+                        color: "#9ca3af",
+                        fontSize: "1rem"
+                      }}>
+                        <i className="fas fa-image" style={{ marginRight: "0.5rem" }}></i>
+                        이미지 없음
+                      </div>
+                    )}
+                  </ProductImage>
+                  <ProductInfo>
+                    <ProductName>{product.name}</ProductName>
+                    <ProductPrice>
+                      {product.discountPrice > 0 && product.discountPrice < product.price ? (
+                        <>
+                          <span style={{ textDecoration: "line-through", color: "#9ca3af", fontSize: "0.9rem", marginRight: "0.5rem" }}>
+                            {formatPrice(product.price)}
+                          </span>
+                          {formatPrice(product.discountPrice)}
+                        </>
+                      ) : (
+                        formatPrice(product.price)
+                      )}
+                    </ProductPrice>
+                    <ProductDescription>
+                      {product.storeName}
+                    </ProductDescription>
+                    <ViewMoreButton to={`/products/${product.productId}`}>
+                      자세히 보기
+                      <i className="fas fa-arrow-right"></i>
+                    </ViewMoreButton>
+                  </ProductInfo>
+                </ProductCard>
+              ))
+            )}
           </ProductsGrid>
         </Container>
       </ProductsSection>
@@ -998,13 +1105,13 @@ const HomePage: FC = () => {
               <>
                 {user.userType === "admin" ? (
                   <>
-                    <CTAButton>
-                      <i
-                        className="fas fa-chart-line"
-                        style={{ marginRight: "8px" }}
-                      ></i>
-                      관리자 대시보드
-                    </CTAButton>
+                    <CTAButton to="/admin-dashboard">
+                    <i
+                      className="fas fa-chart-line"
+                      style={{ marginRight: "8px" }}
+                    ></i>
+                    관리자 대시보드
+                  </CTAButton>
                     <SecondaryButton to="/store-home">
                       <i
                         className="fas fa-store"
@@ -1014,12 +1121,12 @@ const HomePage: FC = () => {
                     </SecondaryButton>
                   </>
                 ) : (
-                  <CTAButton>
+                  <CTAButton to="/become-seller">
                     <i
                       className="fas fa-user-shield"
                       style={{ marginRight: "8px" }}
                     ></i>
-                    관리자 전환하기
+                    판매자 되기
                   </CTAButton>
                 )}
                 <SecondaryButton to="/products">
@@ -1032,7 +1139,7 @@ const HomePage: FC = () => {
               </>
             ) : (
               <>
-                <CTAButton>
+                <CTAButton to="/login">
                   <i
                     className="fas fa-sign-in-alt"
                     style={{ marginRight: "8px" }}
@@ -1051,29 +1158,6 @@ const HomePage: FC = () => {
           </ButtonGroup>
         </Container>
       </CTASection>
-
-      <Footer>
-        <Container>
-          <FooterContent>
-            <FooterBrand>
-              <FooterBrandTitle>FeedShop</FooterBrandTitle>
-              <FooterBrandDescription>
-                스마트한 쇼핑 경험을 위한 최고의 선택. 고객과 비즈니스 모두를
-                위한 혁신적인 플랫폼입니다.
-              </FooterBrandDescription>
-            </FooterBrand>
-            <FooterLinks>
-              <FooterLink href="#">이용약관</FooterLink>
-              <FooterLink href="#">개인정보처리방침</FooterLink>
-              <FooterLink href="#">고객센터</FooterLink>
-              <FooterLink href="#">문의하기</FooterLink>
-            </FooterLinks>
-          </FooterContent>
-          <FooterCopyright>
-            <p>&copy; 2025 FeedShop. All rights reserved.</p>
-          </FooterCopyright>
-        </Container>
-      </Footer>
     </HomeContainer>
   );
 };

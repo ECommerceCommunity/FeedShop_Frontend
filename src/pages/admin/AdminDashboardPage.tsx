@@ -27,6 +27,17 @@ const slideIn = keyframes`
   }
 `;
 
+const slideInSmooth = keyframes`
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+`;
+
 const pulse = keyframes`
   0%, 100% {
     transform: scale(1);
@@ -36,17 +47,31 @@ const pulse = keyframes`
   }
 `;
 
+const glow = keyframes`
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(135, 206, 235, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(135, 206, 235, 0.6);
+  }
+`;
+
 const Container = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+  color: white;
+  font-family: "Pretendard", sans-serif;
+  overflow-x: hidden;
 `;
 
 const Header = styled.header`
-  height: 60px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  height: 70px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   position: fixed;
   top: 0;
   left: 0;
@@ -65,16 +90,19 @@ const LogoWrapper = styled.div`
 `;
 
 const Logo = styled.h1`
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: 900;
-  color: white;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
   cursor: pointer;
 
   &:hover {
     transform: scale(1.05);
-    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    filter: drop-shadow(0 4px 8px rgba(249, 115, 22, 0.4));
   }
 `;
 
@@ -88,19 +116,41 @@ const Nav = styled.nav`
 `;
 
 const NavLink = styled.a`
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.8);
   font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(249, 115, 22, 0.2),
+      transparent
+    );
+    transition: left 0.5s;
+  }
 
   &:hover {
     color: white;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(249, 115, 22, 0.1);
     transform: translateY(-2px);
+
+    &::before {
+      left: 100%;
+    }
   }
 `;
 
@@ -112,37 +162,40 @@ const UserMenu = styled.div`
 
 const IconButton = styled.button`
   color: rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
+  padding: 10px;
+  border-radius: 12px;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
 
   &:hover {
     color: white;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(249, 115, 22, 0.2);
+    border-color: rgba(249, 115, 22, 0.3);
     transform: scale(1.1);
+    animation: ${glow} 1s ease-in-out;
   }
 `;
 
 const LoginButton = styled.button`
-  background: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, #f97316, #ea580c);
   color: white;
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-radius: 25px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
   transition: all 0.3s ease;
   white-space: nowrap;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: none;
+  font-weight: 600;
   backdrop-filter: blur(10px);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 12px 35px rgba(249, 115, 22, 0.4);
+    animation: ${pulse} 0.6s ease-in-out;
   }
 `;
 
@@ -156,8 +209,8 @@ const MobileMenuButton = styled(IconButton)`
 const MobileMenuOverlay = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
   z-index: 50;
   transition: opacity 0.3s;
   opacity: ${(props) => (props.$isOpen ? 1 : 0)};
@@ -171,33 +224,34 @@ const MobileMenuDrawer = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   top: 0;
   right: 0;
-  width: 256px;
+  width: 280px;
   height: 100%;
-  background: white;
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.3);
   transform: translateX(${(props) => (props.$isOpen ? "0" : "100%")});
   transition: transform 0.3s;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
 `;
 
 const MobileMenuHeader = styled.div`
-  padding: 16px;
-  border-bottom: 1px solid #eee;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
 
 const MobileMenuTitle = styled.h2`
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: bold;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #f97316, #ea580c);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 `;
 
 const MobileMenuNav = styled.nav`
-  padding: 16px;
+  padding: 20px;
 `;
 
 const MobileMenuList = styled.ul`
@@ -210,52 +264,63 @@ const MobileMenuList = styled.ul`
 const MobileMenuListItem = styled.li`
   a {
     display: block;
-    padding: 8px 0;
-    color: #444;
+    padding: 12px 0;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
     &:hover {
-      color: #667eea;
+      color: white;
+      background: rgba(249, 115, 22, 0.1);
+      padding-left: 12px;
     }
   }
 `;
 
 const MobileMenuLoginSection = styled.div`
   margin-top: 24px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 20px;
 `;
 
 const FlexContainer = styled.div`
   display: flex;
   flex: 1;
+  margin-top: 70px;
+  position: relative;
 `;
 
 const Sidebar = styled.aside<{ $isOpen: boolean }>`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 8px 0 32px rgba(0, 0, 0, 0.3);
   position: fixed;
   left: 0;
-  top: 60px;
+  top: 70px;
   bottom: 0;
   width: ${(props) => (props.$isOpen ? "280px" : "60px")};
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 40;
-  animation: ${slideIn} 0.4s ease-out;
   overflow-y: auto;
+  overflow-x: hidden;
 
   &::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
   }
 
   &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
+    background: transparent;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 3px;
+    background: rgba(249, 115, 22, 0.2);
+    border-radius: 2px;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(249, 115, 22, 0.4);
   }
 
   @media (min-width: 769px) {
@@ -267,24 +332,27 @@ const Sidebar = styled.aside<{ $isOpen: boolean }>`
 const SidebarToggleButton = styled.button`
   position: absolute;
   right: -12px;
-  top: 16px;
-  background: white;
+  top: 20px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
   border-radius: 50%;
-  padding: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-  color: #667eea;
+  padding: 10px;
+  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
+  color: white;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  z-index: 45;
 
   &:hover {
-    color: #764ba2;
     transform: scale(1.1);
     animation: ${pulse} 0.6s ease-in-out;
+    box-shadow: 0 12px 35px rgba(249, 115, 22, 0.4);
   }
 `;
 
 const SidebarNav = styled.nav`
   padding: 20px 0;
+  animation: ${slideInSmooth} 0.4s ease-out;
 `;
 
 const SidebarList = styled.ul`
@@ -301,13 +369,13 @@ const SidebarItem = styled.li`
 const SidebarLink = styled.a`
   display: flex;
   align-items: center;
-  padding: 15px 20px;
+  padding: 16px 20px;
   color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 500;
   background: transparent;
-  border-radius: 12px;
+  border-radius: 16px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
@@ -323,7 +391,7 @@ const SidebarLink = styled.a`
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(255, 255, 255, 0.1),
+      rgba(249, 115, 22, 0.2),
       transparent
     );
     transition: left 0.5s;
@@ -332,11 +400,11 @@ const SidebarLink = styled.a`
   &:hover {
     background: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.15),
-      rgba(255, 255, 255, 0.05)
+      rgba(249, 115, 22, 0.15),
+      rgba(249, 115, 22, 0.05)
     );
     color: white;
-    transform: translateX(5px);
+    transform: translateX(8px);
 
     &::before {
       left: 100%;
@@ -349,7 +417,7 @@ const SidebarLink = styled.a`
 `;
 
 const SidebarIcon = styled.i`
-  width: 20px;
+  width: 24px;
   margin-right: 15px;
   font-size: 16px;
   color: rgba(255, 255, 255, 0.7);
@@ -371,26 +439,30 @@ const SidebarText = styled.span<{ $isOpen: boolean }>`
 
 const MainContent = styled.main<{ $sidebarOpen: boolean }>`
   flex: 1;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-left: ${({ $sidebarOpen }) => ($sidebarOpen ? "280px" : "60px")};
+  min-height: calc(100vh - 70px);
+  position: relative;
+
   @media (max-width: 768px) {
     margin-left: 0;
   }
 `;
 
 const ContentPadding = styled.div`
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 24px 32px;
+
   @media (max-width: 768px) {
-    padding: 16px;
+    padding: 16px 20px;
   }
 `;
 
 const Breadcrumb = styled.div`
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   font-size: 0.875rem;
-  color: #666;
+  color: rgba(255, 255, 255, 0.7);
   animation: ${fadeInUp} 0.6s ease-out;
 `;
 
@@ -399,23 +471,26 @@ const BreadcrumbLink = styled.span`
   transition: all 0.3s ease;
 
   &:hover {
-    color: #667eea;
+    color: #f97316;
     transform: translateX(2px);
   }
 `;
 
 const PageTitle = styled.h1`
-  font-size: 2rem;
+  font-size: 2.25rem;
   font-weight: 800;
-  color: #1f2937;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 24px;
   animation: ${fadeInUp} 0.6s ease-out 0.1s both;
 `;
 
 const TabContainer = styled.div`
   display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
   animation: ${fadeInUp} 0.6s ease-out 0.2s both;
 `;
 
@@ -425,31 +500,34 @@ const TabButton = styled.button<{ $active: boolean }>`
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: ${(props) =>
     props.$active
-      ? "linear-gradient(135deg, #667eea, #764ba2)"
-      : "rgba(255, 255, 255, 0.8)"};
-  color: ${(props) => (props.$active ? "white" : "#666")};
+      ? "linear-gradient(135deg, #f97316, #ea580c)"
+      : "rgba(255, 255, 255, 0.05)"};
+  color: ${(props) => (props.$active ? "white" : "rgba(255, 255, 255, 0.8)")};
   box-shadow: ${(props) =>
     props.$active
-      ? "0 8px 25px rgba(102, 126, 234, 0.3)"
-      : "0 2px 8px rgba(0, 0, 0, 0.1)"};
+      ? "0 6px 20px rgba(249, 115, 22, 0.3)"
+      : "0 2px 10px rgba(0, 0, 0, 0.2)"};
+  border: 1px solid
+    ${(props) =>
+      props.$active ? "rgba(249, 115, 22, 0.3)" : "rgba(255, 255, 255, 0.1)"};
 
   &:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: ${(props) =>
       props.$active
-        ? "0 12px 35px rgba(102, 126, 234, 0.4)"
-        : "0 4px 15px rgba(0, 0, 0, 0.15)"};
+        ? "0 8px 25px rgba(249, 115, 22, 0.4)"
+        : "0 4px 15px rgba(0, 0, 0, 0.3)"};
   }
 `;
 
 const StatCardsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
 
   @media (min-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
@@ -461,21 +539,19 @@ const StatCardsGrid = styled.div`
 `;
 
 const StatCard = styled.div`
-  background: white;
-  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.75rem;
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   animation: ${fadeInUp} 0.6s ease-out;
   position: relative;
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  }
+  overflow: hidden;
 
   &::before {
     content: "";
@@ -483,28 +559,37 @@ const StatCard = styled.div`
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-radius: 20px 20px 0 0;
+    height: 3px;
+    background: linear-gradient(135deg, #f97316, #ea580c);
     transform: scaleX(0);
     transition: transform 0.3s ease;
   }
 
-  &:hover::before {
-    transform: scaleX(1);
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    border-color: rgba(249, 115, 22, 0.3);
+
+    &::before {
+      transform: scaleX(1);
+    }
+  }
+
+  &:hover .stat-icon {
+    animation: ${pulse} 0.6s ease-in-out;
   }
 `;
 
 const StatTitle = styled.div`
   font-size: 0.875rem;
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.7);
   margin-bottom: 0.5rem;
 `;
 
 const StatValue = styled.div`
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 800;
-  color: #1f2937;
+  color: white;
   margin-bottom: 0.25rem;
 `;
 
@@ -525,45 +610,69 @@ const StatIconWrapper = styled.div<{ $bgColor: string }>`
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
 
   &:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
     animation: ${pulse} 0.6s ease-in-out;
+
+    &::before {
+      opacity: 0.3;
+    }
   }
 `;
 
 const RecentActivityCard = styled.div`
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-  padding: 24px;
-  margin-bottom: 32px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+  animation: ${fadeInUp} 0.6s ease-out 0.3s both;
 `;
 
 const CardHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 2rem;
 `;
 
 const CardTitle = styled.h2`
-  font-size: 1.125rem;
-  font-weight: bold;
-  color: #333;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
 `;
 
 const ViewAllButton = styled.button`
-  color: #87ceeb;
+  color: #f97316;
   text-decoration: none;
   font-size: 0.875rem;
   background: none;
   border: none;
   cursor: pointer;
   white-space: nowrap;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+
   &:hover {
-    text-decoration: underline;
+    background: rgba(249, 115, 22, 0.1);
+    transform: translateY(-2px);
   }
 `;
 
@@ -574,22 +683,39 @@ const ActivityList = styled.div`
 const ActivityItem = styled.div`
   display: flex;
   align-items: flex-start;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #eee;
-  margin-bottom: 16px;
+  padding: 0.875rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 0.75rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(249, 115, 22, 0.2);
+    transform: translateX(4px);
+  }
+
   &:last-child {
-    border-bottom: none;
     margin-bottom: 0;
   }
 `;
 
 const ActivityIconWrapper = styled.div<{ $bgColor: string }>`
   background: ${(props) => props.$bgColor};
-  padding: 8px;
-  border-radius: 8px;
-  margin-right: 16px;
+  padding: 10px;
+  border-radius: 12px;
+  margin-right: 0.875rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: scale(1.05);
+    animation: ${pulse} 0.6s ease-in-out;
+  }
+
   i {
-    color: inherit; /* Icon color will be set by parent */
+    color: inherit;
+    font-size: 1.1rem;
   }
 `;
 
@@ -600,34 +726,41 @@ const ActivityContent = styled.div`
 const ActivityRow = styled.div`
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
 `;
 
 const ActivityTitle = styled.p`
-  font-weight: 500;
+  font-weight: 600;
+  color: white;
+  margin: 0;
 `;
 
 const ActivityTime = styled.span`
-  color: #999;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 0.875rem;
 `;
 
 const ActivityDescription = styled.p`
-  color: #666;
+  color: rgba(255, 255, 255, 0.8);
   font-size: 0.875rem;
-  margin-top: 4px;
+  margin: 0;
+  line-height: 1.5;
 `;
 
 const TwoColumnGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 32px;
+  gap: 2rem;
 `;
 
 const TableCard = styled.div`
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-  padding: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  padding: 2rem;
 `;
 
 const StyledTable = styled.table`
@@ -637,108 +770,140 @@ const StyledTable = styled.table`
 `;
 
 const TableHeader = styled.th`
-  padding: 12px 0;
+  padding: 16px 0;
   text-align: center;
   font-size: 0.75rem;
-  font-weight: 500;
-  color: #666;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 `;
 
 const TableRow = styled.tr`
-  border-bottom: 1px solid #f8f8f8;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+
   &:hover {
-    background: #fcfcfc;
+    background: rgba(255, 255, 255, 0.05);
   }
 `;
 
 const TableCell = styled.td`
-  padding: 16px 0;
+  padding: 20px 0;
   font-size: 0.875rem;
-  color: #666;
+  color: rgba(255, 255, 255, 0.8);
 `;
 
 const OrderIdCell = styled(TableCell)`
-  font-weight: 500;
-  color: #333;
+  font-weight: 600;
+  color: white;
 `;
 
 const StatusSpan = styled.span<{ $status: string }>`
-  padding: 4px 8px;
-  border-radius: 9999px;
+  padding: 6px 12px;
+  border-radius: 20px;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
   background: ${(props) => {
     switch (props.$status) {
       case "완료":
-        return "#e8f5e9";
+        return "rgba(16, 185, 129, 0.2)";
       case "처리중":
-        return "#e3f2fd";
+        return "rgba(59, 130, 246, 0.2)";
       case "배송중":
-        return "#fff3e0";
+        return "rgba(245, 158, 11, 0.2)";
       case "취소":
-        return "#ffebee";
+        return "rgba(239, 68, 68, 0.2)";
       default:
-        return "#f5f5f5";
+        return "rgba(255, 255, 255, 0.1)";
     }
   }};
   color: ${(props) => {
     switch (props.$status) {
       case "완료":
-        return "#28a745";
+        return "#10b981";
       case "처리중":
-        return "#1976d2";
+        return "#3b82f6";
       case "배송중":
-        return "#ff9800";
+        return "#f59e0b";
       case "취소":
-        return "#dc3545";
+        return "#ef4444";
       default:
-        return "#333";
+        return "white";
     }
   }};
+  border: 1px solid
+    ${(props) => {
+      switch (props.$status) {
+        case "완료":
+          return "rgba(16, 185, 129, 0.3)";
+        case "처리중":
+          return "rgba(59, 130, 246, 0.3)";
+        case "배송중":
+          return "rgba(245, 158, 11, 0.3)";
+        case "취소":
+          return "rgba(239, 68, 68, 0.3)";
+        default:
+          return "rgba(255, 255, 255, 0.2)";
+      }
+    }};
 `;
 
 const QuickActionsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 1.5rem;
 `;
 
 const QuickActionCard = styled.div`
-  background: #fff;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.5rem;
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  transition: all 0.3s ease;
+
   &:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(249, 115, 22, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
   }
 `;
 
 const QuickActionIconWrapper = styled.div<{ $bgColor: string }>`
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   background: ${(props) => props.$bgColor};
-  border-radius: 8px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12px;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: scale(1.1);
+    animation: ${pulse} 0.6s ease-in-out;
+  }
+
   i {
-    color: inherit; /* Icon color will be set by parent */
+    color: inherit;
+    font-size: 1.2rem;
   }
 `;
 
 const QuickActionTitle = styled.h3`
-  font-weight: 500;
-  color: #333;
+  font-weight: 600;
+  color: white;
+  font-size: 1rem;
 `;
 
 const StyledFooter = styled.footer`
-  background: #fff;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   height: 120px;
   z-index: 10;
   display: flex;
@@ -748,9 +913,9 @@ const StyledFooter = styled.footer`
 
 const FooterContent = styled.div`
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -761,7 +926,7 @@ const FooterContent = styled.div`
 `;
 
 const CopyrightText = styled.p`
-  color: #666;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 0.875rem;
   margin-bottom: 16px;
   @media (min-width: 768px) {
@@ -775,37 +940,42 @@ const FooterLinks = styled.div`
 `;
 
 const FooterLink = styled.a`
-  color: #666;
+  color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
   font-size: 0.875rem;
   cursor: pointer;
+  transition: all 0.3s ease;
+
   &:hover {
-    color: #87ceeb;
+    color: #f97316;
+    transform: translateY(-2px);
   }
 `;
 
 const ToastNotification = styled.div<{ $show: boolean }>`
   position: fixed;
-  top: 80px;
-  right: 16px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-  border-radius: 8px;
-  padding: 16px;
+  top: 90px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 1.5rem;
   display: flex;
   align-items: flex-start;
-  max-width: 280px;
+  max-width: 300px;
   z-index: 50;
   transform: translateX(${(props) => (props.$show ? "0" : "100%")});
   transition: transform 0.3s;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 `;
 
 const ToastIconWrapper = styled.div`
   flex-shrink: 0;
   padding-top: 2px;
   i {
-    color: #28a745;
-    font-size: 20px;
+    color: #10b981;
+    font-size: 1.2rem;
   }
 `;
 
@@ -817,14 +987,16 @@ const ToastContent = styled.div`
 
 const ToastTitle = styled.p`
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #333;
+  font-weight: 600;
+  color: white;
+  margin: 0;
 `;
 
 const ToastMessage = styled.p`
   margin-top: 4px;
   font-size: 0.875rem;
-  color: #666;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
 `;
 
 const ToastCloseButton = styled.button`
@@ -834,36 +1006,54 @@ const ToastCloseButton = styled.button`
   background: none;
   border: none;
   border-radius: 8px;
-  color: #999;
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
+  transition: all 0.3s ease;
+
   &:hover {
-    color: #666;
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
   }
 `;
 
 // 리뷰 관리 관련 styled-components
 const ReviewStatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
 `;
 
 const ReviewStatCard = styled.div`
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  padding: 1.25rem;
   display: flex;
   align-items: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  }
 `;
 
 const ReviewStatIcon = styled.div<{ $bgColor: string; $textColor: string }>`
   background: ${(props) => props.$bgColor};
   color: ${(props) => props.$textColor};
-  padding: 12px;
-  border-radius: 8px;
-  margin-right: 16px;
+  padding: 0.875rem;
+  border-radius: 12px;
+  margin-right: 0.875rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: scale(1.05);
+    animation: ${pulse} 0.6s ease-in-out;
+  }
 
   i {
     font-size: 1.25rem;
@@ -875,44 +1065,110 @@ const ReviewStatContent = styled.div`
 `;
 
 const ReviewStatTitle = styled.p`
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 0.875rem;
-  margin-bottom: 4px;
+  margin-bottom: 0.5rem;
 `;
 
 const ReviewStatValue = styled.h3`
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #111827;
+  font-size: 2rem;
+  font-weight: 800;
+  color: white;
 `;
 
 const FilterSection = styled.div`
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  margin-bottom: 1.5rem;
 `;
 
 const FilterHeader = styled.div`
-  padding: 20px 24px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 `;
 
 const FilterTitle = styled.h3`
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #111827;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
 `;
 
 const FilterContent = styled.div`
-  padding: 24px;
+  padding: 1.75rem;
+`;
+
+// 빠른 액세스 관련 styled-components
+const QuickAccessGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+`;
+
+const QuickAccessCard = styled.div`
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  }
+`;
+
+const QuickAccessIcon = styled.div<{ $bgColor: string }>`
+  background: ${(props) => props.$bgColor};
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: scale(1.1);
+    animation: ${pulse} 0.6s ease-in-out;
+  }
+
+  i {
+    font-size: 1.5rem;
+  }
+`;
+
+const QuickAccessTitle = styled.h3`
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.5rem;
+`;
+
+const QuickAccessDescription = styled.p`
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+  line-height: 1.4;
 `;
 
 const FilterGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
 `;
 
 const FilterGroup = styled.div`
@@ -922,62 +1178,78 @@ const FilterGroup = styled.div`
 
 const FilterLabel = styled.label`
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 8px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.5rem;
 `;
 
 const FilterSelect = styled.select`
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
   font-size: 0.875rem;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:focus {
     outline: none;
-    border-color: #87ceeb;
-    box-shadow: 0 0 0 3px rgba(135, 206, 235, 0.1);
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+  }
+
+  option {
+    background: #1f2937;
+    color: white;
   }
 `;
 
 const FilterInput = styled.input`
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
   font-size: 0.875rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:focus {
     outline: none;
-    border-color: #87ceeb;
-    box-shadow: 0 0 0 3px rgba(135, 206, 235, 0.1);
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+  }
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
   }
 `;
 
 const ReviewTableContainer = styled.div`
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
   overflow: hidden;
 `;
 
 const ReviewTableHeader = styled.div`
-  padding: 20px 24px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
 
 const ReviewTableTitle = styled.h3`
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #111827;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
 `;
 
 const ReviewCount = styled.p`
   font-size: 0.875rem;
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.7);
 `;
 
 const ReviewTable = styled.table`
@@ -986,34 +1258,36 @@ const ReviewTable = styled.table`
 `;
 
 const ReviewTableHead = styled.thead`
-  background: #f9fafb;
+  background: rgba(255, 255, 255, 0.03);
 `;
 
 const ReviewTableHeaderCell = styled.th`
-  padding: 12px 16px;
+  padding: 0.875rem 1.25rem;
   text-align: left;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 `;
 
 const ReviewTableBody = styled.tbody`
-  background: #fff;
+  background: transparent;
 `;
 
 const ReviewTableRow = styled.tr<{ $isHidden?: boolean }>`
-  background: ${(props) => (props.$isHidden ? "#f9fafb" : "#fff")};
-  border-bottom: 1px solid #e5e7eb;
+  background: ${(props) =>
+    props.$isHidden ? "rgba(255, 255, 255, 0.02)" : "transparent"};
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    background: #f9fafb;
+    background: rgba(255, 255, 255, 0.05);
   }
 `;
 
 const ReviewTableCell = styled.td`
-  padding: 16px;
+  padding: 1.25rem;
   vertical-align: top;
 `;
 
@@ -1023,11 +1297,12 @@ const ProductInfo = styled.div`
 `;
 
 const ProductImage = styled.img`
-  width: 40px;
-  height: 40px;
-  border-radius: 6px;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
   object-fit: cover;
-  margin-right: 12px;
+  margin-right: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.1);
 `;
 
 const ProductDetails = styled.div`
@@ -1037,14 +1312,14 @@ const ProductDetails = styled.div`
 
 const ProductName = styled.div`
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #111827;
-  margin-bottom: 4px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.25rem;
 `;
 
 const ProductId = styled.div`
   font-size: 0.75rem;
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.6);
 `;
 
 const RatingDisplay = styled.div`
@@ -1054,9 +1329,9 @@ const RatingDisplay = styled.div`
 
 const RatingValue = styled.span`
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #111827;
-  margin-right: 8px;
+  font-weight: 600;
+  color: white;
+  margin-right: 0.5rem;
 `;
 
 const StarContainer = styled.div`
@@ -1065,8 +1340,8 @@ const StarContainer = styled.div`
 `;
 
 const Star = styled.i<{ $filled: boolean }>`
-  color: ${(props) => (props.$filled ? "#fbbf24" : "#d1d5db")};
-  font-size: 0.75rem;
+  color: ${(props) => (props.$filled ? "#fbbf24" : "rgba(255, 255, 255, 0.3)")};
+  font-size: 0.875rem;
 `;
 
 const ReviewContent = styled.div`
@@ -1075,8 +1350,8 @@ const ReviewContent = styled.div`
 
 const ReviewText = styled.div`
   font-size: 0.875rem;
-  color: #111827;
-  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -1086,87 +1361,108 @@ const ReviewText = styled.div`
 const ReviewImages = styled.div`
   display: flex;
   align-items: center;
-  margin-top: 8px;
+  margin-top: 0.5rem;
 `;
 
 const ImageIcon = styled.div`
-  width: 24px;
-  height: 24px;
-  background: #f3f4f6;
-  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 8px;
+  margin-right: 0.5rem;
 
   i {
-    color: #6b7280;
+    color: rgba(255, 255, 255, 0.7);
     font-size: 0.75rem;
   }
 `;
 
 const ImageCount = styled.span`
   font-size: 0.75rem;
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.6);
 `;
 
 const StatusBadge = styled.span<{ $status: string }>`
-  padding: 4px 8px;
-  border-radius: 12px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
   background: ${(props) =>
-    props.$status === "answered" ? "#d1fae5" : "#fef3c7"};
-  color: ${(props) => (props.$status === "answered" ? "#065f46" : "#92400e")};
+    props.$status === "answered"
+      ? "rgba(16, 185, 129, 0.2)"
+      : "rgba(245, 158, 11, 0.2)"};
+  color: ${(props) => (props.$status === "answered" ? "#10b981" : "#f59e0b")};
+  border: 1px solid
+    ${(props) =>
+      props.$status === "answered"
+        ? "rgba(16, 185, 129, 0.3)"
+        : "rgba(245, 158, 11, 0.3)"};
 `;
 
 const HiddenBadge = styled.span`
-  padding: 4px 8px;
-  border-radius: 12px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px;
   font-size: 0.75rem;
-  font-weight: 500;
-  background: #f3f4f6;
-  color: #374151;
-  margin-left: 8px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  margin-left: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 `;
 
 const ActionButtons = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 0.5rem;
   justify-content: flex-end;
 `;
 
 const ActionButton = styled.button<{ $variant: "view" | "hide" | "delete" }>`
-  padding: 6px;
+  padding: 0.5rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.05);
 
   ${(props) => {
     switch (props.$variant) {
       case "view":
         return `
           color: #3b82f6;
-          &:hover { color: #1d4ed8; }
+          &:hover { 
+            color: #1d4ed8; 
+            background: rgba(59, 130, 246, 0.1);
+            transform: scale(1.05);
+          }
         `;
       case "hide":
         return `
           color: #f59e0b;
-          &:hover { color: #d97706; }
+          &:hover { 
+            color: #d97706; 
+            background: rgba(245, 158, 11, 0.1);
+            transform: scale(1.05);
+          }
         `;
       case "delete":
         return `
           color: #ef4444;
-          &:hover { color: #dc2626; }
+          &:hover { 
+            color: #dc2626; 
+            background: rgba(239, 68, 68, 0.1);
+            transform: scale(1.05);
+          }
         `;
     }
   }}
 `;
 
 const PaginationContainer = styled.div`
-  padding: 20px 24px;
-  border-top: 1px solid #e5e7eb;
+  padding: 1.25rem 1.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1174,50 +1470,71 @@ const PaginationContainer = styled.div`
 
 const PaginationInfo = styled.div`
   font-size: 0.875rem;
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.7);
 `;
 
 const PaginationControls = styled.div`
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 1rem;
 `;
 
 const ItemsPerPageSelect = styled.select`
-  padding: 6px 8px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
   font-size: 0.875rem;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #f97316;
+  }
+
+  option {
+    background: #1f2937;
+    color: white;
+  }
 `;
 
 const PaginationButtons = styled.div`
   display: flex;
-  gap: 4px;
+  gap: 0.25rem;
 `;
 
 const PaginationButton = styled.button<{
   $active?: boolean;
   $disabled?: boolean;
 }>`
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  background: ${(props) => (props.$active ? "#87ceeb" : "#fff")};
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: ${(props) =>
+    props.$active ? "#f97316" : "rgba(255, 255, 255, 0.05)"};
   color: ${(props) =>
-    props.$active ? "#fff" : props.$disabled ? "#9ca3af" : "#374151"};
-  border-radius: 4px;
+    props.$active
+      ? "white"
+      : props.$disabled
+      ? "rgba(255, 255, 255, 0.3)"
+      : "rgba(255, 255, 255, 0.8)"};
+  border-radius: 8px;
   font-size: 0.875rem;
   cursor: ${(props) => (props.$disabled ? "not-allowed" : "pointer")};
+  transition: all 0.3s ease;
 
   &:hover:not(:disabled) {
-    background: ${(props) => (props.$active ? "#87ceeb" : "#f9fafb")};
+    background: ${(props) =>
+      props.$active ? "#ea580c" : "rgba(255, 255, 255, 0.1)"};
+    transform: translateY(-2px);
   }
 `;
 
 const ModalOverlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -1226,156 +1543,183 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background: #fff;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
   max-width: 600px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 `;
 
 const ModalHeader = styled.div`
-  padding: 24px 24px 0;
+  padding: 1.75rem 1.75rem 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
 
 const ModalTitle = styled.h3`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #111827;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
 `;
 
 const ModalCloseButton = styled.button`
   background: none;
   border: none;
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  padding: 4px;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 
   &:hover {
-    color: #374151;
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
   }
 `;
 
 const ModalBody = styled.div`
-  padding: 24px;
+  padding: 1.75rem;
 `;
 
 const ModalFooter = styled.div`
-  padding: 0 24px 24px;
+  padding: 0 1.75rem 1.75rem;
   display: flex;
-  gap: 12px;
+  gap: 0.875rem;
   justify-content: flex-end;
 `;
 
 const ModalButton = styled.button<{
   $variant: "primary" | "secondary" | "danger";
 }>`
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 10px;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   border: 1px solid;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   ${(props) => {
     switch (props.$variant) {
       case "primary":
         return `
-          background: #87ceeb;
-          color: #fff;
-          border-color: #87ceeb;
-          &:hover { background: #5cacee; }
+          background: linear-gradient(135deg, #f97316, #ea580c);
+          color: white;
+          border-color: #f97316;
+          &:hover { 
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.3);
+          }
         `;
       case "secondary":
         return `
-          background: #fff;
-          color: #374151;
-          border-color: #d1d5db;
-          &:hover { background: #f9fafb; }
+          background: rgba(255, 255, 255, 0.05);
+          color: rgba(255, 255, 255, 0.8);
+          border-color: rgba(255, 255, 255, 0.2);
+          &:hover { 
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+          }
         `;
       case "danger":
         return `
-          background: #fff;
-          color: #dc2626;
-          border-color: #fca5a5;
-          &:hover { background: #fef2f2; }
+          background: rgba(239, 68, 68, 0.1);
+          color: #ef4444;
+          border-color: rgba(239, 68, 68, 0.3);
+          &:hover { 
+            background: rgba(239, 68, 68, 0.2);
+            transform: translateY(-1px);
+          }
         `;
     }
   }}
 `;
 
 const ReviewDetailSection = styled.div`
-  background: #f9fafb;
-  padding: 16px;
-  border-radius: 6px;
-  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 1.5rem;
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 `;
 
 const ReviewDetailHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 1rem;
 `;
 
 const ReviewDetailInfo = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 1rem;
 `;
 
 const ReviewDetailContent = styled.div`
   font-size: 0.875rem;
-  color: #111827;
-  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
   white-space: pre-line;
 `;
 
 const ReviewDetailImages = styled.div`
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 0.5rem;
+  margin-top: 1rem;
 `;
 
 const ReviewDetailImage = styled.img`
-  width: 60px;
-  height: 60px;
-  border-radius: 4px;
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
   object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.1);
 `;
 
 const ReplyTextarea = styled.textarea`
   width: 100%;
-  padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
   font-size: 0.875rem;
   resize: vertical;
   min-height: 100px;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:focus {
     outline: none;
-    border-color: #87ceeb;
-    box-shadow: 0 0 0 3px rgba(135, 206, 235, 0.1);
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+  }
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
   }
 `;
 
 const ChartContainer = styled.div`
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-  padding: 24px;
-  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
 `;
 
 const ChartTitle = styled.h3`
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 16px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 1.5rem;
 `;
 
 const ChartWrapper = styled.div`
@@ -1390,7 +1734,7 @@ const AdminDashboardPage: FC = () => {
   const [showToast, setShowToast] = useState(false);
 
   // 리뷰 관리 관련 상태
-  const [activeTab, setActiveTab] = useState("dashboard"); // 'dashboard' 또는 'reviews'
+  const [activeTab, setActiveTab] = useState("dashboard"); // 'dashboard', 'reviews', 'coupons'
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [replyText, setReplyText] = useState("");
@@ -1403,26 +1747,20 @@ const AdminDashboardPage: FC = () => {
     status: "all",
   });
 
-  // 차트 참조
-  const ratingChartRef = useRef<HTMLDivElement>(null);
+  // 쿠폰 관리 관련 상태
+  const [showCouponModal, setShowCouponModal] = useState(false);
+  const [couponForm, setCouponForm] = useState({
+    name: "",
+    description: "",
+    discountType: "percentage",
+    discountValue: "",
+    minAmount: "",
+    expiryDate: "",
+    maxUses: "",
+    isActive: true,
+  });
 
-  // 리뷰 데이터 타입 정의
-  interface Review {
-    id: number;
-    productId: number;
-    productName: string;
-    productImage: string;
-    customerName: string;
-    rating: number;
-    content: string;
-    date: string;
-    status: "answered" | "unanswered";
-    images?: string[];
-    reply?: string;
-    isHidden?: boolean;
-  }
-
-  // 샘플 리뷰 데이터
+  // 리뷰 데이터
   const [reviews, setReviews] = useState<Review[]>([
     {
       id: 1,
@@ -1502,6 +1840,68 @@ const AdminDashboardPage: FC = () => {
         "정현우 고객님, 불편을 드려 대단히 죄송합니다. 즉시 교환 처리해드리겠습니다.",
     },
   ]);
+
+  // 쿠폰 데이터
+  const [coupons, setCoupons] = useState([
+    {
+      id: 1,
+      name: "신규가입 15% 할인",
+      description: "전 상품 적용 가능",
+      discountType: "percentage",
+      discountValue: 15,
+      minAmount: 0,
+      expiryDate: "2025-08-31",
+      maxUses: 1000,
+      usedCount: 245,
+      isActive: true,
+      createdAt: "2025-01-15",
+    },
+    {
+      id: 2,
+      name: "여름 시즌 10,000원 할인",
+      description: "50,000원 이상 구매 시",
+      discountType: "fixed",
+      discountValue: 10000,
+      minAmount: 50000,
+      expiryDate: "2025-09-15",
+      maxUses: 500,
+      usedCount: 123,
+      isActive: true,
+      createdAt: "2025-06-01",
+    },
+    {
+      id: 3,
+      name: "VIP 무료배송",
+      description: "배송비 무료",
+      discountType: "shipping",
+      discountValue: 0,
+      minAmount: 30000,
+      expiryDate: "2025-12-31",
+      maxUses: 200,
+      usedCount: 67,
+      isActive: true,
+      createdAt: "2025-03-10",
+    },
+  ]);
+
+  // 차트 참조
+  const ratingChartRef = useRef<HTMLDivElement>(null);
+
+  // 리뷰 데이터 타입 정의
+  interface Review {
+    id: number;
+    productId: number;
+    productName: string;
+    productImage: string;
+    customerName: string;
+    rating: number;
+    content: string;
+    date: string;
+    status: "answered" | "unanswered";
+    images?: string[];
+    reply?: string;
+    isHidden?: boolean;
+  }
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -1747,6 +2147,69 @@ const AdminDashboardPage: FC = () => {
     }
   }, [reviewStats.ratingDistribution, activeTab]);
 
+  // 쿠폰 관리 관련 함수들
+  const handleCouponFormChange = (
+    field: string,
+    value: string | number | boolean
+  ) => {
+    setCouponForm({
+      ...couponForm,
+      [field]: value,
+    });
+  };
+
+  const createCoupon = () => {
+    if (
+      !couponForm.name ||
+      !couponForm.discountValue ||
+      !couponForm.expiryDate
+    ) {
+      alert("필수 항목을 모두 입력해주세요.");
+      return;
+    }
+
+    const newCoupon = {
+      id: Date.now(),
+      ...couponForm,
+      discountValue: parseFloat(couponForm.discountValue),
+      minAmount: parseFloat(couponForm.minAmount) || 0,
+      maxUses: parseInt(couponForm.maxUses) || 1000,
+      usedCount: 0,
+      createdAt: new Date().toISOString().split("T")[0],
+    };
+
+    setCoupons([...coupons, newCoupon]);
+    setShowCouponModal(false);
+    setCouponForm({
+      name: "",
+      description: "",
+      discountType: "percentage",
+      discountValue: "",
+      minAmount: "",
+      expiryDate: "",
+      maxUses: "",
+      isActive: true,
+    });
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const toggleCouponStatus = (couponId: number) => {
+    setCoupons(
+      coupons.map((coupon) =>
+        coupon.id === couponId
+          ? { ...coupon, isActive: !coupon.isActive }
+          : coupon
+      )
+    );
+  };
+
+  const deleteCoupon = (couponId: number) => {
+    if (window.confirm("정말로 이 쿠폰을 삭제하시겠습니까?")) {
+      setCoupons(coupons.filter((coupon) => coupon.id !== couponId));
+    }
+  };
+
   return (
     <Container>
       <Header>
@@ -1776,7 +2239,7 @@ const AdminDashboardPage: FC = () => {
           <IconButton onClick={handleShowToast}>
             <i className="fas fa-bell"></i>
           </IconButton>
-          <IconButton>
+          <IconButton onClick={() => navigate("/admin/settings")}>
             <i className="fas fa-cog"></i>
           </IconButton>
           {user && user.nickname ? (
@@ -1864,6 +2327,17 @@ const AdminDashboardPage: FC = () => {
                   회사소개
                 </NavLink>
               </MobileMenuListItem>
+              <MobileMenuListItem>
+                <NavLink
+                  onClick={() => {
+                    navigate("/admin/settings");
+                    toggleMobileMenu();
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  관리자 설정
+                </NavLink>
+              </MobileMenuListItem>
             </MobileMenuList>
             <MobileMenuLoginSection>
               {user && user.nickname ? (
@@ -1934,39 +2408,21 @@ const AdminDashboardPage: FC = () => {
                 </SidebarLink>
               </SidebarItem>
               <SidebarItem>
-                <SidebarLink onClick={() => navigate("/user-manage")}>
-                  <SidebarIcon className="fas fa-user sidebar-icon"></SidebarIcon>
-                  <SidebarText $isOpen={sidebarOpen}>사용자 관리</SidebarText>
+                <SidebarLink onClick={() => setActiveTab("coupons")}>
+                  <SidebarIcon className="fas fa-ticket-alt sidebar-icon"></SidebarIcon>
+                  <SidebarText $isOpen={sidebarOpen}>쿠폰 관리</SidebarText>
                 </SidebarLink>
               </SidebarItem>
               <SidebarItem>
-                <SidebarLink onClick={() => navigate("/report-manage")}>
-                  <SidebarIcon className="fas fa-flag sidebar-icon"></SidebarIcon>
-                  <SidebarText $isOpen={sidebarOpen}>신고 관리</SidebarText>
-                </SidebarLink>
-              </SidebarItem>
-              <SidebarItem>
-                <SidebarLink onClick={() => navigate("/store-home")}>
-                  <SidebarIcon className="fas fa-store sidebar-icon"></SidebarIcon>
-                  <SidebarText $isOpen={sidebarOpen}>가게 관리</SidebarText>
-                </SidebarLink>
-              </SidebarItem>
-              <SidebarItem>
-                <SidebarLink onClick={() => navigate("/products")}>
-                  <SidebarIcon className="fas fa-chart-bar sidebar-icon"></SidebarIcon>
-                  <SidebarText $isOpen={sidebarOpen}>상품 관리</SidebarText>
+                <SidebarLink onClick={() => navigate("/admin/settings")}>
+                  <SidebarIcon className="fas fa-cog sidebar-icon"></SidebarIcon>
+                  <SidebarText $isOpen={sidebarOpen}>관리자 설정</SidebarText>
                 </SidebarLink>
               </SidebarItem>
               <SidebarItem>
                 <SidebarLink onClick={() => navigate("/stats-dashboard")}>
                   <SidebarIcon className="fas fa-chart-line sidebar-icon"></SidebarIcon>
-                  <SidebarText $isOpen={sidebarOpen}>통계 분석</SidebarText>
-                </SidebarLink>
-              </SidebarItem>
-              <SidebarItem>
-                <SidebarLink onClick={() => navigate("/profile")}>
-                  <SidebarIcon className="fas fa-cog sidebar-icon"></SidebarIcon>
-                  <SidebarText $isOpen={sidebarOpen}>설정</SidebarText>
+                  <SidebarText $isOpen={sidebarOpen}>상세 통계</SidebarText>
                 </SidebarLink>
               </SidebarItem>
             </SidebarList>
@@ -1984,12 +2440,20 @@ const AdminDashboardPage: FC = () => {
               </BreadcrumbLink>{" "}
               <span className="mx-2">/</span>{" "}
               <BreadcrumbLink>
-                {activeTab === "dashboard" ? "대시보드" : "리뷰 관리"}
+                {activeTab === "dashboard"
+                  ? "대시보드"
+                  : activeTab === "reviews"
+                  ? "리뷰 관리"
+                  : "쿠폰 관리"}
               </BreadcrumbLink>
             </Breadcrumb>
 
             <PageTitle>
-              {activeTab === "dashboard" ? "대시보드" : "리뷰 관리"}
+              {activeTab === "dashboard"
+                ? "대시보드"
+                : activeTab === "reviews"
+                ? "리뷰 관리"
+                : "쿠폰 관리"}
             </PageTitle>
 
             {/* 탭 컨테이너 */}
@@ -2005,6 +2469,12 @@ const AdminDashboardPage: FC = () => {
                 onClick={() => setActiveTab("reviews")}
               >
                 리뷰 관리
+              </TabButton>
+              <TabButton
+                $active={activeTab === "coupons"}
+                onClick={() => setActiveTab("coupons")}
+              >
+                쿠폰 관리
               </TabButton>
             </TabContainer>
 
@@ -2080,6 +2550,48 @@ const AdminDashboardPage: FC = () => {
                     </StatIconWrapper>
                   </StatCard>
                 </StatCardsGrid>
+
+                <QuickAccessGrid>
+                  <QuickAccessCard onClick={() => navigate("/admin/settings")}>
+                    <QuickAccessIcon $bgColor="#3b82f6">
+                      <i className="fas fa-user-cog"></i>
+                    </QuickAccessIcon>
+                    <QuickAccessTitle>관리자 프로필</QuickAccessTitle>
+                    <QuickAccessDescription>
+                      개인 정보 및 보안 설정
+                    </QuickAccessDescription>
+                  </QuickAccessCard>
+
+                  <QuickAccessCard onClick={() => navigate("/mfa-setup")}>
+                    <QuickAccessIcon $bgColor="#ef4444">
+                      <i className="fas fa-shield-alt"></i>
+                    </QuickAccessIcon>
+                    <QuickAccessTitle>2단계 인증</QuickAccessTitle>
+                    <QuickAccessDescription>
+                      계정 보안 강화
+                    </QuickAccessDescription>
+                  </QuickAccessCard>
+
+                  <QuickAccessCard onClick={() => navigate("/user-manage")}>
+                    <QuickAccessIcon $bgColor="#10b981">
+                      <i className="fas fa-users"></i>
+                    </QuickAccessIcon>
+                    <QuickAccessTitle>사용자 관리</QuickAccessTitle>
+                    <QuickAccessDescription>
+                      사용자 권한 및 계정 관리
+                    </QuickAccessDescription>
+                  </QuickAccessCard>
+
+                  <QuickAccessCard onClick={() => navigate("/report-manage")}>
+                    <QuickAccessIcon $bgColor="#f59e0b">
+                      <i className="fas fa-flag"></i>
+                    </QuickAccessIcon>
+                    <QuickAccessTitle>신고 관리</QuickAccessTitle>
+                    <QuickAccessDescription>
+                      신고 내용 검토 및 처리
+                    </QuickAccessDescription>
+                  </QuickAccessCard>
+                </QuickAccessGrid>
 
                 <RecentActivityCard>
                   <CardHeader>
@@ -2469,9 +2981,498 @@ const AdminDashboardPage: FC = () => {
                 </ReviewTableContainer>
               </>
             )}
+
+            {/* 쿠폰 관리 탭 내용 */}
+            {activeTab === "coupons" && (
+              <>
+                {/* 쿠폰 통계 */}
+                <StatCardsGrid>
+                  <StatCard>
+                    <div>
+                      <StatTitle>총 쿠폰 수</StatTitle>
+                      <StatValue>{coupons.length}</StatValue>
+                      <StatChange $positive={true}>
+                        <i className="fas fa-arrow-up"></i>
+                        활성 쿠폰
+                      </StatChange>
+                    </div>
+                    <StatIconWrapper $bgColor="#e3f2fd">
+                      <i
+                        className="fas fa-ticket-alt"
+                        style={{ color: "#87ceeb" }}
+                      ></i>
+                    </StatIconWrapper>
+                  </StatCard>
+
+                  <StatCard>
+                    <div>
+                      <StatTitle>총 사용 횟수</StatTitle>
+                      <StatValue>
+                        {coupons.reduce(
+                          (sum, coupon) => sum + coupon.usedCount,
+                          0
+                        )}
+                      </StatValue>
+                      <StatChange $positive={true}>
+                        <i className="fas fa-arrow-up"></i>
+                        이번 달
+                      </StatChange>
+                    </div>
+                    <StatIconWrapper $bgColor="#e8f5e9">
+                      <i
+                        className="fas fa-chart-line"
+                        style={{ color: "#28a745" }}
+                      ></i>
+                    </StatIconWrapper>
+                  </StatCard>
+
+                  <StatCard>
+                    <div>
+                      <StatTitle>활성 쿠폰</StatTitle>
+                      <StatValue>
+                        {coupons.filter((c) => c.isActive).length}
+                      </StatValue>
+                      <StatChange $positive={true}>
+                        <i className="fas fa-check"></i>
+                        사용 가능
+                      </StatChange>
+                    </div>
+                    <StatIconWrapper $bgColor="#ede7f6">
+                      <i
+                        className="fas fa-check-circle"
+                        style={{ color: "#673ab7" }}
+                      ></i>
+                    </StatIconWrapper>
+                  </StatCard>
+
+                  <StatCard>
+                    <div>
+                      <StatTitle>만료 예정</StatTitle>
+                      <StatValue>
+                        {
+                          coupons.filter((c) => {
+                            const expiry = new Date(c.expiryDate);
+                            const today = new Date();
+                            const diffDays = Math.ceil(
+                              (expiry.getTime() - today.getTime()) /
+                                (1000 * 60 * 60 * 24)
+                            );
+                            return diffDays <= 30 && diffDays > 0;
+                          }).length
+                        }
+                      </StatValue>
+                      <StatChange $positive={false}>
+                        <i className="fas fa-exclamation-triangle"></i>
+                        30일 이내
+                      </StatChange>
+                    </div>
+                    <StatIconWrapper $bgColor="#fff3e0">
+                      <i
+                        className="fas fa-clock"
+                        style={{ color: "#ff9800" }}
+                      ></i>
+                    </StatIconWrapper>
+                  </StatCard>
+                </StatCardsGrid>
+
+                {/* 쿠폰 생성 버튼 */}
+                <div
+                  style={{
+                    marginBottom: "1.5rem",
+                    display: "flex",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <button
+                    onClick={() => setShowCouponModal(true)}
+                    style={{
+                      background: "linear-gradient(135deg, #f97316, #ea580c)",
+                      color: "white",
+                      border: "none",
+                      padding: "12px 24px",
+                      borderRadius: "12px",
+                      fontSize: "0.875rem",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      boxShadow: "0 6px 20px rgba(249, 115, 22, 0.3)",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                      e.currentTarget.style.boxShadow =
+                        "0 8px 25px rgba(249, 115, 22, 0.4)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow =
+                        "0 6px 20px rgba(249, 115, 22, 0.3)";
+                    }}
+                  >
+                    <i
+                      className="fas fa-plus"
+                      style={{ marginRight: "8px" }}
+                    ></i>
+                    새 쿠폰 생성
+                  </button>
+                </div>
+
+                {/* 쿠폰 목록 */}
+                <ReviewTableContainer>
+                  <ReviewTableHeader>
+                    <ReviewTableTitle>쿠폰 목록</ReviewTableTitle>
+                    <ReviewCount>총 {coupons.length}개의 쿠폰</ReviewCount>
+                  </ReviewTableHeader>
+
+                  <div style={{ overflowX: "auto" }}>
+                    <ReviewTable>
+                      <ReviewTableHead>
+                        <tr>
+                          <ReviewTableHeaderCell>쿠폰명</ReviewTableHeaderCell>
+                          <ReviewTableHeaderCell>
+                            할인 정보
+                          </ReviewTableHeaderCell>
+                          <ReviewTableHeaderCell>
+                            사용 조건
+                          </ReviewTableHeaderCell>
+                          <ReviewTableHeaderCell>만료일</ReviewTableHeaderCell>
+                          <ReviewTableHeaderCell>
+                            사용 현황
+                          </ReviewTableHeaderCell>
+                          <ReviewTableHeaderCell>상태</ReviewTableHeaderCell>
+                          <ReviewTableHeaderCell style={{ textAlign: "right" }}>
+                            관리
+                          </ReviewTableHeaderCell>
+                        </tr>
+                      </ReviewTableHead>
+                      <ReviewTableBody>
+                        {coupons.map((coupon) => (
+                          <ReviewTableRow key={coupon.id}>
+                            <ReviewTableCell>
+                              <div>
+                                <div
+                                  style={{
+                                    fontWeight: 600,
+                                    color: "white",
+                                    marginBottom: "4px",
+                                  }}
+                                >
+                                  {coupon.name}
+                                </div>
+                                <div
+                                  style={{
+                                    fontSize: "0.875rem",
+                                    color: "rgba(255, 255, 255, 0.7)",
+                                  }}
+                                >
+                                  {coupon.description}
+                                </div>
+                              </div>
+                            </ReviewTableCell>
+                            <ReviewTableCell>
+                              <div
+                                style={{ fontWeight: 600, color: "#f97316" }}
+                              >
+                                {coupon.discountType === "percentage" &&
+                                  `${coupon.discountValue}%`}
+                                {coupon.discountType === "fixed" &&
+                                  `${coupon.discountValue.toLocaleString()}원`}
+                                {coupon.discountType === "shipping" &&
+                                  "무료배송"}
+                              </div>
+                            </ReviewTableCell>
+                            <ReviewTableCell>
+                              <div
+                                style={{
+                                  fontSize: "0.875rem",
+                                  color: "rgba(255, 255, 255, 0.8)",
+                                }}
+                              >
+                                {coupon.minAmount > 0
+                                  ? `${coupon.minAmount.toLocaleString()}원 이상`
+                                  : "조건 없음"}
+                              </div>
+                            </ReviewTableCell>
+                            <ReviewTableCell>
+                              <div
+                                style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                              >
+                                {coupon.expiryDate}
+                              </div>
+                            </ReviewTableCell>
+                            <ReviewTableCell>
+                              <div
+                                style={{
+                                  fontSize: "0.875rem",
+                                  color: "rgba(255, 255, 255, 0.8)",
+                                }}
+                              >
+                                {coupon.usedCount} / {coupon.maxUses}
+                              </div>
+                            </ReviewTableCell>
+                            <ReviewTableCell>
+                              <StatusBadge
+                                $status={
+                                  coupon.isActive ? "answered" : "unanswered"
+                                }
+                              >
+                                {coupon.isActive ? "활성" : "비활성"}
+                              </StatusBadge>
+                            </ReviewTableCell>
+                            <ReviewTableCell>
+                              <ActionButtons>
+                                <ActionButton
+                                  $variant="view"
+                                  onClick={() => toggleCouponStatus(coupon.id)}
+                                  title={
+                                    coupon.isActive ? "비활성화" : "활성화"
+                                  }
+                                >
+                                  <i
+                                    className={`fas ${
+                                      coupon.isActive ? "fa-pause" : "fa-play"
+                                    }`}
+                                  ></i>
+                                </ActionButton>
+                                <ActionButton
+                                  $variant="delete"
+                                  onClick={() => deleteCoupon(coupon.id)}
+                                  title="삭제"
+                                >
+                                  <i className="fas fa-trash-alt"></i>
+                                </ActionButton>
+                              </ActionButtons>
+                            </ReviewTableCell>
+                          </ReviewTableRow>
+                        ))}
+                      </ReviewTableBody>
+                    </ReviewTable>
+                  </div>
+                </ReviewTableContainer>
+              </>
+            )}
           </ContentPadding>
         </MainContent>
       </FlexContainer>
+
+      {/* 쿠폰 생성 모달 */}
+      {showCouponModal && (
+        <ModalOverlay onClick={() => setShowCouponModal(false)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>새 쿠폰 생성</ModalTitle>
+              <ModalCloseButton onClick={() => setShowCouponModal(false)}>
+                <i className="fas fa-times"></i>
+              </ModalCloseButton>
+            </ModalHeader>
+            <ModalBody>
+              <div style={{ display: "grid", gap: "1rem" }}>
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "0.5rem",
+                      color: "white",
+                      fontSize: "0.875rem",
+                    }}
+                  >
+                    쿠폰명 *
+                  </label>
+                  <FilterInput
+                    type="text"
+                    value={couponForm.name}
+                    onChange={(e) =>
+                      handleCouponFormChange("name", e.target.value)
+                    }
+                    placeholder="쿠폰명을 입력하세요"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "0.5rem",
+                      color: "white",
+                      fontSize: "0.875rem",
+                    }}
+                  >
+                    설명
+                  </label>
+                  <FilterInput
+                    type="text"
+                    value={couponForm.description}
+                    onChange={(e) =>
+                      handleCouponFormChange("description", e.target.value)
+                    }
+                    placeholder="쿠폰 설명을 입력하세요"
+                  />
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "1rem",
+                  }}
+                >
+                  <div>
+                    <label
+                      style={{
+                        display: "block",
+                        marginBottom: "0.5rem",
+                        color: "white",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      할인 유형
+                    </label>
+                    <FilterSelect
+                      value={couponForm.discountType}
+                      onChange={(e) =>
+                        handleCouponFormChange("discountType", e.target.value)
+                      }
+                    >
+                      <option value="percentage">퍼센트 할인</option>
+                      <option value="fixed">정액 할인</option>
+                      <option value="shipping">무료배송</option>
+                    </FilterSelect>
+                  </div>
+
+                  <div>
+                    <label
+                      style={{
+                        display: "block",
+                        marginBottom: "0.5rem",
+                        color: "white",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      할인 값 *
+                    </label>
+                    <FilterInput
+                      type="number"
+                      value={couponForm.discountValue}
+                      onChange={(e) =>
+                        handleCouponFormChange("discountValue", e.target.value)
+                      }
+                      placeholder={
+                        couponForm.discountType === "percentage"
+                          ? "15"
+                          : "10000"
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "1rem",
+                  }}
+                >
+                  <div>
+                    <label
+                      style={{
+                        display: "block",
+                        marginBottom: "0.5rem",
+                        color: "white",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      최소 구매 금액
+                    </label>
+                    <FilterInput
+                      type="number"
+                      value={couponForm.minAmount}
+                      onChange={(e) =>
+                        handleCouponFormChange("minAmount", e.target.value)
+                      }
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      style={{
+                        display: "block",
+                        marginBottom: "0.5rem",
+                        color: "white",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      최대 사용 횟수
+                    </label>
+                    <FilterInput
+                      type="number"
+                      value={couponForm.maxUses}
+                      onChange={(e) =>
+                        handleCouponFormChange("maxUses", e.target.value)
+                      }
+                      placeholder="1000"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "0.5rem",
+                      color: "white",
+                      fontSize: "0.875rem",
+                    }}
+                  >
+                    만료일 *
+                  </label>
+                  <FilterInput
+                    type="date"
+                    value={couponForm.expiryDate}
+                    onChange={(e) =>
+                      handleCouponFormChange("expiryDate", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={couponForm.isActive}
+                    onChange={(e) =>
+                      handleCouponFormChange("isActive", e.target.checked)
+                    }
+                    style={{ width: "16px", height: "16px" }}
+                  />
+                  <label
+                    htmlFor="isActive"
+                    style={{ color: "white", fontSize: "0.875rem" }}
+                  >
+                    즉시 활성화
+                  </label>
+                </div>
+              </div>
+            </ModalBody>
+            <ModalFooter>
+              <ModalButton
+                $variant="secondary"
+                onClick={() => setShowCouponModal(false)}
+              >
+                취소
+              </ModalButton>
+              <ModalButton $variant="primary" onClick={createCoupon}>
+                쿠폰 생성
+              </ModalButton>
+            </ModalFooter>
+          </ModalContent>
+        </ModalOverlay>
+      )}
 
       <ToastNotification $show={showToast}>
         <ToastIconWrapper>

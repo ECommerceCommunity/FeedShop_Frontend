@@ -1,6 +1,32 @@
-import { ComponentType, ChangeEvent, ReactNode, IntrinsicElements } from "react";
 import "styled-components";
-import { LinkProps } from "react-router-dom";
+import {
+  ComponentType,
+  ChangeEvent,
+  ReactNode,
+  IntrinsicElements,
+} from "react";
+
+// 다음 우편번호 서비스 타입 정의
+declare global {
+  interface Window {
+    daum: {
+      Postcode: new (options: {
+        oncomplete: (data: any) => void;
+        onclose?: () => void;
+      }) => {
+        open: () => void;
+      };
+    };
+  }
+}
+
+declare module "react" {
+  interface HTMLAttributes<T> extends AriaAttributes, DOMAttributes<T> {
+    isMine?: boolean;
+    active?: boolean;
+    status?: string;
+  }
+}
 
 declare module "styled-components" {
   export interface DefaultTheme {
@@ -16,10 +42,8 @@ declare module "styled-components" {
       warning: string;
     };
   }
-}
 
-declare module "styled-components" {
-  export interface StyledComponentPropsWithAs<
+  export interface StyledComponentProps<
     C extends keyof IntrinsicElements | ComponentType<any>,
     T extends object,
     O extends object = {},
@@ -37,55 +61,5 @@ declare module "styled-components" {
     value?: string;
     onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
     required?: boolean;
-  }
-}
-
-declare module "styled-components" {
-  export interface StyledComponentProps {
-    isMine?: boolean;
-    active?: boolean;
-    status?: string;
-    children?: ReactNode;
-    htmlFor?: string;
-    type?: string;
-    to?: string;
-    id?: string;
-    name?: string;
-    value?: string;
-    onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
-    required?: boolean;
-  }
-}
-
-declare module "styled-components" {
-  export interface StyledComponentPropsWithAs<
-    C extends keyof IntrinsicElements,
-    T extends object,
-    O extends object = {},
-    A extends keyof any = never
-  > {
-    isMine?: boolean;
-  }
-}
-
-declare module "styled-components" {
-  export interface StyledComponentPropsWithAs<
-    C extends keyof IntrinsicElements,
-    T extends object,
-    O extends object = {},
-    A extends keyof any = never
-  > {
-    isMine?: boolean;
-  }
-}
-
-declare module "styled-components" {
-  export interface StyledComponentPropsWithAs<
-    C extends keyof IntrinsicElements,
-    T extends object,
-    O extends object = {},
-    A extends keyof any = never
-  > {
-    isMine?: boolean;
   }
 }

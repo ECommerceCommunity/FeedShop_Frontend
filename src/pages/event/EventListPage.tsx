@@ -1,21 +1,14 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../../api/axios";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { EventStatus, EventType } from "../../types/types";
+import { EventStatus } from "../../types/types";
 import { EventDto, EventReward } from "../../api/eventService";
 import EventDetailModal from "./EventDetailModal";
 
 const PAGE_SIZE = 4;
 
-const getDday = (endDate: string) => {
-  const today = new Date();
-  const end = new Date(endDate);
-  const diff = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  if (diff > 0) return `D-${diff}`;
-  if (diff === 0) return 'D-DAY';
-  return null;
-};
+
 
 const EventListPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,9 +23,7 @@ const EventListPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventDto | null>(null);
 
-  const navigate = useNavigate();
   const { user } = useAuth();
-  const nickname = user?.nickname;
   
   // 디버깅을 위한 사용자 정보 출력
   // console.log('Current user:', user);
@@ -125,10 +116,7 @@ const EventListPage = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const handleSearch = () => {
-    setSearchKeyword(searchTerm);
-    setPage(1);
-  };
+
 
   const handleFilterChange = (filter: string) => {
     setActiveFilter(filter);
@@ -157,18 +145,7 @@ const EventListPage = () => {
     }
   };
 
-  const getTypeText = (type: EventType) => {
-    switch (type) {
-      case "BATTLE":
-        return "배틀";
-      case "MISSION":
-        return "미션";
-      case "MULTIPLE":
-        return "랭킹";
-      default:
-        return type;
-    }
-  };
+
 
   const getStatusColor = (status: EventStatus) => {
     switch (status) {
@@ -179,17 +156,28 @@ const EventListPage = () => {
     }
   };
 
-  const getTypeColor = (type: EventType) => {
-    switch (type) {
-      case 'BATTLE': return 'bg-purple-100 text-purple-800';
-      case 'MISSION': return 'bg-orange-100 text-orange-800';
-      case 'MULTIPLE': return 'bg-pink-100 text-pink-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+
 
   // 이벤트 상태를 동적으로 계산하는 함수
   const calculateEventStatus = (event: EventDto): EventStatus => {
+    // 백엔드에서 isParticipatable 필드를 제공하는 경우 해당 정보 활용
+    if (event.isParticipatable !== undefined) {
+      if (event.isParticipatable) {
+        return 'ONGOING'; // 참여 가능한 이벤트는 진행중
+      } else {
+        // 종료일이 지났거나 시작일이 아직인 경우 판단
+        const now = new Date();
+        const eventStart = event.eventStartDate ? new Date(event.eventStartDate) : null;
+        
+        if (eventStart && now < eventStart) {
+          return 'UPCOMING'; // 시작일 이전
+        } else {
+          return 'ENDED'; // 종료됨
+        }
+      }
+    }
+    
+    // 백엔드에서 isParticipatable 필드를 제공하지 않는 경우 기존 로직 사용
     const now = new Date();
     const eventStart = event.eventStartDate ? new Date(event.eventStartDate) : null;
     const eventEnd = event.eventEndDate ? new Date(event.eventEndDate) : null;

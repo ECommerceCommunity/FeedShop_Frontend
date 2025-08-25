@@ -1,139 +1,327 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import FeedList from "../../components/feed/FeedList";
 import FeedDetailModal from "../../components/feed/FeedDetailModal";
+import LikedUsersModal from "../../components/feed/LikedUsersModal";
+import FeedUserProfile from "../../components/feed/FeedUserProfile";
+import FollowListModal from "../../components/feed/FollowListModal";
 import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
-import { FeedVoteRequest } from "../../types/feed";
+import { UserProfileService, UserProfileData } from "../../api/userProfileService";
+import axiosInstance from "../../api/axios";
+import { FeedPost, FeedComment } from "../../types/feed";
+import { useLikedPosts } from "../../hooks/useLikedPosts";
 
-// 임시 피드 데이터 (기존 목록페이지 (1).tsx 참고)
-const initialFeedPosts = Array.from({ length: 6 }, (_, index) => ({
-  id: index + 1,
-  username: "나",
-  level: 4,
-  profileImg: `https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=60&height=60&seq=myprofile${
-    index + 1
-  }&orientation=squarish`,
-  images: [
-    `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20trendy%20outfit&width=400&height=500&seq=mypost${
-      index + 1
-    }&orientation=portrait`,
-    `https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20wearing%20casual%20outfit&width=400&height=500&seq=mypost${
-      index + 1
-    }a&orientation=portrait`,
-  ],
-  productName: [
-    "트렌디 데님 자켓",
-    "캐주얼 니트 원피스",
-    "베이직 코튼 티셔츠",
-    "스트라이프 셔츠",
-    "미니멀 블레이저",
-    "린넨 와이드 팬츠",
-  ][index],
-  size: [
-    220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290,
-    295, 300,
-  ][getSecureRandomInt(0, 17)],
-  gender: "여성",
-  height: 165,
-  description: [
-    "데일리로 입기 좋은 데님 자켓이에요. 다양한 스타일링이 가능해요.",
-    "편안하면서도 스타일리시한 니트 원피스예요.",
-    "베이직한 디자인으로 활용도가 높은 티셔츠입니다.",
-    "세련된 스트라이프 패턴의 셔츠로 포인트 주기 좋아요.",
-    "깔끔한 핏의 블레이저로 포멀한 스타일링이 가능해요.",
-    "시원한 린넨 소재의 와이드 팬츠입니다.",
-  ][index],
-  likes: getSecureRandomInt(50, 250),
-  votes: getSecureRandomInt(10, 60),
-  comments: getSecureRandomInt(5, 25),
-  instagramId: "my_fashion",
-  createdAt: new Date(2025, 5, 30 - index).toISOString().split("T")[0],
-  isLiked: false,
-  type: ["일상", "이벤트", "랭킹"][getSecureRandomInt(0, 3)],
-}));
-
-type FeedPost = (typeof initialFeedPosts)[0];
-type Comment = {
-  id: number;
-  username: string;
-  level: number;
-  profileImg: string;
-  content: string;
-  createdAt: string;
+// 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
+const formatKoreanTime = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    const koreanTime = new Intl.DateTimeFormat('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Seoul'
+    }).format(date);
+    return koreanTime;
+  } catch (error) {
+    return dateString; // 파싱 실패 시 원본 반환
+  }
 };
-
-function getSecureRandomInt(min: number, max: number): number {
-  const array = new Uint32Array(1);
-  window.crypto.getRandomValues(array);
-  return min + (array[0] % (max - min));
-}
 
 const MyFeedPage = () => {
   const { user } = useAuth();
-  const [feedPosts, setFeedPosts] = useState(initialFeedPosts);
-
-  // 게시물/좋아요 수는 feedPosts에서 계산
-  const feedCount = feedPosts.length;
-  const totalLikes = feedPosts.reduce(
-    (sum: number, post: FeedPost) => sum + post.likes,
-    0
-  );
-  const followerCount = 324;
-  const followingCount = 156;
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const targetUserId = searchParams.get('userId');
+  const targetUserNickname = searchParams.get('userNickname'); // 하위 호환성을 위해 유지
+  
+  // 현재 로그인한 사용자인지 확인
+  // targetUserId가 없으면 현재 사용자의 피드, 있으면 특정 사용자의 피드
+  const isCurrentUser = !targetUserId;
+  console.log('MyFeedPage 상태:', { targetUserId, targetUserNickname, isCurrentUser, user });
 
-  // 상세 모달 상태
+  // 상태 관리
+  const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedPost, setSelectedPost] = useState<FeedPost | null>(null);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: 1,
-      username: "패션리스타",
-      level: 3,
-      profileImg:
-        "https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=40&height=40&seq=comment1&orientation=squarish",
-      content: "정말 예쁘네요! 저도 이런 스타일 도전해보고 싶어요.",
-      createdAt: "2025-06-14 10:30",
-    },
-    {
-      id: 2,
-      username: "스타일마스터",
-      level: 4,
-      profileImg:
-        "https://readdy.ai/api/search-image?query=fashionable%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=40&height=40&seq=comment2&orientation=squarish",
-      content: "데님 자켓 핏이 너무 좋아요! 어디 제품인지 궁금합니다.",
-      createdAt: "2025-06-14 11:15",
-    },
-  ]);
-  const [likedPosts, setLikedPosts] = useState<number[]>([]);
+  const [comments, setComments] = useState<FeedComment[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
+
+  
+  // 좋아요 상태
+  const { likedPosts, updateLikedPosts, isLiked } = useLikedPosts();
+  
+  // 좋아요 사용자 모달 상태
+  const [showLikedUsersModal, setShowLikedUsersModal] = useState(false);
+  const [likedUsers, setLikedUsers] = useState<{ id: number; nickname: string; profileImg?: string; }[]>([]);
 
   // 탭/정렬 상태
   const [activeTab, setActiveTab] = useState<
-    "all" | "일상" | "이벤트" | "랭킹"
+    "all" | "DAILY" | "EVENT" | "RANKING"
   >("all");
   const [sortBy, setSortBy] = useState<"latest" | "popular">("latest");
+
+  // 데이터 로드 함수
+  const loadMyFeeds = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      let response;
+      
+      if (targetUserId && !isCurrentUser) {
+        // 특정 사용자의 피드를 가져오는 경우 - 새로운 API 사용
+        console.log('특정 사용자 피드 로드 시작:', { targetUserId, targetUserNickname, isCurrentUser });
+        try {
+          const params: any = {
+            page: 0,
+            size: 50,
+            sort: sortBy
+          };
+
+          if (activeTab !== "all") {
+            params.feedType = activeTab;
+          }
+
+          console.log('API 호출 파라미터:', params);
+          
+          // axios 인스턴스 사용
+          const userFeedsResponse = await axiosInstance.get(`/api/feeds/user/${targetUserId}`, {
+            params: params
+          });
+
+          console.log('API 응답:', userFeedsResponse.data);
+          const data = userFeedsResponse.data;
+          response = {
+            content: data.data.content,
+            totalElements: data.data.totalElements,
+            totalPages: data.data.totalPages
+          };
+          console.log('처리된 응답:', response);
+        } catch (error) {
+          console.error('사용자 피드 조회 실패:', error);
+          console.log('폴백 방식으로 처리 시작');
+          // 폴백: 기존 방식으로 처리
+          const params: any = {
+            page: 0,
+            size: 100,
+            sort: sortBy
+          };
+
+          if (activeTab !== "all") {
+            params.feedType = activeTab;
+          }
+
+          const allFeedsResponse = await FeedService.getFeeds(params);
+          const userFeeds = allFeedsResponse.content.filter(feed => 
+            feed.user?.nickname === targetUserNickname
+          );
+          
+          response = {
+            content: userFeeds,
+            totalElements: userFeeds.length,
+            totalPages: Math.ceil(userFeeds.length / 50)
+          };
+        }
+      } else if (targetUserNickname && !isCurrentUser) {
+        // 하위 호환성을 위한 기존 방식 (nickname 사용)
+        const params: any = {
+          page: 0,
+          size: 100,
+          sort: sortBy
+        };
+
+        if (activeTab !== "all") {
+          params.feedType = activeTab;
+        }
+
+        const allFeedsResponse = await FeedService.getFeeds(params);
+        const userFeeds = allFeedsResponse.content.filter(feed => 
+          feed.user?.nickname === targetUserNickname
+        );
+        
+        response = {
+          content: userFeeds,
+          totalElements: userFeeds.length,
+          totalPages: Math.ceil(userFeeds.length / 50)
+        };
+      } else {
+        // 현재 로그인한 사용자의 피드를 가져오는 경우
+        const params: any = {
+          page: 0,
+          size: 50,
+          sort: sortBy
+        };
+
+        if (activeTab !== "all") {
+          params.feedType = activeTab;
+        }
+
+        response = await FeedService.getMyFeeds(params);
+      }
+
+      console.log('최종 응답 설정:', response);
+      setFeedPosts(response.content || []);
+      
+      // 백엔드에서 받은 isLiked 상태만 사용
+      const backendLikedIds = response.content
+        .filter((feed: FeedPost) => feed.isLiked)
+        .map((feed: FeedPost) => feed.id);
+      
+      console.log('좋아요 상태 업데이트:', backendLikedIds);
+      // 전역 상태 업데이트
+      updateLikedPosts(backendLikedIds);
+      
+    } catch (error: any) {
+      console.error('피드 로드 실패:', error);
+      
+      if (error.response?.status === 401) {
+        setError("로그인이 필요합니다.");
+        navigate('/login');
+      } else if (error.response?.status === 404) {
+        setError("사용자를 찾을 수 없습니다.");
+      } else {
+        setError(error.response?.data?.message || "피드 목록을 불러오는데 실패했습니다.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 사용자 프로필 정보 로드
+  const loadUserProfile = async () => {
+    if (!user) return;
+    
+    try {
+      let profile;
+      if (targetUserId && !isCurrentUser) {
+        // 특정 사용자의 프로필 로드 - UserProfileService 사용
+        console.log('특정 사용자 프로필 로드 시작:', targetUserId);
+        profile = await UserProfileService.getUserProfileById(parseInt(targetUserId));
+        console.log('매핑된 프로필 데이터:', profile);
+      } else {
+        // 현재 로그인한 사용자의 프로필 로드
+        profile = await UserProfileService.getUserProfile();
+      }
+      setUserProfile(profile);
+    } catch (error: any) {
+      console.error("사용자 프로필 로드 실패:", error);
+      console.error("에러 상세:", error.response?.data);
+      
+      // 에러 발생 시 기본값 설정
+      if (targetUserId && !isCurrentUser) {
+        setUserProfile({
+          userId: parseInt(targetUserId),
+          nickname: `사용자${targetUserId}`,
+          profileImageUrl: "",
+          name: `사용자${targetUserId}`,
+          username: "",
+          email: "",
+          phone: "",
+          birthDate: "",
+          gender: "MALE",
+          height: 0,
+          weight: 0,
+          footSize: 0,
+          footWidth: "NORMAL"
+        });
+      }
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    if (user) {
+      loadMyFeeds();
+      loadUserProfile(); // 사용자 프로필 로드
+      loadFollowCounts(); // 팔로우 수 로드
+    }
+  }, [user, activeTab, sortBy, targetUserId]);
+
+  // 사용자 로그아웃 시 좋아요 상태 초기화
+  useEffect(() => {
+    if (!user) {
+      updateLikedPosts([]);
+    }
+  }, [user]);
+
+  // 팔로우 관련 상태
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingsModal, setShowFollowingsModal] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
+  // 팔로우 수 로드
+  const loadFollowCounts = async () => {
+    if (!user) return;
+    
+    try {
+      // 현재 사용자 ID 가져오기
+      const userProfile = await UserProfileService.getUserProfile();
+      if (!userProfile.userId) {
+        console.warn('사용자 ID를 찾을 수 없습니다.');
+        return;
+      }
+      
+      setCurrentUserId(userProfile.userId);
+      
+      // 팔로우 수를 가져올 사용자 ID 결정
+      const targetId = targetUserId || userProfile.userId;
+      console.log('팔로우 수 로드 대상 ID:', targetId);
+      
+      const response = await axiosInstance.get(`/api/users/${targetId}/follow-count`);
+      
+      console.log('팔로우 수 응답:', response.data);
+      setFollowerCount(response.data.data.followerCount);
+      setFollowingCount(response.data.data.followingCount);
+    } catch (error) {
+      console.error('팔로우 수 로드 실패:', error);
+    }
+  };
+
+  // 통계 계산
+  const feedCount = feedPosts.length;
+  const totalLikes = feedPosts.reduce(
+    (sum: number, post: FeedPost) => sum + (post.likeCount || 0),
+    0
+  );
 
   // filteredFeeds: 탭/정렬에 따라 feedPosts를 필터링/정렬
   const filteredFeeds = feedPosts
     .filter((post: FeedPost) =>
-      activeTab === "all" ? true : post.type === activeTab
+      activeTab === "all" ? true : post.feedType === activeTab
     )
     .sort((a: FeedPost, b: FeedPost) => {
       if (sortBy === "latest") {
-        return (
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       } else {
-        return b.likes - a.likes;
+        return (b.likeCount || 0) - (a.likeCount || 0);
       }
     });
 
   // handleFeedClick: 상세 모달 오픈
-  const handleFeedClick = (post: FeedPost) => {
+  const handleFeedClick = async (post: FeedPost) => {
     setSelectedPost(post);
     setShowComments(false);
+    
+    // 댓글 로드
+    try {
+      const commentsData = await FeedService.getComments(post.id);
+      const commentsWithFormattedTime = (commentsData.pagination.content || []).map(comment => ({
+        ...comment,
+        createdAt: formatKoreanTime(comment.createdAt)
+      }));
+      setComments(commentsWithFormattedTime);
+    } catch (error: any) {
+      console.error('댓글 로드 실패:', error);
+      setComments([]);
+    }
   };
 
   // 좋아요 토글 (백엔드 API 연동)
@@ -144,18 +332,31 @@ const MyFeedPage = () => {
       const likeResult = await FeedService.likeFeed(postId);
       
       // 백엔드 응답에 따라 좋아요 상태 업데이트
-      if (likeResult.liked) {
-        setLikedPosts([...likedPosts, postId]);
-      } else {
-        setLikedPosts(likedPosts.filter(id => id !== postId));
-      }
-
-      // 실제 피드 데이터의 좋아요 수 업데이트
+      const isCurrentlyLiked = isLiked(postId);
+      const updatedLikedPosts = isCurrentlyLiked 
+        ? likedPosts.filter((id: number) => id !== postId)
+        : [...likedPosts, postId];
+      updateLikedPosts(updatedLikedPosts);
+      
+      // 실제 피드 데이터의 좋아요 수와 isLiked 상태 업데이트
       setFeedPosts((prev) =>
         prev.map((post) =>
-          post.id === postId ? { ...post, likes: likeResult.likeCount } : post
+          post.id === postId ? { 
+            ...post, 
+            likeCount: likeResult.likeCount,
+            isLiked: likeResult.liked 
+          } : post
         )
       );
+      
+      // selectedPost도 업데이트 (모달에서 좋아요 클릭 시)
+      if (selectedPost && selectedPost.id === postId) {
+        setSelectedPost({
+          ...selectedPost,
+          likeCount: likeResult.likeCount,
+          isLiked: likeResult.liked
+        });
+      }
       
     } catch (error: any) {
       console.error('좋아요 실패:', error);
@@ -163,6 +364,8 @@ const MyFeedPage = () => {
       if (error.response?.status === 401) {
         alert("로그인이 필요합니다.");
         navigate('/login');
+      } else if (error.response?.status === 404) {
+        alert("피드를 찾을 수 없습니다.");
       } else {
         alert(error.response?.data?.message || "좋아요 처리에 실패했습니다.");
       }
@@ -174,7 +377,6 @@ const MyFeedPage = () => {
     if (!window.confirm("정말로 이 피드를 삭제하시겠습니까?")) return;
     
     try {
-      // 🔧 백엔드 API 연동 버전
       await FeedService.deleteFeed(postId);
       
       // ✅ API 성공 후 로컬 상태 업데이트
@@ -204,20 +406,75 @@ const MyFeedPage = () => {
   };
 
   // 댓글 등록
-  const handleCommentSubmit = (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newComment.trim()) {
-      const newCommentObj = {
-        id: comments.length + 1,
-        username: "나",
-        level: 2,
-        profileImg:
-          "https://readdy.ai/api/search-image?query=casual%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=40&height=40&seq=myprofile&orientation=squarish",
-        content: newComment,
-        createdAt: new Date().toLocaleString(),
+    if (!newComment.trim() || !selectedPost) return;
+
+    try {
+      // 백엔드 API 연동
+      const newCommentObj = await FeedService.createComment(selectedPost.id, {
+        content: newComment
+      });
+      
+      // 한국 시간으로 포맷팅
+      const commentWithFormattedTime = {
+        ...newCommentObj,
+        createdAt: formatKoreanTime(newCommentObj.createdAt)
       };
-      setComments([...comments, newCommentObj]);
+      
+      setComments([commentWithFormattedTime, ...comments]);
       setNewComment("");
+      
+      // 피드의 댓글 수 업데이트
+      setFeedPosts(prev => 
+        prev.map(post => 
+          post.id === selectedPost.id 
+            ? { ...post, commentCount: post.commentCount + 1 }
+            : post
+        )
+      );
+      
+    } catch (error: any) {
+      console.error('댓글 등록 실패:', error);
+      
+      if (error.response?.status === 401) {
+        alert("로그인이 필요합니다.");
+        navigate('/login');
+      } else {
+        alert(error.response?.data?.message || "댓글 등록에 실패했습니다.");
+      }
+    }
+  };
+
+  // 댓글 삭제
+  const handleDeleteComment = async (commentId: number) => {
+    if (!selectedPost || !window.confirm("정말로 이 댓글을 삭제하시겠습니까?")) return;
+    
+    try {
+      await FeedService.deleteComment(selectedPost.id, commentId);
+      setComments(comments.filter(comment => comment.id !== commentId));
+      
+      // 피드의 댓글 수 업데이트
+      setFeedPosts(prev => 
+        prev.map(post => 
+          post.id === selectedPost.id 
+            ? { ...post, commentCount: Math.max(0, post.commentCount - 1) }
+            : post
+        )
+      );
+      
+    } catch (error: any) {
+      console.error('댓글 삭제 실패:', error);
+      
+      if (error.response?.status === 401) {
+        alert("로그인이 필요합니다.");
+      } else if (error.response?.status === 403) {
+        alert("본인 댓글만 삭제할 수 있습니다.");
+      } else if (error.response?.status === 404) {
+        alert("댓글을 찾을 수 없습니다.");
+      } else {
+        alert(error.response?.data?.message || "댓글 삭제에 실패했습니다.");
+      }
     }
   };
 
@@ -227,78 +484,93 @@ const MyFeedPage = () => {
     setShowComments(false);
   };
 
-  // 투표 모달 상태
-  const [showVoteModal, setShowVoteModal] = useState(false);
-  const [votedPosts, setVotedPosts] = useState<number[]>([]);
 
-  // 투표 처리 (백엔드 API 연동)
-  const handleVote = async (postId: number) => {
-    if (!postId || votedPosts.includes(postId)) return;
+
+  // 좋아요 사용자 목록 조회 (모달에서 사용)
+  const handleShowLikeUsers = async () => {
+    if (!selectedPost) return;
     
     try {
-      // 해당 피드 찾기
-      const targetFeed = feedPosts.find(post => post.id === postId);
-      if (!targetFeed || targetFeed.type !== '이벤트') {
-        alert("투표할 수 있는 이벤트 피드가 아닙니다.");
-        return;
-      }
-      
-             // 임시로 eventId를 1로 설정 (실제로는 피드에서 eventId를 가져와야 함)
-       const voteRequest: FeedVoteRequest = { eventId: 1 };
-       const voteResult = await FeedService.voteFeed(postId, voteRequest);
-      
-      setVotedPosts([...votedPosts, postId]);
-
-      // 실제 피드 데이터의 투표 수 업데이트
-      setFeedPosts((prev) =>
-        prev.map((post) =>
-          post.id === postId ? { ...post, votes: voteResult.voteCount } : post
-        )
-      );
-      
+      const users = await FeedService.getFeedLikes(selectedPost.id);
+      setLikedUsers(users.map(user => ({
+        id: user.userId || 0,
+        nickname: user.nickname,
+        profileImg: user.profileImg
+      })));
+      setShowLikedUsersModal(true);
     } catch (error: any) {
-      console.error('투표 실패:', error);
-      
-      if (error.response?.status === 401) {
-        alert("로그인이 필요합니다.");
-        navigate('/login');
-      } else if (error.response?.status === 409) {
-        alert("이미 투표하셨습니다.");
-      } else {
-        alert(error.response?.data?.message || "투표 처리에 실패했습니다.");
-      }
+      console.error('좋아요 사용자 목록 조회 실패:', error);
+      alert('좋아요한 사용자 목록을 불러오지 못했습니다.');
     }
   };
 
-  // 투표 모달 닫기
-  const handleVoteModalClose = () => {
-    setShowVoteModal(false);
+  // 좋아요 수 클릭 시 좋아요한 사용자 목록 표시
+  const handleLikeCountClick = async (feed: FeedPost) => {
+    try {
+      const users = await FeedService.getFeedLikes(feed.id);
+      const mappedUsers = users.map(user => ({
+        id: user.userId || 0,
+        nickname: user.nickname,
+        profileImg: user.profileImg
+      }));
+      setLikedUsers(mappedUsers);
+      setShowLikedUsersModal(true);
+    } catch (error) {
+      console.error('좋아요한 사용자 목록 조회 실패:', error);
+    }
   };
 
-  // 투표 모달 확인
-  const handleVoteConfirm = () => {
-    // 투표 처리 로직 구현
-    setShowVoteModal(false);
+  // 투표 후 피드 목록 새로고침
+  const handleVoteSuccess = async (feedId: number, newVoteCount: number) => {
+    try {
+      // 현재 피드 목록에서 해당 피드의 투표 수 업데이트
+      setFeedPosts(prev => 
+        prev.map(feed => 
+          feed.id === feedId 
+            ? { ...feed, participantVoteCount: newVoteCount }
+            : feed
+        )
+      );
+      
+      // 성공 메시지 표시
+      console.log(`피드 ${feedId} 투표 완료: ${newVoteCount}표`);
+    } catch (error) {
+      console.error('투표 후 피드 업데이트 실패:', error);
+    }
   };
 
-  // 투표 모달 표시
-  const handleShowVoteModal = (post: FeedPost) => {
-    setSelectedPost(post);
-    setShowVoteModal(true);
-  };
+  // 로딩 상태 표시
+  if (loading) {
+    return (
+      <div className="p-5">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#87CEEB]"></div>
+          <span className="ml-3 text-gray-600">피드를 불러오는 중...</span>
+        </div>
+      </div>
+    );
+  }
 
-  // 투표 모달 표시 여부
-  const showVoteButton = selectedPost?.type === "이벤트";
-
-  // 투표 모달 수정 버튼 여부
-  const showEditButton = !!(
-    user?.nickname &&
-    selectedPost &&
-    selectedPost.username === user.nickname
-  );
-
-  // 투표 모달 표시 토스트
-  const [showVoteToast, setShowVoteToast] = useState(false);
+  // 에러 상태 표시
+  if (error) {
+    return (
+      <div className="p-5">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <div className="text-red-600 mb-4">
+            <i className="fas fa-exclamation-triangle text-2xl mb-2"></i>
+            <p className="text-lg font-medium">오류가 발생했습니다</p>
+          </div>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={loadMyFeeds}
+            className="bg-[#87CEEB] text-white px-6 py-2 rounded-lg hover:bg-blue-400 transition duration-200"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-5">
@@ -306,50 +578,98 @@ const MyFeedPage = () => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
           <div className="flex items-center mb-4 md:mb-0">
             <img
-              src="https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=120&height=120&seq=myprofile"
-              alt="My Profile"
+              src={isCurrentUser && userProfile?.profileImageUrl 
+                ? userProfile.profileImageUrl 
+                : "https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=120&height=120&seq=myprofile"
+              }
+              alt={isCurrentUser ? (userProfile?.nickname || user?.nickname || "My Profile") : `${userProfile?.nickname || targetUserNickname}님의 프로필`}
               className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=120&height=120&seq=myprofile";
+              }}
             />
             <div className="ml-6">
-              <h2 className="text-3xl font-bold mb-2">나의 스타일 피드</h2>
+              <h2 className="text-3xl font-bold mb-2">
+                {isCurrentUser 
+                  ? `${userProfile?.nickname || user?.nickname || '나'}의 스타일 피드` 
+                  : `${userProfile?.nickname || targetUserNickname || `사용자${targetUserId}`}님의 스타일 피드`
+                }
+              </h2>
               <div className="flex items-center mb-3">
                 <div className="bg-[#87CEEB] text-white px-3 py-1 rounded-full flex items-center">
                   <i className="fas fa-crown text-yellow-300 mr-1"></i>
                   <span>Lv.4 스타일리스트</span>
                 </div>
-                <button className="ml-3 text-[#87CEEB] hover:text-blue-400 flex items-center">
-                  <i className="fas fa-edit mr-1"></i>
-                  <span>프로필 수정</span>
-                </button>
+                {isCurrentUser && (
+                  <button 
+                    className="ml-3 text-[#87CEEB] hover:text-blue-400 flex items-center cursor-pointer transition duration-200"
+                    onClick={() => navigate("/profile-settings")}
+                  >
+                    <i className="fas fa-edit mr-1"></i>
+                    <span>프로필 수정</span>
+                  </button>
+                )}
               </div>
-              <p className="text-gray-600">
-                나만의 스타일을 공유하고 다른 사람들과 소통해보세요!
+              
+              {/* 사용자 신체 정보 표시 */}
+              {userProfile && (
+                <div className="mb-3">
+                  <FeedUserProfile
+                    userId={userProfile.userId || 0}
+                    nickname={userProfile.nickname}
+                    profileImageUrl={userProfile.profileImageUrl}
+                    showBodyInfo={true}
+                    showBodyInfoOnly={true}
+                    size="medium"
+                    onClick={() => {
+                      // 현재 사용자인 경우에만 프로필 수정 페이지로 이동
+                      if (isCurrentUser) {
+                        navigate("/profile-settings");
+                      }
+                    }}
+                  />
+                </div>
+              )}
+              
+              <p className="text-gray-600 mb-3">
+                {isCurrentUser 
+                  ? "나만의 스타일을 공유하고 다른 사람들과 소통해보세요!"
+                  : `${userProfile?.nickname || targetUserNickname || `사용자${targetUserId}`}님의 스타일을 확인해보세요!`
+                }
               </p>
             </div>
           </div>
-          <button
-            className="bg-[#87CEEB] text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-400 transition duration-200 flex items-center cursor-pointer"
-            onClick={() => navigate("/feed-create")}
-          >
-            <i className="fas fa-plus-circle mr-2"></i>
-            착용샷 올리기
-          </button>
+          {isCurrentUser && (
+            <button
+              className="bg-[#87CEEB] text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-400 transition duration-200 flex items-center cursor-pointer"
+              onClick={() => navigate("/feed-create")}
+            >
+              <i className="fas fa-plus-circle mr-2"></i>
+              착용샷 올리기
+            </button>
+          )}
         </div>
 
         {/* 내 피드 모아보기 탭/정렬 */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
           <div className="flex gap-2 mb-2 md:mb-0">
-            {["all", "일상", "이벤트", "랭킹"].map((tab) => (
+            {[
+              { key: "all", label: "전체" },
+              { key: "DAILY", label: "일상" },
+              { key: "EVENT", label: "이벤트" },
+              { key: "RANKING", label: "랭킹" }
+            ].map((tab) => (
               <button
-                key={tab}
+                key={tab.key}
                 className={`px-4 py-2 rounded-full text-sm font-medium border transition ${
-                  activeTab === tab
+                  activeTab === tab.key
                     ? "bg-[#87CEEB] text-white border-[#87CEEB]"
                     : "bg-white text-gray-600 border-gray-300 hover:border-[#87CEEB]"
                 }`}
-                onClick={() => setActiveTab(tab as any)}
+                onClick={() => setActiveTab(tab.key as any)}
               >
-                {tab === "all" ? "전체" : tab}
+                {tab.label}
               </button>
             ))}
           </div>
@@ -371,13 +691,31 @@ const MyFeedPage = () => {
             <h3 className="text-2xl font-bold text-[#87CEEB]">{feedCount}</h3>
             <p className="text-gray-600">게시물</p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm">
+          <div 
+            className="bg-white p-4 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => {
+              // 현재 사용자 또는 특정 사용자의 팔로워 목록 표시
+              const targetId = targetUserId ? parseInt(targetUserId) : currentUserId;
+              if (targetId) {
+                setShowFollowersModal(true);
+              }
+            }}
+          >
             <h3 className="text-2xl font-bold text-[#87CEEB]">
               {followerCount}
             </h3>
             <p className="text-gray-600">팔로워</p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm">
+          <div 
+            className="bg-white p-4 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => {
+              // 현재 사용자 또는 특정 사용자의 팔로잉 목록 표시
+              const targetId = targetUserId ? parseInt(targetUserId) : currentUserId;
+              if (targetId) {
+                setShowFollowingsModal(true);
+              }
+            }}
+          >
             <h3 className="text-2xl font-bold text-[#87CEEB]">
               {followingCount}
             </h3>
@@ -390,8 +728,41 @@ const MyFeedPage = () => {
         </div>
       </div>
 
-      {/* 피드 리스트 렌더링 부분을 아래처럼 대체 */}
-      <FeedList feeds={filteredFeeds} onFeedClick={handleFeedClick} />
+      {/* 피드 리스트 렌더링 */}
+      {feedPosts.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-gray-400 mb-4">
+            <i className="fas fa-camera text-6xl mb-4"></i>
+            <p className="text-xl font-medium">
+              아직 피드가 없습니다
+            </p>
+            <p className="text-gray-500 mt-2">
+              {isCurrentUser 
+                ? "첫 번째 피드를 올려보세요!" 
+                : `${targetUserNickname}님은 아직 피드를 올리지 않았습니다.`
+              }
+            </p>
+          </div>
+          {isCurrentUser && (
+            <button
+              onClick={() => navigate("/feed-create")}
+              className="bg-[#87CEEB] text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-400 transition duration-200"
+            >
+              <i className="fas fa-plus-circle mr-2"></i>
+              피드 올리기
+            </button>
+          )}
+        </div>
+      ) : (
+        <FeedList 
+          feeds={filteredFeeds} 
+          onFeedClick={handleFeedClick}
+          onLikeClick={(feed) => handleLike(feed.id)}
+          onLikeCountClick={handleLikeCountClick}
+          likedPosts={likedPosts}
+          onVoteSuccess={handleVoteSuccess}
+        />
+      )}
 
       {/* 상세 모달 */}
       <FeedDetailModal
@@ -402,36 +773,71 @@ const MyFeedPage = () => {
         showComments={showComments}
         onToggleComments={() => setShowComments(!showComments)}
         onLike={() => selectedPost && handleLike(selectedPost.id)}
-        liked={selectedPost ? likedPosts.includes(selectedPost.id) : false}
-        onVote={() => setShowVoteModal(true)}
-        voted={selectedPost ? votedPosts.includes(selectedPost.id) : false}
-        onEdit={
-          user?.nickname &&
-          selectedPost &&
-          selectedPost.username === user.nickname
-            ? () => {
-                handleCloseModal();
-                navigate(`/feed-edit?id=${selectedPost.id}`);
-              }
-            : undefined
-        }
-        showVoteButton={selectedPost?.type === "이벤트"}
-        showEditButton={
-          !!(
-            user?.nickname &&
-            selectedPost &&
-            selectedPost.username === user.nickname
-          )
-        }
-        showVoteModal={showVoteModal}
-        onVoteModalClose={() => setShowVoteModal(false)}
-        onVoteConfirm={() => selectedPost && handleVote(selectedPost.id)}
-        showToast={showVoteToast}
-        toastMessage={"투표가 완료되었습니다!"}
+        liked={selectedPost ? isLiked(selectedPost.id) : false}
+        onEdit={(() => {
+          const isOwner = !!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname);
+          if (!isOwner || !isCurrentUser) return undefined;
+          return () => {
+            handleCloseModal();
+            navigate(`/feed-edit?id=${selectedPost?.id}`);
+          };
+        })()}
+        onDelete={(() => {
+          const isOwner = !!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname);
+          if (!isOwner || !selectedPost || !isCurrentUser) return undefined;
+          return () => handleDelete(selectedPost.id);
+        })()}
+        showEditButton={!!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname && isCurrentUser)}
         newComment={newComment}
         onCommentChange={(e) => setNewComment(e.target.value)}
         onCommentSubmit={handleCommentSubmit}
+        onShowLikeUsers={handleShowLikeUsers}
+        onDeleteComment={handleDeleteComment}
+        currentUser={user ? { nickname: user.nickname } : undefined}
+        onUserClick={(userId) => {
+          // 팔로우 버튼 클릭 시 페이지 이동하지 않고 현재 페이지에서 팔로우 상태만 변경
+          // 모달은 닫지 않음 (사용자가 직접 닫을 수 있도록)
+          console.log('사용자 클릭됨, 페이지 이동하지 않음:', userId);
+        }}
+        onFollowChange={(isFollowing: boolean) => {
+          // 팔로우 상태 변경 시 팔로우 수 즉시 업데이트
+          console.log('팔로우 상태 변경:', isFollowing);
+          // 팔로우 수 새로고침
+          loadFollowCounts();
+        }}
       />
+
+      {/* 좋아요 사용자 모달 */}
+      {showLikedUsersModal && (
+        <LikedUsersModal
+          users={likedUsers}
+          onClose={() => setShowLikedUsersModal(false)}
+        />
+      )}
+
+      {/* 팔로워 목록 모달 */}
+      {showFollowersModal && user && (
+        <FollowListModal
+          open={showFollowersModal}
+          onClose={() => setShowFollowersModal(false)}
+          userId={targetUserId ? parseInt(targetUserId) : (currentUserId || 0)}
+          type="followers"
+          title="팔로워"
+          onFollowChange={loadFollowCounts}
+        />
+      )}
+
+      {/* 팔로잉 목록 모달 */}
+      {showFollowingsModal && user && (
+        <FollowListModal
+          open={showFollowingsModal}
+          onClose={() => setShowFollowingsModal(false)}
+          userId={targetUserId ? parseInt(targetUserId) : (currentUserId || 0)}
+          type="followings"
+          title="팔로잉"
+          onFollowChange={loadFollowCounts}
+        />
+      )}
     </div>
   );
 };

@@ -1,115 +1,33 @@
 import { useAuth } from "../../contexts/AuthContext";
-import { useState } from "react";
-import styled, { keyframes } from "styled-components";
-import { Link, useNavigate } from "react-router-dom";
-import { login, validateEmail } from "../../utils/auth";
+import { useEffect, useState } from "react";
+import styled from "styled-components";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { validateEmail } from "../../utils/auth/auth";
 import axios from "axios";
+import {
+  AuthCard,
+  AuthForm as BaseAuthForm,
+  AuthFormGroup as BaseAuthFormGroup,
+  AuthLabel,
+  AuthInput,
+  AuthButton,
+  AuthLink,
+  ErrorMessage,
+} from "../../components/auth/AuthCard";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
-const fadeInUp = keyframes`
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-const slideInLeft = keyframes`
-  from { opacity: 0; transform: translateX(-30px); }
-  to { opacity: 1; transform: translateX(0); }
-`;
-const float = keyframes`
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+const AuthForm = styled(BaseAuthForm)`
+  gap: 0;
 `;
 
-const LoginContainer = styled.div`
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  position: relative;
-  overflow: hidden;
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(249,115,22,0.08)" points="0,1000 1000,0 1000,1000"/></svg>');
-    background-size: cover;
-  }
-`;
-const LoginCard = styled.div`
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  padding: 48px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 480px;
-  position: relative;
-  z-index: 2;
-  animation: ${fadeInUp} 0.8s ease-out;
-  @media (max-width: 768px) {
-    padding: 32px 24px;
-    margin: 20px;
-  }
-`;
-const LogoSection = styled.div`
-  text-align: center;
-  margin-bottom: 40px;
-  animation: ${slideInLeft} 0.8s ease-out 0.2s both;
-`;
-const Logo = styled.div`
-  font-size: 2.5rem;
-  font-weight: 900;
-  background: linear-gradient(135deg, #f97316, #ea580c);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 8px;
-  animation: ${float} 3s ease-in-out infinite;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-`;
-const Subtitle = styled.p`
-  color: #6b7280;
-  font-size: 1rem;
-  margin: 0;
-`;
-const Form = styled.form`
-  animation: ${fadeInUp} 0.8s ease-out 0.4s both;
-`;
-const FormGroup = styled.div`
+const AuthFormGroup = styled(BaseAuthFormGroup)`
   margin-bottom: 24px;
 `;
-const Label = styled.label`
-  display: block;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 8px;
-  font-size: 0.9rem;
-`;
+
 const InputWrapper = styled.div`
   position: relative;
 `;
-const Input = styled.input`
-  width: 100%;
-  padding: 16px 20px;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  font-size: 1rem;
-  background: white;
-  transition: all 0.3s ease;
-  box-sizing: border-box;
-  &:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    transform: translateY(-2px);
-  }
-  &::placeholder {
-    color: #9ca3af;
-  }
-`;
+
 const InputIcon = styled.div`
   position: absolute;
   right: 16px;
@@ -118,48 +36,7 @@ const InputIcon = styled.div`
   color: #9ca3af;
   font-size: 1.1rem;
 `;
-const LoginButton = styled.button`
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #f97316, #ea580c);
-  color: white;
-  border: none;
-  border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
-  position: relative;
-  overflow: hidden;
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.2),
-      transparent
-    );
-    transition: left 0.5s;
-  }
-  &:hover {
-    transform: translateY(-3px) scale(1.04);
-    box-shadow: 0 12px 35px rgba(249, 115, 22, 0.4);
-    &::before {
-      left: 100%;
-    }
-  }
-  &:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
+
 const SocialLoginButton = styled.button`
   width: 100%;
   padding: 14px;
@@ -182,6 +59,7 @@ const SocialLoginButton = styled.button`
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   }
 `;
+
 const Divider = styled.div`
   display: flex;
   align-items: center;
@@ -202,6 +80,7 @@ const Divider = styled.div`
     margin-left: 16px;
   }
 `;
+
 const SignUpLink = styled(Link)`
   display: block;
   text-align: center;
@@ -215,12 +94,6 @@ const SignUpLink = styled(Link)`
     transform: translateY(-1px);
   }
 `;
-const ErrorMsg = styled.div`
-  color: #e74c3c;
-  text-align: center;
-  margin-bottom: 16px;
-  font-size: 0.95rem;
-`;
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -228,168 +101,217 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const isEmailValid = validateEmail(email);
   const { login: authLogin } = useAuth();
 
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  const [isRecaptchaReady, setIsRecaptchaReady] = useState(false);
+
+  useEffect(() => {
+    // executeRecaptcha 함수가 준비되면 상태를 true로 변경
+    if (executeRecaptcha) {
+      setIsRecaptchaReady(true);
+    }
+  }, [executeRecaptcha]);
+
+  // 소셜 로그인 콜백에서 전달된 에러 처리
+  useEffect(() => {
+    const state = location.state as { error?: string } | null;
+    if (state?.error) {
+      setError(state.error);
+    }
+  }, [location.state]);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log("handleSubmit 함수가 호출되었습니다.");
+
+    if (!isRecaptchaReady || !executeRecaptcha) {
+      // alert()를 setError로 변경
+      setError("reCAPTCHA 로딩 중입니다. 잠시 후 다시 시도해주세요.");
+      setLoading(false);
+      return;
+    }
+    console.log("reCAPTCHA가 준비되었습니다.");
+
     setError("");
     setLoading(true);
+
     try {
       if (!isEmailValid) throw new Error("올바른 이메일 형식을 입력해주세요.");
 
+      const recaptchaToken = await executeRecaptcha("login_submit");
+      // console.log('생성된 reCAPTCHA 토큰:', recaptchaToken);
+
+      if (!recaptchaToken) {
+        throw new Error("reCAPTCHA 인증에 실패했습니다. 다시 시도해주세요.");
+      }
+
       const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+      // console.log('로그인 요청 전송:', {
+      //   url: `${baseURL}/api/auth/login`,
+      //   data: { email, password, recaptchaToken }
+      // });
+
       const response = await axios.post(`${baseURL}/api/auth/login`, {
         email,
         password,
+        recaptchaToken,
       });
 
-      const apiResponseData = response.data; // { success: true, message: "...", data: { ... } }
+      // --- 로그인 성공 시 추가된 로직 ---
+      // console.log('로그인 성공 응답:', response.data);
+      const loginData = response.data.data;
 
-      if (apiResponseData && apiResponseData.success && apiResponseData.data) {
-        const userData = apiResponseData.data; // { loginId, role, email, userId, username, phone, createdAt, token }
+      // 백엔드에서 MFA 상태를 확인하여 응답에 포함시켰으므로 직접 확인
+      if (loginData && loginData.requiresMfa) {
+        // MFA가 활성화된 경우 2단계 인증 페이지로 이동
+        console.log("MFA가 활성화되어 2단계 인증이 필요합니다.");
+        navigate("/mfa-verification", {
+          state: {
+            email: loginData.email,
+            tempToken: loginData.tempToken,
+          },
+        });
+        return;
+      }
 
-        authLogin(userData.nickname, userData.role, userData.token); // authLogin 함수에 맞게 필드 이름 수정
+      if (loginData && loginData.token) {
+        // 일반 로그인 성공
+        authLogin(
+          loginData.nickname,
+          loginData.name || loginData.nickname,
+          loginData.email || email,
+          loginData.role,
+          loginData.token
+        );
         navigate("/");
       } else {
-        // 서버에서 성공은 아니지만 응답은 있는 경우 (예: success: false)
-        setError(
-          apiResponseData.message ||
-            "로그인에 실패했습니다. 다시 시도해 주세요."
-        );
+        throw new Error("로그인 응답 형식이 올바르지 않습니다.");
       }
+      // --- 추가된 로직 끝 ---
     } catch (err: any) {
-      // Axios 에러 처리 (네트워크 오류, 4xx/5xx 응답 등)
-      if (axios.isAxiosError(err) && err.response) {
-        setError(
-          err.response.data?.message || "로그인에 실패했습니다. 서버 응답 오류."
-        );
-        console.error("Login Error Response:", err.response); // 에러 응답 디버깅
-      } else {
-        setError(err.message || "알 수 없는 오류가 발생했습니다.");
-        console.error("Login Error:", err); // 기타 에러 디버깅
-      }
+      console.error(
+        "로그인 에러:",
+        err.response ? err.response.data : err.message
+      );
+      // alert()를 setError로 변경
+      const errorMessage =
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "로그인 중 알 수 없는 오류가 발생했습니다.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
+  // 소셜 로그인 핸들러
+  const handleGoogleLogin = () => {
+    const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+    window.location.href = `${baseURL}/oauth2/authorization/google`;
+  };
+
+  const handleKakaoLogin = () => {
+    const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+    window.location.href = `${baseURL}/oauth2/authorization/kakao`;
+  };
+
   return (
-    <LoginContainer>
-      <LoginCard>
-        <LogoSection>
-          <Logo>FeedShop</Logo>
-          <Subtitle>스마트한 쇼핑 경험을 위한 최고의 선택</Subtitle>
-        </LogoSection>
-        <Form onSubmit={handleSubmit}>
-          {error && <ErrorMsg>{error}</ErrorMsg>}
-          <FormGroup>
-            <Label htmlFor="email">이메일</Label>
-            <InputWrapper>
-              <Input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="example@email.com"
-                required
-                autoComplete="username"
-              />
-              <InputIcon>
-                <i className="fas fa-envelope"></i>
-              </InputIcon>
-            </InputWrapper>
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor="password">비밀번호</Label>
-            <InputWrapper>
-              <Input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="비밀번호를 입력하세요"
-                required
-                autoComplete="current-password"
-              />
-              <InputIcon>
-                <i className="fas fa-lock"></i>
-              </InputIcon>
-            </InputWrapper>
-          </FormGroup>
-          <LoginButton type="submit" disabled={loading}>
-            {loading ? (
-              <>
-                <i
-                  className="fas fa-spinner fa-spin"
-                  style={{ marginRight: "8px" }}
-                ></i>
-                로그인 중...
-              </>
-            ) : (
-              <>
-                <i
-                  className="fas fa-sign-in-alt"
-                  style={{ marginRight: "8px" }}
-                ></i>
-                로그인
-              </>
-            )}
-          </LoginButton>
+    <AuthCard title="FeedShop" subtitle="스마트한 쇼핑 경험을 위한 최고의 선택">
+      <AuthForm onSubmit={handleSubmit}>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        <AuthFormGroup>
+          <AuthLabel htmlFor="email">이메일</AuthLabel>
+          <InputWrapper>
+            <AuthInput
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="example@email.com"
+              required
+              autoComplete="username"
+            />
+            <InputIcon>
+              <i className="fas fa-envelope"></i>
+            </InputIcon>
+          </InputWrapper>
+        </AuthFormGroup>
+        <AuthFormGroup>
+          <AuthLabel htmlFor="password">비밀번호</AuthLabel>
+          <InputWrapper>
+            <AuthInput
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호를 입력하세요"
+              required
+              autoComplete="current-password"
+            />
+            <InputIcon>
+              <i className="fas fa-lock"></i>
+            </InputIcon>
+          </InputWrapper>
+        </AuthFormGroup>
+        <AuthButton type="submit" disabled={loading}>
+          {loading ? (
+            <>
+              <i
+                className="fas fa-spinner fa-spin"
+                style={{ marginRight: "8px" }}
+              ></i>
+              로그인 중...
+            </>
+          ) : (
+            <>
+              <i
+                className="fas fa-sign-in-alt"
+                style={{ marginRight: "8px" }}
+              ></i>
+              로그인
+            </>
+          )}
+        </AuthButton>
 
-          <Divider>또는</Divider>
+        <Divider>또는</Divider>
 
-          <SocialLoginButton
-            type="button"
-            onClick={() => alert("구글 로그인 연동 필요")}
-          >
-            <i className="fab fa-google" style={{ color: "#DB4437" }}></i>
-            구글로 로그인
-          </SocialLoginButton>
+        <SocialLoginButton
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={loading}
+        >
+          <i className="fab fa-google" style={{ color: "#DB4437" }}></i>
+          구글로 로그인
+        </SocialLoginButton>
 
-          <SocialLoginButton
-            type="button"
-            onClick={() => alert("카카오 로그인 연동 필요")}
-          >
-            <i className="fas fa-comment" style={{ color: "#FEE500" }}></i>
-            카카오로 로그인
-          </SocialLoginButton>
+        <SocialLoginButton
+          type="button"
+          onClick={handleKakaoLogin}
+          disabled={loading}
+        >
+          <i className="fas fa-comment" style={{ color: "#FEE500" }}></i>
+          카카오로 로그인
+        </SocialLoginButton>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: "16px",
-            }}
-          >
-            <Link
-              to="/find-account"
-              style={{
-                color: "#667eea",
-                textDecoration: "none",
-                fontSize: "0.9rem",
-              }}
-            >
-              계정 찾기
-            </Link>
-            <Link
-              to="/find-password"
-              style={{
-                color: "#667eea",
-                textDecoration: "none",
-                fontSize: "0.9rem",
-              }}
-            >
-              비밀번호 찾기
-            </Link>
-          </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: "16px",
+          }}
+        >
+          <AuthLink to="/find-account">계정 찾기</AuthLink>
+          <AuthLink to="/find-password">비밀번호 찾기</AuthLink>
+        </div>
 
-          <SignUpLink to="/signup">
-            <i className="fas fa-user-plus" style={{ marginRight: "8px" }}></i>
-            계정이 없으신가요? 회원가입
-          </SignUpLink>
-        </Form>
-      </LoginCard>
-    </LoginContainer>
+        <SignUpLink to="/signup">
+          <i className="fas fa-user-plus" style={{ marginRight: "8px" }}></i>
+          계정이 없으신가요? 회원가입
+        </SignUpLink>
+      </AuthForm>
+    </AuthCard>
   );
 }

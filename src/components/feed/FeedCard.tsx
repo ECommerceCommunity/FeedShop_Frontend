@@ -1,53 +1,68 @@
 import React from "react";
+import FeedUserProfile from "./FeedUserProfile";
 
 interface FeedCardProps {
   feed: {
     id: number;
-    image: string;
+    images?: Array<{ imageUrl: string }>;
     title: string;
-    description: string;
-    author?: string;
-    date?: string;
-    likes?: number;
-    size?: number;
+    content: string;
+    user?: {
+      id?: number;
+      nickname: string;
+      profileImg?: string;
+    };
+    createdAt?: string;
+    likeCount?: number;
+    orderItem?: {
+      size?: number;
+    };
     feedType?: string;
-    votes?: number;
+    participantVoteCount?: number;
   };
   onClick?: () => void;
-  onVoteClick?: () => void;
-  onLikeClick?: () => void;
-  liked?: boolean;
-  likes?: number;
+  children?: React.ReactNode; // 하위 컴포넌트들을 위한 슬롯
 }
 
-const FeedCard: React.FC<FeedCardProps> = ({ feed, onClick, onVoteClick, onLikeClick, liked, likes }) => {
+const FeedCard: React.FC<FeedCardProps> = ({ 
+  feed, 
+  onClick, 
+  children 
+}) => {
+  const imageUrl = feed.images && feed.images.length > 0 ? feed.images[0].imageUrl : 'https://via.placeholder.com/300x400?text=No+Image';
+  
   return (
     <div className="border p-4 rounded-lg hover:shadow flex flex-col cursor-pointer" onClick={onClick}>
-      <img src={feed.image} alt={feed.title} className="aspect-[3/4] object-cover rounded" />
+      <img src={imageUrl} alt={feed.title} className="aspect-[3/4] object-cover rounded" />
       <h3 className="mt-2 text-gray-900 line-clamp-2 font-semibold">{feed.title}</h3>
-      <p className="text-gray-500 text-sm mb-2 line-clamp-2">{feed.description}</p>
-      {feed.size && (
-        <p className="text-gray-500 text-xs mb-1">신발 사이즈: {feed.size}mm</p>
+      <p className="text-gray-500 text-sm mb-2 line-clamp-2">{feed.content}</p>
+      {feed.orderItem?.size && (
+        <p className="text-gray-500 text-xs mb-1">신발 사이즈: {feed.orderItem.size}mm</p>
       )}
+      
+      {/* 사용자 정보 */}
+      {feed.user && (
+        <div className="mt-2 mb-2">
+          <FeedUserProfile
+            userId={feed.user.id || 0}
+            nickname={feed.user.nickname}
+            profileImageUrl={feed.user.profileImg}
+            showBodyInfo={true}
+            size="small"
+            onClick={() => {
+              // 사용자 프로필 페이지로 이동 로직 추가 가능
+              console.log('사용자 프로필 클릭:', feed.user?.nickname);
+            }}
+          />
+        </div>
+      )}
+      
       <div className="flex justify-between items-center text-xs text-gray-400 mt-auto">
-        {feed.author && <span>{feed.author}</span>}
-        {feed.date && <span>{feed.date}</span>}
-        <button
-          className="flex items-center gap-1 focus:outline-none"
-          onClick={e => { e.stopPropagation(); onLikeClick && onLikeClick(); }}
-          disabled={liked}
-        >
-          <i className={`fas fa-heart ${liked ? 'text-red-500' : 'text-gray-300'}`}></i> {typeof likes === 'number' ? likes : feed.likes}
-        </button>
+        {feed.createdAt && <span>{new Date(feed.createdAt).toLocaleDateString()}</span>}
       </div>
-      {feed.feedType === 'event' && (
-        <button
-          className="mt-3 w-full bg-[#87CEEB] text-white py-2 rounded-lg font-medium hover:bg-blue-400 transition"
-          onClick={e => { e.stopPropagation(); onVoteClick && onVoteClick(); }}
-        >
-          <i className="fas fa-vote-yea mr-1"></i> 투표하기{typeof feed.votes === 'number' ? ` (${feed.votes})` : ''}
-        </button>
-      )}
+      
+      {/* 하위 컴포넌트들을 위한 슬롯 */}
+      {children}
     </div>
   );
 };
