@@ -16,6 +16,9 @@ export interface FeedRewardEvent {
   retryCount: number;
   errorMessage: string | null;
   createdAt: string;
+  // 백엔드에서 제공할 수 있는 displayName 필드들 (선택사항)
+  rewardTypeDisplayName?: string;
+  eventStatusDisplayName?: string;
 }
 
 export interface FeedRewardEventListResponse {
