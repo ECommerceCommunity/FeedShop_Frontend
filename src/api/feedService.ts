@@ -39,6 +39,7 @@ interface BackendFeedPost {
   eventDescription?: string;
   eventStartDate?: string;
   eventEndDate?: string;
+  eventType?: string; // 이벤트 타입 필드 추가
   hashtags?: any[];
   images?: any[];
   imageUrls?: string[];
@@ -113,6 +114,13 @@ export class FeedService {
       isVoted: backendFeed.isVoted ?? false,
       createdAt: backendFeed.createdAt,
       updatedAt: backendFeed.updatedAt ?? backendFeed.createdAt,
+      // 이벤트 참여 관련 필드 추가
+      eventId: backendFeed.eventId,
+      eventTitle: backendFeed.eventTitle,
+      eventDescription: backendFeed.eventDescription,
+      eventStartDate: backendFeed.eventStartDate,
+      eventEndDate: backendFeed.eventEndDate,
+      eventType: backendFeed.eventType,
     };
   }
 

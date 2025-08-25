@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../../api/axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { EventStatus, EventDto } from "../../types/types";
 import EventDetailModal from "./EventDetailModal";
@@ -23,6 +23,7 @@ const EventListPage = () => {
   const [selectedEvent, setSelectedEvent] = useState<EventDto | null>(null);
 
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   // 디버깅을 위한 사용자 정보 출력
   // console.log('Current user:', user);
@@ -459,7 +460,12 @@ const EventListPage = () => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              // 참여하기 로직
+                              navigate('/feed-create', {
+                                state: {
+                                  selectedEventId: event.eventId,
+                                  fromEventList: true
+                                }
+                              });
                             }}
                             className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                           >

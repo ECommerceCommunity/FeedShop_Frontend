@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { EventDto, EventModalProps, EventRewardDto, EventType } from '../../types/event';
+import { EventDto, EventModalProps, EventRewardDto, EventType, EventStatus } from '../../types/event';
 import { formatDate, getEventTypeText, getEventStatusText, getEventTypeColor, getEventStatusColor } from '../../utils/eventUtils';
 import EventService from '../../api/eventService';
 
@@ -115,11 +115,11 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
           
           {/* 상태 및 타입 배지 */}
           <div className="absolute top-6 left-6 flex gap-3">
-            <span className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold shadow-lg backdrop-blur-sm ${getEventStatusColor(detail.status)}`}>
-              {getEventStatusText(detail.status)}
+            <span className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold shadow-lg backdrop-blur-sm ${getEventStatusColor(detail.status as EventStatus)}`}>
+              {getEventStatusText(detail.status as EventStatus)}
             </span>
-            <span className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold shadow-lg backdrop-blur-sm ${getEventTypeColor(detail.type)}`}>
-                              {getEventTypeText(detail.type as EventType)}
+            <span className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold shadow-lg backdrop-blur-sm ${getEventTypeColor(detail.type as EventType)}`}>
+              {getEventTypeText(detail.type as EventType)}
             </span>
           </div>
 
