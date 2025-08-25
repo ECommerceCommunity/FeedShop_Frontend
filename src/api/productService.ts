@@ -9,6 +9,17 @@ import {
   UpdateProductRequest,
 } from "types/products";
 
+export interface AIRecommendRequest {
+  prompt: string;
+  limit: number;
+}
+
+export interface AIRecommendResponse {
+  products: ProductListItem[];
+  prompt: string;
+  count: number;
+}
+
 export class ProductService {
   // 상품 목록 조회
   static async getProducts(
@@ -285,6 +296,24 @@ export class ProductService {
           last: boolean;
         }>
       >("/api/seller/products", { params: { page, size } });
+      return response.data.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  static async getAIRecommendations({
+    prompt,
+    limit = 5
+  }: AIRecommendRequest): Promise<AIRecommendResponse> {
+    try {
+      const response = await axiosInstance.post<ApiResponse<AIRecommendResponse>>(
+        "/api/ai/products/recommend",
+        {
+          prompt,
+          limit
+        }
+      );
       return response.data.data;
     } catch (error: any) {
       throw error;

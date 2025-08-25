@@ -40,6 +40,9 @@ const ReportManagePage = lazy(() => import("./pages/admin/ReportManagePage"));
 const AdminDashboardPage = lazy(
   () => import("./pages/admin/AdminDashboardPage")
 );
+const FeedRewardDashboardPage = lazy(
+  () => import("./pages/admin/FeedRewardDashboardPage")
+);
 const StatsDashboardPage = lazy(
   () => import("./pages/admin/StatsDashboardPage")
 );
@@ -78,6 +81,7 @@ const MfaVerificationPage = lazy(
 );
 const AdminSettingsPage = lazy(() => import("./pages/admin/AdminSettingsPage"));
 const AdminProfilePage = lazy(() => import("./pages/admin/AdminProfilePage"));
+const MyCommentsPage = lazy(() => import("./pages/auth/MyComments"));
 
 const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY || "";
 
@@ -228,6 +232,14 @@ const App: FC = () => {
                     </UserProtectedRoute>
                   }
                 />
+                <Route
+                  path="/mypage/comments"
+                  element={
+                    <UserProtectedRoute requireLogin={true}>
+                      <MyCommentsPage />
+                    </UserProtectedRoute>
+                  }
+                />
                 {/* 이벤트 관련 페이지들 */}
                 <Route path="/event-list" element={<EventListPage />} />
                 <Route
@@ -309,6 +321,14 @@ const App: FC = () => {
                   element={
                     <AdminProtectedRoute>
                       <StatsDashboardPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/feed-rewards"
+                  element={
+                    <AdminProtectedRoute>
+                      <FeedRewardDashboardPage />
                     </AdminProtectedRoute>
                   }
                 />
