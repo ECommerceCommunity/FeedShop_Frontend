@@ -20,6 +20,7 @@ import {
   Title,
   AIRecommendSection,
   AIRecommendTitle,
+  AIInfoMessage,
   AIInputContainer,
   AIInput,
   AIButton,
@@ -191,6 +192,11 @@ const Lists: React.FC = () => {
       {/* AI 추천 섹션 */}
       <AIRecommendSection>
         <AIRecommendTitle>AI 맞춤 추천</AIRecommendTitle>
+        {user && (
+          <AIInfoMessage>
+            프로필 신체 정보와 취향을 반영한 개인 맞춤 추천을 제공합니다
+          </AIInfoMessage>
+        )}
         <AIInputContainer>
           <AIInput
             type="text"

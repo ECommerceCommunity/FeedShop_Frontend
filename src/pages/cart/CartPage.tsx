@@ -153,7 +153,9 @@ const CartPageContent: React.FC = () => {
         <Card>
           {/* 장바구니 헤더 (제목 및 전체 선택) */}
           <CartHeader>
-            <CartTitle>장바구니 ({localCartData.totalItemCount}개)</CartTitle>
+            <CartTitle>
+              장바구니 ({localCartData.totalItemCount}개)
+            </CartTitle>
             <SelectAllLabel>
               <input
                 type="checkbox"
