@@ -22,7 +22,7 @@ import { validateReviewTitle, validateReviewContent, validateRating, validateIma
 // =============== 훅 설정 옵션 ===============
 
 interface UseReviewActionsOptions {
-    onSuccess?: (message: string) => void;
+    onSuccess?: (message: string, response?: CreateReviewResponse) => void;
     onError?: (message: string) => void;
 }
 
@@ -97,7 +97,7 @@ export const useReviewActions = (options: UseReviewActionsOptions = {}): UseRevi
 
             // 성공 콜백 실행
             if (onSuccess) {
-                onSuccess(response.message || "리뷰가 성공적으로 작성되었습니다.");
+                onSuccess(response.message || "리뷰가 성공적으로 작성되었습니다.", response);
             }
 
             return response;
