@@ -43,6 +43,13 @@ export interface FeedPost {
   participantVoteCount?: number; // 투표 수
   orderItem?: OrderItem;
   instagramId?: string;
+  // 이벤트 참여 관련 필드 추가
+  eventId?: number;
+  eventTitle?: string;
+  eventDescription?: string;
+  eventStartDate?: string;
+  eventEndDate?: string;
+  eventType?: string;
 }
 
 export interface FeedComment {
@@ -72,7 +79,7 @@ export interface CreateFeedRequest {
   title: string;
   content: string;
   orderItemId: number;
-  eventId?: number; // 이벤트 피드인 경우
+  eventId?: number; // 이벤트 피드인 경우 (백엔드와 일치)
   instagramId?: string;
   imageUrls: string[];
   hashtags: string[];
