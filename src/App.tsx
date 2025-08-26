@@ -55,8 +55,10 @@ const CheckoutPage = lazy(() => import("./pages/order/CheckoutPage"));
 const WishListPage = lazy(() => import("./pages/cart/WishListPage"));
 const RecentViewPage = lazy(() => import("./pages/cart/RecentViewPage"));
 const ReviewEditPage = lazy(() => import("./pages/reviews/ReviewEditPage"));
-const ProfileSettingsPage = lazy(
-  () => import("./pages/auth/ProfileSettingsPage")
+const ProfileViewPage = lazy(() => import("./pages/auth/ProfileViewPage"));
+const ProfileEditPage = lazy(() => import("./pages/auth/ProfileEditPage"));
+const AccountSettingsPage = lazy(
+  () => import("./pages/auth/AccountSettingsPage")
 );
 const FeedListPage = lazy(() => import("./pages/feed/FeedListPage"));
 const FeedDetailPage = lazy(() => import("./pages/feed/FeedDetailPage"));
@@ -82,6 +84,7 @@ const MfaVerificationPage = lazy(
 const AdminSettingsPage = lazy(() => import("./pages/admin/AdminSettingsPage"));
 const AdminProfilePage = lazy(() => import("./pages/admin/AdminProfilePage"));
 const MyCommentsPage = lazy(() => import("./pages/auth/MyComments"));
+const WithdrawPage = lazy(() => import("./pages/auth/WithdrawPage"));
 
 const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY || "";
 
@@ -166,10 +169,34 @@ const App: FC = () => {
                   }
                 />
                 <Route
-                  path="/profile-settings"
+                  path="/profile-view"
                   element={
                     <UserProtectedRoute requireLogin={true} showNotice={false}>
-                      <ProfileSettingsPage />
+                      <ProfileViewPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile-edit"
+                  element={
+                    <UserProtectedRoute requireLogin={true} showNotice={false}>
+                      <ProfileEditPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/account-settings"
+                  element={
+                    <UserProtectedRoute requireLogin={true} showNotice={false}>
+                      <AccountSettingsPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/withdraw"
+                  element={
+                    <UserProtectedRoute requireLogin={true} showNotice={false}>
+                      <WithdrawPage />
                     </UserProtectedRoute>
                   }
                 />

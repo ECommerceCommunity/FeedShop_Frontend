@@ -1,99 +1,14 @@
 import axiosInstance from './axios';
-import { EventRewardDto } from '../types/event';
-
-export interface FeedEventDto {
-  eventId: number;
-  title: string;
-  eventStartDate: string;
-  eventEndDate: string;
-  type: string;
-  deletedAt?: string | null;
-  isDeleted?: boolean;
-}
-
-// 백엔드 EventSummaryDto 응답 구조
-export interface EventSummaryDto {
-  eventId: number;
-  title: string;
-  eventStartDate: string;
-  eventEndDate: string;
-  type: string;
-  deletedAt?: string | null;
-  isDeleted?: boolean;
-  isParticipatable?: boolean; // 백엔드에서 추가된 참여 가능 여부 필드
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
-}
-
-export interface EventReward {
-  id?: number;
-  rank?: number;
-  reward: string; // 백엔드와 일치 (rewardValue 제거)
-  conditionType?: string;
-  conditionDescription?: string;
-  maxRecipients?: number;
-}
-
-export interface EventDto {
-  eventId: number; // 백엔드와 일치
-  title: string;
-  description: string;
-  type: string;
-  status: string;
-  eventStartDate: string;
-  eventEndDate: string;
-  purchaseStartDate?: string;
-  purchaseEndDate?: string;
-  purchasePeriod?: string;
-  votePeriod?: string;
-  announcementDate?: string; // 백엔드와 일치
-  participationMethod: string;
-  rewards: EventReward[] | string;
-  selectionCriteria: string;
-  precautions: string;
-  maxParticipants: number;
-  imageUrl?: string;
-  createdBy?: string;
-  createdAt?: string;
-  isParticipatable?: boolean; // 백엔드에서 추가된 참여 가능 여부 필드
-}
-
-export interface EventCreateRequestDto {
-  title: string;
-  description: string;
-  type: string;
-  eventStartDate: string;
-  eventEndDate: string;
-  purchaseStartDate: string;
-  purchaseEndDate: string;
-  announcement: string;
-  participationMethod: string;
-  rewards: EventReward[] | string;
-  selectionCriteria: string;
-  precautions: string;
-  maxParticipants: number;
-  image?: File;
-}
-
-export interface EventUpdateRequestDto extends EventCreateRequestDto {
-  id: number;
-}
-
-export interface EventListResponse {
-  content: EventDto[];
-  totalPages: number;
-  totalElements: number;
-  last: boolean;
-  first: boolean;
-  size: number;
-  number: number;
-}
-
-// EventRewardDto는 event.ts에서 import하여 사용
+import {
+  EventRewardDto,
+  FeedEventDto,
+  EventSummaryDto,
+  ApiResponse,
+  EventDto,
+  EventCreateRequestDto,
+  EventUpdateRequestDto,
+  EventListResponse
+} from '../types/event';
 
 class EventService {
 
@@ -104,7 +19,7 @@ class EventService {
   async getFeedAvailableEvents(): Promise<FeedEventDto[]> {
     try {
       // 캐시 헤더 추가로 브라우저 캐싱 활용
-      const response = await axiosInstance.get<ApiResponse<EventSummaryDto[]>>('/api/events/feed-available', {
+      const response = await axiosInstance.get<ApiResponse<EventSummaryDto[]>>('/api/v2/events/feed-available', {
         headers: {
           'Cache-Control': 'max-age=300', // 5분간 브라우저 캐시
         }
@@ -152,7 +67,7 @@ class EventService {
   }): Promise<EventListResponse> {
     try {
       console.log('이벤트 목록 API 호출 파라미터:', params);
-      const response = await axiosInstance.get('/api/events/all', { params });
+      const response = await axiosInstance.get('/api/v2/events/all', { params });
       console.log('이벤트 목록 API 응답:', response.data);
       
       const result = response.data.data || response.data || { content: [], totalPages: 0, totalElements: 0, last: true, first: true, size: 10, number: 0 };
@@ -170,8 +85,8 @@ class EventService {
    */
   async getEventById(eventId: number): Promise<EventDto | null> {
     try {
-      // console.log('Calling API:', `/api/events/${eventId}`);
-      const response = await axiosInstance.get(`/api/events/${eventId}`);
+      // console.log('Calling API:', `/api/v2/events/${eventId}`);
+      const response = await axiosInstance.get(`/api/v2/events/${eventId}`);
       // console.log('API Response:', response.data);
       // console.log('Response data structure:', JSON.stringify(response.data, null, 2));
       
@@ -192,7 +107,7 @@ class EventService {
    */
   async createEvent(eventData: EventCreateRequestDto): Promise<EventDto> {
     try {
-      const response = await axiosInstance.post('/api/events', eventData);
+      const response = await axiosInstance.post('/api/v2/events', eventData);
       return response.data.data;
     } catch (error) {
       console.error('이벤트 생성 실패:', error);
@@ -205,7 +120,7 @@ class EventService {
    */
   async updateEvent(eventId: number, eventData: EventUpdateRequestDto): Promise<EventDto> {
     try {
-      const response = await axiosInstance.put(`/api/events/${eventId}`, eventData);
+      const response = await axiosInstance.put(`/api/v2/events/${eventId}`, eventData);
       return response.data.data;
     } catch (error) {
       console.error('이벤트 수정 실패:', error);
@@ -218,12 +133,14 @@ class EventService {
    */
   async deleteEvent(eventId: number): Promise<void> {
     try {
-      await axiosInstance.delete(`/api/events/${eventId}`);
+      await axiosInstance.delete(`/api/v2/events/${eventId}`);
     } catch (error) {
       console.error('이벤트 삭제 실패:', error);
       throw error;
     }
   }
+
+
 
   /**
    * 문자열 rewards를 EventRewardDto[]로 변환
@@ -239,6 +156,74 @@ class EventService {
     } catch (error) {
       console.error('rewards 파싱 실패:', error);
       return [];
+    }
+  }
+
+  // ===== 이벤트 결과 관리 API =====
+
+  /**
+   * 특정 이벤트 결과 상세 조회
+   */
+  async getEventResultDetail(eventId: number): Promise<any> {
+    try {
+      console.log('이벤트 결과 상세 조회 API 호출:', eventId);
+      // 백엔드 API 경로 수정: /api/v2/events/{eventId}/results
+      const response = await axiosInstance.get(`/api/v2/events/${eventId}/results`);
+      console.log('이벤트 결과 상세 API 응답:', response.data);
+      
+      const result = response.data.data || response.data || null;
+      return result;
+    } catch (error: any) {
+      console.error('이벤트 결과 상세 조회 실패:', error);
+      console.error('Error details:', error.response?.data);
+      return null;
+    }
+  }
+
+  /**
+   * 이벤트 결과 생성 (발표)
+   */
+  async announceEventResult(eventId: number): Promise<void> {
+    try {
+      console.log('이벤트 결과 생성 API 호출:', eventId);
+      // 백엔드 API 경로 수정: /api/v2/events/{eventId}/results
+      await axiosInstance.post(`/api/v2/events/${eventId}/results`, {
+        forceRecalculate: false
+      });
+      console.log('이벤트 결과 생성 성공');
+    } catch (error) {
+      console.error('이벤트 결과 생성 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 이벤트 결과 삭제 (발표 취소)
+   */
+  async cancelEventResultAnnouncement(eventId: number): Promise<void> {
+    try {
+      console.log('이벤트 결과 삭제 API 호출:', eventId);
+      // 백엔드 API 경로 수정: /api/v2/events/{eventId}/results
+      await axiosInstance.delete(`/api/v2/events/${eventId}/results`);
+      console.log('이벤트 결과 삭제 성공');
+    } catch (error) {
+      console.error('이벤트 결과 삭제 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 이벤트 결과 수동 마이그레이션
+   */
+  async migrateEventResult(eventId: number): Promise<void> {
+    try {
+      console.log('이벤트 결과 마이그레이션 API 호출:', eventId);
+      // 백엔드 API 경로 수정: /api/v2/events/migration/{eventId}
+      await axiosInstance.post(`/api/v2/events/migration/${eventId}`);
+      console.log('이벤트 결과 마이그레이션 성공');
+    } catch (error) {
+      console.error('이벤트 결과 마이그레이션 실패:', error);
+      throw error;
     }
   }
 
