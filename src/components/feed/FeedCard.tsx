@@ -19,6 +19,10 @@ interface FeedCardProps {
     };
     feedType?: string;
     participantVoteCount?: number;
+    // 이벤트 참여 관련 필드 추가
+    eventId?: number;
+    eventTitle?: string;
+    eventType?: string;
   };
   onClick?: () => void;
   children?: React.ReactNode; // 하위 컴포넌트들을 위한 슬롯
@@ -31,9 +35,32 @@ const FeedCard: React.FC<FeedCardProps> = ({
 }) => {
   const imageUrl = feed.images && feed.images.length > 0 ? feed.images[0].imageUrl : 'https://via.placeholder.com/300x400?text=No+Image';
   
+  // 이벤트 타입에 따른 배지 색상 결정
+  const getEventBadgeColor = (eventType?: string) => {
+    switch (eventType) {
+      case 'BATTLE':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'RANKING':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+  
   return (
     <div className="border p-4 rounded-lg hover:shadow flex flex-col cursor-pointer" onClick={onClick}>
       <img src={imageUrl} alt={feed.title} className="aspect-[3/4] object-cover rounded" />
+      
+      {/* 이벤트 참여 배지 */}
+      {feed.eventId && feed.eventTitle && (
+        <div className="mt-2 mb-1">
+          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getEventBadgeColor(feed.eventType)}`}>
+            <i className="fas fa-star mr-1"></i>
+            {feed.eventTitle}
+          </span>
+        </div>
+      )}
+      
       <h3 className="mt-2 text-gray-900 line-clamp-2 font-semibold">{feed.title}</h3>
       <p className="text-gray-500 text-sm mb-2 line-clamp-2">{feed.content}</p>
       {feed.orderItem?.size && (

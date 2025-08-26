@@ -1,4 +1,5 @@
 import { useState, useRef, ChangeEvent, FC, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import {
   UserProfileService,
@@ -7,8 +8,9 @@ import {
 } from "../../api/userProfileService";
 import { convertMockUrlToCdnUrl } from "../../utils/common/images";
 
-const ProfileSettingsPage: FC = () => {
+const ProfileEditPage: FC = () => {
   const { user, handleUnauthorized } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +39,7 @@ const ProfileSettingsPage: FC = () => {
     const loadProfile = async () => {
       if (!user) {
         console.log("사용자 정보 없음: 로그인 페이지로 리다이렉트");
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
 
@@ -71,7 +73,7 @@ const ProfileSettingsPage: FC = () => {
     };
 
     loadProfile();
-  }, [user, handleUnauthorized]);
+  }, [user, handleUnauthorized, navigate]);
 
   // 변경사항 감지
   const hasChanges = () => {
@@ -84,7 +86,9 @@ const ProfileSettingsPage: FC = () => {
       profileInfo.birthDate !== originalProfile.birthDate ||
       profileInfo.gender !== originalProfile.gender ||
       profileInfo.height !== originalProfile.height ||
+      profileInfo.weight !== originalProfile.weight ||
       profileInfo.footSize !== originalProfile.footSize ||
+      profileInfo.footWidth !== originalProfile.footWidth ||
       profileInfo.profileImageUrl !== originalProfile.profileImageUrl
     );
   };
@@ -253,11 +257,15 @@ const ProfileSettingsPage: FC = () => {
     }
   };
 
+  const handleBack = () => {
+    navigate("/profile-view");
+  };
+
   // 사용자가 로그인하지 않은 경우
   if (!user) {
     console.log("사용자 정보 없음: 로그인 페이지로 리다이렉트");
     // 즉시 리다이렉트
-    window.location.href = "/login";
+    navigate("/login");
     return null; // 리다이렉트 중에는 아무것도 렌더링하지 않음
   }
 
@@ -277,10 +285,10 @@ const ProfileSettingsPage: FC = () => {
       <div className="max-w-4xl mx-auto">
         <header className="mb-12 text-center">
           <h1 className="text-5xl font-extrabold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-red-500">
-            프로필 설정
+            프로필 수정
           </h1>
           <p className="text-xl text-gray-400">
-            개인 정보를 관리하고 업데이트하세요
+            프로필 정보를 수정하고 업데이트하세요
           </p>
         </header>
 
@@ -551,32 +559,41 @@ const ProfileSettingsPage: FC = () => {
         </div>
 
         {/* 하단 버튼 */}
-        <footer className="mt-12 flex justify-end space-x-4">
-          <button
-            onClick={handleCancel}
-            disabled={!hasChanges()}
-            className="px-6 py-3 border border-gray-600 rounded-lg text-gray-300 font-semibold hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            취소
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!hasChanges() || saving}
-            className="px-6 py-3 border border-transparent rounded-lg text-white font-semibold bg-gradient-to-r from-orange-500 to-red-600 hover:opacity-90 disabled:opacity-50 transition-opacity"
-          >
-            {saving ? (
-              <>
-                <i className="fas fa-spinner fa-spin mr-2"></i>
-                저장 중...
-              </>
-            ) : (
-              "변경사항 저장"
-            )}
-          </button>
+        <footer className="mt-12 flex justify-center space-x-4">
+          <div className="flex justify-center space-x-4">
+            <button
+              onClick={handleBack}
+              className="px-6 py-3 border border-gray-600 rounded-lg text-gray-300 font-semibold hover:bg-gray-700 transition-colors"
+            >
+              <i className="fas fa-arrow-left mr-2"></i>
+              뒤로가기
+            </button>
+            <button
+              onClick={handleCancel}
+              disabled={!hasChanges()}
+              className="px-6 py-3 border border-gray-600 rounded-lg text-gray-300 font-semibold hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              취소
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!hasChanges() || saving}
+              className="px-6 py-3 border border-transparent rounded-lg text-white font-semibold bg-gradient-to-r from-orange-500 to-red-600 hover:opacity-90 disabled:opacity-50 transition-opacity"
+            >
+              {saving ? (
+                <>
+                  <i className="fas fa-spinner fa-spin mr-2"></i>
+                  저장 중...
+                </>
+              ) : (
+                "변경사항 저장"
+              )}
+            </button>
+          </div>
         </footer>
       </div>
     </div>
   );
 };
 
-export default ProfileSettingsPage;
+export default ProfileEditPage;

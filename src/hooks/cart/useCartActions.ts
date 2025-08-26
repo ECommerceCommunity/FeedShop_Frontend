@@ -77,9 +77,14 @@ export const useCartActions = ({
           ? { ...item, quantity: newQuantity }
           : item
       );
+      
+      // 총 아이템 개수 재계산
+      const newTotalItemCount = updatedItems.reduce((total, item) => total + item.quantity, 0);
+      
       setCartData({
         ...cartData,
         items: updatedItems,
+        totalItemCount: newTotalItemCount,
       });
     }
 

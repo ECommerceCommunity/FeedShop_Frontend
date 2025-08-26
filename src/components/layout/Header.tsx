@@ -892,7 +892,10 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
 
       <SearchSection>
         <SearchContainer>
-          <form onSubmit={handleSearch} style={{ position: 'relative', width: '100%' }}>
+          <form
+            onSubmit={handleSearch}
+            style={{ position: "relative", width: "100%" }}
+          >
             <SearchInput
               type="text"
               placeholder="검색어를 입력하세요"
@@ -937,9 +940,9 @@ const Header: FC<HeaderProps> = ({ onMenuClick }) => {
                   </DropdownItem>
                 )}
                 {user && user.userType !== "admin" && (
-                  <DropdownItem to="/profile-settings">
+                  <DropdownItem to="/profile-view">
                     <i className="fas fa-cog"></i>
-                    프로필 관리
+                    프로필 정보
                   </DropdownItem>
                 )}
                 {user && user.userType === "user" && (
