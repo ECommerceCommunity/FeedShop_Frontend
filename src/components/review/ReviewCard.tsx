@@ -340,6 +340,16 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
     // 현재 사용자가 이 리뷰의 작성자인지 확인
     const isOwner = currentUserId === review.userId;
     
+    // 디버깅: 사용자 ID 매칭 정보 출력
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`🔍 리뷰 ${review.reviewId} 권한 체크:`, {
+            currentUserId,
+            reviewUserId: review.userId,
+            isOwner,
+            reviewUserName: review.userName
+        });
+    }
+    
     // 신고 버튼 표시 여부 (로그인한 상태면 모든 리뷰에 표시)
     const canReport = !!currentUserId;
     
@@ -483,30 +493,26 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
                 </UserInfo>
 
                 {/* 액션 버튼들 */}
-                {(isOwner || canReport) && (
+                {(onEdit || onDelete || canReport) && (
                     <ActionButtons>
-                        {/* 작성자 본인인 경우 수정/삭제 버튼 */}
-                        {isOwner && (
-                            <>
-                                {onEdit && (
-                                    <ActionButton
-                                        className="edit"
-                                        onClick={handleEdit}
-                                        type="button"
-                                    >
-                                        수정
-                                    </ActionButton>
-                                )}
-                                {onDelete && (
-                                    <ActionButton
-                                        className="delete"
-                                        onClick={handleDelete}
-                                        type="button"
-                                    >
-                                        삭제
-                                    </ActionButton>
-                                )}
-                            </>
+                        {/* 수정/삭제 버튼 (모든 리뷰에 표시) */}
+                        {onEdit && (
+                            <ActionButton
+                                className="edit"
+                                onClick={handleEdit}
+                                type="button"
+                            >
+                                수정
+                            </ActionButton>
+                        )}
+                        {onDelete && (
+                            <ActionButton
+                                className="delete"
+                                onClick={handleDelete}
+                                type="button"
+                            >
+                                삭제
+                            </ActionButton>
                         )}
                         
                         {/* 로그인한 사용자는 모든 리뷰에 신고 버튼 표시 */}
