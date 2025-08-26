@@ -4,26 +4,29 @@ import { Link } from "react-router-dom";
 export const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 24px 20px;
+  background: #ffffff;
+  min-height: 100vh;
 `;
 
 export const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 `;
 
 export const Title = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
 `;
 
 export const FilterSection = styled.div`
   display: flex;
-  gap: 12px;
-  margin-bottom: 30px;
+  gap: 8px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
 `;
 
@@ -39,34 +42,33 @@ export const FilterButton = styled.button<{ $active?: boolean }>`
 
   &:hover {
     border-color: #3b82f6;
-    background: ${(props) => (props.$active ? "#2563eb" : "#f3f4f6")};
+    background: ${(props) => (props.$active ? "#2563eb" : "#f9fafb")};
   }
 `;
 
 export const ProductGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
-  margin-bottom: 40px;
-  align-items: start; /* 카드들을 상단 정렬 */
+  gap: 20px;
+  margin-bottom: 32px;
+  align-items: start;
 `;
 
 export const ProductCard = styled(Link)`
   display: flex;
   flex-direction: column;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   text-decoration: none;
   color: inherit;
-  height: 100%; /* 전체 높이 사용 */
-  min-height: 400px; /* 최소 높이 지정 */
+  height: 100%;
+  min-height: 400px;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 `;
 
@@ -84,14 +86,14 @@ export const ProductInfo = styled.div`
 `;
 
 export const ProductName = styled.h3`
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #111827;
   margin-bottom: 8px;
   line-height: 1.4;
-  min-height: 2.8rem; /* 최소 2줄 높이 확보 */
+  min-height: 2.8rem;
   display: -webkit-box;
-  -webkit-line-clamp: 2; /* 최대 2줄로 제한 */
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -113,13 +115,13 @@ export const PriceSection = styled.div`
 `;
 
 export const DiscountPrice = styled.span`
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #ef4444;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #3b82f6;
 `;
 
 export const OriginalPrice = styled.span`
-  font-size: 1rem;
+  font-size: 0.875rem;
   color: #9ca3af;
   text-decoration: line-through;
 `;
@@ -136,8 +138,8 @@ export const LoadingContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 400px;
-  font-size: 1.1rem;
+  min-height: 300px;
+  font-size: 1rem;
   color: #6b7280;
 `;
 
@@ -146,7 +148,7 @@ export const ErrorContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
+  min-height: 300px;
   text-align: center;
   color: #ef4444;
 `;
@@ -155,8 +157,8 @@ export const Pagination = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  margin-top: 40px;
+  gap: 6px;
+  margin-top: 32px;
 `;
 
 export const PaginationButton = styled.button<{
@@ -174,7 +176,7 @@ export const PaginationButton = styled.button<{
 
   &:hover:not(:disabled) {
     border-color: #3b82f6;
-    background: ${(props) => (props.$active ? "#2563eb" : "#f3f4f6")};
+    background: ${(props) => (props.$active ? "#2563eb" : "#f9fafb")};
   }
 `;
 
@@ -183,19 +185,19 @@ export const EmptyContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
+  min-height: 300px;
   text-align: center;
 `;
 
 export const EmptyIcon = styled.div`
-  font-size: 4rem;
+  font-size: 3rem;
   color: #d1d5db;
   margin-bottom: 16px;
 `;
 
 export const EmptyTitle = styled.h3`
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 500;
   color: #374151;
   margin-bottom: 8px;
 `;
@@ -221,25 +223,39 @@ export const RetryButton = styled.button`
 `;
 
 export const AIRecommendSection = styled.div`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 30px;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
 `;
 
 export const AIRecommendTitle = styled.h2`
-  color: white;
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 16px;
+  color: #111827;
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
   gap: 8px;
   
   &::before {
     content: "🤖";
-    font-size: 1.5rem;
+    font-size: 1.25rem;
+  }
+`;
+
+export const AIInfoMessage = styled.p`
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  
+  &::before {
+    content: "👤";
+    font-size: 1rem;
   }
 `;
 
@@ -256,16 +272,16 @@ export const AIInputContainer = styled.div`
 export const AIInput = styled.input`
   flex: 1;
   padding: 12px 16px;
-  border: none;
-  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
   font-size: 1rem;
   background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s ease;
+  transition: border-color 0.2s ease;
   
   &:focus {
     outline: none;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
   }
   
   &::placeholder {
@@ -274,27 +290,25 @@ export const AIInput = styled.input`
 `;
 
 export const AIButton = styled.button<{ $loading?: boolean }>`
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #10b981, #059669);
+  padding: 12px 20px;
+  background: ${props => props.$loading ? '#9ca3af' : '#3b82f6'};
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: ${props => props.$loading ? 'not-allowed' : 'pointer'};
-  opacity: ${props => props.$loading ? 0.7 : 1};
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: ${props => props.$loading || props.disabled ? 'not-allowed' : 'pointer'};
+  opacity: ${props => props.$loading || props.disabled ? 0.6 : 1};
   transition: all 0.2s ease;
   white-space: nowrap;
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-width: 120px;
+  gap: 6px;
+  min-width: 100px;
   justify-content: center;
   
   &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #059669, #047857);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    background: #2563eb;
   }
   
   @media (max-width: 640px) {
@@ -308,18 +322,20 @@ export const AIResultsHeader = styled.div`
   justify-content: space-between;
   margin-bottom: 20px;
   padding: 16px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 8px;
-  color: white;
+  background: #f0f9ff;
+  border: 1px solid #e0f2fe;
+  border-radius: 6px;
+  color: #0f172a;
 `;
 
 export const AIResultsTitle = styled.h3`
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  color: #3b82f6;
   
   &::before {
     content: "✨";
@@ -327,14 +343,14 @@ export const AIResultsTitle = styled.h3`
 `;
 
 export const AIResultsCount = styled.span`
-  font-size: 0.9rem;
-  opacity: 0.9;
+  font-size: 0.875rem;
+  color: #6b7280;
 `;
 
 export const ClearAIButton = styled.button`
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
   padding: 6px 12px;
   font-size: 0.875rem;
@@ -342,7 +358,7 @@ export const ClearAIButton = styled.button`
   transition: all 0.2s ease;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
+    background: #f9fafb;
+    border-color: #9ca3af;
   }
 `;
