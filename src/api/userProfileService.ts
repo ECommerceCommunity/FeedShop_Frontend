@@ -41,12 +41,15 @@ export const UserProfileService = {
         token ? token.substring(0, 20) + "..." : "토큰 없음"
       );
 
-      // Swagger에서 성공한 엔드포인트와 동일하게 수정
+      // API 명세서에 따라 직접 반환되는 프로필 정보 조회
       const response = await axios.get("/api/users/me/profile");
       console.log("백엔드 응답 (원본):", response.data);
+      console.log("응답 상태:", response.status);
+      console.log("응답 헤더:", response.headers);
 
-      // 백엔드 응답을 프론트엔드 형식에 맞춰 매핑
-      const backendData = response.data;
+      // ApiResponse로 래핑된 응답에서 data 추출
+      const backendData = response.data.data || response.data;
+      console.log("추출된 백엔드 데이터:", backendData);
 
       // 백엔드 응답 구조에 따라 매핑
       const mappedData = {
@@ -123,8 +126,8 @@ export const UserProfileService = {
       const response = await axios.get(`/api/users/${userId}/profile`);
       console.log("특정 사용자 프로필 응답:", response.data);
 
-      // 백엔드 응답을 프론트엔드 형식에 맞춰 매핑
-      const backendData = response.data;
+      // ApiResponse로 래핑된 응답에서 data 추출
+      const backendData = response.data.data || response.data;
 
       const mappedData = {
         userId: backendData.userId,
@@ -174,8 +177,10 @@ export const UserProfileService = {
       }
 
       // 개발 환경에서만 임시 데이터 반환
-      console.warn(`개발 환경: 사용자 ${userId} 임시 프로필 데이터를 반환합니다.`);
-      
+      console.warn(
+        `개발 환경: 사용자 ${userId} 임시 프로필 데이터를 반환합니다.`
+      );
+
       // 사용자별로 다른 임시 데이터 제공
       const mockProfiles = {
         1: {
@@ -216,22 +221,24 @@ export const UserProfileService = {
           footSize: 280,
           footWidth: "WIDE" as const,
           profileImageUrl: "",
+        },
+      };
+
+      return (
+        mockProfiles[userId as keyof typeof mockProfiles] || {
+          userId: userId,
+          name: `사용자${userId}`,
+          nickname: `닉네임${userId}`,
+          phone: "010-1234-5678",
+          birthDate: "1990-01-01",
+          gender: "MALE" as const,
+          height: 170,
+          weight: 65,
+          footSize: 260,
+          footWidth: "NORMAL" as const,
+          profileImageUrl: "",
         }
-      };
-      
-      return mockProfiles[userId as keyof typeof mockProfiles] || {
-        userId: userId,
-        name: `사용자${userId}`,
-        nickname: `닉네임${userId}`,
-        phone: "010-1234-5678",
-        birthDate: "1990-01-01",
-        gender: "MALE" as const,
-        height: 170,
-        weight: 65,
-        footSize: 260,
-        footWidth: "NORMAL" as const,
-        profileImageUrl: "",
-      };
+      );
     }
   },
 
