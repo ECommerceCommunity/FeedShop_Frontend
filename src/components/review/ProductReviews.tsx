@@ -376,11 +376,14 @@ export const ProductReviews: React.FC<ProductReviewsProps> = ({
         ...(currentFilter.stability && currentFilter.stability > 0 && { stability: currentFilter.stability }),
       };
 
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📦 ProductReviews - loadReviews 시작:', { productId, page, resetList, params });
+      }
+
       const response = await ReviewService.getProductReviews(productId, params);
       
       // API 응답에서 실제 리뷰 배열을 찾아서 사용
-      const responseData = response as any;
-      let reviewsData = responseData.reviews || response.content || [];
+      let reviewsData = response.reviews || [];
       
       // 🔧 프론트엔드에서 추가 필터링 (백엔드 필터링이 제대로 안될 경우 대비)
       if (currentFilter.rating && currentFilter.rating > 0) {
@@ -396,42 +399,82 @@ export const ProductReviews: React.FC<ProductReviewsProps> = ({
         console.log(`🔍 평점 필터링 적용: ${currentFilter.exactRating ? '정확히' : '이상'} ${currentFilter.rating}점, 결과: ${reviewsData.length}개`);
       }
       
-      // 3요소 필터링도 추가 적용
+      // 3요소 필터링도 추가 적용 (5단계 시스템)
       if (currentFilter.sizeFit && currentFilter.sizeFit > 0) {
         reviewsData = reviewsData.filter((review: Review) => {
+          // 백엔드에서 온 string enum을 숫자로 변환
           const sizeFit = typeof review.sizeFit === 'string' ? 
-            (review.sizeFit === 'SMALL' ? 1 : review.sizeFit === 'NORMAL' ? 2 : 3) : 
+            (review.sizeFit === 'VERY_SMALL' ? 1 : 
+             review.sizeFit === 'SMALL' ? 2 : 
+             review.sizeFit === 'NORMAL' ? 3 : 
+             review.sizeFit === 'BIG' ? 4 : 
+             review.sizeFit === 'VERY_BIG' ? 5 : 0) : 
             review.sizeFit;
-          return sizeFit === currentFilter.sizeFit;
+          const match = sizeFit === currentFilter.sizeFit;
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔍 sizeFit 필터링: 리뷰(${review.reviewId}) ${review.sizeFit}(${sizeFit}) vs 조건(${currentFilter.sizeFit}) → ${match ? '✅' : '❌'}`);
+          }
+          return match;
         });
       }
       
       if (currentFilter.cushion && currentFilter.cushion > 0) {
         reviewsData = reviewsData.filter((review: Review) => {
           const cushion = typeof review.cushion === 'string' ? 
-            (review.cushion === 'SOFT' ? 1 : review.cushion === 'NORMAL' ? 2 : 3) : 
+            (review.cushion === 'VERY_FIRM' ? 1 : 
+             review.cushion === 'FIRM' ? 2 : 
+             review.cushion === 'MEDIUM' ? 3 : 
+             review.cushion === 'SOFT' ? 4 : 
+             review.cushion === 'VERY_SOFT' ? 5 : 0) : 
             review.cushion;
-          return cushion === currentFilter.cushion;
+          const match = cushion === currentFilter.cushion;
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔍 cushion 필터링: 리뷰(${review.reviewId}) ${review.cushion}(${cushion}) vs 조건(${currentFilter.cushion}) → ${match ? '✅' : '❌'}`);
+          }
+          return match;
         });
       }
       
       if (currentFilter.stability && currentFilter.stability > 0) {
         reviewsData = reviewsData.filter((review: Review) => {
           const stability = typeof review.stability === 'string' ? 
-            (review.stability === 'LOW' ? 1 : review.stability === 'NORMAL' ? 2 : 3) : 
+            (review.stability === 'VERY_UNSTABLE' ? 1 : 
+             review.stability === 'UNSTABLE' ? 2 : 
+             review.stability === 'NORMAL' ? 3 : 
+             review.stability === 'STABLE' ? 4 : 
+             review.stability === 'VERY_STABLE' ? 5 : 0) : 
             review.stability;
-          return stability === currentFilter.stability;
+          const match = stability === currentFilter.stability;
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔍 stability 필터링: 리뷰(${review.reviewId}) ${review.stability}(${stability}) vs 조건(${currentFilter.stability}) → ${match ? '✅' : '❌'}`);
+          }
+          return match;
         });
       }
       
-      if (reviewsData.length > 0) {
-        console.log(`📄 리뷰 ${reviewsData.length}개 로드됨`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`📄 ProductReviews - 최종 리뷰 ${reviewsData.length}개, resetList: ${resetList}`);
+        console.log(`📋 최종 리뷰 목록:`, reviewsData.map(r => ({
+          id: r.reviewId, 
+          sizeFit: r.sizeFit,
+          cushion: r.cushion,
+          stability: r.stability
+        })));
       }
 
       if (resetList || page === 0) {
         setReviews(reviewsData); // 안전한 설정
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`📦 ProductReviews - 새 리뷰 목록 설정: ${reviewsData.length}개`);
+        }
       } else {
-        setReviews(prev => [...(prev || []), ...reviewsData]); // 안전한 추가
+        setReviews(prev => {
+          const newList = [...(prev || []), ...reviewsData];
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`📦 ProductReviews - 리뷰 목록 추가: ${prev?.length || 0} + ${reviewsData.length} = ${newList.length}`);
+          }
+          return newList;
+        });
       }
 
       setCurrentPage(response.number || 0);
@@ -722,16 +765,13 @@ export const ProductReviews: React.FC<ProductReviewsProps> = ({
             const response = await ReviewService.getProductReviews(productId, params);
             console.log('🔍 새로고침 후 리뷰 목록 응답:', response);
             
-            // 타입 안전성을 위해 any로 캐스팅
-            const responseData = response as any;
-            console.log('🔍 받은 리뷰 개수 (content):', response.content?.length || 0);
-            console.log('🔍 받은 리뷰 개수 (reviews):', responseData.reviews?.length || 0);
+            // 리뷰 데이터 로깅
+            console.log('🔍 받은 리뷰 개수 (reviews):', response.reviews?.length || 0);
             console.log('🔍 전체 리뷰 개수:', response.totalElements);
-            console.log('🔍 리뷰 목록 내용 (content):', response.content);
-            console.log('🔍 리뷰 목록 내용 (reviews):', responseData.reviews);
+            console.log('🔍 리뷰 목록 내용 (reviews):', response.reviews);
             
             // API 응답에서 실제 리뷰 배열을 찾아서 설정
-            let reviewsData = responseData.reviews || response.content || [];
+            let reviewsData = response.reviews || [];
             
             // 🔧 프론트엔드에서 추가 필터링 적용 (localStorage 새로고침시에도)
             if (filter.rating && filter.rating > 0) {
