@@ -497,9 +497,11 @@ const FeatureGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
 
   @media (min-width: 768px) {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 `;
 
@@ -725,76 +727,139 @@ const CTAButton = styled(Link)`
   }
 `;
 
-const Footer = styled.footer`
-  background: #1f2937;
-  color: white;
-  padding: 3rem 0 2rem;
+const HighlightsSection = styled.section`
+  padding: 6rem 0;
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  position: relative;
 `;
 
-const FooterContent = styled.div`
+const HighlightsGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
 
   @media (min-width: 768px) {
-    grid-template-columns: 2fr 1fr;
-    gap: 4rem;
+    grid-template-columns: repeat(2, 1fr);
   }
 `;
 
-const FooterBrand = styled.div`
+const HighlightCard = styled.div`
+  background: white;
+  padding: 3rem 2.5rem;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(249, 115, 22, 0.12);
   text-align: center;
-
-  @media (min-width: 768px) {
-    text-align: left;
-  }
-`;
-
-const FooterBrandTitle = styled.h3`
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-`;
-
-const FooterBrandDescription = styled.p`
-  color: #9ca3af;
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-`;
-
-const FooterLinks = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  text-align: center;
-
-  @media (min-width: 768px) {
-    text-align: right;
-  }
-`;
-
-const FooterLink = styled.a`
-  color: #9ca3af;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  padding: 0.5rem 0;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  animation: ${fadeInUp} 1s ease-out;
+  border: 1px solid rgba(249, 115, 22, 0.1);
 
   &:hover {
-    color: #667eea;
-    transform: translateX(5px);
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 20px 48px rgba(249, 115, 22, 0.25);
+    border-color: rgba(249, 115, 22, 0.3);
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #f97316, #ea580c, #dc2626);
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+    transition: transform 0.4s ease;
+  }
+
+  &:hover::before {
+    transform: scaleX(1);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+      circle,
+      rgba(249, 115, 22, 0.03) 0%,
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+
+  &:hover::after {
+    opacity: 1;
   }
 `;
 
-const FooterCopyright = styled.div`
-  border-top: 1px solid #374151;
-  margin-top: 2rem;
-  padding-top: 2rem;
-  text-align: center;
-  color: #9ca3af;
+const HighlightIcon = styled.div`
+  width: 90px;
+  height: 90px;
+  background: linear-gradient(135deg, #f97316, #ea580c, #dc2626);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 2rem;
+  margin: 0 auto 2rem;
+  color: white;
+  font-size: 2.2rem;
+  box-shadow: 0 12px 32px rgba(249, 115, 22, 0.4);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f97316, #ea580c, #dc2626);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  &:hover {
+    transform: scale(1.15) rotate(5deg);
+    transform: scale(1.15) rotate(5deg);
+    animation: ${pulse} 0.6s ease-in-out;
+    box-shadow: 0 16px 40px rgba(249, 115, 22, 0.5);
+  }
+
+  &:hover::before {
+    opacity: 0.3;
+  }
+`;
+
+const HighlightTitle = styled.h3`
+  font-size: 1.4rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  margin-bottom: 1.25rem;
+  color: #1f2937;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #f97316;
+  }
+`;
+
+const HighlightDescription = styled.p`
+  color: #6b7280;
+  line-height: 1.7;
+  font-size: 1rem;
+  line-height: 1.7;
+  font-size: 1rem;
 `;
 
 const HomePage: FC = () => {
@@ -812,7 +877,7 @@ const HomePage: FC = () => {
         const response = await ProductService.getFilteredProducts({
           sort: "popular",
           size: 4, // 상위 4개 상품만
-          page: 0
+          page: 0,
         });
         setPopularProducts(response.content);
       } catch (err) {
@@ -842,7 +907,7 @@ const HomePage: FC = () => {
               {user ? (
                 <>
                   {user.userType === "admin" ? (
-                    <PrimaryButton to="/admin-dashboard">
+                    <PrimaryButton to="/admin/dashboard">
                       <i
                         className="fas fa-chart-line"
                         style={{ marginRight: "8px" }}
@@ -866,7 +931,7 @@ const HomePage: FC = () => {
                     상품 둘러보기
                   </SecondaryButton>
                   {user.userType === "admin" && (
-                    <SecondaryButton to="/store-home">
+                    <SecondaryButton to="/store">
                       <i
                         className="fas fa-store"
                         style={{ marginRight: "8px" }}
@@ -884,7 +949,7 @@ const HomePage: FC = () => {
                     ></i>
                     로그인하기
                   </PrimaryButton>
-                  <SecondaryButton to="/store-home">
+                  <SecondaryButton to="/store">
                     <i
                       className="fas fa-store"
                       style={{ marginRight: "8px" }}
@@ -898,29 +963,6 @@ const HomePage: FC = () => {
         </Container>
       </HeroSection>
 
-      <StatsSection>
-        <Container>
-          <StatsGrid>
-            <StatCard>
-              <StatNumber>10,000+</StatNumber>
-              <StatLabel>활성 사용자</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatNumber>50,000+</StatNumber>
-              <StatLabel>총 주문</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatNumber>₩2.5억</StatNumber>
-              <StatLabel>총 매출</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatNumber>4.8★</StatNumber>
-              <StatLabel>고객 만족도</StatLabel>
-            </StatCard>
-          </StatsGrid>
-        </Container>
-      </StatsSection>
-
       <ProductsSection>
         <Container>
           <SectionTitle>인기 상품</SectionTitle>
@@ -931,56 +973,71 @@ const HomePage: FC = () => {
             {loading ? (
               // 로딩 상태 표시
               Array.from({ length: 4 }).map((_, index) => (
-                <ProductCard key={`loading-${index}`} style={{ animationDelay: `${index * 0.1}s` }}>
-                  <ProductImage style={{ background: "linear-gradient(135deg, #f8fafc, #e2e8f0)" }}>
-                    <div style={{ 
-                      display: "flex", 
-                      alignItems: "center", 
-                      justifyContent: "center", 
-                      height: "100%", 
-                      color: "#9ca3af",
-                      fontSize: "1rem"
-                    }}>
+                <ProductCard
+                  key={`loading-${index}`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <ProductImage
+                    style={{
+                      background: "linear-gradient(135deg, #f8fafc, #e2e8f0)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        height: "100%",
+                        color: "#9ca3af",
+                        fontSize: "1rem",
+                      }}
+                    >
                       로딩 중...
                     </div>
                   </ProductImage>
                   <ProductInfo>
-                    <div style={{ 
-                      height: "20px", 
-                      background: "linear-gradient(135deg, #f8fafc, #e2e8f0)", 
-                      borderRadius: "4px", 
-                      marginBottom: "0.75rem" 
-                    }}></div>
-                    <div style={{ 
-                      height: "24px", 
-                      background: "linear-gradient(135deg, #f8fafc, #e2e8f0)", 
-                      borderRadius: "4px", 
-                      marginBottom: "0.75rem", 
-                      width: "60%" 
-                    }}></div>
+                    <div
+                      style={{
+                        height: "20px",
+                        background: "linear-gradient(135deg, #f8fafc, #e2e8f0)",
+                        borderRadius: "4px",
+                        marginBottom: "0.75rem",
+                      }}
+                    ></div>
+                    <div
+                      style={{
+                        height: "24px",
+                        background: "linear-gradient(135deg, #f8fafc, #e2e8f0)",
+                        borderRadius: "4px",
+                        marginBottom: "0.75rem",
+                        width: "60%",
+                      }}
+                    ></div>
                   </ProductInfo>
                 </ProductCard>
               ))
             ) : error ? (
               // 에러 상태 표시
-              <div style={{
-                gridColumn: "1 / -1",
-                textAlign: "center",
-                padding: "2rem",
-                color: "#ef4444",
-                fontSize: "1.1rem"
-              }}>
+              <div
+                style={{
+                  gridColumn: "1 / -1",
+                  textAlign: "center",
+                  padding: "2rem",
+                  color: "#ef4444",
+                  fontSize: "1.1rem",
+                }}
+              >
                 {error}
                 <div style={{ marginTop: "1rem" }}>
-                  <button 
-                    onClick={() => window.location.reload()} 
+                  <button
+                    onClick={() => window.location.reload()}
                     style={{
                       background: "#f97316",
                       color: "white",
                       border: "none",
                       padding: "0.5rem 1rem",
                       borderRadius: "8px",
-                      cursor: "pointer"
+                      cursor: "pointer",
                     }}
                   >
                     다시 시도
@@ -989,13 +1046,15 @@ const HomePage: FC = () => {
               </div>
             ) : popularProducts.length === 0 ? (
               // 상품이 없는 경우
-              <div style={{
-                gridColumn: "1 / -1",
-                textAlign: "center",
-                padding: "2rem",
-                color: "#6b7280",
-                fontSize: "1.1rem"
-              }}>
+              <div
+                style={{
+                  gridColumn: "1 / -1",
+                  textAlign: "center",
+                  padding: "2rem",
+                  color: "#6b7280",
+                  fontSize: "1.1rem",
+                }}
+              >
                 현재 인기 상품이 없습니다.
               </div>
             ) : (
@@ -1007,18 +1066,27 @@ const HomePage: FC = () => {
                 >
                   <ProductImage>
                     {product.mainImageUrl ? (
-                      <img src={toUrl(product.mainImageUrl)} alt={product.name} />
+                      <img
+                        src={toUrl(product.mainImageUrl)}
+                        alt={product.name}
+                      />
                     ) : (
-                      <div style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        height: "100%",
-                        background: "linear-gradient(135deg, #f8fafc, #e2e8f0)",
-                        color: "#9ca3af",
-                        fontSize: "1rem"
-                      }}>
-                        <i className="fas fa-image" style={{ marginRight: "0.5rem" }}></i>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          height: "100%",
+                          background:
+                            "linear-gradient(135deg, #f8fafc, #e2e8f0)",
+                          color: "#9ca3af",
+                          fontSize: "1rem",
+                        }}
+                      >
+                        <i
+                          className="fas fa-image"
+                          style={{ marginRight: "0.5rem" }}
+                        ></i>
                         이미지 없음
                       </div>
                     )}
@@ -1026,9 +1094,17 @@ const HomePage: FC = () => {
                   <ProductInfo>
                     <ProductName>{product.name}</ProductName>
                     <ProductPrice>
-                      {product.discountPrice > 0 && product.discountPrice < product.price ? (
+                      {product.discountPrice > 0 &&
+                      product.discountPrice < product.price ? (
                         <>
-                          <span style={{ textDecoration: "line-through", color: "#9ca3af", fontSize: "0.9rem", marginRight: "0.5rem" }}>
+                          <span
+                            style={{
+                              textDecoration: "line-through",
+                              color: "#9ca3af",
+                              fontSize: "0.9rem",
+                              marginRight: "0.5rem",
+                            }}
+                          >
                             {formatPrice(product.price)}
                           </span>
                           {formatPrice(product.discountPrice)}
@@ -1037,9 +1113,7 @@ const HomePage: FC = () => {
                         formatPrice(product.price)
                       )}
                     </ProductPrice>
-                    <ProductDescription>
-                      {product.storeName}
-                    </ProductDescription>
+                    <ProductDescription>{product.storeName}</ProductDescription>
                     <ViewMoreButton to={`/products/${product.productId}`}>
                       자세히 보기
                       <i className="fas fa-arrow-right"></i>
@@ -1071,22 +1145,12 @@ const HomePage: FC = () => {
             </FeatureCard>
             <FeatureCard>
               <FeatureIcon>
-                <i className="fas fa-chart-line"></i>
+                <i className="fas fa-users"></i>
               </FeatureIcon>
-              <FeatureTitle>데이터 분석</FeatureTitle>
+              <FeatureTitle>커뮤니티 피드</FeatureTitle>
               <FeatureDescription>
-                매출과 고객 행동을 분석하여 더 나은 의사결정을 지원하는 강력한
-                분석 도구를 제공합니다.
-              </FeatureDescription>
-            </FeatureCard>
-            <FeatureCard>
-              <FeatureIcon>
-                <i className="fas fa-comments"></i>
-              </FeatureIcon>
-              <FeatureTitle>실시간 채팅</FeatureTitle>
-              <FeatureDescription>
-                고객과의 즉각적인 소통을 위한 채팅 시스템으로 빠른 응답과 높은
-                고객 만족도를 달성합니다.
+                사용자들이 상품 리뷰와 경험을 공유하는 활발한 커뮤니티로 신뢰할
+                수 있는 구매 정보를 제공합니다.
               </FeatureDescription>
             </FeatureCard>
           </FeatureGrid>
@@ -1105,14 +1169,14 @@ const HomePage: FC = () => {
               <>
                 {user.userType === "admin" ? (
                   <>
-                    <CTAButton to="/admin-dashboard">
-                    <i
-                      className="fas fa-chart-line"
-                      style={{ marginRight: "8px" }}
-                    ></i>
-                    관리자 대시보드
-                  </CTAButton>
-                    <SecondaryButton to="/store-home">
+                    <CTAButton to="/admin/dashboard">
+                      <i
+                        className="fas fa-chart-line"
+                        style={{ marginRight: "8px" }}
+                      ></i>
+                      관리자 대시보드
+                    </CTAButton>
+                    <SecondaryButton to="/store">
                       <i
                         className="fas fa-store"
                         style={{ marginRight: "8px" }}
@@ -1146,7 +1210,7 @@ const HomePage: FC = () => {
                   ></i>
                   로그인하기
                 </CTAButton>
-                <SecondaryButton to="/store-home">
+                <SecondaryButton to="/store">
                   <i
                     className="fas fa-store"
                     style={{ marginRight: "8px" }}
