@@ -45,7 +45,7 @@ export interface AddressRequest {
 }
 
 export interface AddressResponse {
-  id: number;
+  addressId: number;
   recipientName: string;
   recipientPhone: string;
   zipCode: string;
@@ -216,6 +216,7 @@ export interface Coupon {
   updatedAt: string;
 }
 
+// API 명세서에 따른 실제 쿠폰 응답 구조 (couponCode, discountType 필드 없음)
 export interface CouponResponse {
   id: number;
   code: string;
@@ -240,6 +241,9 @@ export interface CouponResponse {
   expiresAt?: string;
   status?: string;
   usedAt?: string;
+  // develop 브랜치에서 추가된 속성들
+  isFreeShipping?: boolean;
+  couponStatus?: UserCouponStatus;
 }
 
 export interface CouponIssueRequest {

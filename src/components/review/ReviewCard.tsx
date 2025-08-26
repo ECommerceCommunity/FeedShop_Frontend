@@ -8,6 +8,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { StarRating } from "./StarRating";
+import { ReviewReportModal } from "./ReviewReportModal";
 import { formatDate, getRelativeTime } from "../../utils/review/reviewHelpers";
 import { Review, ReviewImage } from "../../types/review"; // 공통 타입 import
 import { toUrl } from "../../utils/common/images"; // Product에서 사용하는 이미지 URL 변환 함수
@@ -20,6 +21,8 @@ interface ReviewCardProps {
     showProductInfo?: boolean;         // 상품 정보 표시 여부 (마이페이지에서 사용)
     onEdit?: (reviewId: number) => void; // 수정 버튼 클릭 콜백
     onDelete?: (reviewId: number) => void; // 삭제 버튼 클릭 콜백
+    isReported?: boolean;              // 이미 신고된 리뷰인지 여부
+    onReportSuccess?: () => void;      // 신고 성공 콜백
 }
 
 // =============== 스타일 컴포넌트 ===============
@@ -113,11 +116,16 @@ const ActionButton = styled.button`
     color: #374151;
   }
   
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
   &.edit {
     color: #2563eb;
     border-color: #bfdbfe;
     
-    &:hover {
+    &:hover:not(:disabled) {
       background: #eff6ff;
       border-color: #2563eb;
     }
@@ -127,9 +135,31 @@ const ActionButton = styled.button`
     color: #dc2626;
     border-color: #fecaca;
     
-    &:hover {
+    &:hover:not(:disabled) {
       background: #fef2f2;
       border-color: #dc2626;
+    }
+  }
+  
+  &.report {
+    color: #ea580c;
+    border-color: #fed7aa;
+    
+    &:hover:not(:disabled) {
+      background: #fff7ed;
+      border-color: #ea580c;
+    }
+    
+    &.reported {
+      color: #9ca3af;
+      border-color: #e5e7eb;
+      cursor: not-allowed;
+      
+      &:hover {
+        background: none;
+        border-color: #e5e7eb;
+        color: #9ca3af;
+      }
     }
   }
 `;
@@ -301,11 +331,27 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
                                                           showProductInfo = false,
                                                           onEdit,
                                                           onDelete,
+                                                          isReported = false,
+                                                          onReportSuccess,
                                                       }) => {
     // const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
     // 현재 사용자가 이 리뷰의 작성자인지 확인
     const isOwner = currentUserId === review.userId;
+    
+    // 디버깅: 사용자 ID 매칭 정보 출력
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`🔍 리뷰 ${review.reviewId} 권한 체크:`, {
+            currentUserId,
+            reviewUserId: review.userId,
+            isOwner,
+            reviewUserName: review.userName
+        });
+    }
+    
+    // 신고 버튼 표시 여부 (로그인한 상태면 모든 리뷰에 표시)
+    const canReport = !!currentUserId;
     
     // 모의 데이터 필터링 함수 (완화된 버전)
     const filterRealImages = (images: ReviewImage[]): ReviewImage[] => {
@@ -410,6 +456,18 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
         }
     };
 
+    // 신고 버튼 클릭
+    const handleReport = () => {
+        setIsReportModalOpen(true);
+    };
+
+    // 신고 성공 처리
+    const handleReportSuccess = () => {
+        if (onReportSuccess) {
+            onReportSuccess();
+        }
+    };
+
     return (
         <CardContainer>
             {/* 카드 헤더 - 사용자 정보 및 액션 버튼 */}
@@ -434,9 +492,10 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
                     </UserDetails>
                 </UserInfo>
 
-                {/* 작성자 본인인 경우에만 수정/삭제 버튼 표시 */}
-                {isOwner && (
+                {/* 액션 버튼들 */}
+                {(onEdit || onDelete || canReport) && (
                     <ActionButtons>
+                        {/* 수정/삭제 버튼 (모든 리뷰에 표시) */}
                         {onEdit && (
                             <ActionButton
                                 className="edit"
@@ -453,6 +512,25 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
                                 type="button"
                             >
                                 삭제
+                            </ActionButton>
+                        )}
+                        
+                        {/* 로그인한 사용자는 모든 리뷰에 신고 버튼 표시 */}
+                        {canReport && (
+                            <ActionButton
+                                className={`report ${isReported ? 'reported' : ''}`}
+                                onClick={handleReport}
+                                type="button"
+                                disabled={isReported}
+                                title={
+                                    isReported 
+                                        ? '이미 신고한 리뷰입니다' 
+                                        : isOwner 
+                                            ? '본인 리뷰 신고하기' 
+                                            : '리뷰 신고하기'
+                                }
+                            >
+                                {isReported ? '신고완료' : '신고'}
                             </ActionButton>
                         )}
                     </ActionButtons>
@@ -559,6 +637,15 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
                     </EvaluationGrid>
                 </EvaluationSection>
             )}
+            
+            {/* 리뷰 신고 모달 */}
+            <ReviewReportModal
+                isOpen={isReportModalOpen}
+                reviewId={review.reviewId}
+                reviewAuthor={review.userName}
+                onClose={() => setIsReportModalOpen(false)}
+                onSuccess={handleReportSuccess}
+            />
         </CardContainer>
     );
 };

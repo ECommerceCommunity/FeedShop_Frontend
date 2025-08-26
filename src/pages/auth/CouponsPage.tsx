@@ -113,32 +113,16 @@ const NoCouponsMessage = styled.div`
   color: rgba(255, 255, 255, 0.7);
 `;
 
-// 할인 타입에 따른 할인 표시 함수
+// 할인 타입에 따른 할인 표시 함수 (API 명세서 기준)
 const getDiscountDisplay = (coupon: CouponResponse): string => {
-  if (coupon.freeShipping) {
+  if (coupon.isFreeShipping) {
     return "무료배송";
   }
 
-  // 백엔드에서 사용하는 다양한 할인 타입 처리
-  const discountType = coupon.discountType?.toUpperCase();
-
-  if (discountType === "PERCENTAGE" || discountType === "RATE_DISCOUNT") {
-    // 0.3 -> 30%로 변환 (백엔드에서 비율로 보내는 경우)
-    let percentage = coupon.discountValue;
-    if (percentage < 1) {
-      percentage = percentage * 100;
-    }
-    return `${Math.round(percentage)}%`;
-  }
-
-  if (discountType === "FIXED_AMOUNT" || discountType === "AMOUNT_DISCOUNT") {
-    return `${coupon.discountValue.toLocaleString()}원`;
-  }
-
-  // 기본값 - 숫자가 1보다 작으면 퍼센트로 간주
-  if (coupon.discountValue < 1) {
-    const percentage = coupon.discountValue * 100;
-    return `${Math.round(percentage)}%`;
+  // API 명세서에 따른 할인 타입 추정 로직 (discountType 필드가 없으므로)
+  // discountValue가 100 이하면 비율 할인으로 추정
+  if (coupon.discountValue <= 100) {
+    return `${coupon.discountValue}%`;
   } else {
     return `${coupon.discountValue.toLocaleString()}원`;
   }
@@ -200,10 +184,12 @@ const CouponsPage = () => {
       setCoupons(processedCoupons);
     } catch (err: any) {
       console.error("쿠폰 로드 실패:", err);
+<<<<<<< HEAD
       setError(
         "쿠폰 정보를 불러오는데 실패했습니다. 에러: " +
           (err.response?.data?.message || err.message)
       );
+>>>>>>> origin/develop
     } finally {
       setLoading(false);
     }
@@ -218,7 +204,7 @@ const CouponsPage = () => {
     if (activeTab === "available") {
       // 백엔드에서 다양한 active 상태값을 사용할 수 있으므로 더 유연하게 처리
       const activeCoupons = coupons.filter((coupon) => {
-        const status = coupon.status?.toUpperCase();
+        const status = coupon.couponStatus?.toUpperCase();
         const couponStatus = (coupon as any).couponStatus?.toUpperCase();
 
         // status나 couponStatus 필드가 있는 경우
@@ -239,7 +225,7 @@ const CouponsPage = () => {
       return activeCoupons;
     } else {
       const expiredCoupons = coupons.filter((coupon) => {
-        const status = coupon.status?.toUpperCase();
+        const status = coupon.couponStatus?.toUpperCase();
 
         // status 필드가 있는 경우
         if (status) {
@@ -262,7 +248,7 @@ const CouponsPage = () => {
   const couponsToDisplay = getFilteredCoupons();
 
   const availableCouponsCount = coupons.filter((c) => {
-    const status = c.status?.toUpperCase();
+    const status = c.couponStatus?.toUpperCase();
     if (status) {
       return ["ACTIVE", "AVAILABLE", "VALID", "UNUSED"].includes(status);
     }
@@ -273,7 +259,7 @@ const CouponsPage = () => {
   }).length;
 
   const expiredCouponsCount = coupons.filter((c) => {
-    const status = c.status?.toUpperCase();
+    const status = c.couponStatus?.toUpperCase();
     if (status) {
       return ["EXPIRED", "USED", "INVALID", "DISABLED"].includes(status);
     }
@@ -346,7 +332,7 @@ const CouponsPage = () => {
               {couponsToDisplay.map((coupon, index) => {
                 return (
                   <CouponCard
-                    key={coupon.id}
+                    key={coupon.couponName}
                     isExpired={activeTab === "expired"}
                   >
                     <CouponHeader>
@@ -363,34 +349,13 @@ const CouponsPage = () => {
                           }
 
                           // 무료배송인 경우
-                          if (coupon.freeShipping) {
+                          if (coupon.isFreeShipping) {
                             return "배송비 무료";
                           }
 
-                          // 할인 타입 확인 (더 포괄적으로)
-                          const discountType = coupon.discountType
-                            ?.toString()
-                            .toUpperCase();
-
-                          // 퍼센트 할인 타입들
-                          const percentageTypes = [
-                            "PERCENTAGE",
-                            "RATE_DISCOUNT",
-                            "PERCENT",
-                            "RATE",
-                          ];
-                          let isPercentageDiscount = percentageTypes.some(
-                            (type) => discountType?.includes(type)
-                          );
-
-                          // discountType이 없으면 할인값으로 판단 (0.3 등은 퍼센트)
-                          if (
-                            !discountType &&
-                            coupon.discountValue < 1 &&
-                            coupon.discountValue > 0
-                          ) {
-                            isPercentageDiscount = true;
-                          }
+                          // API 명세서 기준으로 할인 타입 추정
+                          // discountValue가 100 이하면 비율 할인으로 추정
+                          const isPercentageDiscount = coupon.discountValue <= 100;
 
                           return isPercentageDiscount
                             ? "전 상품 적용"

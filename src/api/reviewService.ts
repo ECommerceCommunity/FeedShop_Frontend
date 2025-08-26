@@ -202,17 +202,34 @@ export class ReviewService {
         try {
             if (process.env.NODE_ENV === 'development') {
                 console.log('리뷰 작성 API 호출:', reviewData);
+                
+                // 인증 토큰 확인
+                const token = localStorage.getItem('token');
+                console.log('🔑 인증 토큰 상태:', {
+                    hasToken: !!token,
+                    tokenLength: token?.length,
+                    tokenPreview: token ? `${token.substring(0, 20)}...` : 'none'
+                });
             }
 
             // FormData를 사용하여 텍스트와 이미지를 함께 전송
             const formData = new FormData();
             
-            // 디버깅: review 데이터 확인
-            const reviewJson = JSON.stringify(reviewData);
-            if (process.env.NODE_ENV === 'development') {
-                console.log('📝 review JSON:', reviewJson);
+            // 각 필드를 개별적으로 FormData에 추가 (백엔드가 JSON 파싱을 지원하지 않는 경우)
+            formData.append('productId', reviewData.productId.toString());
+            formData.append('title', reviewData.title);
+            formData.append('rating', reviewData.rating.toString());
+            formData.append('content', reviewData.content);
+            
+            if (reviewData.sizeFit !== undefined) {
+                formData.append('sizeFit', reviewData.sizeFit.toString());
             }
-            formData.append('review', reviewJson);
+            if (reviewData.cushion !== undefined) {
+                formData.append('cushion', reviewData.cushion.toString());
+            }
+            if (reviewData.stability !== undefined) {
+                formData.append('stability', reviewData.stability.toString());
+            }
 
             if (images && images.length > 0) {
                 if (process.env.NODE_ENV === 'development') {
@@ -232,11 +249,25 @@ export class ReviewService {
             
             // FormData 내용 확인
             if (process.env.NODE_ENV === 'development') {
-                console.log('📋 FormData 구성 완료');
-                console.log('  - review 데이터 포함됨');
+                console.log('📋 FormData 구성 완료 (개별 필드 방식)');
                 if (images && images.length > 0) {
                     console.log(`  - ${images.length}개 이미지 포함됨`);
                 }
+                
+                // FormData의 모든 항목 출력
+                console.log('📋 FormData entries:');
+                const entries = Array.from(formData.entries());
+                entries.forEach(([key, value]) => {
+                    if (value instanceof File) {
+                        console.log(`  ${key}: File(${value.name}, ${value.size}bytes, ${value.type})`);
+                    } else {
+                        console.log(`  ${key}:`, value);
+                    }
+                });
+                
+                // 최종 요청 URL과 헤더 확인
+                console.log('🌐 요청 URL:', '/api/user/reviews');
+                console.log('🔑 Authorization 헤더가 자동으로 추가될 예정');
             }
 
             const response = await axiosInstance.post<ApiResponse<CreateReviewResponse>>(
@@ -244,7 +275,8 @@ export class ReviewService {
                 formData,
                 {
                     headers: {
-                        'Content-Type': 'multipart/form-data',
+                        // multipart/form-data는 브라우저가 자동으로 설정하도록 함
+                        // Content-Type을 명시적으로 설정하지 않음
                     },
                 }
             );
@@ -267,6 +299,11 @@ export class ReviewService {
                     reviewData,
                     imageCount: images?.length || 0,
                 });
+                
+                // 서버 에러 메시지 상세 출력
+                if (error.response?.data) {
+                    console.error('🚨 백엔드 에러 응답:', JSON.stringify(error.response.data, null, 2));
+                }
             }
             throw error;
         }
@@ -383,27 +420,72 @@ export class ReviewService {
      * 리뷰 신고
      * @param reviewId 신고할 리뷰 ID
      * @param reason 신고 사유
+     * @param description 상세 설명 (선택)
      * @returns 신고 결과
      */
-    static async reportReview(reviewId: number, reason: string): Promise<{ success: boolean }> {
+    static async reportReview(
+        reviewId: number, 
+        reason: string, 
+        description?: string
+    ): Promise<{ success: boolean; message: string; data: any }> {
         try {
             if (process.env.NODE_ENV === 'development') {
-                console.log('리뷰 신고 API 호출:', { reviewId, reason });
+                const token = localStorage.getItem('token');
+                console.log('🚨 리뷰 신고 API 호출:', { 
+                    reviewId, 
+                    reviewIdType: typeof reviewId,
+                    reason, 
+                    description,
+                    url: `/api/user/reviews/${reviewId}/report`,
+                    hasToken: !!token,
+                    tokenPreview: token ? `${token.substring(0, 20)}...` : 'none'
+                });
+
+                // JWT 토큰 디코딩 (Base64)
+                if (token) {
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        console.log('🔑 JWT 토큰 정보:', {
+                            username: payload.username || payload.sub,
+                            exp: payload.exp,
+                            현재시간: Math.floor(Date.now() / 1000),
+                            만료여부: payload.exp < Math.floor(Date.now() / 1000) ? '만료됨' : '유효함'
+                        });
+                    } catch (e) {
+                        console.error('JWT 토큰 디코딩 실패:', e);
+                    }
+                }
             }
 
-            const response = await axiosInstance.post<ApiResponse<{ success: boolean }>>(
+            // 인증이 필요한 사용자 API 엔드포인트 사용
+            // (axiosInstance에서 자동으로 Authorization 헤더 추가됨)
+            const response = await axiosInstance.post<ApiResponse<any>>(
                 `/api/user/reviews/${reviewId}/report`,
-                { reason }
+                { 
+                    reason,
+                    ...(description && { description })
+                }
             );
 
             if (process.env.NODE_ENV === 'development') {
                 console.log('리뷰 신고 API 응답:', response.data);
             }
-            return response.data.data;
+            return response.data;
 
         } catch (error: any) {
             if (process.env.NODE_ENV === 'development') {
-                console.error('리뷰 신고 실패:', error);
+                console.error('🚨 리뷰 신고 실패:', error);
+                console.error('📋 에러 상세 정보:');
+                console.error('- Status:', error.response?.status);
+                console.error('- Status Text:', error.response?.statusText);
+                console.error('- Response Data:', error.response?.data);
+                console.error('- Request URL:', error.config?.url);
+                console.error('- Request Data:', error.config?.data);
+                
+                // 백엔드 에러 메시지 특별히 강조
+                if (error.response?.data) {
+                    console.error('🔥 백엔드 에러 메시지:', JSON.stringify(error.response.data, null, 2));
+                }
             }
             throw error;
         }
