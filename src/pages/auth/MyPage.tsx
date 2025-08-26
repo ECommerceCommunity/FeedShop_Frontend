@@ -295,19 +295,35 @@ function MyPage() {
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
   const [imageLoadError, setImageLoadError] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   // 프로필 정보 로드
   useEffect(() => {
     const loadProfile = async () => {
-      if (!user) return;
+      if (!user) {
+        setProfileLoading(false);
+        return;
+      }
 
       try {
+        setProfileLoading(true);
+        setProfileError(null);
+        console.log("프로필 정보 로드 시작...");
+
         const profile = await UserProfileService.getUserProfile();
+        console.log("로드된 프로필 데이터:", profile);
+
         setProfileData(profile);
         setImageLoadError(false);
       } catch (loadError: any) {
         console.error("프로필 로드 실패:", loadError);
+        setProfileError(
+          loadError.message || "프로필 정보를 불러오는데 실패했습니다."
+        );
         // 에러가 발생해도 기본 프로필을 사용
+      } finally {
+        setProfileLoading(false);
       }
     };
 
@@ -342,31 +358,100 @@ function MyPage() {
       <MainLayout>
         <Sidebar>
           <ProfileCard>
-            <ProfileImg
-              src={
-                imageLoadError || !profileData?.profileImageUrl
-                  ? "https://via.placeholder.com/120x120/374151/9CA3AF?text=프로필"
-                  : convertMockUrlToCdnUrl(profileData.profileImageUrl)
-              }
-              alt="프로필"
-              onError={() => {
-                if (!imageLoadError) {
-                  console.log("프로필 이미지 로드 실패");
-                  setImageLoadError(true);
-                }
-              }}
-              onLoad={() => {
-                if (profileData?.profileImageUrl && !imageLoadError) {
-                  console.log("프로필 이미지 로드 성공");
-                }
-              }}
-            />
-            <WelcomeMessage>
-              안녕하세요, {profileData?.nickname || user.nickname}님!
-            </WelcomeMessage>
-            <EditProfileLink to="/profile-settings">
-              프로필 관리
-            </EditProfileLink>
+            {profileLoading ? (
+              <div style={{ textAlign: "center", padding: "2rem" }}>
+                <div
+                  style={{
+                    width: "120px",
+                    height: "120px",
+                    borderRadius: "50%",
+                    background: "rgba(255,255,255,0.1)",
+                    margin: "0 auto 1rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <i
+                    className="fas fa-spinner fa-spin"
+                    style={{ fontSize: "2rem", color: "#f97316" }}
+                  ></i>
+                </div>
+                <div style={{ color: "rgba(255,255,255,0.7)" }}>
+                  프로필 로딩 중...
+                </div>
+              </div>
+            ) : profileError ? (
+              <div style={{ textAlign: "center", padding: "2rem" }}>
+                <div
+                  style={{
+                    width: "120px",
+                    height: "120px",
+                    borderRadius: "50%",
+                    background: "rgba(239,68,68,0.1)",
+                    margin: "0 auto 1rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <i
+                    className="fas fa-exclamation-triangle"
+                    style={{ fontSize: "2rem", color: "#ef4444" }}
+                  ></i>
+                </div>
+                <div
+                  style={{
+                    color: "#ef4444",
+                    fontSize: "0.9rem",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  프로필 로드 실패
+                </div>
+                <button
+                  onClick={() => window.location.reload()}
+                  style={{
+                    background: "#f97316",
+                    color: "white",
+                    border: "none",
+                    padding: "0.5rem 1rem",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                  }}
+                >
+                  다시 시도
+                </button>
+              </div>
+            ) : (
+              <>
+                <ProfileImg
+                  src={
+                    imageLoadError || !profileData?.profileImageUrl
+                      ? "https://via.placeholder.com/120x120/374151/9CA3AF?text=프로필"
+                      : convertMockUrlToCdnUrl(profileData.profileImageUrl)
+                  }
+                  alt="프로필"
+                  onError={() => {
+                    if (!imageLoadError) {
+                      console.log("프로필 이미지 로드 실패");
+                      setImageLoadError(true);
+                    }
+                  }}
+                  onLoad={() => {
+                    if (profileData?.profileImageUrl && !imageLoadError) {
+                      console.log("프로필 이미지 로드 성공");
+                    }
+                  }}
+                />
+                <WelcomeMessage>
+                  안녕하세요, {profileData?.nickname || user.nickname}님!
+                </WelcomeMessage>
+                <EditProfileLink to="/profile-view">
+                  프로필 정보
+                </EditProfileLink>
+              </>
+            )}
           </ProfileCard>
           <NavMenu>
             <NavItem
@@ -378,7 +463,7 @@ function MyPage() {
             <NavItem to="/my-orders">
               <i className="fas fa-box"></i> 주문내역
             </NavItem>
-            <NavItem 
+            <NavItem
               to="#"
               onClick={async (e) => {
                 e.preventDefault();
@@ -386,9 +471,9 @@ function MyPage() {
                   const userProfile = await UserProfileService.getUserProfile();
                   navigate(`/my-feeds?userId=${userProfile.userId}`);
                 } catch (error) {
-                  console.error('사용자 프로필 조회 실패:', error);
+                  console.error("사용자 프로필 조회 실패:", error);
                   // 실패 시 기본 경로로 이동
-                  navigate('/my-feeds');
+                  navigate("/my-feeds");
                 }
               }}
             >
@@ -429,6 +514,14 @@ function MyPage() {
               }
             >
               <i className="fas fa-map-marker-alt"></i> 배송지 설정
+            </NavItem>
+            <NavItem
+              to="/account-settings"
+              className={
+                location.pathname === "/account-settings" ? "active" : ""
+              }
+            >
+              <i className="fas fa-cog"></i> 계정 설정
             </NavItem>
           </NavMenu>
         </Sidebar>
