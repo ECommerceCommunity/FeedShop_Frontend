@@ -5,7 +5,7 @@ import FeedList from "../../components/feed/FeedList";
 import LikedUsersModal from "../../components/feed/LikedUsersModal";
 import FeedSearchModal from "../../components/feed/FeedSearchModal";
 import FeedService from "../../api/feedService";
-import { EventDto } from "../../api/eventService";
+import { EventDto } from "../../types/types";
 import axiosInstance from "../../api/axios";
 import { FeedPost, FeedListParams } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
@@ -618,7 +618,7 @@ const FeedListPage = () => {
                             key={idx}
                             className="bg-[#87CEEB] bg-opacity-10 px-2 py-1 rounded text-[#87CEEB] font-bold"
                           >
-                            {reward.rank}위: {reward.reward}
+                            {reward.conditionValue}위: {reward.reward}
                           </span>
                         ))
                       )}

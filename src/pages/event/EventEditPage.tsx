@@ -1,8 +1,15 @@
 import { useState, ChangeEvent, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../../api/axios";
-import { EventType } from "../../types/types";
-
+import { EventType, EventRewardDto, EventUpdateRequestDto } from "../../types/types";
+import { EventForm } from "../../types/event";
+import { 
+  getEventTypeText, 
+  toLocalDateString, 
+  toDatetimeLocal, 
+  validateEventForm, 
+  getErrorMessage 
+} from "../../utils/eventUtils";
 
 // Add global styles for animation
 const style = document.createElement('style');
@@ -19,44 +26,7 @@ animation: fadeInOut 3s ease-in-out forwards;
 `;
 document.head.appendChild(style);
 
-// 백엔드 EventUpdateRequestDto.EventRewardRequestDto와 일치하는 타입
-interface EventRewardRequestDto {
-  conditionValue: string;
-  rewardValue: string;
-}
 
-interface EventForm {
-  title: string;
-  type: EventType;
-  purchaseStartDate: string;
-  purchaseEndDate: string;
-  eventStartDate: string;
-  eventEndDate: string;
-  announcementDate: string;
-  description: string;
-  participationMethod: string;
-  rewards: EventRewardRequestDto[];
-  selectionCriteria: string;
-  precautions: string;
-  maxParticipants: number;
-  image: string;
-  imageFile: File | null;
-  imagePreview: string;
-}
-
-// 날짜 변환 함수들 - 필요시 유틸리티로 분리 권장
-function toDatetimeLocal(str: string | undefined) {
-  if (!str) return '';
-  const date = new Date(str);
-  return date.toISOString().slice(0, 16);
-}
-
-// 날짜를 LocalDate 형식으로 변환 (YYYY-MM-DD)
-function toLocalDateString(dateTimeStr: string): string {
-  if (!dateTimeStr) return '';
-  const date = new Date(dateTimeStr);
-  return date.toISOString().split('T')[0]; // YYYY-MM-DD 형식
-}
 
 const EventEditPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -77,9 +47,9 @@ const EventEditPage = () => {
     description: "",
     participationMethod: "",
     rewards: [
-      { conditionValue: "1", rewardValue: "프리미엄 스니커즈" },
-      { conditionValue: "2", rewardValue: "트렌디한 운동화" },
-      { conditionValue: "3", rewardValue: "스타일리시한 슈즈" }
+      { conditionValue: "1", reward: "프리미엄 스니커즈" },
+      { conditionValue: "2", reward: "트렌디한 운동화" },
+      { conditionValue: "3", reward: "스타일리시한 슈즈" }
     ],
     selectionCriteria: "",
     precautions: "",
@@ -101,18 +71,18 @@ const EventEditPage = () => {
         const detail = event.eventDetail || event;
         
         // rewards 데이터 매핑 수정
-        let mappedRewards: EventRewardRequestDto[] = [];
+        let mappedRewards: EventRewardDto[] = [];
         if (detail.rewards && Array.isArray(detail.rewards)) {
           mappedRewards = detail.rewards.map((reward: any) => ({
             conditionValue: reward.rank ? reward.rank.toString() : reward.conditionValue || "1",
-            rewardValue: reward.reward || reward.rewardValue || ''
+            reward: reward.reward || reward.rewardValue || ''
           }));
         } else {
           // 기본 보상 설정
           mappedRewards = [
-            { conditionValue: "1", rewardValue: "프리미엄 스니커즈" },
-            { conditionValue: "2", rewardValue: "트렌디한 운동화" },
-            { conditionValue: "3", rewardValue: "스타일리시한 슈즈" }
+            { conditionValue: "1", reward: "프리미엄 스니커즈" },
+            { conditionValue: "2", reward: "트렌디한 운동화" },
+            { conditionValue: "3", reward: "스타일리시한 슈즈" }
           ];
         }
         
@@ -180,7 +150,7 @@ const EventEditPage = () => {
     setTimeout(() => setShowToast(false), 3000);
   };
 
-  const handleRewardChange = (index: number, field: keyof EventRewardRequestDto, value: string) => {
+  const handleRewardChange = (index: number, field: keyof EventRewardDto, value: string) => {
     setEventForm(prev => ({
       ...prev,
       rewards: prev.rewards.map((reward, i) => 
@@ -198,7 +168,7 @@ const EventEditPage = () => {
       ...prev,
       rewards: [...prev.rewards, { 
         conditionValue: (prev.rewards.length + 1).toString(), 
-        rewardValue: ""
+        reward: ""
       }]
     }));
   };
@@ -218,64 +188,7 @@ const EventEditPage = () => {
   };
 
   const validateForm = () => {
-    const errors: string[] = [];
-
-    if (!eventForm.title.trim()) errors.push("이벤트 제목을 입력해주세요.");
-    if (!eventForm.description.trim()) errors.push("이벤트 설명을 입력해주세요.");
-    if (!eventForm.participationMethod.trim()) errors.push("참여 방법을 입력해주세요.");
-    if (!eventForm.selectionCriteria.trim()) errors.push("선정 기준을 입력해주세요.");
-    if (!eventForm.precautions.trim()) errors.push("주의사항을 입력해주세요.");
-    if (!eventForm.purchaseStartDate) errors.push("구매 시작일을 입력해주세요.");
-    if (!eventForm.purchaseEndDate) errors.push("구매 종료일을 입력해주세요.");
-    if (!eventForm.eventStartDate) errors.push("이벤트 시작일을 입력해주세요.");
-    if (!eventForm.eventEndDate) errors.push("이벤트 종료일을 입력해주세요.");
-    if (!eventForm.announcementDate) errors.push("발표일을 입력해주세요.");
-    if (eventForm.maxParticipants < 1) errors.push("최대 참여자 수는 1명 이상이어야 합니다.");
-    
-    // 보상 검증
-    if (eventForm.rewards.length === 0) {
-      errors.push("최소 1개의 보상을 입력해주세요.");
-    } else {
-      eventForm.rewards.forEach((reward, index) => {
-        if (!reward.rewardValue.trim()) {
-          errors.push(`${index + 1}등 보상 내용을 입력해주세요.`);
-        }
-      });
-    }
-
-    // 날짜 순서 검증
-    if (eventForm.purchaseStartDate && eventForm.purchaseEndDate) {
-      if (new Date(eventForm.purchaseStartDate) >= new Date(eventForm.purchaseEndDate)) {
-        errors.push("구매 시작일은 종료일보다 이전이어야 합니다.");
-      }
-    }
-    
-    if (eventForm.eventStartDate && eventForm.eventEndDate) {
-      if (new Date(eventForm.eventStartDate) >= new Date(eventForm.eventEndDate)) {
-        errors.push("이벤트 시작일은 종료일보다 이전이어야 합니다.");
-      }
-    }
-
-    // 새로운 날짜 규칙 검증
-    if (eventForm.purchaseEndDate && eventForm.eventStartDate) {
-      if (new Date(eventForm.purchaseEndDate) < new Date(eventForm.eventStartDate)) {
-        errors.push("구매 종료일은 이벤트 시작일보다 이전이어야 합니다.");
-      }
-    }
-
-    if (eventForm.purchaseEndDate && eventForm.eventEndDate) {
-      if (new Date(eventForm.eventEndDate) <= new Date(eventForm.purchaseEndDate)) {
-        errors.push("이벤트 종료일은 구매 종료일 이후여야 합니다.");
-      }
-    }
-
-    if (eventForm.eventEndDate && eventForm.announcementDate) {
-      if (new Date(eventForm.eventEndDate) >= new Date(eventForm.announcementDate)) {
-        errors.push("결과 발표일은 이벤트 종료일 이후여야 합니다.");
-      }
-    }
-
-    return errors;
+    return validateEventForm(eventForm);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -348,18 +261,7 @@ const EventEditPage = () => {
     }
   };
 
-  const getTypeText = (type: EventType) => {
-    switch (type) {
-      case "BATTLE":
-        return "배틀";
-      case "MISSION":
-        return "미션";
-      case "MULTIPLE":
-        return "랭킹";
-      default:
-        return type;
-    }
-  };
+
 
   if (loading) {
     return (
@@ -439,7 +341,7 @@ const EventEditPage = () => {
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div className="font-medium">{getTypeText(type)}</div>
+                    <div className="font-medium">{getEventTypeText(type)}</div>
                   </button>
                 ))}
               </div>
@@ -647,8 +549,8 @@ const EventEditPage = () => {
                     </label>
                     <input
                       type="text"
-                      value={reward.rewardValue}
-                      onChange={(e) => handleRewardChange(index, 'rewardValue', e.target.value)}
+                      value={reward.reward}
+                      onChange={(e) => handleRewardChange(index, 'reward', e.target.value)}
                       placeholder="예: 프리미엄 스니커즈"
                       className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />

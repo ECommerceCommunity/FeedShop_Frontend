@@ -133,6 +133,8 @@ export interface CreateReviewResponse {
     reviewId: number;
     message: string;
     imageUrls?: string[];
+    pointsEarned?: number;    // 새로 적립된 포인트
+    currentPoints?: number;   // 현재 총 보유 포인트
 }
 
 

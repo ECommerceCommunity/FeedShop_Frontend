@@ -53,7 +53,12 @@ const CartPageContent: React.FC = () => {
 
   // 장바구니 데이터 관리 훅
   const { cartData, loading, error, reloadCartData } = useCartData();
-  const [, setCartData] = useState(cartData); // 로컬 상태 업데이트용
+  const [localCartData, setLocalCartData] = useState(cartData); // 로컬 상태 업데이트용
+  
+  // useCartData에서 받은 데이터로 로컬 상태 동기화
+  useEffect(() => {
+    setLocalCartData(cartData);
+  }, [cartData]);
 
   /**
    * 에러 처리 핸들러
@@ -74,8 +79,8 @@ const CartPageContent: React.FC = () => {
     handleSelectItem,     // 개별 상품 선택/해제 핸들러
     handleSelectAll,      // 전체 상품 선택/해제 핸들러
   } = useCartActions({
-    cartData,
-    setCartData,
+    cartData: localCartData,
+    setCartData: setLocalCartData,
     reloadCartData,
     onError: handleError,
   });
@@ -107,7 +112,7 @@ const CartPageContent: React.FC = () => {
 
     // 선택된 장바구니 아이템들만 필터링
     const selectedCartItems =
-      cartData?.items.filter((item) =>
+      localCartData?.items.filter((item) =>
         selectedItems.includes(item.cartItemId)
       ) || [];
 
@@ -129,7 +134,7 @@ const CartPageContent: React.FC = () => {
   }
 
   // 장바구니가 비어있거나 데이터가 없을 때 빈 장바구니 상태 표시
-  if (!cartData || cartData.items.length === 0) {
+  if (!localCartData || localCartData.items.length === 0) {
     return (
       <Container>
         <EmptyCart onContinueShopping={() => navigate("/products")} />
@@ -138,7 +143,7 @@ const CartPageContent: React.FC = () => {
   }
 
   // 선택된 상품들의 총 금액 정보 계산
-  const selectedTotals = getSelectedTotals(cartData.items, selectedItems);
+  const selectedTotals = getSelectedTotals(localCartData.items, selectedItems);
 
   // 메인 렌더링: 장바구니 페이지 UI
   return (
@@ -148,11 +153,11 @@ const CartPageContent: React.FC = () => {
         <Card>
           {/* 장바구니 헤더 (제목 및 전체 선택) */}
           <CartHeader>
-            <CartTitle>장바구니 ({cartData.totalItemCount}개)</CartTitle>
+            <CartTitle>장바구니 ({localCartData.totalItemCount}개)</CartTitle>
             <SelectAllLabel>
               <input
                 type="checkbox"
-                checked={selectedItems.length === cartData.items.length} // 모든 아이템이 선택되었는지 확인
+                checked={selectedItems.length === localCartData.items.length} // 모든 아이템이 선택되었는지 확인
                 onChange={(e) => handleSelectAll(e.target.checked)} // 전체 선택/해제
               />
               전체 선택
@@ -161,7 +166,7 @@ const CartPageContent: React.FC = () => {
 
           {/* 장바구니 아이템 목록 */}
           <CartItemContainer>
-            {cartData.items.map((item) => (
+            {localCartData.items.map((item) => (
               <CartItemComponent
                 key={item.cartItemId}
                 item={item} // 장바구니 아이템 데이터
