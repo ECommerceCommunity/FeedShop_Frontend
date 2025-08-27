@@ -53,16 +53,18 @@ export interface Review {
 }
 
 /**
- * 리뷰 목록 응답 타입 (페이지네이션 포함)
+ * 리뷰 목록 응답 타입 (백엔드 실제 응답 구조)
  */
 export interface ReviewListResponse {
-    content: Review[];
+    reviews: Review[];           // 백엔드는 content 대신 reviews 사용
     totalPages: number;
     totalElements: number;
     size: number;
     number: number;
-    first: boolean;
-    last: boolean;
+    averageRating: number;       // 백엔드 응답에 포함된 추가 필드
+    totalReviews: number;        // 백엔드 응답에 포함된 추가 필드
+    first?: boolean;             // 옵셔널로 변경
+    last?: boolean;              // 옵셔널로 변경
 }
 
 /**
@@ -119,9 +121,9 @@ export interface ReviewListParams {
     sort?: ReviewSortOption;
     rating?: number; // 별점 필터 (정확한 별점이면 exact=true와 함께 사용)
     exactRating?: boolean; // true면 정확한 별점, false면 이상 (기본값)
-    sizeFit?: number; // 사이즈 필터 (1: 작음, 2: 적당함, 3: 큼)
-    cushion?: number; // 쿠션감 필터 (1: 부드러움, 2: 적당함, 3: 딱딱함)
-    stability?: number; // 안정성 필터 (1: 낮음, 2: 보통, 3: 높음)
+    sizeFit?: number; // 사이즈 필터 (1-5: 매우작음~매우큼)
+    cushion?: number; // 쿠션감 필터 (1-5: 매우딱딱함~매우푹신함)
+    stability?: number; // 안정성 필터 (1-5: 매우불안정~매우안정적)
 }
 
 // =============== API 응답 타입 ===============
@@ -175,9 +177,9 @@ export interface ReviewFilterState {
     sort: ReviewSortOption;
     rating: number;        // 0: 전체, 1-5: 별점 필터
     exactRating: boolean;  // true: 정확한 별점, false: 이상 (기본값)
-    sizeFit: number;       // 0: 전체, 1: 작음, 2: 적당함, 3: 큼
-    cushion: number;       // 0: 전체, 1: 부드러움, 2: 적당함, 3: 딱딱함
-    stability: number;     // 0: 전체, 1: 낮음, 2: 보통, 3: 높음
+    sizeFit: number;       // 0: 전체, 1-5: 매우작음~매우큼
+    cushion: number;       // 0: 전체, 1-5: 매우딱딱함~매우푹신함
+    stability: number;     // 0: 전체, 1-5: 매우불안정~매우안정적
 }
 
 // =============== 컴포넌트 Props 타입 ===============
@@ -371,3 +373,140 @@ export interface PaginationInfo {
     hasNext: boolean;
     hasPrevious: boolean;
 }
+
+// =============== 3요소 통계 타입 ===============
+
+/**
+ * 3요소 평가 옵션 타입
+ */
+export type CushionLevel = 'VERY_SOFT' | 'SOFT' | 'MEDIUM' | 'FIRM' | 'VERY_FIRM';
+export type SizeFitLevel = 'VERY_SMALL' | 'SMALL' | 'NORMAL' | 'BIG' | 'VERY_BIG';
+export type StabilityLevel = 'VERY_UNSTABLE' | 'UNSTABLE' | 'NORMAL' | 'STABLE' | 'VERY_STABLE';
+
+/**
+ * 개별 요소 통계 구조
+ */
+export interface ElementStatistics {
+    distribution: Record<string, number>;
+    percentage: Record<string, number>;
+    mostSelected: string | null;
+    averageScore: number;
+}
+
+/**
+ * 상품 3요소 평가 통계 응답 타입
+ */
+export interface ProductStatistics {
+    totalReviews: number;
+    cushionStatistics: ElementStatistics;
+    sizeFitStatistics: ElementStatistics;
+    stabilityStatistics: ElementStatistics;
+}
+
+/**
+ * 3요소 라벨 매핑
+ */
+export const ELEMENT_LABELS = {
+    cushion: {
+        VERY_FIRM: '매우 딱딱함',
+        FIRM: '딱딱함', 
+        MEDIUM: '적당함',
+        SOFT: '푹신함',
+        VERY_SOFT: '매우 푹신함'
+    },
+    sizeFit: {
+        VERY_SMALL: '매우 작음',
+        SMALL: '작음',
+        NORMAL: '적당함',
+        BIG: '큼',
+        VERY_BIG: '매우 큼'
+    },
+    stability: {
+        VERY_UNSTABLE: '매우 불안정',
+        UNSTABLE: '불안정',
+        NORMAL: '보통',
+        STABLE: '안정적',
+        VERY_STABLE: '매우 안정적'
+    }
+} as const;
+
+/**
+ * 5단계 평가를 위한 매핑 (1-5 점수 → 백엔드 enum)
+ */
+export const SCORE_TO_ENUM = {
+    cushion: {
+        1: 'VERY_FIRM',
+        2: 'FIRM',
+        3: 'MEDIUM', 
+        4: 'SOFT',
+        5: 'VERY_SOFT'
+    },
+    sizeFit: {
+        1: 'VERY_SMALL',
+        2: 'SMALL',
+        3: 'NORMAL',
+        4: 'BIG', 
+        5: 'VERY_BIG'
+    },
+    stability: {
+        1: 'VERY_UNSTABLE',
+        2: 'UNSTABLE',
+        3: 'NORMAL',
+        4: 'STABLE',
+        5: 'VERY_STABLE'
+    }
+} as const;
+
+/**
+ * 5단계 평가 옵션 (프론트엔드 표시용)
+ */
+export const ELEMENT_OPTIONS = {
+    cushion: [
+        { value: 1, label: '매우 딱딱함', enum: 'VERY_FIRM' },
+        { value: 2, label: '딱딱함', enum: 'FIRM' },
+        { value: 3, label: '적당함', enum: 'MEDIUM' },
+        { value: 4, label: '푹신함', enum: 'SOFT' },
+        { value: 5, label: '매우 푹신함', enum: 'VERY_SOFT' }
+    ],
+    sizeFit: [
+        { value: 1, label: '매우 작음', enum: 'VERY_SMALL' },
+        { value: 2, label: '작음', enum: 'SMALL' },
+        { value: 3, label: '적당함', enum: 'NORMAL' },
+        { value: 4, label: '큼', enum: 'BIG' },
+        { value: 5, label: '매우 큼', enum: 'VERY_BIG' }
+    ],
+    stability: [
+        { value: 1, label: '매우 불안정', enum: 'VERY_UNSTABLE' },
+        { value: 2, label: '불안정', enum: 'UNSTABLE' },
+        { value: 3, label: '보통', enum: 'NORMAL' },
+        { value: 4, label: '안정적', enum: 'STABLE' },
+        { value: 5, label: '매우 안정적', enum: 'VERY_STABLE' }
+    ]
+} as const;
+
+/**
+ * 백엔드 enum을 1-5 점수로 역변환하는 매핑
+ */
+export const ENUM_TO_SCORE = {
+    cushion: {
+        'VERY_FIRM': 1,
+        'FIRM': 2,
+        'MEDIUM': 3,
+        'SOFT': 4,
+        'VERY_SOFT': 5
+    },
+    sizeFit: {
+        'VERY_SMALL': 1,
+        'SMALL': 2,
+        'NORMAL': 3,
+        'BIG': 4,
+        'VERY_BIG': 5
+    },
+    stability: {
+        'VERY_UNSTABLE': 1,
+        'UNSTABLE': 2,
+        'NORMAL': 3,
+        'STABLE': 4,
+        'VERY_STABLE': 5
+    }
+} as const;
