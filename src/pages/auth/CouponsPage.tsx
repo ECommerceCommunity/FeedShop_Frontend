@@ -184,12 +184,10 @@ const CouponsPage = () => {
       setCoupons(processedCoupons);
     } catch (err: any) {
       console.error("쿠폰 로드 실패:", err);
-<<<<<<< HEAD
       setError(
         "쿠폰 정보를 불러오는데 실패했습니다. 에러: " +
           (err.response?.data?.message || err.message)
       );
->>>>>>> origin/develop
     } finally {
       setLoading(false);
     }
