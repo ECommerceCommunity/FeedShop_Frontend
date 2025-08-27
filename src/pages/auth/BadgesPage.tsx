@@ -101,20 +101,20 @@ const BadgeCard = styled.div<{ isDisplayed: boolean }>`
   }
 `;
 
-const BadgeImage = styled.img<{ isDisplayed?: boolean }>`
+const BadgeImage = styled.img`
   width: 80px;
   height: 80px;
   border-radius: 50%;
   margin-bottom: 1rem;
   object-fit: cover;
-  border: 3px solid ${(props) => (props.isDisplayed ? "#f97316" : "rgba(255, 255, 255, 0.2)")};
+  border: 3px solid var(--badge-border-color, rgba(255, 255, 255, 0.2));
 `;
 
-const BadgeName = styled.h3<{ isDisplayed?: boolean }>`
+const BadgeName = styled.h3`
   font-size: 1.2rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
-  color: ${(props) => (props.isDisplayed ? "white" : "rgba(255, 255, 255, 0.7)")};
+  color: var(--badge-name-color, rgba(255, 255, 255, 0.7));
 `;
 
 const BadgeDescription = styled.p`
@@ -314,6 +314,10 @@ const BadgesPage = () => {
               key={badge.id}
               isDisplayed={badge.isDisplayed}
               onClick={() => handleToggleBadge(badge.id)}
+              style={{
+                '--badge-border-color': badge.isDisplayed ? '#f97316' : 'rgba(255, 255, 255, 0.2)',
+                '--badge-name-color': badge.isDisplayed ? 'white' : 'rgba(255, 255, 255, 0.7)'
+              } as React.CSSProperties}
             >
               <BadgeImage
                 src={badge.badgeImageUrl || "/images/default-badge.png"}
@@ -322,7 +326,7 @@ const BadgesPage = () => {
                   e.currentTarget.src = "/images/default-badge.png";
                 }}
               />
-              <BadgeName isDisplayed={badge.isDisplayed}>
+              <BadgeName>
                 {badge.badgeName}
               </BadgeName>
               <BadgeDescription>{badge.badgeDescription}</BadgeDescription>
