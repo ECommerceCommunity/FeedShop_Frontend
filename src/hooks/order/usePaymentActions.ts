@@ -255,11 +255,12 @@ export const usePaymentActions = ({
       // 쿠폰 사용 처리 (선택된 쿠폰이 있는 경우)
       if (paymentData.selectedCoupon && userEmail) {
         // 참고: API 명세서에 couponCode가 없으므로 쿠폰 이름을 기반으로 생성
-        const couponCode = `COUPON_${Date.now()}_${paymentData.selectedCoupon.couponName.replace(/\s+/g, "_").toUpperCase()}`;
+        const couponCode = `COUPON_${Date.now()}_${paymentData.selectedCoupon.couponName?.replace(/\s+/g, "_").toUpperCase() || "UNKNOWN"}`;
         promises.push(
           couponService.useCoupon({
             email: userEmail,
             couponCode: couponCode,
+            orderAmount: calculateTotals().finalAmount,
           }).catch(error => {
             console.error("쿠폰 사용 처리 실패:", error);
             // 쿠폰 사용 실패는 주문 프로세스를 방해하지 않음

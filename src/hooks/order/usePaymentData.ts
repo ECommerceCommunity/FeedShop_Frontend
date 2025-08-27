@@ -365,10 +365,11 @@ export const usePaymentData = (): UsePaymentDataReturn => {
         throw new Error("사용자 인증 정보를 찾을 수 없습니다.");
       }
 
-      // 쿠폰 사용 API 호출
+      // 쿠폰 사용 API 호출 (orderAmount는 0으로 설정 - 실제 주문 시에만 사용)
       const appliedCoupon = await couponService.useCoupon({
         email: userEmail,
-        couponCode: couponCode
+        couponCode: couponCode,
+        orderAmount: 0
       });
       
       // 적용된 쿠폰을 선택된 쿠폰으로 설정

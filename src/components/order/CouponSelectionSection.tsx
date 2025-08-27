@@ -198,7 +198,8 @@ export const CouponSelectionSection: React.FC<CouponSelectionSectionProps> = ({
     }
   };
 
-  const formatExpiryDate = (dateString: string): string => {
+  const formatExpiryDate = (dateString?: string): string => {
+    if (!dateString) return "만료일: 미정";
     const date = new Date(dateString);
     return `만료일: ${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
   };
