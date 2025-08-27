@@ -53,100 +53,108 @@ const statusLabels: Record<string, string> = {
 
 // Styled Components
 const Container = styled.div`
-  background: #f7fafc;
+  background: #ffffff;
   min-height: 100vh;
-  padding: 40px 0;
+  padding: 24px 0;
 `;
 
 const Content = styled.div`
-  max-width: 1300px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
 `;
 
 const Header = styled.div`
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 `;
 
 const Title = styled.h1`
-  font-weight: 700;
-  font-size: 28px;
+  font-weight: 600;
+  font-size: 1.5rem;
   margin-bottom: 8px;
-  color: #1f2937;
+  color: #111827;
 `;
 
 const Subtitle = styled.p`
-  color: #64748b;
-  font-size: 16px;
+  color: #6b7280;
+  font-size: 0.875rem;
   margin: 0;
 `;
 
 const FilterContainer = styled.div`
   display: flex;
-  gap: 18px;
-  margin-bottom: 18px;
+  gap: 8px;
+  margin-bottom: 16px;
   flex-wrap: wrap;
 `;
 
 const FilterButton = styled.button<{ active: boolean }>`
-  font-weight: 600;
-  font-size: 15px;
-  color: ${(props) => (props.active ? "#3b82f6" : "#64748b")};
-  background: ${(props) => (props.active ? "#e0f2fe" : "none")};
-  border: none;
-  border-radius: 8px;
-  padding: 7px 18px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: ${(props) => (props.active ? "#3b82f6" : "#374151")};
+  background: ${(props) => (props.active ? "#f0f9ff" : "white")};
+  border: 1px solid ${(props) => (props.active ? "#3b82f6" : "#d1d5db")};
+  border-radius: 6px;
+  padding: 8px 16px;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${(props) => (props.active ? "#e0f2fe" : "#f1f5f9")};
+    border-color: #3b82f6;
+    color: #3b82f6;
   }
 `;
 
 
 const SearchContainer = styled.div`
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 `;
 
 const SearchInput = styled.input`
   width: 100%;
-  max-width: 420px;
-  padding: 10px 16px;
+  max-width: 400px;
+  padding: 12px 16px;
   border-radius: 8px;
   border: 1px solid #d1d5db;
-  font-size: 15px;
-  transition: border-color 0.2s ease;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background: white;
 
   &:focus {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
+
+  &::placeholder {
+    color: #9ca3af;
+  }
 `;
 
 const TableCard = styled.div`
-  background: #fff;
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 12px #e0e7ef;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
   overflow: hidden;
 `;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  min-width: 1000px;
+  min-width: 800px;
 `;
 
 const TableHeader = styled.thead`
-  background: #f3f6fa;
-  font-weight: 600;
-  font-size: 15px;
+  background: #f9fafb;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #374151;
 `;
 
 const TableHeaderCell = styled.th<{ align?: string; width?: number }>`
   text-align: ${(props) => props.align || "left"};
-  padding: 16px 12px;
+  padding: 12px 16px;
   border-bottom: 1px solid #e5e7eb;
   width: ${(props) => (props.width ? `${props.width}px` : "auto")};
 `;
@@ -154,45 +162,51 @@ const TableHeaderCell = styled.th<{ align?: string; width?: number }>`
 const TableBody = styled.tbody``;
 
 const TableRow = styled.tr`
-  border-bottom: 1px solid #f1f5f9;
-  font-size: 15px;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.875rem;
+  transition: background-color 0.2s ease;
 
   &:hover {
     background: #f9fafb;
+  }
+
+  &:last-child {
+    border-bottom: none;
   }
 `;
 
 const TableCell = styled.td<{ align?: string; width?: number }>`
   text-align: ${(props) => props.align || "left"};
-  padding: 18px 12px;
+  padding: 16px;
   vertical-align: top;
   width: ${(props) => (props.width ? `${props.width}px` : "auto")};
 `;
 
 const OrderId = styled.div`
-  font-weight: 600;
+  font-weight: 500;
   color: #3b82f6;
   margin-bottom: 4px;
+  font-size: 0.875rem;
 `;
 
 const OrderDate = styled.div`
-  color: #64748b;
-  font-size: 14px;
+  color: #6b7280;
+  font-size: 0.75rem;
 `;
 
 const ProductItem = styled.div<{ isLast: boolean }>`
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: ${(props) => (props.isLast ? "0" : "12px")};
+  margin-bottom: ${(props) => (props.isLast ? "0" : "10px")};
 `;
 
 const ProductImage = styled.img`
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
   object-fit: cover;
-  background: #f3f6fa;
+  background: #f3f4f6;
 `;
 
 const ProductInfo = styled.div``;
@@ -200,42 +214,44 @@ const ProductInfo = styled.div``;
 const ProductName = styled.div`
   font-weight: 500;
   margin-bottom: 2px;
+  color: #111827;
+  font-size: 0.875rem;
 `;
 
 const ProductDetails = styled.div`
-  color: #64748b;
-  font-size: 14px;
+  color: #6b7280;
+  font-size: 0.75rem;
 `;
 
 const StatusBadge = styled.span<{ status: string }>`
-  background: ${(props) => statusColors[props.status] || "#64748b"};
-  color: #fff;
-  border-radius: 8px;
-  padding: 4px 14px;
-  font-weight: 600;
-  font-size: 14px;
+  background: ${(props) => statusColors[props.status] || "#6b7280"};
+  color: white;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-weight: 500;
+  font-size: 0.75rem;
   display: inline-block;
 `;
 
 const EmptyState = styled.td`
   text-align: center;
-  padding: 48px;
-  color: #a3a3a3;
-  font-size: 17px;
+  padding: 40px;
+  color: #9ca3af;
+  font-size: 0.875rem;
 `;
 
 const LoadingState = styled.div`
   text-align: center;
-  padding: 48px;
-  color: #64748b;
-  font-size: 16px;
+  padding: 40px;
+  color: #6b7280;
+  font-size: 0.875rem;
 `;
 
 const ErrorState = styled.div`
   text-align: center;
-  padding: 48px;
+  padding: 40px;
   color: #ef4444;
-  font-size: 16px;
+  font-size: 0.875rem;
 `;
 
 const ActionButtonContainer = styled.div`
@@ -246,15 +262,17 @@ const ActionButtonContainer = styled.div`
 
 const ActionButton = styled.button<{ variant: 'cancel' | 'return' }>`
   padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-  font-size: 12px;
+  border-radius: 4px;
+  border: 1px solid ${props => 
+    props.variant === 'cancel' ? '#fecaca' : '#e5e7eb'
+  };
+  font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   
   background-color: ${props => 
-    props.variant === 'cancel' ? '#fee2e2' : '#f3f4f6'
+    props.variant === 'cancel' ? '#fef2f2' : 'white'
   };
   color: ${props => 
     props.variant === 'cancel' ? '#dc2626' : '#374151'
@@ -262,7 +280,10 @@ const ActionButton = styled.button<{ variant: 'cancel' | 'return' }>`
   
   &:hover {
     background-color: ${props => 
-      props.variant === 'cancel' ? '#fecaca' : '#e5e7eb'
+      props.variant === 'cancel' ? '#fee2e2' : '#f9fafb'
+    };
+    border-color: ${props => 
+      props.variant === 'cancel' ? '#fca5a5' : '#d1d5db'
     };
   }
   
@@ -275,8 +296,8 @@ const ActionButton = styled.button<{ variant: 'cancel' | 'return' }>`
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: center;
-  gap: 8px;
-  margin-top: 32px;
+  gap: 4px;
+  margin-top: 24px;
   flex-wrap: wrap;
 `;
 
@@ -286,16 +307,18 @@ const PaginationButton = styled.button<{
 }>`
   padding: 8px 12px;
   border-radius: 6px;
-  background-color: ${(props) => (props.active ? "#6366f1" : "#e5e7eb")};
-  color: ${(props) => (props.active ? "#fff" : "#1f2937")};
-  border: none;
+  background-color: ${(props) => (props.active ? "#3b82f6" : "white")};
+  color: ${(props) => (props.active ? "white" : "#374151")};
+  border: 1px solid ${(props) => (props.active ? "#3b82f6" : "#d1d5db")};
   cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
   font-weight: 500;
+  font-size: 0.875rem;
   opacity: ${(props) => (props.disabled ? 0.5 : 1)};
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background-color: ${(props) => (props.active ? "#5856eb" : "#d1d5db")};
+    background-color: ${(props) => (props.active ? "#2563eb" : "#f9fafb")};
+    border-color: ${(props) => (props.active ? "#2563eb" : "#9ca3af")};
   }
 `;
 

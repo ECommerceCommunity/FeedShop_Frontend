@@ -269,46 +269,62 @@ const EvaluationValue = styled.div<{ $color: string }>`
 // =============== 유틸리티 함수들 ===============
 
 /**
- * 3요소 평가 값을 텍스트로 변환 (백엔드 문자열 형식 지원)
+ * 3요소 평가 값을 텍스트로 변환 (5단계 시스템 지원)
  */
 const getEvaluationText = (type: 'sizeFit' | 'cushion' | 'stability', value?: number | string) => {
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`🏷️ getEvaluationText: type=${type}, value=${value} (${typeof value})`);
+    }
+    
     if (!value) return { text: "미평가", color: "#9ca3af" };
 
-    // 문자열 형식으로 온 데이터를 처리
+    // 5단계 문자열 형식으로 온 데이터를 처리
     const stringEvaluationMap = {
         sizeFit: {
-            'SMALL': { text: "작음", color: "#dc2626" },
+            'VERY_SMALL': { text: "매우 작음", color: "#dc2626" },
+            'SMALL': { text: "작음", color: "#ea580c" },
             'NORMAL': { text: "적당함", color: "#059669" },
-            'BIG': { text: "큼", color: "#dc2626" }
+            'BIG': { text: "큼", color: "#ea580c" },
+            'VERY_BIG': { text: "매우 큼", color: "#dc2626" }
         },
         cushion: {
-            'SOFT': { text: "부드러움", color: "#2563eb" },
-            'NORMAL': { text: "적당함", color: "#059669" },
-            'HARD': { text: "딱딱함", color: "#dc2626" }
+            'VERY_FIRM': { text: "매우 딱딱함", color: "#dc2626" },
+            'FIRM': { text: "딱딱함", color: "#ea580c" },
+            'MEDIUM': { text: "적당함", color: "#059669" },
+            'SOFT': { text: "푹신함", color: "#2563eb" },
+            'VERY_SOFT': { text: "매우 푹신함", color: "#7c3aed" }
         },
         stability: {
-            'LOW': { text: "낮음", color: "#dc2626" },
+            'VERY_UNSTABLE': { text: "매우 불안정", color: "#dc2626" },
+            'UNSTABLE': { text: "불안정", color: "#ea580c" },
             'NORMAL': { text: "보통", color: "#059669" },
-            'STABLE': { text: "높음", color: "#2563eb" }
+            'STABLE': { text: "안정적", color: "#2563eb" },
+            'VERY_STABLE': { text: "매우 안정적", color: "#7c3aed" }
         }
     };
 
-    // 숫자 형식으로 온 데이터를 처리 (기존 호환성)
+    // 5단계 숫자 형식으로 온 데이터를 처리
     const numberEvaluationMap = {
         sizeFit: {
-            1: { text: "작음", color: "#dc2626" },
-            2: { text: "적당함", color: "#059669" },
-            3: { text: "큼", color: "#dc2626" }
+            1: { text: "매우 작음", color: "#dc2626" },
+            2: { text: "작음", color: "#ea580c" },
+            3: { text: "적당함", color: "#059669" },
+            4: { text: "큼", color: "#ea580c" },
+            5: { text: "매우 큼", color: "#dc2626" }
         },
         cushion: {
-            1: { text: "부드러움", color: "#2563eb" },
-            2: { text: "적당함", color: "#059669" },
-            3: { text: "딱딱함", color: "#dc2626" }
+            1: { text: "매우 딱딱함", color: "#dc2626" },
+            2: { text: "딱딱함", color: "#ea580c" },
+            3: { text: "적당함", color: "#059669" },
+            4: { text: "푹신함", color: "#2563eb" },
+            5: { text: "매우 푹신함", color: "#7c3aed" }
         },
         stability: {
-            1: { text: "낮음", color: "#dc2626" },
-            2: { text: "보통", color: "#059669" },
-            3: { text: "높음", color: "#2563eb" }
+            1: { text: "매우 불안정", color: "#dc2626" },
+            2: { text: "불안정", color: "#ea580c" },
+            3: { text: "보통", color: "#059669" },
+            4: { text: "안정적", color: "#2563eb" },
+            5: { text: "매우 안정적", color: "#7c3aed" }
         }
     };
 
