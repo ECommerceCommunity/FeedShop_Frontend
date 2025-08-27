@@ -7,6 +7,7 @@ import CartSuccessModal from "components/modal/CartSuccessModal"; // 장바구�
 import { useProductDetail } from "../../hooks/products/useProductDetail"; // 상품 상세 데이터 관리
 import { useProductOptions } from "../../hooks/products/useProductOptions"; // 옵션 선택 및 수량 관리
 import { useProductActions } from "../../hooks/products/useProductActions"; // 장바구니/주문 액션 관리
+import { useProductStatistics } from "../../hooks/review/useProductStatistics"; // 3요소 통계 훅
 // 상품 상세 UI 컴포넌트들
 import { ProductImages } from "../../components/products/ProductImages"; // 상품 이미지 슬라이더
 import { ProductInfo } from "../../components/products/ProductInfo"; // 상품 기본 정보 (이름, 가격 등)
@@ -14,6 +15,8 @@ import { ModernOptionSelector } from "../../components/products/ModernOptionSele
 import { SelectedOptions } from "../../components/products/SelectedOptions"; // 선택된 옵션 표시 및 수량 조절
 import { ProductDescription } from "../../components/products/ProductDescription"; // 상품 상세 설명
 import { ProductReviews } from "../../components/review/ProductReviews"; // 상품 리뷰 섹션
+import ProductStatistics from "../../components/review/ProductStatistics"; // 3요소 통계 컴포넌트
+import ProductStatisticsChart from "../../components/review/ProductStatisticsChart"; // 3요소 막대그래프 통계 컴포넌트
 // 유틸리티 함수들
 import {
   formatPrice, // 가격 포맷팅 (예: 50000 -> "50,000")
@@ -56,6 +59,9 @@ const DetailPage: React.FC = () => {
 
   // 상품 상세 정보 관리 훅
   const { product, loading, error } = useProductDetail(id);
+
+  // 3요소 통계 관리 훅
+  const { statistics, loading: statsLoading } = useProductStatistics(product?.productId);
 
   // 상품 옵션 선택 및 관리 훅
   const {
@@ -204,6 +210,14 @@ const DetailPage: React.FC = () => {
 
       {/* 상품 상세 설명 섹션 */}
       <ProductDescription product={product} />
+
+      {/* 3요소 평가 통계 섹션 */}
+      {statistics && (
+        <ProductStatisticsChart
+          statistics={statistics}
+          loading={statsLoading}
+        />
+      )}
 
       {/* 상품 리뷰 섹션 */}
       <ProductReviews

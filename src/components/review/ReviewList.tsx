@@ -227,6 +227,18 @@ export const ReviewList: React.FC<ReviewListProps> = ({
                                                       }) => {
     const infiniteScrollRef = useRef<HTMLDivElement>(null);
 
+    // 컴포넌트 props 디버깅
+    if (process.env.NODE_ENV === 'development') {
+        console.log('🎯 ReviewList 컴포넌트 props:', {
+            reviewsLength: reviews?.length || 0,
+            reviewsArray: reviews,
+            isLoading,
+            hasMore,
+            error,
+            reviewIds: reviews?.map(r => r.reviewId) || []
+        });
+    }
+
     /**
      * 무한 스크롤 처리
      * Intersection Observer를 사용하여 화면 하단에 도달했을 때 자동으로 더 불러오기

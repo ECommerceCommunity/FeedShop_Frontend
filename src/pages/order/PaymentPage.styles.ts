@@ -3,14 +3,17 @@ import styled from "styled-components";
 export const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 24px 20px;
+  background: #ffffff;
+  min-height: 100vh;
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 24px;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 20px;
+    padding: 20px;
   }
 `;
 
@@ -27,22 +30,26 @@ export const SummarySection = styled.div`
 `;
 
 export const Card = styled.div`
-  background: #fff;
+  background: white;
   padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
 
   @media (max-width: 768px) {
-    padding: 16px;
+    padding: 20px;
   }
 `;
 
 export const SectionTitle = styled.h2`
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
+  color: #111827;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
   border-bottom: 1px solid #e5e7eb;
 `;
 
@@ -52,10 +59,10 @@ export const FormGroup = styled.div`
 
 export const Label = styled.label`
   display: block;
-  font-weight: 600;
+  font-weight: 500;
   color: #374151;
-  margin-bottom: 6px;
-  font-size: 14px;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
 `;
 
 export const Input = styled.input`
@@ -63,13 +70,13 @@ export const Input = styled.input`
   padding: 12px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 0.875rem;
   transition: border-color 0.2s ease;
 
   &:focus {
     outline: none;
     border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
   }
 
   &::placeholder {
@@ -90,7 +97,7 @@ export const TextArea = styled.textarea`
   &:focus {
     outline: none;
     border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
   }
 
   &::placeholder {
@@ -112,10 +119,10 @@ export const RequestOptionContainer = styled.div`
 
 export const RequestOptionButton = styled.button<{ selected: boolean }>`
   padding: 12px 16px;
-  border: 2px solid ${(props) => (props.selected ? "#3b82f6" : "#e5e7eb")};
-  border-radius: 8px;
-  background: ${(props) => (props.selected ? "#eff6ff" : "#f9fafb")};
-  color: ${(props) => (props.selected ? "#2563eb" : "#374151")};
+  border: 1px solid ${(props) => (props.selected ? "#3b82f6" : "#d1d5db")};
+  border-radius: 6px;
+  background: ${(props) => (props.selected ? "#f0f9ff" : "white")};
+  color: ${(props) => (props.selected ? "#3b82f6" : "#374151")};
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -123,7 +130,6 @@ export const RequestOptionButton = styled.button<{ selected: boolean }>`
 
   &:hover {
     border-color: #3b82f6;
-    background: #eff6ff;
   }
 
   &:disabled {
@@ -163,25 +169,24 @@ export const PaymentMethodContainer = styled.div`
 
 export const PaymentMethodButton = styled.button<{ selected: boolean }>`
   padding: 12px 16px;
-  border: 2px solid ${(props) => (props.selected ? "#3b82f6" : "#e5e7eb")};
-  border-radius: 8px;
-  background: ${(props) => (props.selected ? "#eff6ff" : "#f9fafb")};
-  color: ${(props) => (props.selected ? "#2563eb" : "#374151")};
-  font-weight: 600;
+  border: 1px solid ${(props) => (props.selected ? "#3b82f6" : "#d1d5db")};
+  border-radius: 6px;
+  background: ${(props) => (props.selected ? "#f0f9ff" : "white")};
+  color: ${(props) => (props.selected ? "#3b82f6" : "#374151")};
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
     border-color: #3b82f6;
-    background: #eff6ff;
   }
 `;
 
 export const PointContainer = styled.div`
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 16px;
-  background: #f9fafb;
+  background: white;
 `;
 
 export const PointHeader = styled.div`
@@ -272,11 +277,11 @@ export const PointInputContainer = styled.div<{ disabled: boolean }>`
 
 export const UseAllButton = styled.button`
   padding: 8px 16px;
-  background: #e5e7eb;
-  border: none;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
   border-radius: 4px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   color: #374151;
   cursor: pointer;
   transition: background 0.2s ease;
@@ -284,7 +289,7 @@ export const UseAllButton = styled.button`
   min-width: 70px;
 
   &:hover {
-    background: #d1d5db;
+    background: #e5e7eb;
   }
 
   &:disabled {
@@ -294,10 +299,10 @@ export const UseAllButton = styled.button`
 `;
 
 export const SummaryCard = styled.div`
-  background: #fff;
+  background: white;
   padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
   margin-bottom: 24px;
 
   @media (max-width: 768px) {
@@ -334,34 +339,33 @@ export const Button = styled.button`
 `;
 
 export const PrimaryButton = styled(Button)<{ disabled?: boolean }>`
-  background: ${({ disabled }) =>
-    disabled ? "#a5b4fc" : "linear-gradient(90deg, #60a5fa, #3b82f6)"};
-  color: #fff;
+  background: ${({ disabled }) => (disabled ? "#9ca3af" : "#3b82f6")};
+  color: white;
   margin-bottom: 12px;
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
   opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
 
   &:hover:not(:disabled) {
-    background: linear-gradient(90deg, #3b82f6, #2563eb);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    background: #2563eb;
   }
 `;
 
 export const SecondaryButton = styled(Button)`
-  background: #e5e7eb;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
   color: #374151;
 
   &:hover {
-    background: #d1d5db;
+    background: #e5e7eb;
   }
 `;
 
 export const Notice = styled.div`
-  background: #f3f6fa;
+  background: #f9fafb;
   padding: 14px;
-  border-radius: 8px;
-  color: #64748b;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
   font-size: 14px;
   margin-top: 16px;
   line-height: 1.5;
@@ -384,20 +388,13 @@ export const ProductHeader = styled.div`
 `;
 
 export const ProductPreview = styled.div`
-  border: 2px solid #f1f5f9;
-  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   padding: 20px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
   font-size: 14px;
   color: #374151;
-  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
-  }
+  background: white;
 `;
 
 export const ProductItem = styled.div`
@@ -453,7 +450,7 @@ export const LoadingOverlay = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -463,7 +460,8 @@ export const LoadingOverlay = styled.div`
 export const LoadingSpinner = styled.div`
   background: white;
   padding: 30px;
-  border-radius: 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
   align-items: center;
