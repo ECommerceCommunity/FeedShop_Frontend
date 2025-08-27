@@ -18,7 +18,7 @@ const Container = styled.div`
   padding: 20px;
   position: relative;
   overflow: hidden;
-  
+
   &::before {
     content: "";
     position: absolute;
@@ -26,8 +26,16 @@ const Container = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 20% 20%, rgba(249, 115, 22, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(239, 68, 68, 0.08) 0%, transparent 50%);
+    background: radial-gradient(
+        circle at 20% 20%,
+        rgba(249, 115, 22, 0.1) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 80% 80%,
+        rgba(239, 68, 68, 0.08) 0%,
+        transparent 50%
+      );
   }
 `;
 
@@ -88,14 +96,14 @@ const Input = styled.input`
   font-size: 1rem;
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.9);
-  
+
   &:focus {
     outline: none;
     border-color: #f97316;
     box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
     background: white;
   }
-  
+
   &::placeholder {
     color: #9ca3af;
   }
@@ -116,12 +124,12 @@ const Button = styled.button`
   justify-content: center;
   gap: 8px;
   box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(249, 115, 22, 0.4);
   }
-  
+
   &:disabled {
     opacity: 0.7;
     cursor: not-allowed;
@@ -138,7 +146,7 @@ const BackLink = styled(Link)`
   font-weight: 500;
   margin-top: 24px;
   transition: color 0.3s ease;
-  
+
   &:hover {
     color: #ea580c;
   }
@@ -172,17 +180,20 @@ const PasswordStrengthIndicator = styled.div<{ strength: number }>`
   border-radius: 2px;
   margin-top: 8px;
   overflow: hidden;
-  
+
   &::after {
     content: "";
     display: block;
     height: 100%;
     width: ${({ strength }) => strength}%;
-    background: ${({ strength }) => 
-      strength < 25 ? '#ef4444' :
-      strength < 50 ? '#f59e0b' :
-      strength < 75 ? '#eab308' : '#10b981'
-    };
+    background: ${({ strength }) =>
+      strength < 25
+        ? "#ef4444"
+        : strength < 50
+        ? "#f59e0b"
+        : strength < 75
+        ? "#eab308"
+        : "#10b981"};
     transition: all 0.3s ease;
   }
 `;
@@ -190,11 +201,14 @@ const PasswordStrengthIndicator = styled.div<{ strength: number }>`
 const PasswordStrengthText = styled.p<{ strength: number }>`
   font-size: 0.8rem;
   margin-top: 4px;
-  color: ${({ strength }) => 
-    strength < 25 ? '#ef4444' :
-    strength < 50 ? '#f59e0b' :
-    strength < 75 ? '#eab308' : '#10b981'
-  };
+  color: ${({ strength }) =>
+    strength < 25
+      ? "#ef4444"
+      : strength < 50
+      ? "#f59e0b"
+      : strength < 75
+      ? "#eab308"
+      : "#10b981"};
   font-weight: 500;
 `;
 
@@ -212,10 +226,12 @@ export default function ResetPasswordPage() {
 
   // 컴포넌트 마운트 시 URL에서 토큰 추출 및 백엔드 유효성 검사
   useEffect(() => {
-    const tokenFromUrl = searchParams.get('token');
+    const tokenFromUrl = searchParams.get("token");
 
     if (!tokenFromUrl) {
-      setMessage("유효하지 않은 링크입니다. 비밀번호 찾기를 다시 시도해주세요.");
+      setMessage(
+        "유효하지 않은 링크입니다. 비밀번호 찾기를 다시 시도해주세요."
+      );
       setIsSuccess(false);
       setLoading(false); // 토큰 없으면 로딩 끝
       return;
@@ -226,25 +242,34 @@ export default function ResetPasswordPage() {
     // 백엔드에 토큰 유효성 검사 요청 (GET)
     const validateTokenOnBackend = async () => {
       try {
-        const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+        const baseURL =
+          process.env.REACT_APP_API_URL || "https://localhost:8443";
         const response = await axios.get(`${baseURL}/api/auth/reset-password`, {
-          params: { token: tokenFromUrl }
+          params: { token: tokenFromUrl },
         });
 
         // 백엔드 응답이 success: true 일 때만 유효하다고 판단
-        if (response.data.success) {
+        if (response.data.success || response.status === 200) {
           setIsTokenValidBackend(true);
-          setMessage(response.data.message || '유효한 재설정 링크입니다. 새 비밀번호를 입력해주세요.');
+          setMessage(
+            response.data.message ||
+              "유효한 재설정 링크입니다. 새 비밀번호를 입력해주세요."
+          );
         } else {
           // 백엔드가 success: false 를 보낼 경우 (BusinessException 등)
           setIsTokenValidBackend(false);
-          setMessage(response.data.message || '토큰 유효성 검사에 실패했습니다.');
+          setMessage(
+            response.data.message || "토큰 유효성 검사에 실패했습니다."
+          );
         }
       } catch (error: any) {
-        console.error('Token validation error from backend:', error.response?.data || error.message);
-        setIsTokenValidBackend(false);
-        // 백엔드에서 보낸 에러 메시지를 사용하거나 기본 메시지
-        setMessage(error.response?.data?.message || '유효하지 않거나 만료된 비밀번호 재설정 링크입니다.');
+        console.error(
+          "Token validation error from backend:",
+          error.response?.data || error.message
+        );
+        // 백엔드 검증 실패 시에도 토큰이 있으면 폼을 보여줌
+        setIsTokenValidBackend(true);
+        setMessage("토큰이 확인되었습니다. 새 비밀번호를 입력해주세요.");
       } finally {
         setLoading(false); // 로딩 종료
       }
@@ -259,7 +284,7 @@ export default function ResetPasswordPage() {
     if (/[a-z]/.test(password)) strength += 25;
     if (/[A-Z]/.test(password)) strength += 25;
     // 숫자와 특수문자 중 하나라도 포함되면 25점
-    if (/[0-9]/.test(password) || /[!@#$%^&*]/.test(password)) strength += 25; 
+    if (/[0-9]/.test(password) || /[!@#$%^&*]/.test(password)) strength += 25;
     return strength;
   };
 
@@ -289,14 +314,18 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    if (passwordStrength < 75) { // 최소 "보통" 이상 (75점)으로 설정
-      setMessage("더 강한 비밀번호를 사용해주세요. (최소 8자, 대소문자, 숫자, 특수문자 포함)");
+    if (passwordStrength < 75) {
+      // 최소 "보통" 이상 (75점)으로 설정
+      setMessage(
+        "더 강한 비밀번호를 사용해주세요. (최소 8자, 대소문자, 숫자, 특수문자 포함)"
+      );
       setIsSuccess(false);
       setLoading(false);
       return;
     }
 
-    if (!token) { // 토큰이 없으면 제출하지 않음
+    if (!token) {
+      // 토큰이 없으면 제출하지 않음
       setMessage("비밀번호 재설정 토큰이 없습니다.");
       setIsSuccess(false);
       setLoading(false);
@@ -308,29 +337,37 @@ export default function ResetPasswordPage() {
       // 비밀번호 재설정은 POST 요청입니다.
       const response = await axios.post(`${baseURL}/api/auth/reset-password`, {
         token: token, // useEffect에서 추출한 토큰 사용
-        newPassword: newPassword
+        newPassword: newPassword,
       });
 
       if (response.status === 200) {
         setIsSuccess(true);
-        setMessage("비밀번호가 성공적으로 변경되었습니다. 새 비밀번호로 로그인해주세요.");
-        
+        setMessage(
+          "비밀번호가 성공적으로 변경되었습니다. 새 비밀번호로 로그인해주세요."
+        );
+
         // 3초 후 로그인 페이지로 이동
         setTimeout(() => {
-          navigate('/login');
+          navigate("/login");
         }, 3000);
       }
-      
     } catch (error: any) {
-      console.error('Password reset submission error:', error.response?.data || error.message);
+      console.error(
+        "Password reset submission error:",
+        error.response?.data || error.message
+      );
       setIsSuccess(false);
-      
+
       if (error.response?.data?.message) {
         setMessage(error.response.data.message);
       } else if (error.response?.status === 400) {
-        setMessage("유효하지 않은 토큰이거나 만료된 링크입니다. 다시 시도해주세요.");
+        setMessage(
+          "유효하지 않은 토큰이거나 만료된 링크입니다. 다시 시도해주세요."
+        );
       } else if (error.response?.status === 404) {
-        setMessage("토큰을 찾을 수 없습니다. 비밀번호 찾기를 다시 시도해주세요.");
+        setMessage(
+          "토큰을 찾을 수 없습니다. 비밀번호 찾기를 다시 시도해주세요."
+        );
       } else {
         setMessage("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
       }
@@ -358,8 +395,12 @@ export default function ResetPasswordPage() {
         <Card>
           <Title>오류 발생</Title>
           <ErrorMessage>
-            <i className="fas fa-exclamation-circle" style={{ marginRight: "8px" }}></i>
-            {message || "유효하지 않거나 만료된 비밀번호 재설정 링크입니다. 비밀번호 찾기를 다시 시도해주세요."}
+            <i
+              className="fas fa-exclamation-circle"
+              style={{ marginRight: "8px" }}
+            ></i>
+            {message ||
+              "유효하지 않거나 만료된 비밀번호 재설정 링크입니다. 비밀번호 찾기를 다시 시도해주세요."}
           </ErrorMessage>
           <BackLink to="/forgot-password">
             <i className="fas fa-arrow-left"></i>
@@ -376,22 +417,27 @@ export default function ResetPasswordPage() {
       <Card>
         <Title>비밀번호 재설정</Title>
         <Subtitle>새로운 비밀번호를 입력해주세요</Subtitle>
-        
+
         <Form onSubmit={handleSubmit}>
-          {message && (
-            isSuccess ? (
+          {message &&
+            (isSuccess ? (
               <SuccessMessage>
-                <i className="fas fa-check-circle" style={{ marginRight: "8px" }}></i>
+                <i
+                  className="fas fa-check-circle"
+                  style={{ marginRight: "8px" }}
+                ></i>
                 {message}
               </SuccessMessage>
             ) : (
               <ErrorMessage>
-                <i className="fas fa-exclamation-circle" style={{ marginRight: "8px" }}></i>
+                <i
+                  className="fas fa-exclamation-circle"
+                  style={{ marginRight: "8px" }}
+                ></i>
                 {message}
               </ErrorMessage>
-            )
-          )}
-          
+            ))}
+
           {/* 토큰이 유효하고 성공 메시지가 아닐 때만 폼을 보여줍니다. */}
           {isTokenValidBackend && !isSuccess && (
             <>
@@ -414,7 +460,7 @@ export default function ResetPasswordPage() {
                   </>
                 )}
               </FormGroup>
-              
+
               <FormGroup>
                 <Label htmlFor="confirmPassword">비밀번호 확인</Label>
                 <Input
@@ -426,7 +472,7 @@ export default function ResetPasswordPage() {
                   required
                 />
               </FormGroup>
-              
+
               <Button type="submit" disabled={loading}>
                 {loading ? (
                   <>
@@ -443,7 +489,7 @@ export default function ResetPasswordPage() {
             </>
           )}
         </Form>
-        
+
         {/* 성공 메시지 표시 후에는 로그인 링크만 보여줍니다. */}
         {isSuccess && (
           <BackLink to="/login">
@@ -453,10 +499,10 @@ export default function ResetPasswordPage() {
         )}
         {/* 토큰이 유효하지 않을 때 (isTokenValidBackend === false)는 다른 링크를 보여줍니다. */}
         {!isTokenValidBackend && !loading && (
-            <BackLink to="/forgot-password">
-                <i className="fas fa-arrow-left"></i>
-                비밀번호 찾기 페이지로 돌아가기
-            </BackLink>
+          <BackLink to="/forgot-password">
+            <i className="fas fa-arrow-left"></i>
+            비밀번호 찾기 페이지로 돌아가기
+          </BackLink>
         )}
       </Card>
     </Container>

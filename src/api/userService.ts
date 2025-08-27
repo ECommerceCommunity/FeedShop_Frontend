@@ -20,6 +20,7 @@ export class UserService {
       const response = await axiosInstance.delete("/api/users/withdraw", {
         data: request,
       });
+
       return response.data;
     } catch (error: any) {
       throw new Error(
