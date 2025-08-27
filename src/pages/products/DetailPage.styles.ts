@@ -3,18 +3,20 @@ import styled from "styled-components";
 export const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 24px 20px;
+  background: #ffffff;
+  min-height: 100vh;
 `;
 
 export const ProductSection = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
-  margin-bottom: 40px;
+  gap: 32px;
+  margin-bottom: 32px;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 24px;
   }
 `;
 
@@ -27,7 +29,8 @@ export const MainImage = styled.img`
   width: 100%;
   height: 500px;
   object-fit: cover;
-  border-radius: 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
   margin-bottom: 16px;
 `;
 
@@ -42,8 +45,8 @@ export const ThumbnailImage = styled.img<{ $active?: boolean }>`
   width: 80px;
   height: 80px;
   object-fit: cover;
-  border-radius: 8px;
-  border: 2px solid ${(props) => (props.$active ? "#3b82f6" : "#e5e7eb")};
+  border-radius: 6px;
+  border: 1px solid ${(props) => (props.$active ? "#3b82f6" : "#d1d5db")};
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -64,9 +67,9 @@ export const StoreName = styled.div`
 `;
 
 export const ProductName = styled.h1`
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
   margin-bottom: 16px;
   line-height: 1.3;
 `;
@@ -83,12 +86,12 @@ export const DiscountInfo = styled.div`
 `;
 
 export const DiscountBadge = styled.span`
-  background: #ef4444;
+  background: #3b82f6;
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
 `;
 
 export const OriginalPrice = styled.span`
@@ -98,9 +101,9 @@ export const OriginalPrice = styled.span`
 `;
 
 export const CurrentPrice = styled.div`
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #ef4444;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #3b82f6;
 `;
 
 export const OptionSection = styled.div`
@@ -108,8 +111,8 @@ export const OptionSection = styled.div`
 `;
 
 export const OptionTitle = styled.h3`
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
   color: #374151;
   margin-bottom: 12px;
 `;
@@ -149,21 +152,21 @@ export const ActionButtons = styled.div`
 
 export const ActionButton = styled.button<{ $variant?: "primary" | "secondary" }>`
   flex: 1;
-  padding: 16px;
+  padding: 14px;
   border: 1px solid
     ${(props) => (props.$variant === "primary" ? "#3b82f6" : "#d1d5db")};
   background: ${(props) =>
     props.$variant === "primary" ? "#3b82f6" : "white"};
   color: ${(props) => (props.$variant === "primary" ? "white" : "#374151")};
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
     background: ${(props) =>
-      props.$variant === "primary" ? "#2563eb" : "#f3f4f6"};
+      props.$variant === "primary" ? "#2563eb" : "#f9fafb"};
   }
 
   &:disabled {
@@ -173,16 +176,16 @@ export const ActionButton = styled.button<{ $variant?: "primary" | "secondary" }
 `;
 
 export const DescriptionSection = styled.div`
-  margin-top: 40px;
-  padding-top: 40px;
+  margin-top: 32px;
+  padding-top: 32px;
   border-top: 1px solid #e5e7eb;
 `;
 
 export const DescriptionTitle = styled.h2`
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 20px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 16px;
 `;
 
 export const DescriptionText = styled.div`
@@ -208,8 +211,8 @@ export const LoadingContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 400px;
-  font-size: 1.1rem;
+  min-height: 300px;
+  font-size: 1rem;
   color: #6b7280;
 `;
 
@@ -218,24 +221,24 @@ export const ErrorContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
+  min-height: 300px;
   text-align: center;
   color: #ef4444;
 `;
 
 export const SelectedOptionsContainer = styled.div`
-  margin: 24px 0;
-  padding: 20px;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
+  margin: 20px 0;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   background: #f9fafb;
 `;
 
 export const SelectedOptionsTitle = styled.h4`
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: #374151;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 `;
 
 export const SelectedOptionItem = styled.div`
@@ -281,18 +284,18 @@ export const QuantityButton = styled.button`
   width: 32px;
   height: 32px;
   border: 1px solid #d1d5db;
-  background: #f9fafb;
-  border-radius: 6px;
+  background: white;
+  border-radius: 4px;
   color: #374151;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-weight: 500;
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: #f3f4f6;
+    background: #f9fafb;
     border-color: #9ca3af;
   }
 
@@ -326,20 +329,20 @@ export const RemoveButton = styled.button`
 export const TotalSummary = styled.div`
   margin-top: 16px;
   padding: 16px;
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  border-radius: 8px;
-  border: 1px solid #3b82f6;
+  background: #f0f9ff;
+  border-radius: 6px;
+  border: 1px solid #e0f2fe;
 `;
 
 export const TotalRow = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 
   &:last-child {
     margin-bottom: 0;
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: #1e40af;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #3b82f6;
   }
 `;

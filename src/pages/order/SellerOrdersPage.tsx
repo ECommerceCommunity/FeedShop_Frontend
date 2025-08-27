@@ -52,82 +52,83 @@ const statusLabels: Record<string, string> = {
 
 // Styled Components
 const Container = styled.div`
-  background: #f7fafc;
+  background: #ffffff;
   min-height: 100vh;
-  padding: 40px 0;
+  padding: 24px 0;
 `;
 
 const Content = styled.div`
-  max-width: 1300px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
 `;
 
 const Header = styled.div`
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 `;
 
 const Title = styled.h1`
-  font-weight: 700;
-  font-size: 28px;
+  font-weight: 600;
+  font-size: 1.5rem;
   margin-bottom: 8px;
-  color: #1f2937;
+  color: #111827;
 `;
 
 const Subtitle = styled.p`
-  color: #64748b;
-  font-size: 16px;
+  color: #6b7280;
+  font-size: 0.875rem;
   margin: 0;
 `;
 
 const FilterContainer = styled.div`
   display: flex;
-  gap: 18px;
-  margin-bottom: 18px;
+  gap: 8px;
+  margin-bottom: 16px;
   flex-wrap: wrap;
 `;
 
 const FilterButton = styled.button<{ active: boolean }>`
-  font-weight: 600;
-  font-size: 15px;
-  color: ${(props) => (props.active ? "#3b82f6" : "#64748b")};
-  background: ${(props) => (props.active ? "#e0f2fe" : "none")};
-  border: none;
-  border-radius: 8px;
-  padding: 7px 18px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: ${(props) => (props.active ? "#3b82f6" : "#374151")};
+  background: ${(props) => (props.active ? "#f0f9ff" : "white")};
+  border: 1px solid ${(props) => (props.active ? "#3b82f6" : "#d1d5db")};
+  border-radius: 6px;
+  padding: 8px 16px;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${(props) => (props.active ? "#e0f2fe" : "#f1f5f9")};
+    background: ${(props) => (props.active ? "#f0f9ff" : "#f9fafb")};
+    border-color: #3b82f6;
   }
 `;
 
 
 const SearchContainer = styled.div`
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 `;
 
 const SearchInput = styled.input`
   width: 100%;
-  max-width: 420px;
-  padding: 10px 16px;
-  border-radius: 8px;
+  max-width: 400px;
+  padding: 12px 16px;
+  border-radius: 6px;
   border: 1px solid #d1d5db;
-  font-size: 15px;
+  font-size: 0.875rem;
   transition: border-color 0.2s ease;
 
   &:focus {
     outline: none;
     border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
   }
 `;
 
 const TableCard = styled.div`
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px #e0e7ef;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
   overflow: hidden;
 `;
 
@@ -138,9 +139,9 @@ const Table = styled.table`
 `;
 
 const TableHeader = styled.thead`
-  background: #f3f6fa;
-  font-weight: 600;
-  font-size: 15px;
+  background: #f9fafb;
+  font-weight: 500;
+  font-size: 0.875rem;
 `;
 
 const TableHeaderCell = styled.th<{ align?: string; width?: number }>`
@@ -153,8 +154,8 @@ const TableHeaderCell = styled.th<{ align?: string; width?: number }>`
 const TableBody = styled.tbody``;
 
 const TableRow = styled.tr`
-  border-bottom: 1px solid #f1f5f9;
-  font-size: 15px;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.875rem;
 
   &:hover {
     background: #f9fafb;
@@ -196,11 +197,12 @@ const ProductItem = styled.div<{ isLast: boolean }>`
 `;
 
 const ProductImage = styled.img`
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
   object-fit: cover;
-  background: #f3f6fa;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
 `;
 
 const ProductInfo = styled.div``;
@@ -216,18 +218,18 @@ const ProductDetails = styled.div`
 `;
 
 const PriceInfo = styled.div`
-  font-size: 12px;
-  color: #ef4444;
+  font-size: 0.75rem;
+  color: #3b82f6;
   margin-top: 2px;
 `;
 
 const StatusBadge = styled.span<{ status: string }>`
-  background: ${(props) => statusColors[props.status] || "#64748b"};
-  color: #fff;
-  border-radius: 8px;
-  padding: 4px 14px;
-  font-weight: 600;
-  font-size: 14px;
+  background: ${(props) => statusColors[props.status] || "#6b7280"};
+  color: white;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-weight: 500;
+  font-size: 0.75rem;
   display: inline-block;
 `;
 
