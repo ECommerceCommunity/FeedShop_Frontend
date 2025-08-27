@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { EventDto, EventStatus } from '../../types/event';
+import { EventDto } from '../../types/event';
 
 interface EventCardProps {
   event: EventDto;
@@ -86,7 +86,7 @@ const EventType = styled.span<{ type: string }>`
   font-weight: 600;
 `;
 
-const EventStatus = styled.span<{ status: string }>`
+const EventStatusBadge = styled.span<{ status: string }>`
   background: ${props => {
     switch (props.status) {
       case 'UPCOMING': return 'rgba(59, 130, 246, 0.2)';
@@ -210,7 +210,7 @@ const EventCard: React.FC<EventCardProps> = ({
       
       <EventMeta>
         <EventType type={event.type}>{getTypeText(event.type)}</EventType>
-        <EventStatus status={event.status}>{getStatusText(event.status)}</EventStatus>
+        <EventStatusBadge status={event.status}>{getStatusText(event.status)}</EventStatusBadge>
       </EventMeta>
       
       <EventDates>

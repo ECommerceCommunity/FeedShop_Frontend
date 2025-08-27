@@ -295,6 +295,7 @@ const App: FC = () => {
                   }
                 />
                 {/* 이벤트 관련 페이지들 */}
+                <Route path="/events" element={<EventListPage />} />
                 <Route path="/event-list" element={<EventListPage />} />
                 <Route
                   path="/events/create"
