@@ -338,7 +338,7 @@ const SignUp: FC = () => {
   const isPasswordValid = Object.values(passwordValidation).every(Boolean);
   const isPasswordMatch = formData.password === formData.confirmPassword;
   const isNameValid = formData.name.length >= 2 && formData.name.length <= 50;
-  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+  const isEmailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email);
 
   // 전화번호 입력 처리 - 숫자만 허용하고 11자리로 제한
   const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
