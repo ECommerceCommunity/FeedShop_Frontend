@@ -339,8 +339,29 @@ const SignUp: FC = () => {
   const isPasswordMatch = formData.password === formData.confirmPassword;
   const isNameValid = formData.name.length >= 2 && formData.name.length <= 50;
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
-  const isPhoneValid =
-    /^[0-9-]+$/.test(formData.phone) && formData.phone.length >= 10;
+
+  // 전화번호 입력 처리 - 숫자만 허용하고 11자리로 제한
+  const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (name === "phone") {
+      const numericValue = value.replace(/[^0-9]/g, ""); // 숫자만 허용
+      if (numericValue.length <= 11) {
+        // 11자리로 제한
+        setFormData((prev) => ({
+          ...prev,
+          [name]: numericValue,
+        }));
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  // 전화번호 유효성 검사 - 11자리 숫자
+  const isPhoneValid = /^[0-9]{11}$/.test(formData.phone);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -683,9 +704,11 @@ const SignUp: FC = () => {
                 id="phone"
                 name="phone"
                 value={formData.phone}
-                onChange={handleChange}
-                placeholder="010-1234-5678"
+                onChange={handlePhoneChange}
+                placeholder="01012345678"
                 required
+                maxLength={11}
+                title="11자리 숫자로 입력해주세요 (예: 01012345678)"
               />
               <InputIcon>
                 <i className="fas fa-phone"></i>
