@@ -196,12 +196,42 @@ export default function LoginPage() {
         "로그인 에러:",
         err.response ? err.response.data : err.message
       );
-      // alert()를 setError로 변경
+
       const errorMessage =
         err.response && err.response.data && err.response.data.message
           ? err.response.data.message
           : "로그인 중 알 수 없는 오류가 발생했습니다.";
-      setError(errorMessage);
+
+      // 에러 메시지에 따른 구분된 처리
+      if (
+        errorMessage.includes("인증이 필요") ||
+        errorMessage.includes("재인증")
+      ) {
+        setError("재인증이 필요합니다. 이메일을 확인해주세요.");
+      } else if (
+        errorMessage.includes("비밀번호") ||
+        errorMessage.includes("password") ||
+        errorMessage.includes("잘못")
+      ) {
+        setError("이메일 또는 비밀번호가 올바르지 않습니다.");
+      } else if (
+        errorMessage.includes("존재하지") ||
+        errorMessage.includes("not found")
+      ) {
+        setError("등록되지 않은 이메일입니다.");
+      } else if (
+        errorMessage.includes("계정") &&
+        errorMessage.includes("잠금")
+      ) {
+        setError("계정이 잠겼습니다. 관리자에게 문의해주세요.");
+      } else if (
+        errorMessage.includes("reCAPTCHA") ||
+        errorMessage.includes("captcha")
+      ) {
+        setError("보안 인증에 실패했습니다. 다시 시도해주세요.");
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
