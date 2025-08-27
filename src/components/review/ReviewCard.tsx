@@ -5,13 +5,14 @@
  * 리뷰 내용, 이미지, 별점, 3요소 평가 등을 포함합니다.
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { StarRating } from "./StarRating";
 import { ReviewReportModal } from "./ReviewReportModal";
 import { formatDate, getRelativeTime } from "../../utils/review/reviewHelpers";
 import { Review, ReviewImage } from "../../types/review"; // 공통 타입 import
 import { toUrl } from "../../utils/common/images"; // Product에서 사용하는 이미지 URL 변환 함수
+import { UserProfileService, UserProfileData } from "../../api/userProfileService";
 
 // =============== 타입 정의 ===============
 
@@ -82,6 +83,22 @@ const UserDetails = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
+`;
+
+const UserBodyInfo = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+`;
+
+const BodyInfoItem = styled.span`
+  font-size: 11px;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
 `;
 
 const UserName = styled.span`
@@ -352,9 +369,41 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
                                                       }) => {
     // const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [userBodyInfo, setUserBodyInfo] = useState<UserProfileData | null>(null);
+    const [isLoadingBodyInfo, setIsLoadingBodyInfo] = useState(false);
 
     // 현재 사용자가 이 리뷰의 작성자인지 확인
     const isOwner = currentUserId === review.userId;
+    
+    // 사용자 신체 정보 로드
+    useEffect(() => {
+        const loadUserBodyInfo = async () => {
+            if (!review.userId) return;
+            
+            setIsLoadingBodyInfo(true);
+            try {
+                const profileData = await UserProfileService.getUserProfileById(review.userId);
+                setUserBodyInfo(profileData);
+            } catch (error) {
+                console.error(`사용자 ${review.userId} 신체 정보 로드 실패:`, error);
+                setUserBodyInfo(null);
+            } finally {
+                setIsLoadingBodyInfo(false);
+            }
+        };
+
+        loadUserBodyInfo();
+    }, [review.userId]);
+
+    // 발 너비 텍스트 변환
+    const getFootWidthText = (footWidth?: "NARROW" | "NORMAL" | "WIDE") => {
+        switch (footWidth) {
+            case "NARROW": return "좁음";
+            case "WIDE": return "넓음";
+            case "NORMAL":
+            default: return "보통";
+        }
+    };
     
     // 디버깅: 사용자 ID 매칭 정보 출력
     if (process.env.NODE_ENV === 'development') {
@@ -505,6 +554,24 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
                         >
                             {getRelativeTime(review.createdAt)}
                         </ReviewDate>
+                        
+                        {/* 사용자 신체 정보 */}
+                        {userBodyInfo && (userBodyInfo.height || userBodyInfo.weight || userBodyInfo.footSize || userBodyInfo.footWidth) && (
+                            <UserBodyInfo>
+                                {userBodyInfo.height && (
+                                    <BodyInfoItem>키 {userBodyInfo.height}cm</BodyInfoItem>
+                                )}
+                                {userBodyInfo.weight && (
+                                    <BodyInfoItem>몸무게 {userBodyInfo.weight}kg</BodyInfoItem>
+                                )}
+                                {userBodyInfo.footSize && (
+                                    <BodyInfoItem>발사이즈 {userBodyInfo.footSize}mm</BodyInfoItem>
+                                )}
+                                {userBodyInfo.footWidth && (
+                                    <BodyInfoItem>발너비 {getFootWidthText(userBodyInfo.footWidth)}</BodyInfoItem>
+                                )}
+                            </UserBodyInfo>
+                        )}
                     </UserDetails>
                 </UserInfo>
 
