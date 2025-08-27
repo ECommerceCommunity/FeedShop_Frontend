@@ -13,7 +13,7 @@ import { useReviewActions } from "../../hooks/review/useReviewActions";
 import ReviewService from "../../api/reviewService";
 import { validateReviewTitle, validateReviewContent, validateRating, validateImages, getEvaluationLabel } from "../../utils/review/reviewHelpers";
 import { ReviewSuccessModal } from "../../components/modal/ReviewSuccessModal";
-import { CreateReviewResponse } from "../../types/review";
+import { CreateReviewResponse, ELEMENT_OPTIONS } from "../../types/review";
 
 // =============== 타입 정의 ===============
 
@@ -296,40 +296,59 @@ const CharacterCount = styled.div`
 `;
 
 const EvaluationGrid = styled.div`
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-
-    @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 `;
 
 const EvaluationItem = styled.div`
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+`;
+
+const EvaluationRow = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 16px;
+`;
+
+const EvaluationLabel = styled.div`
+    min-width: 80px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    text-align: left;
 `;
 
 const EvaluationButtons = styled.div`
     display: flex;
     gap: 4px;
-    justify-content: center;
-    margin-top: 8px;
+    flex: 1;
 `;
 
 const EvaluationButton = styled.button<{ $active: boolean }>`
-    padding: 8px 12px;
+    flex: 1;
+    padding: 8px 4px;
     border: 1px solid ${props => props.$active ? '#2563eb' : '#d1d5db'};
     border-radius: 6px;
     background: ${props => props.$active ? '#2563eb' : 'white'};
     color: ${props => props.$active ? 'white' : '#374151'};
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
     transition: all 0.2s ease;
+    min-width: 0;
+    text-align: center;
+    line-height: 1.2;
 
     &:hover {
         border-color: #2563eb;
         background: ${props => props.$active ? '#1d4ed8' : '#eff6ff'};
+    }
+
+    @media (max-width: 768px) {
+        font-size: 10px;
+        padding: 6px 3px;
     }
 `;
 
@@ -798,21 +817,21 @@ export const ReviewWritePage: React.FC = () => {
                         <EvaluationGrid>
                             {(['sizeFit', 'cushion', 'stability'] as const).map(type => (
                                 <EvaluationItem key={type}>
-                                    <Label>{getEvaluationLabel(type)}</Label>
-                                    <EvaluationButtons>
-                                        {[1, 2, 3].map(value => (
-                                            <EvaluationButton
-                                                key={value}
-                                                type="button"
-                                                $active={formData[type] === value}
-                                                onClick={() => handleEvaluationChange(type, value)}
-                                            >
-                                                {type === 'sizeFit' && ['작음', '적당', '큼'][value - 1]}
-                                                {type === 'cushion' && ['부드러움', '적당', '딱딱함'][value - 1]}
-                                                {type === 'stability' && ['낮음', '보통', '높음'][value - 1]}
-                                            </EvaluationButton>
-                                        ))}
-                                    </EvaluationButtons>
+                                    <EvaluationRow>
+                                        <EvaluationLabel>{getEvaluationLabel(type)}</EvaluationLabel>
+                                        <EvaluationButtons>
+                                            {ELEMENT_OPTIONS[type].map(option => (
+                                                <EvaluationButton
+                                                    key={option.value}
+                                                    type="button"
+                                                    $active={formData[type] === option.value}
+                                                    onClick={() => handleEvaluationChange(type, option.value)}
+                                                >
+                                                    {option.label}
+                                                </EvaluationButton>
+                                            ))}
+                                        </EvaluationButtons>
+                                    </EvaluationRow>
                                 </EvaluationItem>
                             ))}
                         </EvaluationGrid>

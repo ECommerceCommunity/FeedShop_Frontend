@@ -8,7 +8,7 @@
 import React from "react";
 import styled from "styled-components";
 import { formatNumber } from "../../utils/review/reviewHelpers";
-import { ReviewSortOption, ReviewFilterState } from "../../types/review";
+import { ReviewSortOption, ReviewFilterState, ELEMENT_OPTIONS } from "../../types/review";
 
 // =============== 타입 정의 ===============
 
@@ -38,27 +38,21 @@ const RATING_OPTIONS = [
     { value: 1, label: '1점 이상', exactLabel: '1점' },
 ] as const;
 
-// 3요소 필터 옵션
+// 3요소 필터 옵션 (5단계 + 전체)
 const SIZE_FIT_OPTIONS = [
     { value: 0, label: '전체' },
-    { value: 1, label: '작음' },
-    { value: 2, label: '적당함' },
-    { value: 3, label: '큼' },
-] as const;
+    ...ELEMENT_OPTIONS.sizeFit,
+];
 
 const CUSHION_OPTIONS = [
     { value: 0, label: '전체' },
-    { value: 1, label: '부드러움' },
-    { value: 2, label: '적당함' },
-    { value: 3, label: '딱딱함' },
-] as const;
+    ...ELEMENT_OPTIONS.cushion,
+];
 
 const STABILITY_OPTIONS = [
     { value: 0, label: '전체' },
-    { value: 1, label: '낮음' },
-    { value: 2, label: '보통' },
-    { value: 3, label: '높음' },
-] as const;
+    ...ELEMENT_OPTIONS.stability,
+];
 
 // =============== 스타일 컴포넌트 ===============
 
