@@ -59,7 +59,10 @@ export const usePaymentActions = ({
    * @param coupon 선택된 쿠폰
    * @returns 할인 금액
    */
-  const calculateCouponDiscount = (totalPrice: number, coupon: CouponResponse | null): number => {
+  const calculateCouponDiscount = (
+    totalPrice: number,
+    coupon: CouponResponse | null
+  ): number => {
     if (!coupon) return 0;
 
     // 무료배송 쿠폰인 경우 금액 할인은 없음
@@ -90,17 +93,25 @@ export const usePaymentActions = ({
     );
 
     // 쿠폰 할인 금액 계산
-    const couponDiscount = calculateCouponDiscount(productTotal, paymentData.selectedCoupon);
+    const couponDiscount = calculateCouponDiscount(
+      productTotal,
+      paymentData.selectedCoupon
+    );
 
     // 5만원 이상 무료배송, 미만시 3000원 (무료배송 쿠폰이 있으면 무료)
     const baseDeliveryFee = productTotal >= 50000 ? 0 : 3000;
-    const deliveryFee = (paymentData.selectedCoupon?.isFreeShipping) ? 0 : baseDeliveryFee;
+    const deliveryFee = paymentData.selectedCoupon?.isFreeShipping
+      ? 0
+      : baseDeliveryFee;
 
     // 포인트 사용 여부에 따른 사용 포인트 계산
     const pointsToUse = paymentData.usePoint ? paymentData.usedPoints : 0;
 
     // 최종 결제 금액 = 상품가 + 배송비 - 쿠폰할인 - 포인트
-    const finalAmount = Math.max(0, productTotal + deliveryFee - couponDiscount - pointsToUse);
+    const finalAmount = Math.max(
+      0,
+      productTotal + deliveryFee - couponDiscount - pointsToUse
+    );
 
     return {
       productTotal, // 상품 총가격
@@ -255,16 +266,27 @@ export const usePaymentActions = ({
       // 쿠폰 사용 처리 (선택된 쿠폰이 있는 경우)
       if (paymentData.selectedCoupon && userEmail) {
         // 참고: API 명세서에 couponCode가 없으므로 쿠폰 이름을 기반으로 생성
-        const couponCode = `COUPON_${Date.now()}_${paymentData.selectedCoupon.couponName?.replace(/\s+/g, "_").toUpperCase() || "UNKNOWN"}`;
+        const couponCode = `COUPON_${Date.now()}_${(
+          paymentData.selectedCoupon.couponName ||
+          paymentData.selectedCoupon.name ||
+          "UNKNOWN"
+        )
+          .replace(/\s+/g, "_")
+          .toUpperCase()}`;
         promises.push(
-          couponService.useCoupon({
-            email: userEmail,
-            couponCode: couponCode,
-            orderAmount: calculateTotals().finalAmount,
-          }).catch(error => {
-            console.error("쿠폰 사용 처리 실패:", error);
-            // 쿠폰 사용 실패는 주문 프로세스를 방해하지 않음
-          })
+          couponService
+            .useCoupon({
+              email: userEmail,
+              couponCode: couponCode,
+              orderAmount: paymentData.items.reduce(
+                (sum, item) => sum + item.discountPrice * item.quantity,
+                0
+              ),
+            })
+            .catch((error) => {
+              console.error("쿠폰 사용 처리 실패:", error);
+              // 쿠폰 사용 실패는 주문 프로세스를 방해하지 않음
+            })
         );
       }
 
@@ -290,12 +312,16 @@ export const usePaymentActions = ({
 
       // 최종 금액 계산
       const totals = calculateTotals();
-      const { shippingInfo, selectedMethod, usePoint, usedPoints } = paymentData;
+      const { shippingInfo, selectedMethod, usePoint, usedPoints } =
+        paymentData;
       let orderResponse;
 
       if (paymentData.isDirectOrder) {
         // 바로 주문 처리
-        if (!paymentData.directOrderItems || paymentData.directOrderItems.length === 0) {
+        if (
+          !paymentData.directOrderItems ||
+          paymentData.directOrderItems.length === 0
+        ) {
           onError("주문할 상품 정보가 없습니다.");
           return;
         }
@@ -316,8 +342,12 @@ export const usePaymentActions = ({
           deliveryMessage: getFinalDeliveryRequest(),
           deliveryFee: totals.deliveryFee,
           paymentMethod: selectedMethod,
-          cardNumber: selectedMethod === "카드" ? shippingInfo.cardNumber : undefined,
-          cardExpiry: selectedMethod === "카드" ? shippingInfo.cardExpiry.replace("/", "") : undefined,
+          cardNumber:
+            selectedMethod === "카드" ? shippingInfo.cardNumber : undefined,
+          cardExpiry:
+            selectedMethod === "카드"
+              ? shippingInfo.cardExpiry.replace("/", "")
+              : undefined,
           cardCvc: selectedMethod === "카드" ? shippingInfo.cardCvv : undefined,
         };
 
@@ -335,8 +365,12 @@ export const usePaymentActions = ({
           deliveryMessage: getFinalDeliveryRequest(),
           deliveryFee: totals.deliveryFee,
           paymentMethod: selectedMethod,
-          cardNumber: selectedMethod === "카드" ? shippingInfo.cardNumber : undefined,
-          cardExpiry: selectedMethod === "카드" ? shippingInfo.cardExpiry.replace("/", "") : undefined,
+          cardNumber:
+            selectedMethod === "카드" ? shippingInfo.cardNumber : undefined,
+          cardExpiry:
+            selectedMethod === "카드"
+              ? shippingInfo.cardExpiry.replace("/", "")
+              : undefined,
           cardCvc: selectedMethod === "카드" ? shippingInfo.cardCvv : undefined,
         };
 
@@ -346,7 +380,6 @@ export const usePaymentActions = ({
 
       // 주문 완료 후 후처리 작업 (쿠폰 사용, 활동 기록 등)
       await handleOrderComplete(orderResponse.orderId);
-
 
       // 성공 시 주문 완료 페이지로 이동
       navigate("/checkout", {
