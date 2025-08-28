@@ -14,20 +14,21 @@ interface FeedCardProps {
 }
 
 const Card = styled.div`
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(229, 231, 235, 0.3);
+  border-radius: 16px;
+  padding: 1.5rem;
+  background: white;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   height: 100%;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(249, 115, 22, 0.2);
-    border-color: rgba(249, 115, 22, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: rgba(59, 130, 246, 0.3);
   }
 `;
 
@@ -35,9 +36,10 @@ const ImageContainer = styled.div`
   position: relative;
   width: 100%;
   aspect-ratio: 3/4;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 `;
 
 const FeedImage = styled.img`
@@ -54,23 +56,23 @@ const FeedImage = styled.img`
 const PlaceholderImage = styled.div`
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #4a5568, #2d3748);
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 0.9rem;
+  color: #9ca3af;
+  font-size: 1rem;
   font-weight: 600;
 `;
 
 const EventBadge = styled.span<{ eventType?: string }>`
   position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  font-size: 0.8rem;
+  font-weight: 700;
   color: white;
   background: ${props => {
     switch (props.eventType) {
@@ -81,7 +83,8 @@ const EventBadge = styled.span<{ eventType?: string }>`
       default: return 'linear-gradient(135deg, #6b7280, #4b5563)';
     }
   }};
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
 `;
 
 const Content = styled.div`
@@ -91,10 +94,10 @@ const Content = styled.div`
 `;
 
 const Title = styled.h3`
-  font-size: 1rem;
-  font-weight: 600;
-  color: white;
-  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 0.75rem 0;
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -103,10 +106,10 @@ const Title = styled.h3`
 `;
 
 const Description = styled.p`
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  color: #6b7280;
   margin: 0 0 1rem 0;
-  line-height: 1.5;
+  line-height: 1.6;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -114,12 +117,14 @@ const Description = styled.p`
 `;
 
 const ProductInfo = styled.div`
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 0.5rem;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem;
   margin-bottom: 1rem;
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.8rem;
+  color: #475569;
+  font-weight: 500;
 `;
 
 const Footer = styled.div`
@@ -128,19 +133,21 @@ const Footer = styled.div`
   align-items: center;
   margin-top: auto;
   padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid #e5e7eb;
 `;
 
 const Date = styled.span`
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  color: #9ca3af;
+  font-weight: 500;
 `;
 
 const Stats = styled.div`
   display: flex;
   gap: 1rem;
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 500;
 `;
 
 const Stat = styled.span`
@@ -217,7 +224,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
             showBodyInfo={true}
             size="small"
                          onClick={() => {
-               console.log('사용자 프로필 클릭:', feed.user?.nickname);
+               // 사용자 프로필 클릭 처리
              }}
           />
         )}

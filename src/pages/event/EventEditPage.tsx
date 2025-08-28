@@ -9,8 +9,12 @@ import {
   toStartDateTime,
   toEndDateTime,
   validateEventForm, 
-  getErrorMessage 
+  getErrorMessage, 
+  createEventFormData, 
+  getDefaultRewards,
+  validateEventDates 
 } from "../../utils/eventUtils";
+import EventService from "../../api/eventService";
 
 // Add global styles for animation
 const style = document.createElement('style');
@@ -322,68 +326,28 @@ const EventEditPage = () => {
     try {
       setLoading(true);
 
-      // FormData로 전송 (백엔드가 multipart/form-data를 지원하므로)
-      const formData = new FormData();
-      formData.append("title", eventForm.title);
-      formData.append("type", eventForm.type);
-      formData.append("purchaseStartDate", toLocalDateString(eventForm.purchaseStartDate));
-      formData.append("purchaseEndDate", toLocalDateString(eventForm.purchaseEndDate));
-      formData.append("eventStartDate", toLocalDateString(eventForm.eventStartDate));
-      formData.append("eventEndDate", toLocalDateString(eventForm.eventEndDate));
-      formData.append("announcement", toLocalDateString(eventForm.announcementDate));
-      formData.append("description", eventForm.description);
-      formData.append("participationMethod", eventForm.participationMethod);
-      formData.append("selectionCriteria", eventForm.selectionCriteria);
-      formData.append("precautions", eventForm.precautions);
-      formData.append("maxParticipants", eventForm.maxParticipants.toString());
-      
-      // rewards를 평면화하여 전송 (EventCreatePage와 동일한 방식)
-      const flattenedRewards = eventForm.rewards.flatMap((rewardGroup, groupIndex) =>
-        rewardGroup.rewards.map((reward, rewardIndex) => ({
-          conditionValue: rewardGroup.conditionValue,
-          rewardType: reward.rewardType,
-          rewardValue: reward.rewardValue,
-          rewardDescription: reward.rewardDescription
-        }))
-      );
-      
-      formData.append("rewards", JSON.stringify(flattenedRewards));
-      
-      if (eventForm.imageFile) {
-        formData.append("image", eventForm.imageFile);
+      // 날짜 유효성 검사
+      const dateErrors = validateEventDates(eventForm);
+      if (dateErrors.length > 0) {
+        alert(dateErrors.join('\n'));
+        return;
       }
+
+      // FormData로 전송
+      const formData = createEventFormData(eventForm, eventForm.imageFile);
 
       await axiosInstance.put(`/api/events/${id}/multipart`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-
       
-      showToastMessage("이벤트가 성공적으로 수정되었습니다! 이벤트 목록 페이지로 이동합니다.", 'success');
+      alert("이벤트가 성공적으로 수정되었습니다.");
+      navigate("/events");
       
-      // 성공 후 이벤트 목록 페이지로 이동 (토스트 메시지가 보인 후)
-      setTimeout(() => {
-        navigate("/events");
-      }, 2000);
-    } catch (error: any) {
-      console.error("이벤트 수정 실패:", error);
-      
-      let errorMessage = "이벤트 수정에 실패했습니다.";
-      
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.response?.status === 400) {
-        errorMessage = "입력 데이터가 올바르지 않습니다. 모든 필수 항목을 확인해주세요.";
-      } else if (error.response?.status === 401) {
-        errorMessage = "로그인이 필요하거나 권한이 없습니다.";
-      } else if (error.response?.status === 403) {
-        errorMessage = "관리자 권한이 필요합니다.";
-      } else if (error.response?.status >= 500) {
-        errorMessage = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
-      }
-      
-      showToastMessage(errorMessage, 'error');
+    } catch (err: any) {
+      console.error("이벤트 수정 실패:", err);
+      alert(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

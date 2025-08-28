@@ -7,7 +7,13 @@ import {
   EventRewardGroup, 
   EventRewardDto 
 } from "../../types/event";
-import { getEventTypeText } from "../../utils/eventUtils";
+import { 
+  getEventTypeText, 
+  getErrorMessage, 
+  createEventFormData, 
+  getDefaultRewards,
+  validateEventDates 
+} from "../../utils/eventUtils";
 import EventService from "../../api/eventService";
 
 const EventCreatePage: React.FC = () => {
@@ -28,29 +34,7 @@ const EventCreatePage: React.FC = () => {
     announcementDate: '',
     description: '',
     participationMethod: '',
-    rewards: [
-      {
-        conditionValue: "1",
-        rewards: [
-          { rewardType: "BADGE_POINTS", rewardValue: 100, rewardDescription: "100 뱃지점수" },
-          { rewardType: "POINTS", rewardValue: 2000, rewardDescription: "2000 포인트" },
-          { rewardType: "DISCOUNT_COUPON", rewardValue: 15, rewardDescription: "15% 할인쿠폰" }
-        ]
-      },
-      {
-        conditionValue: "2",
-        rewards: [
-          { rewardType: "POINTS", rewardValue: 1500, rewardDescription: "1500 포인트" },
-          { rewardType: "BADGE_POINTS", rewardValue: 50, rewardDescription: "50 뱃지점수" }
-        ]
-      },
-      {
-        conditionValue: "3",
-        rewards: [
-          { rewardType: "POINTS", rewardValue: 1000, rewardDescription: "1000 포인트" }
-        ]
-      }
-    ] as EventRewardGroup[],
+    rewards: getDefaultRewards('BATTLE') as EventRewardGroup[],
     selectionCriteria: '',
     precautions: '',
     maxParticipants: 100,
@@ -60,150 +44,37 @@ const EventCreatePage: React.FC = () => {
   });
 
   // 입력 필드 변경 핸들러
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = useCallback((
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setEventForm(prev => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  // 이벤트 타입 선택 핸들러
-  const handleTypeSelect = (type: EventType) => {
-    setEventForm(prev => ({ ...prev, type }));
-    
-    // 이벤트 타입에 따라 기본 보상 설정
-    if (type === 'RANKING') {
-      setEventForm(prev => ({
-        ...prev,
-        type,
-        rewards: [
-          {
-            conditionValue: "1",
-            rewards: [
-              { rewardType: "BADGE_POINTS", rewardValue: 100, rewardDescription: "100 뱃지점수" },
-              { rewardType: "POINTS", rewardValue: 2000, rewardDescription: "2000 포인트" },
-              { rewardType: "DISCOUNT_COUPON", rewardValue: 15, rewardDescription: "15% 할인쿠폰" }
-            ]
-          },
-          {
-            conditionValue: "2",
-            rewards: [
-              { rewardType: "POINTS", rewardValue: 1500, rewardDescription: "1500 포인트" },
-              { rewardType: "BADGE_POINTS", rewardValue: 50, rewardDescription: "50 뱃지점수" }
-            ]
-          },
-          {
-            conditionValue: "3",
-            rewards: [
-              { rewardType: "POINTS", rewardValue: 1000, rewardDescription: "1000 포인트" }
-            ]
-          }
-        ]
-      }));
-    } else if (type === 'BATTLE') {
-      setEventForm(prev => ({
-        ...prev,
-        type,
-        rewards: [
-          {
-            conditionValue: "1",
-            rewards: [
-              { rewardType: "BADGE_POINTS", rewardValue: 100, rewardDescription: "100 뱃지점수" },
-              { rewardType: "POINTS", rewardValue: 2000, rewardDescription: "2000 포인트" },
-              { rewardType: "DISCOUNT_COUPON", rewardValue: 15, rewardDescription: "15% 할인쿠폰" }
-            ]
-          },
-          {
-            conditionValue: "participation",
-            rewards: [
-              { rewardType: "POINTS", rewardValue: 500, rewardDescription: "500 포인트" },
-              { rewardType: "BADGE_POINTS", rewardValue: 20, rewardDescription: "20 뱃지점수" }
-            ]
-          }
-        ]
-      }));
-    }
-  };
-
-  // 이미지 파일 선택 핸들러
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setEventForm(prev => ({ 
-        ...prev, 
-        imageFile: file,
-        imagePreview: URL.createObjectURL(file)
-      }));
-    }
-  };
-
-  // 보상 추가 핸들러
-  const handleAddReward = (groupIndex: number) => {
+  // 이벤트 타입 변경 핸들러
+  const handleTypeChange = useCallback((type: EventType) => {
     setEventForm(prev => ({
       ...prev,
-      rewards: prev.rewards.map((group, i) => 
-        i === groupIndex 
-          ? {
-              ...group,
-              rewards: [...group.rewards, {
-                rewardType: "POINTS",
-                rewardValue: 100,
-                rewardDescription: "100 포인트"
-              }]
-            }
-          : group
-      )
+      type,
+      rewards: getDefaultRewards(type)
     }));
-  };
-
-  // 보상 제거 핸들러
-  const handleRemoveReward = (groupIndex: number, rewardIndex: number) => {
-    setEventForm(prev => ({
-      ...prev,
-      rewards: prev.rewards.map((group, i) => 
-        i === groupIndex 
-          ? {
-              ...group,
-              rewards: group.rewards.filter((_, j) => j !== rewardIndex)
-            }
-          : group
-      )
-    }));
-  };
-
-  // 보상 그룹 추가 핸들러
-  const handleAddRewardGroup = () => {
-    const newConditionValue = eventForm.type === 'RANKING' 
-      ? (eventForm.rewards.length + 1).toString()
-      : eventForm.rewards.length === 0 ? "1" : "participation";
-    
-    setEventForm(prev => ({
-      ...prev,
-      rewards: [...prev.rewards, {
-        conditionValue: newConditionValue,
-        rewards: [
-          { rewardType: "POINTS", rewardValue: 100, rewardDescription: "100 포인트" }
-        ]
-      }]
-    }));
-  };
-
-  // 보상 그룹 제거 핸들러
-  const handleRemoveRewardGroup = (groupIndex: number) => {
-    setEventForm(prev => ({
-      ...prev,
-      rewards: prev.rewards.filter((_, i) => i !== groupIndex)
-    }));
-  };
+  }, []);
 
   // 보상 변경 핸들러
-  const handleRewardChange = (groupIndex: number, rewardIndex: number, field: keyof EventRewardDto, value: any) => {
+  const handleRewardChange = useCallback((
+    groupIndex: number,
+    rewardIndex: number,
+    field: keyof EventRewardDto,
+    value: string | number
+  ) => {
     setEventForm(prev => ({
       ...prev,
-      rewards: prev.rewards.map((group, i) => 
-        i === groupIndex 
+      rewards: prev.rewards.map((group, i) =>
+        i === groupIndex
           ? {
               ...group,
-              rewards: group.rewards.map((reward, j) => 
-                j === rewardIndex 
+              rewards: group.rewards.map((reward, j) =>
+                j === rewardIndex
                   ? { ...reward, [field]: value }
                   : reward
               )
@@ -211,10 +82,10 @@ const EventCreatePage: React.FC = () => {
           : group
       )
     }));
-  };
+  }, []);
 
   // 폼 제출 핸들러
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user || user.userType !== 'admin') {
@@ -227,38 +98,15 @@ const EventCreatePage: React.FC = () => {
     setSuccess(null);
 
     try {
-      // FormData 생성
-      const formData = new FormData();
-      formData.append('title', eventForm.title);
-      formData.append('type', eventForm.type);
-      formData.append('purchaseStartDate', eventForm.purchaseStartDate);
-      formData.append('purchaseEndDate', eventForm.purchaseEndDate);
-      formData.append('eventStartDate', eventForm.eventStartDate);
-      formData.append('eventEndDate', eventForm.eventEndDate);
-      formData.append('announcementDate', eventForm.announcementDate);
-      formData.append('description', eventForm.description);
-      formData.append('participationMethod', eventForm.participationMethod);
-      formData.append('selectionCriteria', eventForm.selectionCriteria);
-      formData.append('precautions', eventForm.precautions);
-      formData.append('maxParticipants', eventForm.maxParticipants.toString());
-      
-      // 보상 데이터를 평면화하여 전송
-      const flattenedRewards = eventForm.rewards.flatMap(group => 
-        group.rewards.map(reward => ({
-          conditionValue: group.conditionValue,
-          rewardType: reward.rewardType,
-          rewardValue: reward.rewardValue,
-          rewardDescription: reward.rewardDescription
-        }))
-      );
-      
-
-      
-      formData.append('rewards', JSON.stringify(flattenedRewards));
-
-      if (eventForm.imageFile) {
-        formData.append('image', eventForm.imageFile);
+      // 날짜 유효성 검사
+      const dateErrors = validateEventDates(eventForm);
+      if (dateErrors.length > 0) {
+        setError(dateErrors.join('\n'));
+        return;
       }
+
+      // FormData 생성
+      const formData = createEventFormData(eventForm, eventForm.imageFile);
 
       await EventService.createEvent(formData);
       
@@ -271,11 +119,11 @@ const EventCreatePage: React.FC = () => {
       
     } catch (err: any) {
       console.error('이벤트 생성 실패:', err);
-      setError(err.response?.data?.message || '이벤트 생성에 실패했습니다.');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventForm, user, navigate]);
 
   if (!user || user.userType !== 'admin') {
     return (
@@ -351,7 +199,7 @@ const EventCreatePage: React.FC = () => {
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
-                      onClick={() => handleTypeSelect('RANKING')}
+                      onClick={() => handleTypeChange('RANKING')}
                       className={`px-4 py-3 rounded-xl border-2 transition-colors ${
                         eventForm.type === 'RANKING'
                           ? 'border-blue-500 bg-blue-50 text-blue-700'
@@ -362,7 +210,7 @@ const EventCreatePage: React.FC = () => {
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleTypeSelect('BATTLE')}
+                      onClick={() => handleTypeChange('BATTLE')}
                       className={`px-4 py-3 rounded-xl border-2 transition-colors ${
                         eventForm.type === 'BATTLE'
                           ? 'border-blue-500 bg-blue-50 text-blue-700'
@@ -549,7 +397,7 @@ const EventCreatePage: React.FC = () => {
                 {eventForm.type === 'RANKING' && (
                   <button
                     type="button"
-                    onClick={handleAddRewardGroup}
+                    onClick={() => handleRewardChange(eventForm.rewards.length, 0, 'conditionValue', (eventForm.rewards.length + 1).toString())}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     보상 그룹 추가
@@ -572,7 +420,7 @@ const EventCreatePage: React.FC = () => {
                       {eventForm.type === 'RANKING' && (
                         <button
                           type="button"
-                          onClick={() => handleRemoveRewardGroup(groupIndex)}
+                          onClick={() => handleRewardChange(groupIndex, 0, 'conditionValue', (eventForm.rewards.length - 1).toString())}
                           className="text-red-600 hover:text-red-800 transition-colors"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -634,7 +482,7 @@ const EventCreatePage: React.FC = () => {
                           <div className="mt-3 flex justify-end">
                             <button
                               type="button"
-                              onClick={() => handleRemoveReward(groupIndex, rewardIndex)}
+                              onClick={() => handleRewardChange(groupIndex, rewardIndex, 'rewardType', 'POINTS')}
                               className="text-red-600 hover:text-red-800 transition-colors"
                             >
                               보상 제거
@@ -645,7 +493,7 @@ const EventCreatePage: React.FC = () => {
                       
                       <button
                         type="button"
-                        onClick={() => handleAddReward(groupIndex)}
+                        onClick={() => handleRewardChange(groupIndex, rewardGroup.rewards.length, 'conditionValue', 'participation')}
                         className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-800 transition-colors"
                       >
                         + 보상 추가
@@ -664,7 +512,16 @@ const EventCreatePage: React.FC = () => {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handleImageChange}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setEventForm(prev => ({ 
+                        ...prev, 
+                        imageFile: file,
+                        imagePreview: URL.createObjectURL(file)
+                      }));
+                    }
+                  }}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 
