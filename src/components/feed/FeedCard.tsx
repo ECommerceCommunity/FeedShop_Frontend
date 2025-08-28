@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FeedPost } from "../../types/feed";
 import FeedUserProfile from "./FeedUserProfile";
+import { getFeedTypeText, formatFeedDate } from "../../utils/feedUtils";
 
 interface FeedCardProps {
   feed: FeedPost;
@@ -148,37 +149,7 @@ const Stat = styled.span`
   gap: 0.25rem;
 `;
 
-const formatDate = (dateString: string): string => {
-  try {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 1) return '어제';
-    if (diffDays < 7) return `${diffDays}일 전`;
-    if (diffDays < 30) return `${Math.ceil(diffDays / 7)}주 전`;
-    if (diffDays < 365) return `${Math.ceil(diffDays / 30)}개월 전`;
-    
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  } catch (error) {
-    return '날짜 오류';
-  }
-};
 
-const getEventTypeText = (eventType?: string): string => {
-  switch (eventType) {
-    case 'BATTLE': return '배틀';
-    case 'RANKING': return '랭킹';
-    case 'MISSION': return '미션';
-    case 'CHALLENGE': return '챌린지';
-    default: return '이벤트';
-  }
-};
 
 const FeedCard: React.FC<FeedCardProps> = ({ 
   feed, 
@@ -217,7 +188,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
         {showEventBadge && feed.eventId && feed.eventTitle && (
           <EventBadge eventType={feed.eventType}>
             <i className="fas fa-star mr-1"></i>
-            {getEventTypeText(feed.eventType)}
+            {getFeedTypeText(feed.feedType)}
           </EventBadge>
         )}
       </ImageContainer>
@@ -256,7 +227,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
       </Content>
       
       <Footer>
-        <Date>{formatDate(feed.createdAt)}</Date>
+        <Date>{formatFeedDate(feed.createdAt)}</Date>
         <Stats>
           {feed.likeCount > 0 && (
             <Stat>

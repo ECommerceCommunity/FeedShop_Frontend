@@ -24,6 +24,9 @@ export type {
   BattleMatch
 } from './event';
 
+// Feed 관련 타입들은 별도로 관리 (순환 참조 방지)
+// 필요시 각 파일에서 직접 import하여 사용
+
 // Address 관련 타입들 - 백엔드 UserAddress 모델에 맞춤
 export interface Address {
   id: number;

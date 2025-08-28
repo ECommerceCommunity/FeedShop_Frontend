@@ -13,6 +13,9 @@ import {
   FeedListParams,
   CommentListParams,
   MyLikedFeedsResponseDto,
+  PaginatedResponse,
+  FeedListResponseDto,
+  FeedType,
 } from "../types/feed";
 
 // 백엔드 응답 타입 정의
@@ -21,7 +24,7 @@ interface BackendFeedPost {
   title: string;
   content: string;
   instagramId?: string;
-  feedType: 'DAILY' | 'EVENT' | 'RANKING';
+  feedType: FeedType;
   likeCount: number;
   commentCount: number;
   participantVoteCount: number;
@@ -128,7 +131,7 @@ export class FeedService {
    * 피드 목록을 조회합니다
    * feedType이 있으면 타입별 조회 API를 사용하고, 없으면 전체 조회 API를 사용합니다
    */
-  static async getFeeds(params: FeedListParams = {}): Promise<FeedListResponse> {
+  static async getFeeds(params: FeedListParams = {}): Promise<PaginatedResponse<FeedListResponseDto>> {
     try {
       const { feedType, ...otherParams } = params;
       
@@ -141,21 +144,16 @@ export class FeedService {
         url = '/api/feeds';
       }
       
-      const response = await axiosInstance.get<ApiResponse<any>>(
+      const response = await axiosInstance.get<ApiResponse<PaginatedResponse<FeedListResponseDto>>>(
         url,
         { params: otherParams }
       );
-      const apiResponse = response.data;
       
-      // 백엔드 응답을 프론트엔드 타입에 맞게 변환
-      const transformedFeeds = apiResponse.data.content.map((backendFeed: BackendFeedPost) => 
-        this.transformBackendFeedToFrontend(backendFeed)
-      );
-      
-      return {
-        ...apiResponse.data,
-        content: transformedFeeds,
-      };
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || '피드 목록 조회에 실패했습니다.');
+      }
     } catch (error: any) {
       console.error('피드 목록 조회 실패:', error);
       throw error;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FeedPost } from "../../types/feed";
+import { FeedPost, FeedComment } from "../../types/feed";
 import FeedVoteButton from "./FeedVoteButton";
 import FeedUserProfile from "./FeedUserProfile";
 import FollowButton from "./FollowButton";
@@ -29,7 +29,7 @@ interface FeedDetailModalProps {
   open: boolean;
   onClose: () => void;
   feed: FeedPost | null;
-  comments: any[];
+  comments: FeedComment[];
   showComments: boolean;
   onToggleComments: () => void;
   onLike: () => void;

@@ -1,7 +1,7 @@
-import { FeedPost } from '../types/feed';
+import { FeedPost, FeedType } from '../types/feed';
 
 // 피드 타입 텍스트 변환
-export const getFeedTypeText = (feedType: string): string => {
+export const getFeedTypeText = (feedType: FeedType): string => {
   switch (feedType) {
     case 'DAILY':
       return '일상';
@@ -15,7 +15,7 @@ export const getFeedTypeText = (feedType: string): string => {
 };
 
 // 피드 타입 색상 반환
-export const getFeedTypeColor = (feedType: string): string => {
+export const getFeedTypeColor = (feedType: FeedType): string => {
   switch (feedType) {
     case 'DAILY':
       return 'bg-blue-500';
@@ -29,7 +29,7 @@ export const getFeedTypeColor = (feedType: string): string => {
 };
 
 // 피드 타입 그라데이션 배경 반환
-export const getFeedTypeGradient = (feedType: string): string => {
+export const getFeedTypeGradient = (feedType: FeedType): string => {
   switch (feedType) {
     case 'DAILY':
       return 'linear-gradient(135deg, #3b82f6, #2563eb)';
