@@ -9,7 +9,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { StarRating } from "./StarRating";
 import { ReviewService } from "../../api/reviewService";
-import { Review, UpdateReviewRequest } from "../../types/review";
+import { Review, UpdateReviewRequest, ELEMENT_OPTIONS, ENUM_TO_SCORE } from "../../types/review";
 import { validateOptionalReviewTitle, validateReviewContent, validateRating, getEvaluationLabel } from "../../utils/review/reviewHelpers";
 
 // =============== 타입 정의 ===============
@@ -166,40 +166,58 @@ const CharacterCount = styled.div`
 `;
 
 const EvaluationGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 `;
 
 const EvaluationItem = styled.div`
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const EvaluationRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const EvaluationLabel = styled.div`
+  min-width: 60px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  text-align: left;
 `;
 
 const EvaluationButtons = styled.div`
   display: flex;
   gap: 4px;
-  justify-content: center;
-  margin-top: 8px;
+  flex: 1;
 `;
 
 const EvaluationButton = styled.button<{ $active: boolean }>`
-  padding: 6px 10px;
+  flex: 1;
+  padding: 6px 8px;
   border: 1px solid ${props => props.$active ? '#2563eb' : '#d1d5db'};
   border-radius: 4px;
   background: ${props => props.$active ? '#2563eb' : 'white'};
   color: ${props => props.$active ? 'white' : '#374151'};
-  font-size: 12px;
+  font-size: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: 0;
+  text-align: center;
 
   &:hover {
     border-color: #2563eb;
     background: ${props => props.$active ? '#1d4ed8' : '#eff6ff'};
+  }
+
+  @media (max-width: 768px) {
+    font-size: 9px;
+    padding: 4px 6px;
   }
 `;
 
@@ -279,23 +297,38 @@ export const ReviewEditModal: React.FC<ReviewEditModalProps> = ({
   // 모달이 열릴 때 현재 리뷰 데이터로 초기화
   useEffect(() => {
     if (isOpen && review) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 리뷰 수정 모달 초기화:', {
+          reviewId: review.reviewId,
+          sizeFit: { raw: review.sizeFit, type: typeof review.sizeFit },
+          cushion: { raw: review.cushion, type: typeof review.cushion },
+          stability: { raw: review.stability, type: typeof review.stability }
+        });
+      }
+
       setFormData({
         title: review.title || '',
         rating: review.rating,
         content: review.content,
         sizeFit: typeof review.sizeFit === 'number' ? review.sizeFit : 
-                 review.sizeFit === 'SMALL' ? 1 : 
-                 review.sizeFit === 'NORMAL' ? 2 : 
-                 review.sizeFit === 'BIG' ? 3 : undefined,
+                 typeof review.sizeFit === 'string' ? ENUM_TO_SCORE.sizeFit[review.sizeFit as keyof typeof ENUM_TO_SCORE.sizeFit] : undefined,
         cushion: typeof review.cushion === 'number' ? review.cushion : 
-                 review.cushion === 'SOFT' ? 1 : 
-                 review.cushion === 'NORMAL' ? 2 : 
-                 review.cushion === 'HARD' ? 3 : undefined,
+                 typeof review.cushion === 'string' ? ENUM_TO_SCORE.cushion[review.cushion as keyof typeof ENUM_TO_SCORE.cushion] : undefined,
         stability: typeof review.stability === 'number' ? review.stability : 
-                   review.stability === 'LOW' ? 1 : 
-                   review.stability === 'NORMAL' ? 2 : 
-                   review.stability === 'STABLE' ? 3 : undefined,
+                   typeof review.stability === 'string' ? ENUM_TO_SCORE.stability[review.stability as keyof typeof ENUM_TO_SCORE.stability] : undefined,
       });
+
+      if (process.env.NODE_ENV === 'development') {
+        const convertedData = {
+          sizeFit: typeof review.sizeFit === 'number' ? review.sizeFit : 
+                   typeof review.sizeFit === 'string' ? ENUM_TO_SCORE.sizeFit[review.sizeFit as keyof typeof ENUM_TO_SCORE.sizeFit] : undefined,
+          cushion: typeof review.cushion === 'number' ? review.cushion : 
+                   typeof review.cushion === 'string' ? ENUM_TO_SCORE.cushion[review.cushion as keyof typeof ENUM_TO_SCORE.cushion] : undefined,
+          stability: typeof review.stability === 'number' ? review.stability : 
+                     typeof review.stability === 'string' ? ENUM_TO_SCORE.stability[review.stability as keyof typeof ENUM_TO_SCORE.stability] : undefined,
+        };
+        console.log('🔧 변환 결과:', convertedData);
+      }
       setErrors({});
     }
   }, [isOpen, review]);
@@ -498,21 +531,21 @@ export const ReviewEditModal: React.FC<ReviewEditModalProps> = ({
             <EvaluationGrid>
               {(['sizeFit', 'cushion', 'stability'] as const).map(type => (
                 <EvaluationItem key={type}>
-                  <Label>{getEvaluationLabel(type)}</Label>
-                  <EvaluationButtons>
-                    {[1, 2, 3].map(value => (
-                      <EvaluationButton
-                        key={value}
-                        type="button"
-                        $active={formData[type] === value}
-                        onClick={() => handleEvaluationChange(type, value)}
-                      >
-                        {type === 'sizeFit' && ['작음', '적당', '큼'][value - 1]}
-                        {type === 'cushion' && ['부드러움', '적당', '딱딱함'][value - 1]}
-                        {type === 'stability' && ['낮음', '보통', '높음'][value - 1]}
-                      </EvaluationButton>
-                    ))}
-                  </EvaluationButtons>
+                  <EvaluationRow>
+                    <EvaluationLabel>{getEvaluationLabel(type)}</EvaluationLabel>
+                    <EvaluationButtons>
+                      {ELEMENT_OPTIONS[type].map(option => (
+                        <EvaluationButton
+                          key={option.value}
+                          type="button"
+                          $active={formData[type] === option.value}
+                          onClick={() => handleEvaluationChange(type, option.value)}
+                        >
+                          {option.label}
+                        </EvaluationButton>
+                      ))}
+                    </EvaluationButtons>
+                  </EvaluationRow>
                 </EvaluationItem>
               ))}
             </EvaluationGrid>

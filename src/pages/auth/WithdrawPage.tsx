@@ -234,7 +234,35 @@ function WithdrawPage() {
         navigate("/login");
       }, 3000);
     } catch (error: any) {
-      setError(error.message);
+      console.error("회원 탈퇴 오류:", error);
+
+      // 에러 메시지에 따른 구분된 처리
+      const errorMessage = error.message || "회원 탈퇴에 실패했습니다.";
+
+      if (
+        errorMessage.includes("권한") ||
+        errorMessage.includes("permission") ||
+        errorMessage.includes("403")
+      ) {
+        setError("회원 탈퇴 권한이 없습니다. 관리자에게 문의해주세요.");
+      } else if (
+        errorMessage.includes("비밀번호") ||
+        errorMessage.includes("password")
+      ) {
+        setError("비밀번호가 올바르지 않습니다.");
+      } else if (
+        errorMessage.includes("이메일") ||
+        errorMessage.includes("email")
+      ) {
+        setError("이메일이 올바르지 않습니다.");
+      } else if (
+        errorMessage.includes("로그인") ||
+        errorMessage.includes("401")
+      ) {
+        setError("로그인이 필요합니다. 다시 로그인해주세요.");
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
