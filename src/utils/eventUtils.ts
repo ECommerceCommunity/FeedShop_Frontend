@@ -18,19 +18,26 @@ export const formatDate = (dateString: string | undefined): string => {
 
 // 이벤트 타입 텍스트 변환
 export const getEventTypeText = (type: EventType): string => {
-  switch (type) {
+  if (!type) return '기타';
+  
+  const upperType = type.toUpperCase();
+  switch (upperType) {
     case 'RANKING':
       return '랭킹';
     case 'BATTLE':
       return '배틀';
     default:
+      console.warn('Unknown event type:', type);
       return '기타';
   }
 };
 
 // 이벤트 상태 텍스트 변환
 export const getEventStatusText = (status: EventStatus): string => {
-  switch (status) {
+  if (!status) return '알 수 없음';
+  
+  const upperStatus = status.toUpperCase();
+  switch (upperStatus) {
     case 'UPCOMING':
       return '예정';
     case 'ONGOING':
@@ -38,13 +45,17 @@ export const getEventStatusText = (status: EventStatus): string => {
     case 'ENDED':
       return '종료';
     default:
+      console.warn('Unknown event status:', status);
       return '알 수 없음';
   }
 };
 
 // 이벤트 타입 색상 반환
 export const getEventTypeColor = (type: EventType): string => {
-  switch (type) {
+  if (!type) return 'bg-gray-500';
+  
+  const upperType = type.toUpperCase();
+  switch (upperType) {
     case 'RANKING':
       return 'bg-yellow-500';
     case 'BATTLE':
@@ -56,7 +67,10 @@ export const getEventTypeColor = (type: EventType): string => {
 
 // 이벤트 상태 색상 반환
 export const getEventStatusColor = (status: EventStatus): string => {
-  switch (status) {
+  if (!status) return 'bg-gray-400';
+  
+  const upperStatus = status.toUpperCase();
+  switch (upperStatus) {
     case 'UPCOMING':
       return 'bg-blue-500';
     case 'ONGOING':

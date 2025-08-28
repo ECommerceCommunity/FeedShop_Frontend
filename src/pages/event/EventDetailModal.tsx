@@ -30,6 +30,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
       // 이미 event 객체가 있으면 그대로 사용, 없으면 API 호출
       if (event && Object.keys(event).length > 0) {
         console.log('EventDetailModal - event data:', event);
+        console.log('EventDetailModal - event type:', event.type);
+        console.log('EventDetailModal - event status:', event.status);
         console.log('EventDetailModal - rewards:', event.rewards);
         setDetail(event);
         setLoading(false);
@@ -38,6 +40,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
           .then(eventData => {
             console.log('EventDetailModal - API event data:', eventData);
             if (eventData) {
+              console.log('EventDetailModal - API event type:', eventData.type);
+              console.log('EventDetailModal - API event status:', eventData.status);
               console.log('EventDetailModal - API rewards:', eventData.rewards);
             }
             setDetail(eventData);
