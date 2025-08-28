@@ -71,11 +71,8 @@ const EventMeta = styled.div`
 const EventType = styled.span<{ type: EventType }>`
   background: ${props => {
     switch (props.type) {
+      case 'RANKING': return 'linear-gradient(135deg, #f59e0b, #d97706)';
       case 'BATTLE': return 'linear-gradient(135deg, #ef4444, #dc2626)';
-      case 'MISSION': return 'linear-gradient(135deg, #10b981, #059669)';
-      case 'MULTIPLE': return 'linear-gradient(135deg, #3b82f6, #2563eb)';
-      case 'REVIEW': return 'linear-gradient(135deg, #f59e0b, #d97706)';
-      case 'CHALLENGE': return 'linear-gradient(135deg, #8b5cf6, #7c3aed)';
       default: return 'linear-gradient(135deg, #6b7280, #4b5563)';
     }
   }};
@@ -162,11 +159,8 @@ const getStatusText = (status: string): string => {
 
 const getTypeText = (type: string): string => {
   switch (type) {
+    case 'RANKING': return '랭킹';
     case 'BATTLE': return '배틀';
-    case 'MISSION': return '미션';
-    case 'MULTIPLE': return '멀티';
-    case 'REVIEW': return '리뷰';
-    case 'CHALLENGE': return '챌린지';
     default: return type;
   }
 };

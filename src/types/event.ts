@@ -2,7 +2,7 @@
 
 // 기본 이벤트 타입들 (백엔드 enum과 완벽 일치)
 export type EventStatus = "UPCOMING" | "ONGOING" | "ENDED";
-export type EventType = "BATTLE" | "MISSION" | "MULTIPLE" | "REVIEW" | "CHALLENGE";
+export type EventType = "RANKING" | "BATTLE";
 export type ParticipationStatus = "PARTICIPATING" | "COMPLETED" | "ELIMINATED";
 export type MatchStatus = "PENDING" | "ONGOING" | "COMPLETED";
 
@@ -17,7 +17,26 @@ export interface EventListResponseDto {
   hasPrevious: boolean;
 }
 
-// 이벤트 보상 타입 (백엔드 리워드 시스템에 맞춤)
+// 개별 보상 타입
+export interface EventRewardItem {
+  id?: number;
+  rewardType: "BADGE_POINTS" | "POINTS" | "DISCOUNT_COUPON";
+  rewardValue: number;
+  rewardDescription: string;
+  maxRecipients?: number;
+}
+
+// 순위별 보상 그룹 타입 (하나의 순위에 여러 보상 가능)
+export interface EventRewardGroup {
+  id?: number;
+  rank?: number;
+  conditionValue: string; // 예: "1등", "최우수상"
+  rewards: EventRewardItem[]; // 여러 보상을 배열로 관리
+  conditionType?: string;
+  conditionDescription?: string;
+}
+
+// 기존 호환성을 위한 타입 (하나의 보상만 있는 경우)
 export interface EventRewardDto {
   id?: number;
   rank?: number;
@@ -221,7 +240,7 @@ export interface EventForm {
   announcementDate: string;
   description: string;
   participationMethod: string;
-  rewards: EventRewardDto[];
+  rewards: EventRewardGroup[]; // 여러 보상을 지원하는 그룹으로 변경
   selectionCriteria: string;
   precautions: string;
   maxParticipants: number;

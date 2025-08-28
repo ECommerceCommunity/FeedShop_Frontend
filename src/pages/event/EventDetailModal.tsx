@@ -215,7 +215,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                     <div key={index} className="bg-gradient-to-r from-yellow-50 to-orange-50 text-orange-700 px-6 py-4 rounded-2xl text-base font-semibold border border-orange-200 shadow-sm hover:shadow-md transition-all duration-200">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-lg">{reward.conditionValue || index + 1}등</span>
-                        <span className="text-orange-600">{reward.reward}</span>
+                        <span className="text-orange-600">{reward.rewardDescription}</span>
                       </div>
                     </div>
                   ))}

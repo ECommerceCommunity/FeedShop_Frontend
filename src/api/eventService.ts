@@ -155,7 +155,9 @@ class EventService {
       const lines = rewardsString.split('\n').filter(line => line.trim());
       return lines.map((line, index) => ({
         conditionValue: String(index + 1),
-        reward: line.trim()
+        rewardType: "POINTS" as const,
+        rewardValue: 100,
+        rewardDescription: line.trim()
       }));
     } catch (error) {
       console.error('rewards 파싱 실패:', error);
@@ -235,7 +237,7 @@ class EventService {
    * EventRewardDto[]를 문자열로 변환
    */
   stringifyRewards(rewards: EventRewardDto[]): string {
-    return rewards.map(reward => reward.reward).join('\n');
+    return rewards.map(reward => reward.rewardDescription).join('\n');
   }
 
   /**

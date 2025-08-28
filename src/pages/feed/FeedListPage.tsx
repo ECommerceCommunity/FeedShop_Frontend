@@ -660,12 +660,12 @@ const FeedListPage = () => {
                         </span>
                       ) : (
                         event.rewards.map((reward, idx) => (
-                          <span
-                            key={idx}
-                            className="bg-[#87CEEB] bg-opacity-10 px-2 py-1 rounded text-[#87CEEB] font-bold"
-                          >
-                            {reward.conditionValue}위: {reward.reward}
-                          </span>
+                                                      <span
+                              key={idx}
+                              className="bg-[#87CEEB] bg-opacity-10 px-2 py-1 rounded text-[#87CEEB] font-bold"
+                            >
+                              {reward.conditionValue}위: {reward.rewardDescription}
+                            </span>
                         ))
                       )}
                     </div>

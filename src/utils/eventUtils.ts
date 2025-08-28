@@ -19,16 +19,10 @@ export const formatDate = (dateString: string | undefined): string => {
 // 이벤트 타입 텍스트 변환
 export const getEventTypeText = (type: EventType): string => {
   switch (type) {
+    case 'RANKING':
+      return '랭킹';
     case 'BATTLE':
       return '배틀';
-    case 'MISSION':
-      return '미션';
-    case 'MULTIPLE':
-      return '다수참여';
-    case 'REVIEW':
-      return '리뷰';
-    case 'CHALLENGE':
-      return '챌린지';
     default:
       return '기타';
   }
@@ -51,16 +45,10 @@ export const getEventStatusText = (status: EventStatus): string => {
 // 이벤트 타입 색상 반환
 export const getEventTypeColor = (type: EventType): string => {
   switch (type) {
+    case 'RANKING':
+      return 'bg-yellow-500';
     case 'BATTLE':
       return 'bg-red-500';
-    case 'MISSION':
-      return 'bg-green-500';
-    case 'MULTIPLE':
-      return 'bg-purple-500';
-    case 'REVIEW':
-      return 'bg-blue-500';
-    case 'CHALLENGE':
-      return 'bg-yellow-500';
     default:
       return 'bg-gray-500';
   }
@@ -177,7 +165,7 @@ export const getErrorMessage = (error: any): string => {
 
 // 이벤트 보상 문자열 변환
 export const rewardsToString = (rewards: EventRewardDto[]): string => {
-  return rewards.map(reward => reward.reward).join('\n');
+  return rewards.map(reward => reward.rewardDescription).join('\n');
 };
 
 // 문자열을 이벤트 보상 배열로 변환
@@ -188,7 +176,9 @@ export const stringToRewards = (rewardsString: string): EventRewardDto[] => {
     .filter(line => line.trim())
     .map((line, index) => ({
       conditionValue: String(index + 1),
-      reward: line.trim()
+      rewardType: "POINTS" as const,
+      rewardValue: 100,
+      rewardDescription: line.trim()
     }));
 };
 
@@ -199,6 +189,28 @@ export const toLocalDateString = (dateTimeStr: string): string => {
     const date = new Date(dateTimeStr);
     if (isNaN(date.getTime())) return '';
     return date.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+  } catch (error) {
+    return '';
+  }
+};
+
+// 날짜에 시작 시간(00:00) 추가 (백엔드용)
+export const toStartDateTime = (dateStr: string): string => {
+  if (!dateStr) return '';
+  try {
+    // LocalDate 형식으로 반환 (YYYY-MM-DD)
+    return dateStr;
+  } catch (error) {
+    return '';
+  }
+};
+
+// 날짜에 종료 시간(23:59:59) 추가 (백엔드용)
+export const toEndDateTime = (dateStr: string): string => {
+  if (!dateStr) return '';
+  try {
+    // LocalDate 형식으로 반환 (YYYY-MM-DD)
+    return dateStr;
   } catch (error) {
     return '';
   }
