@@ -44,8 +44,7 @@ const EventCreatePage = () => {
     participationMethod: "",
     rewards: [
       { conditionValue: "1", reward: "프리미엄 스니커즈" },
-      { conditionValue: "2", reward: "트렌디한 운동화" },
-      { conditionValue: "3", reward: "스타일리시한 슈즈" }
+      { conditionValue: "2", reward: "트렌디한 운동화" }
     ],
     selectionCriteria: "",
     precautions: "",
@@ -236,7 +235,11 @@ const EventCreatePage = () => {
       let errorMessage = "이벤트 생성에 실패했습니다.";
       
       if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
+        if (error.response.data.message.includes("Duplicate entry")) {
+          errorMessage = "이미 존재하는 이벤트입니다. 다른 제목이나 설정으로 다시 시도해주세요.";
+        } else {
+          errorMessage = error.response.data.message;
+        }
       } else if (error.response?.status === 400) {
         errorMessage = "입력 데이터가 올바르지 않습니다. 모든 필수 항목을 확인해주세요.";
       } else if (error.response?.status === 401) {
@@ -245,9 +248,13 @@ const EventCreatePage = () => {
         errorMessage = "관리자 권한이 필요합니다.";
       } else if (error.response?.status >= 500) {
         errorMessage = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+      } else if (error.message) {
+        errorMessage = error.message;
       }
       
-      showToastMessage(errorMessage, 'error');
+      setToastMessage(errorMessage);
+      setToastType('error');
+      setShowToast(true);
     } finally {
       setIsLoading(false);
     }
