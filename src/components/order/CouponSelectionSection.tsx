@@ -29,9 +29,9 @@ const CouponItem = styled.div<{ selected?: boolean }>`
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border: 2px solid ${props => props.selected ? '#007bff' : '#e9ecef'};
+  border: 2px solid ${(props) => (props.selected ? "#007bff" : "#e9ecef")};
   border-radius: 8px;
-  background: ${props => props.selected ? '#f0f8ff' : 'white'};
+  background: ${(props) => (props.selected ? "#f0f8ff" : "white")};
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -69,14 +69,14 @@ const SelectButton = styled.button<{ selected?: boolean }>`
   padding: 8px 16px;
   border: none;
   border-radius: 4px;
-  background: ${props => props.selected ? '#dc3545' : '#007bff'};
+  background: ${(props) => (props.selected ? "#dc3545" : "#007bff")};
   color: white;
   font-size: 12px;
   cursor: pointer;
   transition: background 0.2s ease;
 
   &:hover {
-    background: ${props => props.selected ? '#c82333' : '#0056b3'};
+    background: ${(props) => (props.selected ? "#c82333" : "#0056b3")};
   }
 `;
 
@@ -128,13 +128,13 @@ const CouponCodeInput = styled.input`
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
-  
+
   &:focus {
     outline: none;
     border-color: #007bff;
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
   }
-  
+
   &:disabled {
     background: #f8f9fa;
     cursor: not-allowed;
@@ -150,11 +150,11 @@ const ApplyCouponButton = styled.button`
   font-size: 14px;
   cursor: pointer;
   transition: background 0.2s ease;
-  
+
   &:hover:not(:disabled) {
     background: #218838;
   }
-  
+
   &:disabled {
     background: #6c757d;
     cursor: not-allowed;
@@ -198,9 +198,12 @@ export const CouponSelectionSection: React.FC<CouponSelectionSectionProps> = ({
     }
   };
 
-  const formatExpiryDate = (dateString: string): string => {
+  const formatExpiryDate = (dateString?: string): string => {
+    if (!dateString) return "만료일: 정보 없음";
     const date = new Date(dateString);
-    return `만료일: ${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+    return `만료일: ${date.getFullYear()}.${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
   };
 
   const handleCouponCodeApply = async () => {
@@ -230,10 +233,8 @@ export const CouponSelectionSection: React.FC<CouponSelectionSectionProps> = ({
     return (
       <CouponContainer>
         <SectionTitle>쿠폰 선택</SectionTitle>
-        <NoCouponsMessage>
-          사용 가능한 쿠폰이 없습니다.
-        </NoCouponsMessage>
-        
+        <NoCouponsMessage>사용 가능한 쿠폰이 없습니다.</NoCouponsMessage>
+
         {onCouponCodeApply && (
           <CouponCodeSection>
             <CouponCodeTitle>쿠폰 코드 직접 입력</CouponCodeTitle>
@@ -247,7 +248,7 @@ export const CouponSelectionSection: React.FC<CouponSelectionSectionProps> = ({
                   setApplyError("");
                 }}
                 onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     handleCouponCodeApply();
                   }
                 }}
@@ -276,7 +277,8 @@ export const CouponSelectionSection: React.FC<CouponSelectionSectionProps> = ({
             key={index}
             selected={selectedCoupon?.couponName === coupon.couponName}
             onClick={() => {
-              const isSelected = selectedCoupon?.couponName === coupon.couponName;
+              const isSelected =
+                selectedCoupon?.couponName === coupon.couponName;
               onCouponSelect(isSelected ? null : coupon);
             }}
           >
@@ -285,8 +287,12 @@ export const CouponSelectionSection: React.FC<CouponSelectionSectionProps> = ({
               <DiscountInfo>{formatDiscountInfo(coupon)}</DiscountInfo>
               <ExpiryInfo>{formatExpiryDate(coupon.expiresAt)}</ExpiryInfo>
             </CouponInfo>
-            <SelectButton selected={selectedCoupon?.couponName === coupon.couponName}>
-              {selectedCoupon?.couponName === coupon.couponName ? "해제" : "적용"}
+            <SelectButton
+              selected={selectedCoupon?.couponName === coupon.couponName}
+            >
+              {selectedCoupon?.couponName === coupon.couponName
+                ? "해제"
+                : "적용"}
             </SelectButton>
           </CouponItem>
         ))}
@@ -295,7 +301,8 @@ export const CouponSelectionSection: React.FC<CouponSelectionSectionProps> = ({
       {selectedCoupon && (
         <SelectedCouponSummary>
           <SummaryText>
-            ✓ {selectedCoupon.couponName} 적용됨 - {formatDiscountInfo(selectedCoupon)}
+            ✓ {selectedCoupon.couponName} 적용됨 -{" "}
+            {formatDiscountInfo(selectedCoupon)}
           </SummaryText>
         </SelectedCouponSummary>
       )}
@@ -313,7 +320,7 @@ export const CouponSelectionSection: React.FC<CouponSelectionSectionProps> = ({
                 setApplyError("");
               }}
               onKeyPress={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === "Enter") {
                   handleCouponCodeApply();
                 }
               }}
