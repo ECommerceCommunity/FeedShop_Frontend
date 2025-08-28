@@ -218,22 +218,52 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
 
             {/* 이벤트 혜택 */}
             {(() => {
-              // rewards 데이터 처리
+              // rewards 데이터 처리 - EventEditPage와 동일한 방식으로 처리
               let rewardsData: EventRewardDto[] = [];
               
-              if (detail.rewards) {
-                if (Array.isArray(detail.rewards)) {
-                  rewardsData = detail.rewards;
-                } else if (typeof detail.rewards === 'string') {
-                  try {
-                    rewardsData = JSON.parse(detail.rewards);
-                  } catch (e) {
-                    console.error('Failed to parse rewards string:', e);
+              if (detail.rewards && Array.isArray(detail.rewards)) {
+                // 백엔드에서 오는 rewards가 평면화된 구조인지 확인
+                if (detail.rewards.length > 0 && detail.rewards[0].conditionValue) {
+                  // 이미 그룹화된 구조 - 평면화
+                  rewardsData = detail.rewards.flatMap((rewardGroup: any) => 
+                    Array.isArray(rewardGroup.rewards) 
+                      ? rewardGroup.rewards.map((reward: any) => ({
+                          conditionValue: rewardGroup.conditionValue || rewardGroup.rank?.toString() || "1",
+                          rewardType: reward.rewardType || "POINTS",
+                          rewardValue: reward.rewardValue || 100,
+                          rewardDescription: reward.rewardDescription || `${reward.rewardValue || 100} ${reward.rewardType === 'POINTS' ? '포인트' : reward.rewardType === 'BADGE_POINTS' ? '뱃지점수' : '할인쿠폰'}`
+                        }))
+                      : []
+                  );
+                } else {
+                  // 이미 평면화된 구조
+                  rewardsData = detail.rewards.map((reward: any) => ({
+                    conditionValue: reward.conditionValue || reward.rank?.toString() || "1",
+                    rewardType: reward.rewardType || "POINTS",
+                    rewardValue: reward.rewardValue || 100,
+                    rewardDescription: reward.rewardDescription || `${reward.rewardValue || 100} ${reward.rewardType === 'POINTS' ? '포인트' : reward.rewardType === 'BADGE_POINTS' ? '뱃지점수' : '할인쿠폰'}`
+                  }));
+                }
+              } else if (detail.rewards && typeof detail.rewards === 'string') {
+                try {
+                  const parsedRewards = JSON.parse(detail.rewards);
+                  if (Array.isArray(parsedRewards)) {
+                    rewardsData = parsedRewards.map((reward: any) => ({
+                      conditionValue: reward.conditionValue || reward.rank?.toString() || "1",
+                      rewardType: reward.rewardType || "POINTS",
+                      rewardValue: reward.rewardValue || 100,
+                      rewardDescription: reward.rewardDescription || `${reward.rewardValue || 100} ${reward.rewardType === 'POINTS' ? '포인트' : reward.rewardType === 'BADGE_POINTS' ? '뱃지점수' : '할인쿠폰'}`
+                    }));
                   }
+                } catch (e) {
+                  console.error('Failed to parse rewards string:', e);
                 }
               }
               
               console.log('Processed rewards data:', rewardsData);
+              console.log('Rewards data type:', typeof rewardsData);
+              console.log('Rewards data length:', rewardsData?.length);
+              console.log('Rewards data structure:', JSON.stringify(rewardsData, null, 2));
               
               if (rewardsData && rewardsData.length > 0) {
                 return (
