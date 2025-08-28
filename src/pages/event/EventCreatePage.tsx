@@ -61,6 +61,21 @@ const EventCreatePage: React.FC = () => {
   }, []);
 
   // 보상 변경 핸들러
+  const updateRewardInGroup = (rewards: EventRewardGroup[], groupIndex: number, rewardIndex: number, field: keyof EventRewardDto, value: string | number): EventRewardGroup[] => {
+    return rewards.map((group, i) =>
+      i === groupIndex
+        ? {
+            ...group,
+            rewards: group.rewards.map((reward, j) =>
+              j === rewardIndex
+                ? { ...reward, [field]: value }
+                : reward
+            )
+          }
+        : group
+    );
+  };
+
   const handleRewardChange = useCallback((
     groupIndex: number,
     rewardIndex: number,
@@ -69,18 +84,7 @@ const EventCreatePage: React.FC = () => {
   ) => {
     setEventForm(prev => ({
       ...prev,
-      rewards: prev.rewards.map((group, i) =>
-        i === groupIndex
-          ? {
-              ...group,
-              rewards: group.rewards.map((reward, j) =>
-                j === rewardIndex
-                  ? { ...reward, [field]: value }
-                  : reward
-              )
-            }
-          : group
-      )
+      rewards: updateRewardInGroup(prev.rewards, groupIndex, rewardIndex, field, value)
     }));
   }, []);
 

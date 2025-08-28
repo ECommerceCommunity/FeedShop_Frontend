@@ -218,54 +218,70 @@ const EventEditPage = () => {
     setTimeout(() => setShowToast(false), 3000);
   };
 
+  const updateRewardInGroup = (rewards: EventRewardGroup[], groupIndex: number, rewardIndex: number, field: keyof EventRewardItem, value: string): EventRewardGroup[] => {
+    return rewards.map((rewardGroup, i) => 
+      i === groupIndex ? {
+        ...rewardGroup,
+        rewards: rewardGroup.rewards.map((reward, j) => 
+          j === rewardIndex ? { ...reward, [field]: value } : reward
+        )
+      } : rewardGroup
+    );
+  };
+
   const handleRewardChange = (groupIndex: number, rewardIndex: number, field: keyof EventRewardItem, value: string) => {
     setEventForm(prev => ({
       ...prev,
-      rewards: prev.rewards.map((rewardGroup, i) => 
-        i === groupIndex ? {
-          ...rewardGroup,
-          rewards: rewardGroup.rewards.map((reward, j) => 
-            j === rewardIndex ? { ...reward, [field]: value } : reward
-          )
-        } : rewardGroup
-      )
+      rewards: updateRewardInGroup(prev.rewards, groupIndex, rewardIndex, field, value)
     }));
+  };
+
+  const updateRewardGroup = (rewards: EventRewardGroup[], groupIndex: number, field: keyof EventRewardGroup, value: string): EventRewardGroup[] => {
+    return rewards.map((rewardGroup, i) => 
+      i === groupIndex ? { ...rewardGroup, [field]: value } : rewardGroup
+    );
   };
 
   const handleRewardGroupChange = (groupIndex: number, field: keyof EventRewardGroup, value: string) => {
     setEventForm(prev => ({
       ...prev,
-      rewards: prev.rewards.map((rewardGroup, i) => 
-        i === groupIndex ? { ...rewardGroup, [field]: value } : rewardGroup
-      )
+      rewards: updateRewardGroup(prev.rewards, groupIndex, field, value)
     }));
+  };
+
+  const addRewardToGroupInRewards = (rewards: EventRewardGroup[], groupIndex: number): EventRewardGroup[] => {
+    return rewards.map((rewardGroup, i) => 
+      i === groupIndex ? {
+        ...rewardGroup,
+        rewards: [...rewardGroup.rewards, {
+          rewardType: "POINTS" as const,
+          rewardValue: 100,
+          rewardDescription: "100 포인트"
+        }]
+      } : rewardGroup
+    );
   };
 
   const addRewardToGroup = (groupIndex: number) => {
     setEventForm(prev => ({
       ...prev,
-      rewards: prev.rewards.map((rewardGroup, i) => 
-        i === groupIndex ? {
-          ...rewardGroup,
-          rewards: [...rewardGroup.rewards, {
-            rewardType: "POINTS" as const,
-            rewardValue: 100,
-            rewardDescription: "100 포인트"
-          }]
-        } : rewardGroup
-      )
+      rewards: addRewardToGroupInRewards(prev.rewards, groupIndex)
     }));
+  };
+
+  const removeRewardFromGroupInRewards = (rewards: EventRewardGroup[], groupIndex: number, rewardIndex: number): EventRewardGroup[] => {
+    return rewards.map((rewardGroup, i) => 
+      i === groupIndex ? {
+        ...rewardGroup,
+        rewards: rewardGroup.rewards.filter((_, j) => j !== rewardIndex)
+      } : rewardGroup
+    );
   };
 
   const removeRewardFromGroup = (groupIndex: number, rewardIndex: number) => {
     setEventForm(prev => ({
       ...prev,
-      rewards: prev.rewards.map((rewardGroup, i) => 
-        i === groupIndex ? {
-          ...rewardGroup,
-          rewards: rewardGroup.rewards.filter((_, j) => j !== rewardIndex)
-        } : rewardGroup
-      )
+      rewards: removeRewardFromGroupInRewards(prev.rewards, groupIndex, rewardIndex)
     }));
   };
 
@@ -285,18 +301,20 @@ const EventEditPage = () => {
     }));
   };
 
+  const removeRewardAndReorder = (rewards: EventRewardGroup[], index: number): EventRewardGroup[] => {
+    const newRewards = rewards.filter((_, i) => i !== index);
+    // 순서 재조정
+    return newRewards.map((reward, i) => ({
+      ...reward,
+      conditionValue: (i + 1).toString()
+    }));
+  };
+
   const removeReward = (index: number) => {
-    setEventForm(prev => {
-      const newRewards = prev.rewards.filter((_, i) => i !== index);
-      // 순서 재조정
-      return {
-        ...prev,
-        rewards: newRewards.map((reward, i) => ({
-          ...reward,
-          conditionValue: (i + 1).toString()
-        }))
-      };
-    });
+    setEventForm(prev => ({
+      ...prev,
+      rewards: removeRewardAndReorder(prev.rewards, index)
+    }));
   };
 
   const getBattleRewardTitle = (conditionValue: string) => {
