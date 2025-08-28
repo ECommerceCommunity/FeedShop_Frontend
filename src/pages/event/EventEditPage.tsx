@@ -92,21 +92,42 @@ const EventEditPage = () => {
         // rewards 데이터 매핑 수정
         let mappedRewards: EventRewardGroup[] = [];
         if (detail.rewards && Array.isArray(detail.rewards)) {
-          mappedRewards = detail.rewards.map((rewardGroup: any) => ({
-            conditionValue: rewardGroup.rank ? rewardGroup.rank.toString() : rewardGroup.conditionValue || "1등",
-            rewards: Array.isArray(rewardGroup.rewards) ? rewardGroup.rewards : [
-              {
-                rewardType: rewardGroup.rewardType || "POINTS",
-                rewardValue: rewardGroup.rewardValue || 100,
-                rewardDescription: rewardGroup.rewardDescription || rewardGroup.rewardValue || ''
+          // 백엔드에서 오는 rewards가 평면화된 구조인지 확인
+          if (detail.rewards.length > 0 && detail.rewards[0].conditionValue) {
+            // 이미 그룹화된 구조
+            mappedRewards = detail.rewards.map((rewardGroup: any) => ({
+              conditionValue: rewardGroup.conditionValue || rewardGroup.rank?.toString() || "1",
+              rewards: Array.isArray(rewardGroup.rewards) ? rewardGroup.rewards.map((reward: any) => ({
+                rewardType: reward.rewardType || "POINTS",
+                rewardValue: reward.rewardValue || 100,
+                rewardDescription: reward.rewardDescription || `${reward.rewardValue || 100} ${reward.rewardType === 'POINTS' ? '포인트' : reward.rewardType === 'BADGE_POINTS' ? '뱃지점수' : '할인쿠폰'}`
+              })) : []
+            }));
+          } else {
+            // 평면화된 구조를 그룹화
+            const groupedRewards: { [key: string]: any[] } = {};
+            detail.rewards.forEach((reward: any) => {
+              const conditionValue = reward.conditionValue || reward.rank?.toString() || "1";
+              if (!groupedRewards[conditionValue]) {
+                groupedRewards[conditionValue] = [];
               }
-            ]
-          }));
+              groupedRewards[conditionValue].push({
+                rewardType: reward.rewardType || "POINTS",
+                rewardValue: reward.rewardValue || 100,
+                rewardDescription: reward.rewardDescription || `${reward.rewardValue || 100} ${reward.rewardType === 'POINTS' ? '포인트' : reward.rewardType === 'BADGE_POINTS' ? '뱃지점수' : '할인쿠폰'}`
+              });
+            });
+            
+            mappedRewards = Object.entries(groupedRewards).map(([conditionValue, rewards]) => ({
+              conditionValue,
+              rewards
+            }));
+          }
         } else {
           // 기본 보상 설정
           mappedRewards = [
             { 
-              conditionValue: "1등", 
+              conditionValue: "1", 
               rewards: [
                 { rewardType: "BADGE_POINTS", rewardValue: 100, rewardDescription: "100 뱃지점수" },
                 { rewardType: "POINTS", rewardValue: 2000, rewardDescription: "2000 포인트" },
@@ -114,14 +135,14 @@ const EventEditPage = () => {
               ]
             },
             { 
-              conditionValue: "2등", 
+              conditionValue: "2", 
               rewards: [
                 { rewardType: "POINTS", rewardValue: 1500, rewardDescription: "1500 포인트" },
                 { rewardType: "BADGE_POINTS", rewardValue: 50, rewardDescription: "50 뱃지점수" }
               ]
             },
             { 
-              conditionValue: "3등", 
+              conditionValue: "3", 
               rewards: [
                 { rewardType: "POINTS", rewardValue: 1000, rewardDescription: "1000 포인트" }
               ]
