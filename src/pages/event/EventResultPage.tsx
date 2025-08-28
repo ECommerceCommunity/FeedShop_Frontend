@@ -216,7 +216,82 @@ const EventResultPage: React.FC = () => {
           <div className="space-y-6">
             {events.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-400 text-lg">종료된 이벤트가 없습니다.</p>
+                <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl mx-auto">
+                  <div className="mb-6">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">종료된 이벤트가 없습니다</h3>
+                    <p className="text-gray-600">현재 관리할 수 있는 종료된 이벤트가 없습니다.</p>
+                  </div>
+                  
+                  {/* 기능 안내 섹션 */}
+                  <div className="bg-gray-50 rounded-xl p-6">
+                    <h4 className="font-semibold text-gray-900 mb-4">이벤트 결과 관리 기능</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h5 className="font-medium text-gray-900 text-sm">결과 생성</h5>
+                          <p className="text-gray-600 text-xs">이벤트 종료 후 결과를 생성합니다</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h5 className="font-medium text-gray-900 text-sm">결과 보기</h5>
+                          <p className="text-gray-600 text-xs">생성된 결과를 상세히 확인합니다</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h5 className="font-medium text-gray-900 text-sm">재계산</h5>
+                          <p className="text-gray-600 text-xs">결과를 다시 계산합니다</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h5 className="font-medium text-gray-900 text-sm">보상 지급</h5>
+                          <p className="text-gray-600 text-xs">참여자에게 보상을 지급합니다</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* 새로고침 버튼 */}
+                  <div className="mt-6">
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                    >
+                      새로고침
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               events.map((event) => {
