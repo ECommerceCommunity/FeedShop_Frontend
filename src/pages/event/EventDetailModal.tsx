@@ -29,11 +29,17 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
       
       // 이미 event 객체가 있으면 그대로 사용, 없으면 API 호출
       if (event && Object.keys(event).length > 0) {
+        console.log('EventDetailModal - event data:', event);
+        console.log('EventDetailModal - rewards:', event.rewards);
         setDetail(event);
         setLoading(false);
       } else {
         EventService.getEventById(event.eventId)
           .then(eventData => {
+            console.log('EventDetailModal - API event data:', eventData);
+            if (eventData) {
+              console.log('EventDetailModal - API rewards:', eventData.rewards);
+            }
             setDetail(eventData);
           })
           .catch(err => {
@@ -207,78 +213,108 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             </div>
 
             {/* 이벤트 혜택 */}
-            {detail.rewards && Array.isArray(detail.rewards) && detail.rewards.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">이벤트 혜택</h3>
-                <div className="space-y-4">
-                  {/* 보상을 조건별로 그룹화 */}
-                  {(() => {
-                    const groupedRewards: { [key: string]: EventRewardDto[] } = {};
-                    detail.rewards.forEach((reward: EventRewardDto) => {
-                      const conditionValue = reward.conditionValue || '1';
-                      if (!groupedRewards[conditionValue]) {
-                        groupedRewards[conditionValue] = [];
-                      }
-                      groupedRewards[conditionValue].push(reward);
-                    });
+            {(() => {
+              // rewards 데이터 처리
+              let rewardsData: EventRewardDto[] = [];
+              
+              if (detail.rewards) {
+                if (Array.isArray(detail.rewards)) {
+                  rewardsData = detail.rewards;
+                } else if (typeof detail.rewards === 'string') {
+                  try {
+                    rewardsData = JSON.parse(detail.rewards);
+                  } catch (e) {
+                    console.error('Failed to parse rewards string:', e);
+                  }
+                }
+              }
+              
+              console.log('Processed rewards data:', rewardsData);
+              
+              if (rewardsData && rewardsData.length > 0) {
+                return (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">이벤트 혜택</h3>
+                    <div className="space-y-4">
+                      {/* 보상을 조건별로 그룹화 */}
+                      {(() => {
+                        const groupedRewards: { [key: string]: EventRewardDto[] } = {};
+                        rewardsData.forEach((reward: EventRewardDto) => {
+                          const conditionValue = reward.conditionValue || '1';
+                          if (!groupedRewards[conditionValue]) {
+                            groupedRewards[conditionValue] = [];
+                          }
+                          groupedRewards[conditionValue].push(reward);
+                        });
 
-                    return Object.entries(groupedRewards).map(([conditionValue, rewards]) => (
-                      <div key={conditionValue} className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-orange-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                        {/* 조건 헤더 */}
-                        <div className="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-3">
-                          <h4 className="text-white font-bold text-lg">
-                            {detail.type === 'RANKING' 
-                              ? `${conditionValue}등 보상`
-                              : conditionValue === '1' 
-                                ? '우승자 보상'
-                                : conditionValue === 'participation'
-                                  ? '참여자 보상'
-                                  : `${conditionValue} 보상`
-                            }
-                          </h4>
-                        </div>
-                        
-                        {/* 보상 목록 */}
-                        <div className="p-6 space-y-3">
-                          {rewards.map((reward: EventRewardDto, index: number) => (
-                            <div key={index} className="flex items-center justify-between bg-white/50 rounded-xl px-4 py-3 border border-orange-100">
-                              <div className="flex items-center gap-3">
-                                {/* 보상 유형 아이콘 */}
-                                <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-                                  {reward.rewardType === 'POINTS' && (
-                                    <span className="text-orange-600 text-sm font-bold">💰</span>
-                                  )}
-                                  {reward.rewardType === 'BADGE_POINTS' && (
-                                    <span className="text-orange-600 text-sm font-bold">🏆</span>
-                                  )}
-                                  {reward.rewardType === 'DISCOUNT_COUPON' && (
-                                    <span className="text-orange-600 text-sm font-bold">🎫</span>
-                                  )}
-                                </div>
-                                
-                                {/* 보상 정보 */}
-                                <div>
-                                  <div className="font-semibold text-gray-900">
-                                    {reward.rewardType === 'POINTS' && `${reward.rewardValue} 포인트`}
-                                    {reward.rewardType === 'BADGE_POINTS' && `${reward.rewardValue} 뱃지점수`}
-                                    {reward.rewardType === 'DISCOUNT_COUPON' && `${reward.rewardValue}% 할인쿠폰`}
-                                  </div>
-                                  {reward.rewardDescription && (
-                                    <div className="text-sm text-gray-600 mt-1">
-                                      {reward.rewardDescription}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
+                        return Object.entries(groupedRewards).map(([conditionValue, rewards]) => (
+                          <div key={conditionValue} className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-orange-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+                            {/* 조건 헤더 */}
+                            <div className="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-3">
+                              <h4 className="text-white font-bold text-lg">
+                                {detail.type === 'RANKING' 
+                                  ? `${conditionValue}등 보상`
+                                  : conditionValue === '1' 
+                                    ? '우승자 보상'
+                                    : conditionValue === 'participation'
+                                      ? '참여자 보상'
+                                      : `${conditionValue} 보상`
+                                }
+                              </h4>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    ));
-                  })()}
-                </div>
-              </div>
-            )}
+                            
+                            {/* 보상 목록 */}
+                            <div className="p-6 space-y-3">
+                              {rewards.map((reward: EventRewardDto, index: number) => (
+                                <div key={index} className="flex items-center justify-between bg-white/50 rounded-xl px-4 py-3 border border-orange-100">
+                                  <div className="flex items-center gap-3">
+                                    {/* 보상 유형 아이콘 */}
+                                    <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                                      {reward.rewardType === 'POINTS' && (
+                                        <span className="text-orange-600 text-sm font-bold">💰</span>
+                                      )}
+                                      {reward.rewardType === 'BADGE_POINTS' && (
+                                        <span className="text-orange-600 text-sm font-bold">🏆</span>
+                                      )}
+                                      {reward.rewardType === 'DISCOUNT_COUPON' && (
+                                        <span className="text-orange-600 text-sm font-bold">🎫</span>
+                                      )}
+                                    </div>
+                                    
+                                    {/* 보상 정보 */}
+                                    <div>
+                                      <div className="font-semibold text-gray-900">
+                                        {reward.rewardType === 'POINTS' && `${reward.rewardValue} 포인트`}
+                                        {reward.rewardType === 'BADGE_POINTS' && `${reward.rewardValue} 뱃지점수`}
+                                        {reward.rewardType === 'DISCOUNT_COUPON' && `${reward.rewardValue}% 할인쿠폰`}
+                                      </div>
+                                      {reward.rewardDescription && (
+                                        <div className="text-sm text-gray-600 mt-1">
+                                          {reward.rewardDescription}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                );
+              } else {
+                return (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">이벤트 혜택</h3>
+                    <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                      <p className="text-gray-600 text-center">보상 정보가 없습니다.</p>
+                    </div>
+                  </div>
+                );
+              }
+            })()}
 
             {/* 선정 기준 */}
             <div>
