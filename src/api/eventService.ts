@@ -105,9 +105,15 @@ class EventService {
   /**
    * 이벤트 생성
    */
-  async createEvent(eventData: EventCreateRequestDto): Promise<EventDto> {
+  async createEvent(formData: FormData): Promise<EventDto> {
     try {
-      const response = await axiosInstance.post('/api/events', eventData);
+      console.log('이벤트 생성 API 호출');
+      const response = await axiosInstance.post('/api/events', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log('이벤트 생성 성공:', response.data);
       return response.data.data;
     } catch (error) {
       console.error('이벤트 생성 실패:', error);
@@ -288,6 +294,8 @@ class EventService {
       throw error;
     }
   }
+
+
 
   /**
    * 이벤트 결과 수동 마이그레이션
