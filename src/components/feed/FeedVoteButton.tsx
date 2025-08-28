@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { FeedType } from "../../types/feed";
 import FeedService from "../../api/feedService";
 
 interface FeedVoteButtonProps {
   feedId: number;
-  feedType: string;
+  feedType: FeedType;
   participantVoteCount: number;
   isVoted?: boolean; // 피드에서 받은 투표 상태
   size?: 'small' | 'medium' | 'large'; // 버튼 크기

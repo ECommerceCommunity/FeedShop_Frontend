@@ -5,9 +5,9 @@ import FeedList from "../../components/feed/FeedList";
 import LikedUsersModal from "../../components/feed/LikedUsersModal";
 import FeedSearchModal from "../../components/feed/FeedSearchModal";
 import FeedService from "../../api/feedService";
-import { EventDto } from "../../types/types";
+import { EventDto } from "../../types/event";
 import axiosInstance from "../../api/axios";
-import { FeedPost, FeedListParams } from "../../types/feed";
+import { FeedPost, FeedListParams, FeedListResponseDto } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
 
 // 디바운싱 훅
@@ -25,6 +25,50 @@ const useDebounce = (value: string, delay: number) => {
   }, [value, delay]);
 
   return debouncedValue;
+};
+
+// FeedListResponseDto를 FeedPost로 변환하는 함수
+const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
+  return {
+    id: feedResponse.feedId,
+    title: feedResponse.title,
+    content: feedResponse.content,
+    images: feedResponse.images.map(img => ({
+      id: img.imageId,
+      imageUrl: img.imageUrl,
+      sortOrder: img.sortOrder
+    })),
+    hashtags: feedResponse.hashtags.map(tag => ({
+      id: tag.hashtagId,
+      tag: tag.tag
+    })),
+    user: {
+      id: feedResponse.userId,
+      nickname: feedResponse.userNickname,
+      profileImg: feedResponse.userProfileImg,
+      level: feedResponse.userLevel,
+      gender: feedResponse.userGender,
+      height: feedResponse.userHeight
+    },
+    createdAt: feedResponse.createdAt,
+    updatedAt: feedResponse.createdAt, // 백엔드에서 updatedAt이 없으므로 createdAt 사용
+    likeCount: feedResponse.likeCount,
+    commentCount: feedResponse.commentCount,
+    isLiked: feedResponse.isLiked,
+    isVoted: feedResponse.isVoted,
+    feedType: feedResponse.feedType,
+    participantVoteCount: feedResponse.participantVoteCount,
+    orderItem: {
+      id: feedResponse.orderItemId,
+      productName: feedResponse.productName,
+      size: feedResponse.productSize
+    },
+    eventId: feedResponse.eventId,
+    eventTitle: feedResponse.eventTitle,
+    eventDescription: feedResponse.eventDescription,
+    eventStartDate: feedResponse.eventStartDate,
+    eventEndDate: feedResponse.eventEndDate
+  };
 };
 
 
@@ -189,11 +233,12 @@ const FeedListPage = () => {
     const loadInitialData = async () => {
       setInitialLoading(true);
       const result = await fetchFeeds(1, activeTab);
-      setFeedPosts(result.feeds);
+      const transformedFeeds = result.feeds.map(transformFeedResponse);
+      setFeedPosts(transformedFeeds);
       
       // 백엔드에서 받은 isLiked 상태를 기준으로 좋아요 상태 설정
       // 백엔드에서 좋아요한 피드 ID들만 사용 (백엔드의 isLiked 필드 기반)
-      const backendLikedIds = result.feeds
+      const backendLikedIds = transformedFeeds
         .filter(feed => feed.isLiked)
         .map(feed => feed.id);
       
@@ -224,17 +269,18 @@ const FeedListPage = () => {
     setIsLoading(true);
     const nextPage = currentPage + 1;
     const result = await fetchFeeds(nextPage, activeTab);
+    const transformedNewFeeds = result.feeds.map(transformFeedResponse);
     
-    setFeedPosts([...feedPosts, ...result.feeds]);
+    setFeedPosts([...feedPosts, ...transformedNewFeeds]);
     
     // 새로 로드된 피드들의 좋아요 상태를 업데이트 (백엔드 isLiked 필드 기반)
-    const newLikedFeedIds = result.feeds
+    const newLikedFeedIds = transformedNewFeeds
       .filter(feed => feed.isLiked)
       .map(feed => feed.id);
     
     // 현재 좋아요 상태에 새로 로드된 좋아요한 피드들 추가
     const updatedLikedPosts = [
-      ...likedPosts.filter((id: number) => !result.feeds.map(f => f.id).includes(id)), // 기존 상태에서 새로 로드된 피드들 제거
+      ...likedPosts.filter((id: number) => !transformedNewFeeds.map(f => f.id).includes(id)), // 기존 상태에서 새로 로드된 피드들 제거
       ...newLikedFeedIds // 새로 로드된 피드 중 좋아요한 것들 추가
     ];
     
@@ -614,12 +660,12 @@ const FeedListPage = () => {
                         </span>
                       ) : (
                         event.rewards.map((reward, idx) => (
-                          <span
-                            key={idx}
-                            className="bg-[#87CEEB] bg-opacity-10 px-2 py-1 rounded text-[#87CEEB] font-bold"
-                          >
-                            {reward.conditionValue}위: {reward.reward}
-                          </span>
+                                                      <span
+                              key={idx}
+                              className="bg-[#87CEEB] bg-opacity-10 px-2 py-1 rounded text-[#87CEEB] font-bold"
+                            >
+                              {reward.conditionValue}위: {reward.rewardDescription}
+                            </span>
                         ))
                       )}
                     </div>

@@ -13,6 +13,9 @@ import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import UserProtectedRoute from "./components/UserProtectedRoute";
 import MyPosts from "pages/auth/MyPosts";
 import CouponsPage from "pages/auth/CouponsPage";
+import BadgesPage from "pages/auth/BadgesPage";
+import PointsPage from "pages/auth/PointsPage";
+import LevelPage from "pages/auth/LevelPage";
 
 // 페이지 컴포넌트들
 const HomePage = lazy(() => import("./pages/common/HomePage"));
@@ -267,7 +270,32 @@ const App: FC = () => {
                     </UserProtectedRoute>
                   }
                 />
+                <Route
+                  path="/mypage/badges"
+                  element={
+                    <UserProtectedRoute requireLogin={true}>
+                      <BadgesPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/mypage/points"
+                  element={
+                    <UserProtectedRoute requireLogin={true}>
+                      <PointsPage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/mypage/level"
+                  element={
+                    <UserProtectedRoute requireLogin={true}>
+                      <LevelPage />
+                    </UserProtectedRoute>
+                  }
+                />
                 {/* 이벤트 관련 페이지들 */}
+                <Route path="/events" element={<EventListPage />} />
                 <Route path="/event-list" element={<EventListPage />} />
                 <Route
                   path="/events/create"
