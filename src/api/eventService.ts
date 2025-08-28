@@ -189,12 +189,87 @@ class EventService {
     try {
       console.log('이벤트 결과 생성 API 호출:', eventId);
       // 백엔드 API 경로 수정: /api/v2/events/{eventId}/results
-      await axiosInstance.post(`/api/events/${eventId}/results`, {
+      await axiosInstance.post(`/api/v2/events/${eventId}/results`, {
         forceRecalculate: false
       });
       console.log('이벤트 결과 생성 성공');
     } catch (error) {
       console.error('이벤트 결과 생성 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 이벤트 결과 조회
+   */
+  async getEventResult(eventId: number): Promise<any> {
+    try {
+      console.log('이벤트 결과 조회 API 호출:', eventId);
+      const response = await axiosInstance.get(`/api/v2/events/${eventId}/results`);
+      console.log('이벤트 결과 조회 성공:', response.data);
+      return response.data.data;
+    } catch (error) {
+      console.error('이벤트 결과 조회 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 이벤트 결과 존재 여부 확인
+   */
+  async hasEventResult(eventId: number): Promise<boolean> {
+    try {
+      console.log('이벤트 결과 존재 여부 확인 API 호출:', eventId);
+      const response = await axiosInstance.get(`/api/v2/events/${eventId}/results/exists`);
+      console.log('이벤트 결과 존재 여부 확인 성공:', response.data);
+      return response.data.data;
+    } catch (error) {
+      console.error('이벤트 결과 존재 여부 확인 실패:', error);
+      return false;
+    }
+  }
+
+  /**
+   * 이벤트 결과 재계산
+   */
+  async recalculateEventResult(eventId: number): Promise<any> {
+    try {
+      console.log('이벤트 결과 재계산 API 호출:', eventId);
+      const response = await axiosInstance.post(`/api/v2/events/${eventId}/results/recalculate`);
+      console.log('이벤트 결과 재계산 성공:', response.data);
+      return response.data.data;
+    } catch (error) {
+      console.error('이벤트 결과 재계산 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 이벤트 보상 지급
+   */
+  async processEventRewards(eventId: number): Promise<any> {
+    try {
+      console.log('이벤트 보상 지급 API 호출:', eventId);
+      const response = await axiosInstance.post(`/api/v2/events/${eventId}/rewards/process`);
+      console.log('이벤트 보상 지급 성공:', response.data);
+      return response.data.data;
+    } catch (error) {
+      console.error('이벤트 보상 지급 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 특정 참여자 보상 재지급
+   */
+  async reprocessParticipantReward(eventId: number, userId: number): Promise<any> {
+    try {
+      console.log('참여자 보상 재지급 API 호출:', eventId, userId);
+      const response = await axiosInstance.post(`/api/v2/events/${eventId}/rewards/reprocess/${userId}`);
+      console.log('참여자 보상 재지급 성공:', response.data);
+      return response.data.data;
+    } catch (error) {
+      console.error('참여자 보상 재지급 실패:', error);
       throw error;
     }
   }
@@ -206,7 +281,7 @@ class EventService {
     try {
       console.log('이벤트 결과 삭제 API 호출:', eventId);
       // 백엔드 API 경로 수정: /api/v2/events/{eventId}/results
-      await axiosInstance.delete(`/api/events/${eventId}/results`);
+      await axiosInstance.delete(`/api/v2/events/${eventId}/results`);
       console.log('이벤트 결과 삭제 성공');
     } catch (error) {
       console.error('이벤트 결과 삭제 실패:', error);

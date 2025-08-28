@@ -312,4 +312,61 @@ export interface BattleMatch {
   createdAt: string;
   startTime?: string;
   endTime?: string;
+}
+
+// ===== 이벤트 결과관리 관련 타입들 =====
+
+// 이벤트 결과 응답 DTO
+export interface EventResultResponseDto {
+  id: number;
+  eventId: number;
+  eventTitle: string;
+  resultType: string;
+  announcedAt: string;
+  totalParticipants: number;
+  totalVotes: number;
+  resultDetails: EventResultDetailResponseDto[];
+}
+
+// 이벤트 결과 상세 응답 DTO
+export interface EventResultDetailResponseDto {
+  id: number;
+  userId: number;
+  userName: string;
+  feedId: number;
+  feedTitle: string;
+  rankPosition: number;
+  voteCount: number;
+  pointsEarned: number;
+  badgePointsEarned: number;
+  couponCode: string;
+  couponDescription: string;
+  rewardProcessed: boolean;
+  rewardProcessedAt: string | null;
+}
+
+// 보상 처리 결과
+export interface RewardProcessResult {
+  eventId: number;
+  totalParticipants: number;
+  successfulRewards: number;
+  failedRewards: number;
+  rewardDetails: RewardDetail[];
+}
+
+// 보상 상세 정보
+export interface RewardDetail {
+  userId: number;
+  rankPosition: number;
+  pointsEarned?: number;
+  badgePointsEarned?: number;
+  couponCode?: string;
+  success: boolean;
+  message: string;
+}
+
+// 이벤트 결과 생성 요청 DTO
+export interface EventResultCreateRequestDto {
+  eventId: number;
+  forceRecalculate: boolean;
 } 
