@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { EventDto } from "../../types/event";
+import { EventDto, EventStatus } from "../../types/event";
 import EventDetailModal from "./EventDetailModal";
 import EventCard from "../../components/event/EventCard";
 import EventFilter from "../../components/event/EventFilter";
@@ -134,7 +134,7 @@ const PageInfo = styled.div`
 
 const EventListPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [activeFilter, setActiveFilter] = useState<EventStatus | "ALL">("ALL");
   const [sortType, setSortType] = useState("latest");
   const [page, setPage] = useState(0);
   const [events, setEvents] = useState<EventDto[]>([]);
@@ -173,7 +173,7 @@ const EventListPage = () => {
       }
 
       // 필터 파라미터 설정
-      if (activeFilter !== "all") {
+      if (activeFilter !== "ALL") {
         params.status = activeFilter;
       }
 
@@ -205,7 +205,7 @@ const EventListPage = () => {
 
   const handleReset = () => {
     setSearchTerm("");
-    setActiveFilter("all");
+    setActiveFilter("ALL");
     setSortType("latest");
     setPage(0);
   };

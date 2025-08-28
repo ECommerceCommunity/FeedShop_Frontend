@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { EventDto } from '../../types/event';
+import type { EventDto, EventType, EventStatus } from '../../types/event';
 
 interface EventCardProps {
   event: EventDto;
@@ -68,7 +68,7 @@ const EventMeta = styled.div`
   margin-bottom: 1rem;
 `;
 
-const EventType = styled.span<{ type: string }>`
+const EventType = styled.span<{ type: EventType }>`
   background: ${props => {
     switch (props.type) {
       case 'BATTLE': return 'linear-gradient(135deg, #ef4444, #dc2626)';
@@ -86,7 +86,7 @@ const EventType = styled.span<{ type: string }>`
   font-weight: 600;
 `;
 
-const EventStatusBadge = styled.span<{ status: string }>`
+const EventStatusBadge = styled.span<{ status: EventStatus }>`
   background: ${props => {
     switch (props.status) {
       case 'UPCOMING': return 'rgba(59, 130, 246, 0.2)';

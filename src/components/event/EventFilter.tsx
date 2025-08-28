@@ -1,11 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
+import type { EventType, EventStatus } from '../../types/event';
 
 interface EventFilterProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  activeFilter: string;
-  onFilterChange: (filter: string) => void;
+  activeFilter: EventStatus | 'ALL';
+  onFilterChange: (filter: EventStatus | 'ALL') => void;
   sortType: string;
   onSortChange: (sort: string) => void;
   onSearch: () => void;
@@ -161,7 +162,7 @@ const EventFilter: React.FC<EventFilterProps> = ({
           <FilterLabel>상태</FilterLabel>
           <Select
             value={activeFilter}
-            onChange={(e) => onFilterChange(e.target.value)}
+            onChange={(e) => onFilterChange(e.target.value as EventStatus | 'ALL')}
           >
             <option value="all">전체</option>
             <option value="UPCOMING">예정</option>

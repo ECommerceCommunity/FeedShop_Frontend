@@ -7,7 +7,10 @@ import {
   EventDto,
   EventCreateRequestDto,
   EventUpdateRequestDto,
-  EventListResponse
+  EventListResponse,
+  EventListResponseDto,
+  EventType,
+  EventStatus
 } from '../types/event';
 
 class EventService {
@@ -56,24 +59,25 @@ class EventService {
   }
 
   /**
-   * 모든 이벤트 목록 조회
+   * 모든 이벤트 목록 조회 (백엔드 응답 구조와 일치)
    */
   async getAllEvents(params?: {
     page?: number;
     size?: number;
     sort?: string;
-    status?: string;
+    status?: EventStatus;
     keyword?: string;
-  }): Promise<EventListResponse> {
+  }): Promise<EventListResponseDto> {
     try {
       console.log('이벤트 목록 API 호출 파라미터:', params);
-      const response = await axiosInstance.get('/api/events/all', { params });
+      const response = await axiosInstance.get<ApiResponse<EventListResponseDto>>('/api/events/all', { params });
       console.log('이벤트 목록 API 응답:', response.data);
       
-      const result = response.data.data || response.data || { content: [], totalPages: 0, totalElements: 0, last: true, first: true, size: 10, number: 0 };
-      console.log('파싱된 이벤트 목록:', result);
-      
-      return result;
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || '이벤트 목록 조회에 실패했습니다.');
+      }
     } catch (error) {
       console.error('이벤트 목록 조회 실패:', error);
       throw error;
@@ -239,13 +243,13 @@ class EventService {
    */
   private getFallbackEvents(): FeedEventDto[] {
     const currentDate = new Date();
-    const fallbackEvents = [
+    const fallbackEvents: FeedEventDto[] = [
       {
         eventId: 1,
         title: '여름 스타일 챌린지',
         eventStartDate: '2025-07-20',
         eventEndDate: '2025-08-07',
-        type: 'BATTLE',
+        type: 'BATTLE' as EventType,
         deletedAt: null,
         isDeleted: false
       },
@@ -254,7 +258,7 @@ class EventService {
         title: '신상품 리뷰 이벤트',
         eventStartDate: '2025-07-15',
         eventEndDate: '2025-08-10',
-        type: 'MISSION',
+        type: 'MISSION' as EventType,
         deletedAt: null,
         isDeleted: false
       },
@@ -263,7 +267,7 @@ class EventService {
         title: '베스트 리뷰어 선발대회',
         eventStartDate: '2025-07-01',
         eventEndDate: '2025-08-15',
-        type: 'MULTIPLE',
+        type: 'MULTIPLE' as EventType,
         deletedAt: null,
         isDeleted: false
       }

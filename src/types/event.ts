@@ -1,10 +1,21 @@
 // 이벤트 관련 통일된 타입 정의
 
-// 기본 이벤트 타입들
+// 기본 이벤트 타입들 (백엔드 enum과 완벽 일치)
 export type EventStatus = "UPCOMING" | "ONGOING" | "ENDED";
 export type EventType = "BATTLE" | "MISSION" | "MULTIPLE" | "REVIEW" | "CHALLENGE";
 export type ParticipationStatus = "PARTICIPATING" | "COMPLETED" | "ELIMINATED";
 export type MatchStatus = "PENDING" | "ONGOING" | "COMPLETED";
+
+// 백엔드 응답 구조와 일치하는 타입들
+export interface EventListResponseDto {
+  content: EventDto[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
 
 // 이벤트 보상 타입
 export interface EventRewardDto {
@@ -17,24 +28,24 @@ export interface EventRewardDto {
   maxRecipients?: number;
 }
 
-// 피드 생성용 이벤트 타입
+// 피드 생성용 이벤트 타입 (백엔드와 완벽 일치)
 export interface FeedEventDto {
   eventId: number;
   title: string;
   eventStartDate: string;
   eventEndDate: string;
-  type: string;
+  type: EventType;
   deletedAt?: string | null;
   isDeleted?: boolean;
 }
 
-// 이벤트 요약 정보 타입
+// 이벤트 요약 정보 타입 (백엔드와 완벽 일치)
 export interface EventSummaryDto {
   eventId: number;
   title: string;
   eventStartDate: string;
   eventEndDate: string;
-  type: string;
+  type: EventType;
   deletedAt?: string | null;
   isDeleted?: boolean;
   isParticipatable?: boolean;
@@ -47,13 +58,13 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-// 이벤트 상세 정보 타입
+// 이벤트 상세 정보 타입 (백엔드와 완벽 일치)
 export interface EventDto {
   eventId: number;
   title: string;
   description: string;
-  type: string;
-  status: string;
+  type: EventType;
+  status: EventStatus;
   eventStartDate: string;
   eventEndDate: string;
   purchaseStartDate?: string;
@@ -72,11 +83,11 @@ export interface EventDto {
   isParticipatable?: boolean;
 }
 
-// 이벤트 생성 요청 타입
+// 이벤트 생성 요청 타입 (백엔드와 완벽 일치)
 export interface EventCreateRequestDto {
   title: string;
   description: string;
-  type: string;
+  type: EventType;
   eventStartDate: string;
   eventEndDate: string;
   purchaseStartDate: string;
