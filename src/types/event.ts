@@ -2,7 +2,7 @@
 
 // 기본 이벤트 타입들 (백엔드 enum과 완벽 일치)
 export type EventStatus = "UPCOMING" | "ONGOING" | "ENDED";
-export type EventType = "RANKING" | "BATTLE";
+export type EventType = "RANKING" | "BATTLE" | "ranking" | "battle";
 export type ParticipationStatus = "PARTICIPATING" | "COMPLETED" | "ELIMINATED";
 export type MatchStatus = "PENDING" | "ONGOING" | "COMPLETED";
 

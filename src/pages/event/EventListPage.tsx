@@ -54,10 +54,29 @@ const CreateButton = styled(Link)`
   }
 `;
 
+const ResultManageButton = styled(Link)`
+  background: #10b981;
+  color: white;
+  text-decoration: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+  }
+`;
+
 const EventGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
   margin-bottom: 2rem;
 `;
 
@@ -136,7 +155,7 @@ const EventListPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<EventStatus | "ALL">("ALL");
   const [sortType, setSortType] = useState("latest");
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [events, setEvents] = useState<EventDto[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
@@ -147,37 +166,37 @@ const EventListPage = () => {
 
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  const fetchEvents = async () => {
-    setLoading(true);
-    setError(null);
-    try {
+  
+    const fetchEvents = async () => {
+      setLoading(true);
+      setError(null);
+      try {
       const params: any = {
         page,
-        size: PAGE_SIZE,
-      };
-
-      // 정렬 파라미터 설정
-      switch (sortType) {
-        case "latest":
+          size: PAGE_SIZE,
+        };
+        
+        // 정렬 파라미터 설정
+        switch (sortType) {
+          case "latest":
           params.sort = "createdAt,desc";
-          break;
-        case "upcoming":
+            break;
+            case "upcoming":
           params.sort = "eventStartDate,asc";
-          break;
-        case "past":
+            break;
+            case "past":
           params.sort = "eventEndDate,desc";
-          break;
-        default:
+            break;
+          default:
           params.sort = "createdAt,desc";
       }
 
       // 필터 파라미터 설정
       if (activeFilter !== "ALL") {
-        params.status = activeFilter;
-      }
-
-      // 검색 파라미터 설정
+              params.status = activeFilter;
+        }
+        
+        // 검색 파라미터 설정
       if (searchTerm.trim()) {
         params.keyword = searchTerm.trim();
       }
@@ -186,20 +205,20 @@ const EventListPage = () => {
       setEvents(response.content || []);
       setTotalPages(response.totalPages || 1);
       setTotalElements(response.totalElements || 0);
-    } catch (error: any) {
-      console.error("이벤트 목록 조회 실패:", error);
-      setError("이벤트 목록을 불러오는데 실패했습니다.");
-    } finally {
-      setLoading(false);
-    }
-  };
+      } catch (error: any) {
+        console.error("이벤트 목록 조회 실패:", error);
+        setError("이벤트 목록을 불러오는데 실패했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
   useEffect(() => {
     fetchEvents();
   }, [page, sortType, activeFilter]);
 
   const handleSearch = () => {
-    setPage(0);
+    setPage(1);
     fetchEvents();
   };
 
@@ -207,7 +226,7 @@ const EventListPage = () => {
     setSearchTerm("");
     setActiveFilter("ALL");
     setSortType("latest");
-    setPage(0);
+    setPage(1);
   };
 
   const handleEventClick = (event: EventDto) => {
@@ -231,8 +250,12 @@ const EventListPage = () => {
     }
   };
 
+  const handleManageResults = (event: EventDto) => {
+    navigate(`/events/${event.eventId}/results`);
+  };
+
   const handlePageChange = (newPage: number) => {
-    if (newPage >= 0 && newPage < totalPages) {
+    if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
     }
   };
@@ -243,10 +266,16 @@ const EventListPage = () => {
         <Header>
           <Title>이벤트 목록</Title>
           {user?.userType === "admin" && (
-            <CreateButton to="/events/create">
-              <i className="fas fa-plus"></i>
-              이벤트 생성
-            </CreateButton>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <ResultManageButton to="/events/result">
+                <i className="fas fa-chart-bar"></i>
+                결과 관리
+              </ResultManageButton>
+              <CreateButton to="/events/create">
+                <i className="fas fa-plus"></i>
+                이벤트 생성
+              </CreateButton>
+            </div>
           )}
         </Header>
         <LoadingContainer>
@@ -263,10 +292,16 @@ const EventListPage = () => {
         <Header>
           <Title>이벤트 목록</Title>
           {user?.userType === "admin" && (
-            <CreateButton to="/events/create">
-              <i className="fas fa-plus"></i>
-              이벤트 생성
-            </CreateButton>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <ResultManageButton to="/events/result">
+                <i className="fas fa-chart-bar"></i>
+                결과 관리
+              </ResultManageButton>
+              <CreateButton to="/events/create">
+                <i className="fas fa-plus"></i>
+                이벤트 생성
+              </CreateButton>
+            </div>
           )}
         </Header>
         <ErrorContainer>
@@ -285,10 +320,16 @@ const EventListPage = () => {
       <Header>
         <Title>이벤트 목록</Title>
         {user?.userType === "admin" && (
-          <CreateButton to="/events/create">
-            <i className="fas fa-plus"></i>
-            이벤트 생성
-          </CreateButton>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <ResultManageButton to="/events/result">
+              <i className="fas fa-chart-bar"></i>
+              결과 관리
+            </ResultManageButton>
+            <CreateButton to="/events/create">
+              <i className="fas fa-plus"></i>
+              이벤트 생성
+            </CreateButton>
+          </div>
         )}
       </Header>
 
@@ -306,7 +347,7 @@ const EventListPage = () => {
       {events.length > 0 ? (
         <>
           <EventGrid>
-            {events.map((event) => (
+        {events.map((event) => (
               <EventCard
                 key={event.eventId}
                 event={event}
@@ -321,16 +362,16 @@ const EventListPage = () => {
           {totalPages > 1 && (
             <PaginationContainer>
               <PaginationButton
-                disabled={page === 0}
+                disabled={page === 1}
                 onClick={() => handlePageChange(page - 1)}
               >
                 이전
               </PaginationButton>
               <PageInfo>
-                {page + 1} / {totalPages} 페이지 (총 {totalElements}개)
+                {page} / {totalPages} 페이지 (총 {totalElements}개)
               </PageInfo>
               <PaginationButton
-                disabled={page === totalPages - 1}
+                disabled={page === totalPages}
                 onClick={() => handlePageChange(page + 1)}
               >
                 다음
@@ -344,10 +385,16 @@ const EventListPage = () => {
           <h3>등록된 이벤트가 없습니다</h3>
           <p>새로운 이벤트를 생성하거나 검색 조건을 변경해보세요.</p>
           {user?.userType === "admin" && (
-            <CreateButton to="/events/create" style={{ marginTop: "1rem" }}>
-              <i className="fas fa-plus"></i>
-              첫 이벤트 생성하기
-            </CreateButton>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: "1rem" }}>
+              <ResultManageButton to="/events/result">
+                <i className="fas fa-chart-bar"></i>
+                결과 관리
+              </ResultManageButton>
+              <CreateButton to="/events/create">
+                <i className="fas fa-plus"></i>
+                첫 이벤트 생성하기
+              </CreateButton>
+            </div>
           )}
         </EmptyContainer>
       )}

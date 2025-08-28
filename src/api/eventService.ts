@@ -70,14 +70,10 @@ class EventService {
   }): Promise<EventListResponseDto> {
     try {
       console.log('이벤트 목록 API 호출 파라미터:', params);
-      const response = await axiosInstance.get<ApiResponse<EventListResponseDto>>('/api/events/all', { params });
+      const response = await axiosInstance.get<EventListResponseDto>('/api/events/all', { params });
       console.log('이벤트 목록 API 응답:', response.data);
       
-      if (response.data.success) {
-        return response.data.data;
-      } else {
-        throw new Error(response.data.message || '이벤트 목록 조회에 실패했습니다.');
-      }
+      return response.data;
     } catch (error) {
       console.error('이벤트 목록 조회 실패:', error);
       throw error;
