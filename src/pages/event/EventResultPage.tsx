@@ -58,7 +58,10 @@ const EventResultPage: React.FC = () => {
         
       } catch (err) {
         console.error("종료된 이벤트 조회 실패:", err);
-        setError("이벤트 목록을 불러오지 못했습니다.");
+        // 에러가 발생해도 빈 배열로 설정하여 페이지 형태는 유지
+        setEvents([]);
+        setEventResults([]);
+        setError(null); // 에러 메시지 숨김
       } finally {
         setLoading(false);
       }
