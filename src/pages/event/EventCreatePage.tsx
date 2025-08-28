@@ -241,7 +241,21 @@ const EventCreatePage: React.FC = () => {
       formData.append('selectionCriteria', eventForm.selectionCriteria);
       formData.append('precautions', eventForm.precautions);
       formData.append('maxParticipants', eventForm.maxParticipants.toString());
-      formData.append('rewards', JSON.stringify(eventForm.rewards));
+      
+      // 보상 데이터를 평면화하여 전송
+      const flattenedRewards = eventForm.rewards.flatMap(group => 
+        group.rewards.map(reward => ({
+          conditionValue: group.conditionValue,
+          rewardType: reward.rewardType,
+          rewardValue: reward.rewardValue,
+          rewardDescription: reward.rewardDescription
+        }))
+      );
+      
+      console.log('전송할 보상 데이터:', flattenedRewards);
+      console.log('보상 데이터 JSON:', JSON.stringify(flattenedRewards));
+      
+      formData.append('rewards', JSON.stringify(flattenedRewards));
 
       if (eventForm.imageFile) {
         formData.append('image', eventForm.imageFile);
