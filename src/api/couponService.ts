@@ -48,7 +48,7 @@ export const couponService = {
    * @returns 사용 가능한 쿠폰 목록
    */
   getAvailableCoupons: async (email: string): Promise<CouponResponse[]> => {
-    return couponService.getUserCoupons(email, "ACTIVE");
+    return couponService.getUserCoupons(email, "AVAILABLE");
   },
 
   /**
