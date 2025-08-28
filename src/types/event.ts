@@ -106,6 +106,15 @@ export interface EventUpdateRequestDto extends EventCreateRequestDto {
   id: number;
 }
 
+// 이벤트 참여 요청 타입 (주문내역과 연동)
+export interface EventParticipationRequestDto {
+  eventId: number;
+  feedId: number;
+  orderItemId?: number; // 구매한 상품과의 연동
+  productName?: string; // 상품명
+  productSize?: number; // 상품 사이즈
+}
+
 // 이벤트 목록 응답 타입
 export interface EventListResponse {
   content: EventDto[];
@@ -162,6 +171,9 @@ export interface EventParticipantDto {
   feedImageUrl?: string;
   voteCount?: number;
   rankPosition?: number;
+  orderItemId?: number; // 구매한 상품과의 연동
+  productName?: string; // 상품명
+  productSize?: number; // 상품 사이즈
 }
 
 export interface EventRankingDto {
@@ -257,6 +269,9 @@ export interface EventParticipant {
   participationDate: string;
   feedId: number;
   eventId: number;
+  orderItemId?: number; // 구매한 상품과의 연동
+  productName?: string; // 상품명 (표시용)
+  productSize?: number; // 상품 사이즈
 }
 
 export interface EventRanking {
