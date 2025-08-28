@@ -252,8 +252,7 @@ const EventCreatePage: React.FC = () => {
         }))
       );
       
-      console.log('전송할 보상 데이터:', flattenedRewards);
-      console.log('보상 데이터 JSON:', JSON.stringify(flattenedRewards));
+
       
       formData.append('rewards', JSON.stringify(flattenedRewards));
 

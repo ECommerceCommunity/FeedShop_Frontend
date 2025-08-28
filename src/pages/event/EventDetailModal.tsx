@@ -29,21 +29,12 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
       
       // 이미 event 객체가 있으면 그대로 사용, 없으면 API 호출
       if (event && Object.keys(event).length > 0) {
-        console.log('EventDetailModal - event data:', event);
-        console.log('EventDetailModal - event type:', event.type);
-        console.log('EventDetailModal - event status:', event.status);
-        console.log('EventDetailModal - rewards:', event.rewards);
+        
         setDetail(event);
         setLoading(false);
       } else {
         EventService.getEventById(event.eventId)
           .then(eventData => {
-            console.log('EventDetailModal - API event data:', eventData);
-            if (eventData) {
-              console.log('EventDetailModal - API event type:', eventData.type);
-              console.log('EventDetailModal - API event status:', eventData.status);
-              console.log('EventDetailModal - API rewards:', eventData.rewards);
-            }
             setDetail(eventData);
           })
           .catch(err => {
@@ -260,10 +251,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 }
               }
               
-              console.log('Processed rewards data:', rewardsData);
-              console.log('Rewards data type:', typeof rewardsData);
-              console.log('Rewards data length:', rewardsData?.length);
-              console.log('Rewards data structure:', JSON.stringify(rewardsData, null, 2));
+              
               
               if (rewardsData && rewardsData.length > 0) {
                 return (

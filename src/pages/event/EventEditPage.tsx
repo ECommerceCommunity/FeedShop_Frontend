@@ -359,7 +359,7 @@ const EventEditPage = () => {
         },
       });
 
-      // console.log('API Response:', response.data);
+      
       showToastMessage("이벤트가 성공적으로 수정되었습니다! 이벤트 목록 페이지로 이동합니다.", 'success');
       
       // 성공 후 이벤트 목록 페이지로 이동 (토스트 메시지가 보인 후)

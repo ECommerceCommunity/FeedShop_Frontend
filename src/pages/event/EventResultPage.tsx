@@ -51,7 +51,7 @@ const EventResultPage: React.FC = () => {
               resultsWithData.push(result);
             }
           } catch (err) {
-            console.log(`이벤트 ${event.eventId}의 결과가 없습니다.`);
+            
           }
         }
         setEventResults(resultsWithData);
