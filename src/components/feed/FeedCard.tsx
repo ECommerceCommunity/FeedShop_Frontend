@@ -136,7 +136,7 @@ const Footer = styled.div`
   border-top: 1px solid #e5e7eb;
 `;
 
-const Date = styled.span`
+const DateText = styled.span`
   font-size: 0.8rem;
   color: #9ca3af;
   font-weight: 500;
@@ -234,7 +234,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
       </Content>
       
       <Footer>
-        <Date>{formatFeedDate(feed.createdAt)}</Date>
+        <DateText>{formatFeedDate(feed.createdAt)}</DateText>
         <Stats>
           {feed.likeCount > 0 && (
             <Stat>

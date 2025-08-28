@@ -77,7 +77,7 @@ const EventMeta = styled.div`
   align-items: center;
 `;
 
-const EventType = styled.span<{ type: EventType }>`
+const EventTypeBadge = styled.span<{ type: EventType }>`
   background: ${props => {
     switch (props.type.toLowerCase()) {
       case 'ranking': return 'linear-gradient(135deg, #f59e0b, #d97706)';
@@ -226,7 +226,7 @@ const EventCard: React.FC<EventCardProps> = ({
         <EventDescription>{event.description}</EventDescription>
         
         <EventMeta>
-          <EventType type={event.type}>{getTypeText(event.type)}</EventType>
+          <EventTypeBadge type={event.type}>{getTypeText(event.type)}</EventTypeBadge>
         </EventMeta>
         
         <EventDates>
