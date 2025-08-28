@@ -17,12 +17,14 @@ export interface EventListResponseDto {
   hasPrevious: boolean;
 }
 
-// 이벤트 보상 타입
+// 이벤트 보상 타입 (백엔드 리워드 시스템에 맞춤)
 export interface EventRewardDto {
   id?: number;
   rank?: number;
   conditionValue: string;
-  reward: string;
+  rewardType: "BADGE_POINTS" | "POINTS" | "DISCOUNT_COUPON";
+  rewardValue: number;
+  rewardDescription: string;
   conditionType?: string;
   conditionDescription?: string;
   maxRecipients?: number;

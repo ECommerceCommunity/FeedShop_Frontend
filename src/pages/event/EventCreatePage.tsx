@@ -43,8 +43,8 @@ const EventCreatePage = () => {
     description: "",
     participationMethod: "",
     rewards: [
-      { conditionValue: "1", reward: "프리미엄 스니커즈" },
-      { conditionValue: "2", reward: "트렌디한 운동화" }
+      { conditionValue: "1", rewardType: "POINTS", rewardValue: 1000, rewardDescription: "1000 포인트" },
+      { conditionValue: "2", rewardType: "BADGE_POINTS", rewardValue: 50, rewardDescription: "50 뱃지점수" }
     ],
     selectionCriteria: "",
     precautions: "",
@@ -163,7 +163,9 @@ const EventCreatePage = () => {
       ...prev,
       rewards: [...prev.rewards, { 
         conditionValue: `${prev.rewards.length + 1}`, 
-        reward: "" 
+        rewardType: "POINTS" as const,
+        rewardValue: 100,
+        rewardDescription: ""
       }]
     }));
   };
@@ -209,7 +211,9 @@ const EventCreatePage = () => {
       // rewards를 JSON 문자열로 변환 (백엔드 형식에 맞춤)
       const rewardsForBackend = eventForm.rewards.map(reward => ({
         conditionValue: reward.conditionValue,
-        reward: reward.reward
+        rewardType: reward.rewardType,
+        rewardValue: reward.rewardValue,
+        rewardDescription: reward.rewardDescription
       }));
       formData.append("rewards", JSON.stringify(rewardsForBackend));
       
@@ -652,13 +656,41 @@ const EventCreatePage = () => {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      보상 내용
+                      보상 유형
+                    </label>
+                    <select
+                      value={reward.rewardType}
+                      onChange={(e) => handleRewardChange(index, 'rewardType', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="POINTS">포인트</option>
+                      <option value="BADGE_POINTS">뱃지점수</option>
+                      <option value="DISCOUNT_COUPON">할인쿠폰</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      보상 수량
+                    </label>
+                    <input
+                      type="number"
+                      value={reward.rewardValue}
+                      onChange={(e) => handleRewardChange(index, 'rewardValue', e.target.value)}
+                      placeholder="예: 1000"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      보상 설명
                     </label>
                     <input
                       type="text"
-                      value={reward.reward}
-                      onChange={(e) => handleRewardChange(index, 'reward', e.target.value)}
-                      placeholder="예: 프리미엄 스니커즈"
+                      value={reward.rewardDescription}
+                      onChange={(e) => handleRewardChange(index, 'rewardDescription', e.target.value)}
+                      placeholder="예: 1000 포인트"
                       className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
