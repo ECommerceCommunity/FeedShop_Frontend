@@ -80,6 +80,15 @@ export const useReviewList = (options: UseReviewListOptions): UseReviewListRetur
         resetList: boolean = false
     ) => {
         try {
+            if (process.env.NODE_ENV === 'development') {
+                console.log('📦 useReviewList - loadReviews 시작:', {
+                    productId,
+                    page,
+                    resetList,
+                    filter: JSON.stringify(filter)
+                });
+            }
+
             setIsLoading(true);
             setError(null);
 
@@ -106,16 +115,45 @@ export const useReviewList = (options: UseReviewListOptions): UseReviewListRetur
                 params.stability = filter.stability;
             }
 
+            if (process.env.NODE_ENV === 'development') {
+                console.log('📦 useReviewList - API 호출 직전');
+            }
+
             const response: ReviewListResponse = await ReviewService.getProductReviews(
                 productId,
                 params
             );
 
-            // 리뷰 목록 업데이트
+            if (process.env.NODE_ENV === 'development') {
+                console.log('📦 useReviewList - API 응답 받음:', response);
+            }
+
+            // 리뷰 목록 업데이트 (백엔드 응답 구조에 맞게 수정)
+            if (process.env.NODE_ENV === 'development') {
+                console.log('📦 useReviewList - 응답 데이터 구조:', {
+                    hasReviews: !!response.reviews,
+                    reviewsLength: response.reviews?.length,
+                    reviewsType: Array.isArray(response.reviews) ? 'array' : typeof response.reviews,
+                    firstReview: response.reviews?.[0],
+                    resetList,
+                    page
+                });
+            }
+
             if (resetList || page === 0) {
-                setReviews(response.content || []); // 안전한 설정
+                const newReviews = response.reviews || [];
+                setReviews(newReviews);
+                if (process.env.NODE_ENV === 'development') {
+                    console.log('📦 useReviewList - 새 리뷰 목록 설정:', newReviews.length, '개');
+                }
             } else {
-                setReviews(prev => [...prev, ...(response.content || [])]); // 안전한 추가
+                setReviews(prev => {
+                    const newReviews = [...prev, ...(response.reviews || [])];
+                    if (process.env.NODE_ENV === 'development') {
+                        console.log('📦 useReviewList - 리뷰 목록 추가:', prev.length, '+', (response.reviews || []).length, '=', newReviews.length);
+                    }
+                    return newReviews;
+                });
             }
 
             // 페이지네이션 정보 업데이트
@@ -123,6 +161,15 @@ export const useReviewList = (options: UseReviewListOptions): UseReviewListRetur
             setTotalPages(response.totalPages);
             setTotalCount(response.totalElements);
             setHasMore(!response.last);
+
+            if (process.env.NODE_ENV === 'development') {
+                console.log('📦 useReviewList - 페이지네이션 업데이트:', {
+                    currentPage: response.number,
+                    totalPages: response.totalPages,
+                    totalCount: response.totalElements,
+                    hasMore: !response.last
+                });
+            }
 
         } catch (err) {
             console.error('리뷰 목록 로딩 실패:', err);
@@ -188,7 +235,22 @@ export const useReviewList = (options: UseReviewListOptions): UseReviewListRetur
      * 필터 변경 시 리뷰 목록 새로고침
      */
     useEffect(() => {
+        if (process.env.NODE_ENV === 'development') {
+            console.log('📦 useReviewList - 필터 변경 감지:', {
+                productId,
+                'filter.sort': filter.sort,
+                'filter.rating': filter.rating,
+                'filter.exactRating': filter.exactRating,
+                'filter.sizeFit': filter.sizeFit,
+                'filter.cushion': filter.cushion,
+                'filter.stability': filter.stability
+            });
+        }
+
         if (productId > 0) {
+            if (process.env.NODE_ENV === 'development') {
+                console.log('📦 useReviewList - loadReviews 호출 (필터 변경)');
+            }
             loadReviews(0, true);
         }
     }, [filter.sort, filter.rating, filter.exactRating, filter.sizeFit, filter.cushion, filter.stability]); // loadReviews는 의존성에서 제외 (무한 루프 방지)
