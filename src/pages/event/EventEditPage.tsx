@@ -274,6 +274,17 @@ const EventEditPage = () => {
     });
   };
 
+  const getBattleRewardTitle = (conditionValue: string) => {
+    switch (conditionValue) {
+      case "1":
+        return "우승자";
+      case "participation":
+        return "참여자";
+      default:
+        return conditionValue;
+    }
+  };
+
   const validateForm = () => {
     return validateEventForm(eventForm);
   };
@@ -305,8 +316,17 @@ const EventEditPage = () => {
       formData.append("precautions", eventForm.precautions);
       formData.append("maxParticipants", eventForm.maxParticipants.toString());
       
-      // rewards를 JSON 문자열로 변환
-      formData.append("rewards", JSON.stringify(eventForm.rewards));
+      // rewards를 평면화하여 전송 (EventCreatePage와 동일한 방식)
+      const flattenedRewards = eventForm.rewards.flatMap((rewardGroup, groupIndex) =>
+        rewardGroup.rewards.map((reward, rewardIndex) => ({
+          conditionValue: rewardGroup.conditionValue,
+          rewardType: reward.rewardType,
+          rewardValue: reward.rewardValue,
+          rewardDescription: reward.rewardDescription
+        }))
+      );
+      
+      formData.append("rewards", JSON.stringify(flattenedRewards));
       
       if (eventForm.imageFile) {
         formData.append("image", eventForm.imageFile);
@@ -604,72 +624,104 @@ const EventEditPage = () => {
             </div>
           </div>
 
-          {/* 보상 정보 */}
+                    {/* 보상 정보 */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">보상 정보</h2>
             
-                        {eventForm.rewards.map((rewardGroup, groupIndex) => (
-              <div key={groupIndex} className="mb-4 p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
+            {/* 보상 안내 */}
+            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">보상 설정 안내</h3>
+              {eventForm.type === 'RANKING' ? (
+                <>
+                  <p>• <strong>1등:</strong> 투표수가 가장 많은 피드</p>
+                  <p>• <strong>2등:</strong> 투표수가 두 번째로 많은 피드</p>
+                  <p>• <strong>3등:</strong> 투표수가 세 번째로 많은 피드</p>
+                  <p className="text-xs text-blue-600 mt-2">투표수 기준으로 순위가 결정되며, 동점 시 먼저 등록한 피드가 우선순위를 가집니다.</p>
+                  <p className="text-xs text-blue-600">각 순위별로 여러 보상(포인트, 뱃지점수, 할인쿠폰)을 동시에 받을 수 있습니다.</p>
+                </>
+              ) : (
+                <>
+                  <p>• <strong>우승자:</strong> 배틀에서 승리한 참여자</p>
+                  <p>• <strong>참여자:</strong> 배틀에 참여한 모든 사용자</p>
+                  <p className="text-xs text-blue-600 mt-2">랜덤 매칭으로 2명씩 대결하여 투표수가 많은 쪽이 승리하며, 승자는 보상을 받습니다.</p>
+                  <p className="text-xs text-blue-600">각 보상 유형별로 여러 보상(포인트, 뱃지점수, 할인쿠폰)을 동시에 받을 수 있습니다.</p>
+                </>
+              )}
+            </div>
+            
+            {eventForm.rewards.map((rewardGroup, groupIndex) => (
+              <div key={groupIndex} className="mb-6 p-4 border border-gray-200 rounded-lg">
+                <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-900">
-                    {rewardGroup.conditionValue} 보상
+                    {eventForm.type === 'RANKING' 
+                      ? `${rewardGroup.conditionValue}등 보상 (${rewardGroup.rewards.length}개 보상)`
+                      : `${getBattleRewardTitle(rewardGroup.conditionValue)} 보상 (${rewardGroup.rewards.length}개 보상)`
+                    }
                   </h3>
-                  <div className="flex gap-2">
+                  {eventForm.rewards.length > 1 && (
                     <button
                       type="button"
-                      onClick={() => addRewardToGroup(groupIndex)}
-                      className="text-blue-500 hover:text-blue-700 active:text-blue-800 transition-colors duration-200 active:scale-95 transform p-2 rounded-lg hover:bg-blue-50"
+                      onClick={() => removeReward(groupIndex)}
+                      className="text-red-500 hover:text-red-700 active:text-red-800 transition-colors duration-200 active:scale-95 transform"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
+                      삭제
                     </button>
-                    {eventForm.rewards.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeReward(groupIndex)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        삭제
-                      </button>
-                    )}
-                  </div>
+                  )}
                 </div>
                 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     선정 조건
                   </label>
-                  <input
-                    type="text"
-                    value={rewardGroup.conditionValue}
-                    onChange={(e) => handleRewardGroupChange(groupIndex, 'conditionValue', e.target.value)}
-                    placeholder="예: 1등, 최우수상"
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                  {eventForm.type === 'RANKING' ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={rewardGroup.conditionValue}
+                        onChange={(e) => handleRewardGroupChange(groupIndex, 'conditionValue', e.target.value)}
+                        placeholder="1"
+                        className="w-20 px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <span className="text-sm text-gray-600">등 (투표수 기준)</span>
+                    </div>
+                  ) : (
+                    <select
+                      value={rewardGroup.conditionValue}
+                      onChange={(e) => handleRewardGroupChange(groupIndex, 'conditionValue', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="1">우승자</option>
+                      <option value="participation">참여자</option>
+                    </select>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    {eventForm.type === 'RANKING' 
+                      ? '투표수가 많은 순서대로 1등, 2등, 3등... 순위가 결정됩니다.'
+                      : '배틀 결과에 따라 최종 우승자, 준우승자, 3위, 참여자 보상이 지급됩니다.'
+                    }
+                  </p>
                 </div>
                 
-                {/* 개별 보상들 */}
                 {rewardGroup.rewards.map((reward, rewardIndex) => (
-                  <div key={rewardIndex} className="mb-3 p-3 bg-white rounded border border-gray-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-md font-medium text-gray-700">
+                  <div key={rewardIndex} className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-md font-medium text-gray-800">
                         보상 {rewardIndex + 1}
                       </h4>
                       {rewardGroup.rewards.length > 1 && (
                         <button
                           type="button"
                           onClick={() => removeRewardFromGroup(groupIndex, rewardIndex)}
-                          className="text-red-500 hover:text-red-700 active:text-red-800 transition-colors duration-200 active:scale-95 transform p-2 rounded-lg hover:bg-red-50"
+                          className="text-red-500 hover:text-red-700 active:text-red-800 transition-colors duration-200 active:scale-95 transform"
                         >
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
+                          삭제
                         </button>
                       )}
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           보상 유형
@@ -679,9 +731,9 @@ const EventEditPage = () => {
                           onChange={(e) => handleRewardChange(groupIndex, rewardIndex, 'rewardType', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
-                          <option value="BADGE_POINTS">🏆 뱃지점수</option>
-                          <option value="POINTS">💰 포인트</option>
-                          <option value="DISCOUNT_COUPON">🎫 할인쿠폰</option>
+                          <option value="POINTS">포인트</option>
+                          <option value="BADGE_POINTS">뱃지점수</option>
+                          <option value="DISCOUNT_COUPON">할인쿠폰</option>
                         </select>
                       </div>
                       
@@ -700,28 +752,45 @@ const EventEditPage = () => {
                       
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          보상 설명
+                          보상 설명 (선택사항)
                         </label>
                         <input
                           type="text"
                           value={reward.rewardDescription}
                           onChange={(e) => handleRewardChange(groupIndex, rewardIndex, 'rewardDescription', e.target.value)}
-                          placeholder="예: 1000 포인트, 50 뱃지점수"
+                          placeholder="예: 1000 포인트 지급"
                           className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
+                        <p className="text-xs text-gray-500 mt-1">
+                          보상 설명은 백엔드에서 자동으로 생성되므로 선택사항입니다.
+                        </p>
                       </div>
                     </div>
                   </div>
                 ))}
+                
+                <button
+                  type="button"
+                  onClick={() => addRewardToGroup(groupIndex)}
+                  className="w-full py-3 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:border-blue-400 hover:text-blue-700 hover:bg-blue-50 active:bg-blue-100 active:scale-95 transition-all duration-300 font-medium flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  보상 추가
+                </button>
               </div>
             ))}
             
             <button
               type="button"
               onClick={addReward}
-              className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors"
+              className="w-full py-4 border-2 border-dashed border-blue-300 rounded-xl text-blue-600 hover:border-blue-400 hover:text-blue-700 hover:bg-blue-50 active:bg-blue-100 active:scale-95 transition-all duration-300 font-semibold flex items-center justify-center gap-2"
             >
-              + 보상 추가
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              보상 그룹 추가
             </button>
           </div>
 
