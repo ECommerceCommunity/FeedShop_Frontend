@@ -378,15 +378,20 @@ const EventEditPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-12 text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-orange-500 to-red-500 rounded-full mb-6 shadow-2xl animate-pulse">
+            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </div>
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent mb-4 animate-bounce">
             이벤트 수정
           </h1>
-          <p className="text-gray-600">
-            이벤트 정보를 수정해주세요.
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+            기존 이벤트 정보를 수정하여 더 나은 경험을 제공하세요
           </p>
         </div>
 
@@ -414,21 +419,25 @@ const EventEditPage = () => {
             {/* 이벤트 타입 */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                이벤트 타입 *
+                이벤트 유형 *
               </label>
-              <div className="grid grid-cols-3 gap-4">
-                {(["BATTLE", "MISSION", "MULTIPLE"] as EventType[]).map((type) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(["RANKING", "BATTLE"] as EventType[]).map((type) => (
                   <button
                     key={type}
                     type="button"
                     onClick={() => handleTypeSelect(type)}
-                    className={`p-4 border-2 rounded-lg text-center transition-all ${
+                    className={`p-6 border-2 rounded-xl text-center transition-all duration-300 hover:shadow-lg ${
                       eventForm.type === type
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   >
-                    <div className="font-medium">{getEventTypeText(type)}</div>
+                    <div className="font-semibold text-lg">{getEventTypeText(type)}</div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {type === "RANKING" && "순위별로 보상을 받는 랭킹 이벤트"}
+                      {type === "BATTLE" && "1:1 스타일 대결로 승부를 가려요"}
+                    </div>
                   </button>
                 ))}
               </div>
