@@ -631,10 +631,10 @@ export class FeedService {
       let url: string;
       if (feedType) {
         // 타입별 조회 API 사용
-        url = `/api/feeds/text-only/my/type/${feedType}`;
+        url = `/api/feeds/my/type/${feedType}`;
       } else {
         // 전체 조회 API 사용
-        url = '/api/feeds/text-only/my';
+        url = '/api/feeds/my';
       }
       
       const response = await axiosInstance.get<ApiResponse<any>>(
@@ -670,7 +670,7 @@ export class FeedService {
   static async getMyFeedsByType(feedType: string, params: Omit<FeedListParams, 'feedType'> = {}): Promise<FeedListResponse> {
     try {
       const response = await axiosInstance.get<ApiResponse<any>>(
-        `/api/feeds/text-only/my/type/${feedType}`,
+        `/api/feeds/my/type/${feedType}`,
         { params }
       );
       const apiResponse = response.data;
@@ -700,7 +700,7 @@ export class FeedService {
         dailyCount: number;
         eventCount: number;
         rankingCount: number;
-      }>>('/api/feeds/text-only/my/count');
+      }>>('/api/feeds/my/count');
       
       if (response.data.success) {
         return response.data.data;
@@ -730,7 +730,7 @@ export class FeedService {
   static async getMyComments(page: number = 0, size: number = 20): Promise<ApiResponse<any>> {
     try {
       const response = await axiosInstance.get<ApiResponse<any>>(
-        `/api/feeds/text-only/my-comments`,
+        `/api/feeds/my-comments`,
         { params: { page, size } }
       );
       return response.data;

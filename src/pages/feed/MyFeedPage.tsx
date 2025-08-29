@@ -233,6 +233,9 @@ const MyFeedPage = () => {
         }
 
         const myFeedsResponse = await FeedService.getMyFeeds(params);
+        console.log('FeedService.getMyFeeds 응답:', myFeedsResponse);
+        console.log('FeedService.getMyFeeds 첫 번째 피드:', myFeedsResponse.content?.[0]);
+        
         // FeedService.getMyFeeds는 이미 transformBackendFeedToFrontend로 변환된 FeedPost[]를 반환
         response = {
           content: myFeedsResponse.content || [],
