@@ -644,9 +644,15 @@ export class FeedService {
       const apiResponse = response.data;
 
       // 백엔드 응답을 프론트엔드 타입에 맞게 변환
-      const transformedFeeds = (apiResponse.data.content || []).map((backendFeed: BackendFeedPost) => 
-        this.transformBackendFeedToFrontend(backendFeed)
-      );
+      console.log('getMyFeeds API 응답:', apiResponse.data);
+      console.log('getMyFeeds 첫 번째 피드:', apiResponse.data.content?.[0]);
+      
+      const transformedFeeds = (apiResponse.data.content || []).map((backendFeed: BackendFeedPost) => {
+        console.log('getMyFeeds 변환 전 피드:', backendFeed);
+        const transformed = this.transformBackendFeedToFrontend(backendFeed);
+        console.log('getMyFeeds 변환 후 피드:', transformed);
+        return transformed;
+      });
 
       return {
         ...apiResponse.data,
