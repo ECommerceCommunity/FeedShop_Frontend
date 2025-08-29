@@ -33,6 +33,12 @@ const formatKoreanTime = (dateString: string) => {
 // FeedListResponseDto를 FeedPost로 변환하는 함수
 const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
   console.log('transformFeedResponse 입력:', feedResponse);
+  console.log('사용자 정보 필드들:', {
+    userId: feedResponse.userId,
+    userNickname: feedResponse.userNickname,
+    userProfileImg: feedResponse.userProfileImg,
+    userLevel: feedResponse.userLevel
+  });
   
   const transformed = {
     id: feedResponse.feedId,
@@ -48,8 +54,8 @@ const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
       tag: tag.tag
     })),
     user: {
-      id: feedResponse.userId,
-      nickname: feedResponse.userNickname,
+      id: feedResponse.userId || 0,
+      nickname: feedResponse.userNickname || "알 수 없는 사용자",
       profileImg: feedResponse.userProfileImg,
       level: feedResponse.userLevel,
       gender: feedResponse.userGender,
