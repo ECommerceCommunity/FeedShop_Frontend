@@ -32,16 +32,18 @@ const formatKoreanTime = (dateString: string) => {
 
 // FeedListResponseDto를 FeedPost로 변환하는 함수
 const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
-  return {
+  console.log('transformFeedResponse 입력:', feedResponse);
+  
+  const transformed = {
     id: feedResponse.feedId,
     title: feedResponse.title,
     content: feedResponse.content,
-    images: feedResponse.images.map(img => ({
+    images: (feedResponse.images || []).map(img => ({
       id: img.imageId,
       imageUrl: img.imageUrl,
       sortOrder: img.sortOrder
     })),
-    hashtags: feedResponse.hashtags.map(tag => ({
+    hashtags: (feedResponse.hashtags || []).map(tag => ({
       id: tag.hashtagId,
       tag: tag.tag
     })),
@@ -72,6 +74,9 @@ const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
     eventStartDate: feedResponse.eventStartDate,
     eventEndDate: feedResponse.eventEndDate
   };
+  
+  console.log('transformFeedResponse 출력:', transformed);
+  return transformed;
 };
 
 const MyFeedPage = () => {
@@ -84,7 +89,11 @@ const MyFeedPage = () => {
   // 현재 로그인한 사용자인지 확인
   // targetUserId가 없으면 현재 사용자의 피드, 있으면 특정 사용자의 피드
   const isCurrentUser = !targetUserId;
-  console.log('MyFeedPage 상태:', { targetUserId, targetUserNickname, isCurrentUser, user });
+  
+  // targetUserNickname이 null인 경우 userProfile에서 가져오도록 수정
+  const [effectiveTargetUserNickname, setEffectiveTargetUserNickname] = useState<string | null>(targetUserNickname);
+  
+  console.log('MyFeedPage 상태:', { targetUserId, targetUserNickname, effectiveTargetUserNickname, isCurrentUser, user });
 
   // 상태 관리
   const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);
@@ -220,7 +229,7 @@ const MyFeedPage = () => {
       setFeedPosts(response.content || []);
       
       // 백엔드에서 받은 isLiked 상태만 사용
-      const backendLikedIds = response.content
+      const backendLikedIds = (response.content || [])
         .filter((feed: FeedPost) => feed.isLiked)
         .map((feed: FeedPost) => feed.id);
       
@@ -255,6 +264,11 @@ const MyFeedPage = () => {
         console.log('특정 사용자 프로필 로드 시작:', targetUserId);
         profile = await UserProfileService.getUserProfileById(parseInt(targetUserId));
         console.log('매핑된 프로필 데이터:', profile);
+        
+        // effectiveTargetUserNickname 업데이트
+        if (profile && profile.nickname) {
+          setEffectiveTargetUserNickname(profile.nickname);
+        }
       } else {
         // 현재 로그인한 사용자의 프로필 로드
         profile = await UserProfileService.getUserProfile();
@@ -266,7 +280,7 @@ const MyFeedPage = () => {
       
       // 에러 발생 시 기본값 설정
       if (targetUserId && !isCurrentUser) {
-        setUserProfile({
+        const fallbackProfile = {
           userId: parseInt(targetUserId),
           nickname: `사용자${targetUserId}`,
           profileImageUrl: "",
@@ -275,12 +289,14 @@ const MyFeedPage = () => {
           email: "",
           phone: "",
           birthDate: "",
-          gender: "MALE",
+          gender: "MALE" as const,
           height: 0,
           weight: 0,
           footSize: 0,
-          footWidth: "NORMAL"
-        });
+          footWidth: "NORMAL" as const
+        };
+        setUserProfile(fallbackProfile);
+        setEffectiveTargetUserNickname(fallbackProfile.nickname);
       }
     }
   };
@@ -358,17 +374,36 @@ const MyFeedPage = () => {
 
   // handleFeedClick: 상세 모달 오픈
   const handleFeedClick = async (post: FeedPost) => {
+    console.log('피드 클릭됨:', post);
+    
+    // post.id 또는 post.feedId가 유효한지 확인
+    const feedId = post.id || (post as any).feedId;
+    if (!post || !feedId) {
+      console.error('피드 ID가 유효하지 않습니다:', post);
+      return;
+    }
+    
     setSelectedPost(post);
     setShowComments(false);
     
     // 댓글 로드
     try {
-      const commentsData = await FeedService.getComments(post.id);
-      const commentsWithFormattedTime = (commentsData.pagination.content || []).map(comment => ({
-        ...comment,
-        createdAt: formatKoreanTime(comment.createdAt)
-      }));
+      console.log('댓글 로드 시작, feedId:', feedId);
+      const commentsData = await FeedService.getComments(feedId);
+      console.log('댓글 원본 데이터:', commentsData);
+      
+      const commentsWithFormattedTime = (commentsData.pagination.content || []).map(comment => {
+        console.log('댓글 변환 전:', comment);
+        const transformed = {
+          ...comment,
+          createdAt: formatKoreanTime(comment.createdAt)
+        };
+        console.log('댓글 변환 후:', transformed);
+        return transformed;
+      });
+      
       setComments(commentsWithFormattedTime);
+      console.log('댓글 로드 완료:', commentsWithFormattedTime);
     } catch (error: any) {
       console.error('댓글 로드 실패:', error);
       setComments([]);
@@ -377,36 +412,45 @@ const MyFeedPage = () => {
 
   // 좋아요 토글 (백엔드 API 연동)
   const handleLike = async (postId: number) => {
-    if (!postId) return;
+    // postId가 없으면 selectedPost에서 가져오기
+    const feedId = postId || (selectedPost?.id || (selectedPost as any)?.feedId);
+    if (!feedId) {
+      console.error('좋아요: 피드 ID가 유효하지 않습니다');
+      return;
+    }
     
     try {
-      const likeResult = await FeedService.likeFeed(postId);
+      const likeResult = await FeedService.likeFeed(feedId);
       
       // 백엔드 응답에 따라 좋아요 상태 업데이트
-      const isCurrentlyLiked = isLiked(postId);
+      const isCurrentlyLiked = isLiked(feedId);
       const updatedLikedPosts = isCurrentlyLiked 
-        ? likedPosts.filter((id: number) => id !== postId)
-        : [...likedPosts, postId];
+        ? likedPosts.filter((id: number) => id !== feedId)
+        : [...likedPosts, feedId];
       updateLikedPosts(updatedLikedPosts);
       
       // 실제 피드 데이터의 좋아요 수와 isLiked 상태 업데이트
       setFeedPosts((prev) =>
-        prev.map((post) =>
-          post.id === postId ? { 
+        prev.map((post) => {
+          const postId = post.id || (post as any).feedId;
+          return postId === feedId ? { 
             ...post, 
             likeCount: likeResult.likeCount,
             isLiked: likeResult.liked 
-          } : post
-        )
+          } : post;
+        })
       );
       
       // selectedPost도 업데이트 (모달에서 좋아요 클릭 시)
-      if (selectedPost && selectedPost.id === postId) {
-        setSelectedPost({
-          ...selectedPost,
-          likeCount: likeResult.likeCount,
-          isLiked: likeResult.liked
-        });
+      if (selectedPost) {
+        const selectedPostId = selectedPost.id || (selectedPost as any).feedId;
+        if (selectedPostId === feedId) {
+          setSelectedPost({
+            ...selectedPost,
+            likeCount: likeResult.likeCount,
+            isLiked: likeResult.liked
+          });
+        }
       }
       
     } catch (error: any) {
@@ -461,9 +505,15 @@ const MyFeedPage = () => {
     e.preventDefault();
     if (!newComment.trim() || !selectedPost) return;
 
+    const feedId = selectedPost.id || (selectedPost as any).feedId;
+    if (!feedId) {
+      console.error('댓글 등록: 피드 ID가 유효하지 않습니다');
+      return;
+    }
+
     try {
       // 백엔드 API 연동
-      const newCommentObj = await FeedService.createComment(selectedPost.id, {
+      const newCommentObj = await FeedService.createComment(feedId, {
         content: newComment
       });
       
@@ -478,11 +528,12 @@ const MyFeedPage = () => {
       
       // 피드의 댓글 수 업데이트
       setFeedPosts(prev => 
-        prev.map(post => 
-          post.id === selectedPost.id 
+        prev.map(post => {
+          const postId = post.id || (post as any).feedId;
+          return postId === feedId 
             ? { ...post, commentCount: post.commentCount + 1 }
-            : post
-        )
+            : post;
+        })
       );
       
     } catch (error: any) {
@@ -501,17 +552,24 @@ const MyFeedPage = () => {
   const handleDeleteComment = async (commentId: number) => {
     if (!selectedPost || !window.confirm("정말로 이 댓글을 삭제하시겠습니까?")) return;
     
+    const feedId = selectedPost.id || (selectedPost as any).feedId;
+    if (!feedId) {
+      console.error('댓글 삭제: 피드 ID가 유효하지 않습니다');
+      return;
+    }
+    
     try {
-      await FeedService.deleteComment(selectedPost.id, commentId);
+      await FeedService.deleteComment(feedId, commentId);
       setComments(comments.filter(comment => comment.id !== commentId));
       
       // 피드의 댓글 수 업데이트
       setFeedPosts(prev => 
-        prev.map(post => 
-          post.id === selectedPost.id 
+        prev.map(post => {
+          const postId = post.id || (post as any).feedId;
+          return postId === feedId 
             ? { ...post, commentCount: Math.max(0, post.commentCount - 1) }
-            : post
-        )
+            : post;
+        })
       );
       
     } catch (error: any) {
@@ -541,8 +599,14 @@ const MyFeedPage = () => {
   const handleShowLikeUsers = async () => {
     if (!selectedPost) return;
     
+    const feedId = selectedPost.id || (selectedPost as any).feedId;
+    if (!feedId) {
+      console.error('좋아요 사용자 목록: 피드 ID가 유효하지 않습니다');
+      return;
+    }
+    
     try {
-      const users = await FeedService.getFeedLikes(selectedPost.id);
+      const users = await FeedService.getFeedLikes(feedId);
       setLikedUsers(users.map(user => ({
         id: user.userId || 0,
         nickname: user.nickname,
@@ -574,14 +638,28 @@ const MyFeedPage = () => {
   // 투표 후 피드 목록 새로고침
   const handleVoteSuccess = async (feedId: number, newVoteCount: number) => {
     try {
+      console.log(`투표 성공 처리 - feedId: ${feedId}, newVoteCount: ${newVoteCount}`);
+      
       // 현재 피드 목록에서 해당 피드의 투표 수 업데이트
       setFeedPosts(prev => 
-        prev.map(feed => 
-          feed.id === feedId 
+        prev.map(feed => {
+          const currentFeedId = feed.id || (feed as any).feedId;
+          return currentFeedId === feedId 
             ? { ...feed, participantVoteCount: newVoteCount }
-            : feed
-        )
+            : feed;
+        })
       );
+      
+      // selectedPost도 업데이트 (모달에서 투표 시)
+      if (selectedPost) {
+        const selectedFeedId = selectedPost.id || (selectedPost as any).feedId;
+        if (selectedFeedId === feedId) {
+          setSelectedPost({
+            ...selectedPost,
+            participantVoteCount: newVoteCount
+          });
+        }
+      }
       
       // 성공 메시지 표시
       console.log(`피드 ${feedId} 투표 완료: ${newVoteCount}표`);
@@ -702,7 +780,7 @@ const MyFeedPage = () => {
                 ? userProfile.profileImageUrl 
                 : "https://readdy.ai/api/search-image?query=stylish%20young%20asian%20person%20portrait%20with%20minimalist%20background&width=120&height=120&seq=myprofile"
               }
-              alt={isCurrentUser ? (userProfile?.nickname || user?.nickname || "My Profile") : `${userProfile?.nickname || targetUserNickname}님의 프로필`}
+              alt={isCurrentUser ? (userProfile?.nickname || (user && user.nickname) || "My Profile") : `${userProfile?.nickname || targetUserNickname || "사용자"}님의 프로필`}
               className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -712,8 +790,8 @@ const MyFeedPage = () => {
             <div className="ml-6">
               <h2 className="text-3xl font-bold mb-2">
                 {isCurrentUser 
-                  ? `${userProfile?.nickname || user?.nickname || '나'}의 스타일 피드` 
-                  : `${userProfile?.nickname || targetUserNickname || `사용자${targetUserId}`}님의 스타일 피드`
+                  ? `${userProfile?.nickname || (user && user.nickname) || '나'}의 스타일 피드` 
+                  : `${userProfile?.nickname || targetUserNickname || `사용자${targetUserId || '알 수 없음'}`}님의 스타일 피드`
                 }
               </h2>
               <div className="flex items-center mb-3">
@@ -766,7 +844,7 @@ const MyFeedPage = () => {
               <p className="text-gray-600 mb-3">
                 {isCurrentUser 
                   ? "나만의 스타일을 공유하고 다른 사람들과 소통해보세요!"
-                  : `${userProfile?.nickname || targetUserNickname || `사용자${targetUserId}`}님의 스타일을 확인해보세요!`
+                  : `${userProfile?.nickname || targetUserNickname || `사용자${targetUserId || '알 수 없음'}`}님의 스타일을 확인해보세요!`
                 }
               </p>
             </div>
@@ -886,7 +964,7 @@ const MyFeedPage = () => {
             <p className="text-gray-500 mt-2">
               {isCurrentUser 
                 ? "첫 번째 피드를 올려보세요!" 
-                : `${targetUserNickname}님은 아직 피드를 올리지 않았습니다.`
+                : `${effectiveTargetUserNickname || '사용자'}님은 아직 피드를 올리지 않았습니다.`
               }
             </p>
           </div>
@@ -919,10 +997,17 @@ const MyFeedPage = () => {
         comments={comments}
         showComments={showComments}
         onToggleComments={() => setShowComments(!showComments)}
-        onLike={() => selectedPost && handleLike(selectedPost.id)}
-        liked={selectedPost ? isLiked(selectedPost.id) : false}
+        onLike={() => {
+          if (selectedPost) {
+            const feedId = selectedPost.id || (selectedPost as any).feedId;
+            if (feedId) {
+              handleLike(feedId);
+            }
+          }
+        }}
+        liked={selectedPost ? isLiked(selectedPost.id || (selectedPost as any).feedId) : false}
         onEdit={(() => {
-          const isOwner = !!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname);
+          const isOwner = !!(user?.nickname && selectedPost?.user?.nickname && selectedPost.user.nickname === user.nickname);
           if (!isOwner || !isCurrentUser) return undefined;
           return () => {
             handleCloseModal();
@@ -930,17 +1015,17 @@ const MyFeedPage = () => {
           };
         })()}
         onDelete={(() => {
-          const isOwner = !!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname);
+          const isOwner = !!(user?.nickname && selectedPost?.user?.nickname && selectedPost.user.nickname === user.nickname);
           if (!isOwner || !selectedPost || !isCurrentUser) return undefined;
           return () => handleDelete(selectedPost.id);
         })()}
-        showEditButton={!!(user?.nickname && selectedPost && selectedPost.user.nickname === user.nickname && isCurrentUser)}
+        showEditButton={!!(user?.nickname && selectedPost?.user?.nickname && selectedPost.user.nickname === user.nickname && isCurrentUser)}
         newComment={newComment}
         onCommentChange={(e) => setNewComment(e.target.value)}
         onCommentSubmit={handleCommentSubmit}
         onShowLikeUsers={handleShowLikeUsers}
         onDeleteComment={handleDeleteComment}
-        currentUser={user ? { nickname: user.nickname } : undefined}
+        currentUser={user?.nickname ? { nickname: user.nickname } : undefined}
         onUserClick={(userId) => {
           // 팔로우 버튼 클릭 시 페이지 이동하지 않고 현재 페이지에서 팔로우 상태만 변경
           // 모달은 닫지 않음 (사용자가 직접 닫을 수 있도록)

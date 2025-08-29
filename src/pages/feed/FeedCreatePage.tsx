@@ -297,14 +297,14 @@ const FeedCreatePage: React.FC = () => {
       // 🔧 백엔드 연동: 이미지 업로드 (선택사항)
       const imageUrls = uploadedImages.length > 0 
         ? await uploadBase64Images(uploadedImages)
-        : [];
+        : undefined; // 빈 배열 대신 undefined로 설정하여 이미지 없음을 명확히 표시
 
       // 🔧 백엔드 API 구조에 맞춰 수정
       const feedData: CreateFeedRequest = {
         title: title.trim(),
         content: content.trim(),
         orderItemId: parseInt(selectedProductId), // 필수 필드
-        imageUrls: imageUrls,
+        imageUrls: imageUrls || [],
         hashtags: hashtags,
         eventId: selectedEventId ? parseInt(selectedEventId) : undefined,
         instagramId: instagramLinked ? instagramId : undefined,

@@ -393,11 +393,11 @@ const EventResultPage: React.FC = () => {
                               <span className="font-semibold text-gray-700">총 투표수:</span>
                               <span className="ml-2 text-gray-900">{result.totalVotes}표</span>
                             </div>
-                            <div>
+                <div>
                               <span className="font-semibold text-gray-700">발표일:</span>
                               <span className="ml-2 text-gray-900">{formatDate(result.announcedAt)}</span>
-                            </div>
-                            <div>
+                </div>
+                <div>
                               <span className="font-semibold text-gray-700">보상 지급:</span>
                               <span className={`ml-2 font-bold ${result.resultDetails.some(d => d.rewardProcessed) ? 'text-green-600' : 'text-orange-600'}`}>
                                 {result.resultDetails.some(d => d.rewardProcessed) ? '✅ 완료' : '⏳ 대기중'}

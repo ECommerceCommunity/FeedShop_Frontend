@@ -18,7 +18,7 @@ import {
   FeedType,
 } from "../types/feed";
 
-// 백엔드 응답 타입 정의
+// 백엔드 응답 타입 정의 (FeedDetailResponseDto에 맞춤)
 interface BackendFeedPost {
   feedId: number;
   title: string;
@@ -37,17 +37,34 @@ interface BackendFeedPost {
   orderItemId: number;
   productName: string;
   productSize?: number;
+  productImageUrl?: string;
+  productId?: number;
   eventId?: number;
   eventTitle?: string;
   eventDescription?: string;
   eventStartDate?: string;
   eventEndDate?: string;
-  eventType?: string; // 이벤트 타입 필드 추가
-  hashtags?: any[];
-  images?: any[];
-  imageUrls?: string[];
+  hashtags?: Array<{
+    tagId: number;
+    tag: string;
+  }>;
+  images?: Array<{
+    imageId: number;
+    imageUrl: string;
+    sortOrder: number;
+    uploadedAt: string;
+  }>;
+  comments?: Array<{
+    commentId: number;
+    content: string;
+    createdAt: string;
+    userId: number;
+    userNickname: string;
+    userProfileImg?: string;
+  }>;
   isLiked?: boolean;
   isVoted?: boolean;
+  canVote?: boolean;
   createdAt: string;
   updatedAt?: string;
 }
@@ -79,40 +96,15 @@ export class FeedService {
         productName: backendFeed.productName,
         size: backendFeed.productSize,
       },
-      images: backendFeed.imageUrls?.map((url: string, index: number) => ({
-        id: index + 1,
-        imageUrl: url,
-        sortOrder: index,
+      images: backendFeed.images?.map((img: any, index: number) => ({
+        id: img.imageId || index + 1,
+        imageUrl: img.imageUrl,
+        sortOrder: img.sortOrder || index,
       })) || [],
-      hashtags: backendFeed.hashtags?.map((tag: any, index: number) => {
-        // 디버깅: 백엔드에서 오는 해시태그 데이터 구조 확인
-        console.log(`해시태그 ${index}:`, tag, typeof tag);
-        
-        // 백엔드에서 hashtags가 문자열 배열인지 객체 배열인지 확인
-        if (typeof tag === 'string') {
-          return {
-            id: index + 1,
-            tag: tag,
-          };
-        } else if (tag && typeof tag === 'object') {
-          // 백엔드에서 {tagId, tag} 형태로 오는 경우
-          const tagId = tag.tagId || tag.id || index + 1;
-          const tagText = tag.tag || String(tag);
-          
-          console.log(`해시태그 변환: ${tagId} -> ${tagText}`);
-          
-          return {
-            id: tagId,
-            tag: tagText,
-          };
-        } else {
-          // 예상치 못한 형태의 데이터는 건너뛰기
-          return {
-            id: index + 1,
-            tag: String(tag),
-          };
-        }
-      }) || [],
+      hashtags: backendFeed.hashtags?.map((tag) => ({
+        id: tag.tagId,
+        tag: tag.tag,
+      })) || [],
       isLiked: backendFeed.isLiked ?? false,
       isVoted: backendFeed.isVoted ?? false,
       createdAt: backendFeed.createdAt,
@@ -123,7 +115,7 @@ export class FeedService {
       eventDescription: backendFeed.eventDescription,
       eventStartDate: backendFeed.eventStartDate,
       eventEndDate: backendFeed.eventEndDate,
-      eventType: backendFeed.eventType,
+      canVote: backendFeed.canVote ?? false,
     };
   }
 
@@ -138,10 +130,10 @@ export class FeedService {
       let url: string;
       if (feedType) {
         // 타입별 조회 API 사용
-        url = `/api/feeds/text-only/type/${feedType}`;
+        url = `/api/feeds?feedType=${feedType}`;
       } else {
         // 전체 조회 API 사용
-        url = '/api/feeds/text-only';
+        url = '/api/feeds';
       }
       
       const response = await axiosInstance.get<ApiResponse<PaginatedResponse<FeedListResponseDto>>>(
@@ -166,7 +158,7 @@ export class FeedService {
   static async getFeedsByType(feedType: string, params: Omit<FeedListParams, 'feedType'> = {}): Promise<FeedListResponse> {
     try {
       const response = await axiosInstance.get<ApiResponse<any>>(
-        `/api/feeds/text-only/type/${feedType}`,
+        `/api/feeds?feedType=${feedType}`,
         { params }
       );
       const apiResponse = response.data;
@@ -192,7 +184,7 @@ export class FeedService {
   static async getFeed(feedId: number): Promise<FeedPost> {
     try {
       console.log(`FeedService.getFeed 호출 - feedId: ${feedId}`);
-      const url = `/api/feeds/text-only/${feedId}`;
+      const url = `/api/feeds/${feedId}`;
       console.log(`API 호출 URL: ${url}`);
       
       const response = await axiosInstance.get<ApiResponse<BackendFeedPost>>(url);
@@ -235,9 +227,21 @@ export class FeedService {
   static async createFeed(feedData: CreateFeedRequest): Promise<FeedPost> {
     try {
       console.log('FeedService.createFeed 호출:', feedData);
+      console.log('이미지 URL 타입:', typeof feedData.imageUrls);
+      console.log('이미지 URL 값:', feedData.imageUrls);
+      console.log('이미지 URL이 배열인가:', Array.isArray(feedData.imageUrls));
+      console.log('이미지 URL 길이:', feedData.imageUrls?.length);
       
-      // 이미지가 있는 경우 multipart/form-data로 전송
-      if (feedData.imageUrls && feedData.imageUrls.length > 0) {
+      // 이미지가 있는 경우 multipart/form-data로 전송 (undefined, 빈 배열, 빈 문자열은 이미지 없음으로 처리)
+      const hasValidImages = feedData.imageUrls && 
+                            Array.isArray(feedData.imageUrls) && 
+                            feedData.imageUrls.length > 0 && 
+                            feedData.imageUrls.some(url => url && typeof url === 'string' && url.trim() !== '');
+      console.log('유효한 이미지가 있는가:', hasValidImages);
+      console.log('이미지 URL 배열 내용:', feedData.imageUrls);
+      console.log('이미지 URL이 undefined인가:', feedData.imageUrls === undefined);
+      
+      if (hasValidImages) {
         const formData = new FormData();
         
         // 피드 데이터를 JSON 문자열로 변환하여 추가
@@ -333,7 +337,7 @@ export class FeedService {
   static async getMyLikedFeeds(page: number, size: number): Promise<MyLikedFeedsResponseDto> {
     try {
       const response = await axiosInstance.get<ApiResponse<MyLikedFeedsResponseDto>>(
-        `/api/feeds/text-only/my-likes?page=${page}&size=${size}`
+        `/api/feeds/my-likes?page=${page}&size=${size}`
       );
       
       const apiResponse = response.data;
@@ -356,7 +360,7 @@ export class FeedService {
   static async likeFeed(feedId: number): Promise<LikeResponse> {
     try {
       const response = await axiosInstance.post<ApiResponse<LikeResponse>>(
-        `/api/feeds/text-only/${feedId}/likes/toggle`
+        `/api/feeds/${feedId}/likes/toggle`
       );
       const apiResponse = response.data;
       return apiResponse.data;
@@ -373,7 +377,7 @@ export class FeedService {
     feedId: number
   ): Promise<Array<{ userId?: number; nickname: string; profileImg?: string }>> {
     try {
-      const url = `/api/feeds/text-only/${feedId}/likes`;
+      const url = `/api/feeds/${feedId}/likes`;
       const response = await axiosInstance.get<ApiResponse<any>>(url);
 
       const raw = response.data?.data;
@@ -411,13 +415,29 @@ export class FeedService {
    */
   static async voteFeed(feedId: number): Promise<VoteResponse> {
     try {
+      console.log(`투표 API 호출 - feedId: ${feedId}, URL: /api/feeds/${feedId}/vote`);
+      
+      // JWT 토큰 확인
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("로그인이 필요합니다.");
+      }
+      
       const response = await axiosInstance.post<ApiResponse<VoteResponse>>(
-        `/api/feeds/text-only/${feedId}/vote`
+        `/api/feeds/${feedId}/vote`
       );
+      
+      console.log(`투표 API 응답 성공:`, response.data);
       const apiResponse = response.data;
       return apiResponse.data;
     } catch (error: any) {
       console.error('투표 실패:', error);
+      console.error('투표 실패 상세:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        config: error.config
+      });
       throw error;
     }
   }
@@ -427,12 +447,28 @@ export class FeedService {
    */
   static async hasVoted(feedId: number): Promise<boolean> {
     try {
+      console.log(`투표 상태 확인 API 호출 - feedId: ${feedId}`);
+      
+      // JWT 토큰 확인
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.warn("JWT 토큰이 없어서 투표 상태를 확인할 수 없습니다.");
+        return false;
+      }
+      
       const response = await axiosInstance.get<ApiResponse<boolean>>(
-        `/api/feeds/text-only/${feedId}/vote/check`
+        `/api/feeds/${feedId}/vote/check`
       );
+      
+      console.log(`투표 상태 확인 응답:`, response.data);
       return response.data.data;
     } catch (error: any) {
       console.error('투표 상태 확인 실패:', error);
+      console.error('투표 상태 확인 실패 상세:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       return false;
     }
   }
@@ -443,7 +479,7 @@ export class FeedService {
   static async getVoteCount(feedId: number): Promise<number> {
     try {
       const response = await axiosInstance.get<ApiResponse<number>>(
-        `/api/feeds/text-only/${feedId}/vote/count`
+        `/api/feeds/${feedId}/vote/count`
       );
       return response.data.data;
     } catch (error: any) {
@@ -457,8 +493,14 @@ export class FeedService {
    */
   static async unvoteFeed(feedId: number): Promise<VoteResponse> {
     try {
+      // JWT 토큰 확인
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("로그인이 필요합니다.");
+      }
+      
       const response = await axiosInstance.delete<ApiResponse<VoteResponse>>(
-        `/api/feeds/text-only/${feedId}/vote`
+        `/api/feeds/${feedId}/vote`
       );
       const apiResponse = response.data;
       return apiResponse.data;
@@ -474,7 +516,7 @@ export class FeedService {
   static async getComments(feedId: number, params: CommentListParams = {}): Promise<CommentListResponse> {
     try {
       const response = await axiosInstance.get<ApiResponse<any>>(
-        `/api/feeds/text-only/${feedId}/comments`,
+        `/api/feeds/${feedId}/comments`,
         { params }
       );
       
@@ -482,15 +524,20 @@ export class FeedService {
         // 백엔드 응답을 프론트엔드 타입으로 변환
         const data = response.data.data;
         if (data.pagination?.content) {
-          data.pagination.content = data.pagination.content.map((comment: any) => ({
-            ...comment,
-            id: comment.commentId, // 프론트엔드 호환성을 위해 id 필드 추가
-            user: {
-              id: comment.userId,
-              nickname: comment.userNickname,
-              profileImg: comment.userProfileImage
-            }
-          }));
+          data.pagination.content = data.pagination.content.map((comment: any) => {
+            console.log('댓글 원본 데이터:', comment);
+            const transformed = {
+              ...comment,
+              id: comment.commentId, // 프론트엔드 호환성을 위해 id 필드 추가
+              user: {
+                id: comment.userId,
+                nickname: comment.userNickname,
+                profileImg: comment.userProfileImage
+              }
+            };
+            console.log('댓글 변환 후 데이터:', transformed);
+            return transformed;
+          });
         }
         return data;
       } else {
@@ -508,14 +555,15 @@ export class FeedService {
   static async createComment(feedId: number, commentData: CreateCommentRequest): Promise<FeedComment> {
     try {
       const response = await axiosInstance.post<ApiResponse<any>>(
-        `/api/feeds/text-only/${feedId}/comments`,
+        `/api/feeds/${feedId}/comments`,
         commentData
       );
       
       if (response.data.success) {
         // 백엔드 응답을 프론트엔드 타입으로 변환
         const comment = response.data.data;
-        return {
+        console.log('댓글 생성 원본 데이터:', comment);
+        const transformed = {
           ...comment,
           id: comment.commentId, // 프론트엔드 호환성을 위해 id 필드 추가
           user: {
@@ -524,6 +572,8 @@ export class FeedService {
             profileImg: comment.userProfileImage
           }
         };
+        console.log('댓글 생성 변환 후 데이터:', transformed);
+        return transformed;
       } else {
         throw new Error(response.data.message || '댓글 생성에 실패했습니다.');
       }
@@ -541,7 +591,7 @@ export class FeedService {
   static async deleteComment(feedId: number, commentId: number): Promise<void> {
     try {
       const response = await axiosInstance.delete<ApiResponse<void>>(
-        `/api/feeds/text-only/${feedId}/comments/${commentId}`
+        `/api/feeds/${feedId}/comments/${commentId}`
       );
       
       if (!response.data.success) {
