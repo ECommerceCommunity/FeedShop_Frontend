@@ -163,6 +163,8 @@ const MyFeedPage = () => {
           const data = userFeedsResponse.data;
           // FeedListResponseDto 형태의 응답을 FeedPost로 변환
           const transformedFeeds = (data.data.content || []).map(transformFeedResponse);
+          console.log('변환된 피드들:', transformedFeeds);
+          console.log('첫 번째 변환된 피드의 user 정보:', transformedFeeds[0]?.user);
           response = {
             content: transformedFeeds,
             totalElements: data.data.totalElements,
@@ -240,6 +242,8 @@ const MyFeedPage = () => {
       }
 
       console.log('최종 응답 설정:', response);
+      console.log('설정할 피드 목록:', response.content);
+      console.log('첫 번째 피드의 user 정보:', response.content?.[0]?.user);
       setFeedPosts(response.content || []);
       
       // 백엔드에서 받은 isLiked 상태만 사용
