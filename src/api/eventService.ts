@@ -22,7 +22,7 @@ class EventService {
   async getFeedAvailableEvents(): Promise<FeedEventDto[]> {
     try {
       // 캐시 헤더 추가로 브라우저 캐싱 활용
-      const response = await axiosInstance.get<ApiResponse<EventSummaryDto[]>>('/api/events/search?status=ongoing', {
+      const response = await axiosInstance.get<ApiResponse<EventSummaryDto[]>>('/api/events/feed-available', {
         headers: {
           'Cache-Control': 'max-age=300', // 5분간 브라우저 캐시
         }

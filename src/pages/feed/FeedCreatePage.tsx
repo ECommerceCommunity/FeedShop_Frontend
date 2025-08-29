@@ -147,6 +147,7 @@ const FeedCreatePage: React.FC = () => {
         console.log('이벤트 목록 조회 성공:', events);
       } catch (error: any) {
         console.error("이벤트 목록 조회 실패:", error);
+        // 에러가 발생해도 빈 배열로 설정하여 페이지는 정상 표시
         setAvailableEvents([]);
       } finally {
         setEventsLoading(false);
@@ -154,7 +155,7 @@ const FeedCreatePage: React.FC = () => {
     };
 
     fetchAvailableEvents();
-  }, []);
+  }, [availableEvents.length, eventsCacheTime]);
 
   // 이벤트 목록에서 전달받은 이벤트 정보 처리
   useEffect(() => {

@@ -237,7 +237,7 @@ export class FeedService {
       console.log('FeedService.createFeed 호출:', feedData);
       
       const response = await axiosInstance.post<ApiResponse<FeedPost>>(
-        '/api/feeds/text-only',
+        '/api/feeds',
         feedData
       );
       
