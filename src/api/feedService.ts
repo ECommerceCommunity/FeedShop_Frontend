@@ -236,14 +236,56 @@ export class FeedService {
     try {
       console.log('FeedService.createFeed 호출:', feedData);
       
-      const response = await axiosInstance.post<ApiResponse<FeedPost>>(
-        '/api/feeds',
-        feedData
-      );
-      
-      console.log('피드 생성 응답:', response.data);
-      const apiResponse = response.data;
-      return apiResponse.data;
+      // 이미지가 있는 경우 multipart/form-data로 전송
+      if (feedData.imageUrls && feedData.imageUrls.length > 0) {
+        const formData = new FormData();
+        
+        // 피드 데이터를 JSON 문자열로 변환하여 추가
+        const feedDataJson = {
+          title: feedData.title,
+          content: feedData.content,
+          orderItemId: feedData.orderItemId,
+          eventId: feedData.eventId,
+          instagramId: feedData.instagramId,
+          hashtags: feedData.hashtags
+        };
+        formData.append('feedData', new Blob([JSON.stringify(feedDataJson)], {
+          type: 'application/json'
+        }));
+        
+        // 이미지들을 FormData에 추가
+        for (let i = 0; i < feedData.imageUrls.length; i++) {
+          const imageUrl = feedData.imageUrls[i];
+          // Base64 이미지를 Blob으로 변환
+          const response = await fetch(imageUrl);
+          const blob = await response.blob();
+          formData.append('images', blob, `image${i}.jpg`);
+        }
+        
+        const response = await axiosInstance.post<ApiResponse<FeedPost>>(
+          '/api/feeds',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        );
+        
+        console.log('피드 생성 응답 (이미지 포함):', response.data);
+        const apiResponse = response.data;
+        return apiResponse.data;
+      } else {
+        // 이미지가 없는 경우 JSON으로 전송
+        const response = await axiosInstance.post<ApiResponse<FeedPost>>(
+          '/api/feeds/text-only',
+          feedData
+        );
+        
+        console.log('피드 생성 응답 (텍스트만):', response.data);
+        const apiResponse = response.data;
+        return apiResponse.data;
+      }
     } catch (error: any) {
       console.error('피드 생성 실패:', error);
       console.error('에러 상세:', {
