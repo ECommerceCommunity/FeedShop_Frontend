@@ -46,8 +46,8 @@ const FeedList: React.FC<FeedListProps> = ({
               onLikeCountClick={(feedId: number) => onLikeCountClick?.({ ...feed, id: feedId })}
             />
             
-            {/* 투표 버튼 (이벤트 피드인 경우만) */}
-            {feed.feedType === 'EVENT' && (
+            {/* 투표 버튼 (이벤트 피드이고 본인이 아닌 경우만) */}
+            {feed.feedType === 'EVENT' && !isOwnFeed && (
               <FeedVoteButton
                 feedId={feed.id || (feed as any).feedId}
                 feedType={feed.feedType}
@@ -71,14 +71,6 @@ const FeedList: React.FC<FeedListProps> = ({
                 onVoteError={(error) => console.error('투표 에러:', error)}
               />
             )}
-          </FeedCard>
-        );
-      })}
-    </div>
-  );
-};
-
-export default FeedList;
           </FeedCard>
         );
       })}
