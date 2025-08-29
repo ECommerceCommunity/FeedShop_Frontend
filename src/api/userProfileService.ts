@@ -74,7 +74,7 @@ export const UserProfileService = {
         !mappedData.profileImageUrl.startsWith("http")
       ) {
         const baseURL =
-          process.env.REACT_APP_API_URL || "https://localhost:8443";
+          process.env.REACT_APP_API_URL || "https://localhost:8080";
         mappedData.profileImageUrl = `${baseURL}${
           mappedData.profileImageUrl.startsWith("/") ? "" : "/"
         }${mappedData.profileImageUrl}`;
@@ -151,7 +151,7 @@ export const UserProfileService = {
         !mappedData.profileImageUrl.startsWith("http")
       ) {
         const baseURL =
-          process.env.REACT_APP_API_URL || "https://localhost:8443";
+          process.env.REACT_APP_API_URL || "https://localhost:8080";
         mappedData.profileImageUrl = `${baseURL}${
           mappedData.profileImageUrl.startsWith("/") ? "" : "/"
         }${mappedData.profileImageUrl}`;
@@ -314,7 +314,7 @@ export const UserProfileService = {
       // URL이 상대 경로인 경우 baseURL과 결합
       if (imageUrl && !imageUrl.startsWith("http")) {
         const baseURL =
-          process.env.REACT_APP_API_URL || "https://localhost:8443";
+          process.env.REACT_APP_API_URL || "https://localhost:8080";
         imageUrl = `${baseURL}${
           imageUrl.startsWith("/") ? "" : "/"
         }${imageUrl}`;

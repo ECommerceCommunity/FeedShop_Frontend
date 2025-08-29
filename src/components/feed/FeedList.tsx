@@ -1,15 +1,16 @@
 import React from "react";
+import { FeedPost } from "../../types/feed";
 import FeedCard from "./FeedCard";
 import FeedLikeButton from "./FeedLikeButton";
 import FeedVoteButton from "./FeedVoteButton";
 
 interface FeedListProps {
-  feeds: any[];
-  onFeedClick?: (feed: any) => void;
-  onVoteClick?: (feed: any) => void;
+  feeds: FeedPost[];
+  onFeedClick?: (feed: FeedPost) => void;
+  onVoteClick?: (feed: FeedPost) => void;
   onVoteSuccess?: (feedId: number, voteCount: number) => void;
-  onLikeClick?: (feed: any) => void;
-  onLikeCountClick?: (feed: any) => void;
+  onLikeClick?: (feed: FeedPost) => void;
+  onLikeCountClick?: (feed: FeedPost) => void;
   likedPosts?: number[];
 }
 

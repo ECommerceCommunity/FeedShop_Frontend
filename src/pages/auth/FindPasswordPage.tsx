@@ -35,7 +35,7 @@ export default function FindPasswordPage() {
     setMessage("");
 
     try {
-      const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+      const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8080";
       const response = await axios.post(`${baseURL}/api/auth/forgot-password`, {
         email: email,
       });

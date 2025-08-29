@@ -243,7 +243,7 @@ export default function ResetPasswordPage() {
     const validateTokenOnBackend = async () => {
       try {
         const baseURL =
-          process.env.REACT_APP_API_URL || "https://localhost:8443";
+          process.env.REACT_APP_API_URL || "https://localhost:8080";
         const response = await axios.get(`${baseURL}/api/auth/reset-password`, {
           params: { token: tokenFromUrl },
         });
@@ -333,7 +333,7 @@ export default function ResetPasswordPage() {
     }
 
     try {
-      const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+      const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8080";
       // 비밀번호 재설정은 POST 요청입니다.
       const response = await axios.post(`${baseURL}/api/auth/reset-password`, {
         token: token, // useEffect에서 추출한 토큰 사용
