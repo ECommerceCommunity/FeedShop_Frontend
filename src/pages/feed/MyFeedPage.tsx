@@ -32,7 +32,6 @@ const formatKoreanTime = (dateString: string) => {
 
 // FeedListResponseDto를 FeedPost로 변환하는 함수
 const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
-<<<<<<< HEAD
   console.log('transformFeedResponse 입력:', feedResponse);
   
   const transformed = {
@@ -44,7 +43,6 @@ const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
       imageUrl: img.imageUrl,
       sortOrder: img.sortOrder
     })),
-<<<<<<< HEAD
     hashtags: (feedResponse.hashtags || []).map(tag => ({
       id: tag.hashtagId,
       tag: tag.tag
