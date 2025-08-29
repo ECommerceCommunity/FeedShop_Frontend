@@ -542,7 +542,7 @@ export const ProductReviews: React.FC<ProductReviewsProps> = ({
       
       // API 호출 전 디버깅 정보
       console.log('🎯 삭제할 리뷰 ID:', reviewId);
-      console.log('🌐 요청 URL:', `https://localhost:8443/api/user/reviews/${reviewId}`);
+      console.log('🌐 요청 URL:', `https://localhost:8080/api/user/reviews/${reviewId}`);
       
       const apiPromise = ReviewService.deleteReview(reviewId);
       
