@@ -133,6 +133,7 @@ const FeedCreatePage: React.FC = () => {
         
         // 캐시가 유효한 경우 재사용
         if (eventsCacheTime > 0 && (now - eventsCacheTime) < cacheExpiry && availableEvents.length > 0) {
+          setEventsLoading(false);
           return;
         }
         
@@ -145,6 +146,12 @@ const FeedCreatePage: React.FC = () => {
         setEventsCacheTime(now);
         
         console.log('이벤트 목록 조회 성공:', events);
+        
+        // 이벤트가 없는 경우 로그 출력
+        if (events.length === 0) {
+          console.log('진행중인 이벤트가 없습니다.');
+        }
+        
       } catch (error: any) {
         console.error("이벤트 목록 조회 실패:", error);
         // 에러가 발생해도 빈 배열로 설정하여 페이지는 정상 표시
@@ -155,7 +162,7 @@ const FeedCreatePage: React.FC = () => {
     };
 
     fetchAvailableEvents();
-  }, [availableEvents.length, eventsCacheTime]);
+  }, []);
 
   // 이벤트 목록에서 전달받은 이벤트 정보 처리
   useEffect(() => {

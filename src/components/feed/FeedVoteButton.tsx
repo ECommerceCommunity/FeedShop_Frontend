@@ -7,6 +7,8 @@ interface FeedVoteButtonProps {
   feedType: FeedType;
   participantVoteCount: number;
   isVoted?: boolean; // 피드에서 받은 투표 상태
+  eventStatus?: string; // 이벤트 상태 (ONGOING, ENDED, UPCOMING)
+  canVote?: boolean; // 투표 가능 여부
   size?: 'small' | 'medium' | 'large'; // 버튼 크기
   onVoteSuccess?: (voteCount: number) => void;
   onVoteError?: (error: any) => void;
@@ -17,6 +19,8 @@ const FeedVoteButton: React.FC<FeedVoteButtonProps> = ({
   feedType,
   participantVoteCount,
   isVoted: initialIsVoted,
+  eventStatus,
+  canVote = true, // 기본값은 true
   size = 'medium', // 기본값은 medium
   onVoteSuccess,
   onVoteError,
@@ -140,8 +144,8 @@ const FeedVoteButton: React.FC<FeedVoteButtonProps> = ({
     }
   };
 
-  // 이벤트가 아니면 버튼을 숨김
-  if (feedType !== 'EVENT') {
+  // 이벤트가 아니거나 투표할 수 없는 상태면 버튼을 숨김
+  if (feedType !== 'EVENT' || !canVote || eventStatus !== 'ONGOING') {
     return null;
   }
 

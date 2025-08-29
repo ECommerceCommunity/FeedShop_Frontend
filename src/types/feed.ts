@@ -51,6 +51,8 @@ export interface FeedPost {
   eventStartDate?: string;
   eventEndDate?: string;
   eventType?: string;
+  eventStatus?: string; // 이벤트 상태 (ONGOING, ENDED, UPCOMING)
+  canVote?: boolean; // 투표 가능 여부
 }
 
 // 백엔드 FeedType enum과 일치
@@ -117,6 +119,8 @@ export interface FeedListResponseDto {
   eventDescription?: string;
   eventStartDate?: string;
   eventEndDate?: string;
+  eventStatus?: string;
+  canVote?: boolean;
   hashtags: FeedHashtagDto[];
   images: FeedImageDto[];
   isLiked: boolean;

@@ -67,7 +67,9 @@ const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
     eventTitle: feedResponse.eventTitle,
     eventDescription: feedResponse.eventDescription,
     eventStartDate: feedResponse.eventStartDate,
-    eventEndDate: feedResponse.eventEndDate
+    eventEndDate: feedResponse.eventEndDate,
+    eventStatus: feedResponse.eventStatus,
+    canVote: feedResponse.canVote
   };
 };
 

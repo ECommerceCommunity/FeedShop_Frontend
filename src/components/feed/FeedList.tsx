@@ -47,6 +47,8 @@ const FeedList: React.FC<FeedListProps> = ({
               feedType={feed.feedType}
               participantVoteCount={feed.participantVoteCount || 0}
               isVoted={feed.isVoted}
+              eventStatus={feed.eventStatus}
+              canVote={feed.canVote}
               size="small"
               onVoteSuccess={(voteCount) => {
                 // 투표 성공 시 콜백 호출
