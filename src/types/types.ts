@@ -21,8 +21,8 @@ export type {
   Event,
   EventParticipant,
   EventRanking,
-  BattleMatch
-} from './event';
+  BattleMatch,
+} from "./event";
 
 // Feed 관련 타입들은 별도로 관리 (순환 참조 방지)
 // 필요시 각 파일에서 직접 import하여 사용
@@ -260,7 +260,7 @@ export interface CouponUseRequest {
   orderAmount: number;
 }
 
-export type UserCouponStatus = 'AVAILABLE' | 'USED' | 'EXPIRED';
+export type UserCouponStatus = "ACTIVE" | "USED" | "EXPIRED";
 
 // 뱃지 관련 타입들
 export interface BadgeType {
