@@ -13,6 +13,7 @@ interface FeedListProps {
   onLikeClick?: (feed: FeedPost) => void;
   onLikeCountClick?: (feed: FeedPost) => void;
   likedPosts?: number[];
+  hideVoteButtons?: boolean; // 투표 버튼 숨김 옵션 추가
 }
 
 const FeedList: React.FC<FeedListProps> = ({
@@ -23,6 +24,7 @@ const FeedList: React.FC<FeedListProps> = ({
   onLikeClick,
   onLikeCountClick,
   likedPosts,
+  hideVoteButtons = false,
 }) => {
   const { user } = useAuth();
 
@@ -46,8 +48,8 @@ const FeedList: React.FC<FeedListProps> = ({
               onLikeCountClick={(feedId: number) => onLikeCountClick?.({ ...feed, id: feedId })}
             />
             
-            {/* 투표 버튼 (이벤트 피드이고 본인이 아닌 경우만) */}
-            {feed.feedType === 'EVENT' && !isOwnFeed && (
+            {/* 투표 버튼 (이벤트 피드이고 본인이 아니고, 숨김 옵션이 아닌 경우만) */}
+            {feed.feedType === 'EVENT' && !isOwnFeed && !hideVoteButtons && (
               <FeedVoteButton
                 feedId={feed.id || (feed as any).feedId}
                 feedType={feed.feedType}

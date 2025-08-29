@@ -982,10 +982,12 @@ const MyFeedPage = () => {
         <FeedList 
           feeds={filteredFeeds} 
           onFeedClick={handleFeedClick}
+          onVoteClick={handleFeedClick} // 투표 버튼 클릭 시에도 상세 페이지로 이동
           onLikeClick={(feed) => handleLike(feed.id)}
           onLikeCountClick={handleLikeCountClick}
           likedPosts={likedPosts}
           onVoteSuccess={handleVoteSuccess}
+          hideVoteButtons={true} // 마이피드 페이지에서는 투표 버튼 숨김
         />
       )}
 
