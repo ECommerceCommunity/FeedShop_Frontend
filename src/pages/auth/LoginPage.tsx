@@ -148,7 +148,7 @@ export default function LoginPage() {
         throw new Error("reCAPTCHA 인증에 실패했습니다. 다시 시도해주세요.");
       }
 
-      const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+      const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8080";
       // console.log('로그인 요청 전송:', {
       //   url: `${baseURL}/api/auth/login`,
       //   data: { email, password, recaptchaToken }
@@ -239,12 +239,12 @@ export default function LoginPage() {
 
   // 소셜 로그인 핸들러
   const handleGoogleLogin = () => {
-    const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+    const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8080";
     window.location.href = `${baseURL}/oauth2/authorization/google`;
   };
 
   const handleKakaoLogin = () => {
-    const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+    const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8080";
     window.location.href = `${baseURL}/oauth2/authorization/kakao`;
   };
 

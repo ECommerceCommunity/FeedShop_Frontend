@@ -24,6 +24,9 @@ export type {
   BattleMatch
 } from './event';
 
+// Feed 관련 타입들은 별도로 관리 (순환 참조 방지)
+// 필요시 각 파일에서 직접 import하여 사용
+
 // Address 관련 타입들 - 백엔드 UserAddress 모델에 맞춤
 export interface Address {
   id: number;
@@ -258,6 +261,93 @@ export interface CouponUseRequest {
 }
 
 export type UserCouponStatus = 'AVAILABLE' | 'USED' | 'EXPIRED';
+
+// 뱃지 관련 타입들
+export interface BadgeType {
+  name: string;
+  description: string;
+  imageUrl: string;
+  bonusPoints: number;
+}
+
+export interface BadgeResponse {
+  id: number;
+  badgeName: string;
+  badgeDescription: string;
+  badgeImageUrl: string;
+  badgeType: string;
+  awardedAt: string;
+  isDisplayed: boolean;
+}
+
+export interface BadgeListResponse {
+  badges: BadgeResponse[];
+  totalCount: number;
+  displayedCount: number;
+}
+
+export interface BadgeToggleRequest {
+  badgeId: number;
+}
+
+export interface BadgeAwardRequest {
+  userId: number;
+  badgeType: string;
+}
+
+// 리워드 관련 타입들
+export interface RewardType {
+  displayName: string;
+  description: string;
+}
+
+export interface RewardHistoryResponse {
+  historyId: number;
+  userId: number;
+  userLoginId: string;
+  rewardType: string;
+  rewardTypeDisplayName: string;
+  points: number;
+  description: string;
+  relatedId: number | null;
+  relatedType: string | null;
+  adminId: number | null;
+  isProcessed: boolean;
+  processedAt: string | null;
+  createdAt: string;
+}
+
+export interface RewardPolicyResponse {
+  policyId: number;
+  rewardType: string;
+  rewardTypeDisplayName: string;
+  rewardTypeDescription: string;
+  points: number;
+  description: string;
+  isActive: boolean;
+  dailyLimit: number | null;
+  monthlyLimit: number | null;
+  validFrom: string | null;
+  validTo: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RewardGrantRequest {
+  userId: number;
+  points: number;
+  description: string;
+}
+
+export interface RewardHistoryPage {
+  content: RewardHistoryResponse[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+}
 
 // 공통 응답 타입들
 export interface PaginatedResponse<T> {

@@ -462,87 +462,53 @@ const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
             <MenuTitle>판매자 메뉴</MenuTitle>
             <MenuList>
               <MenuItem>
-                <MenuLink
-                  to="/store-home"
-                  active={location.pathname === "/store-home"}
-                >
+                <MenuLink to="/store" active={location.pathname === "/store"}>
                   <MenuIcon
                     className="fas fa-store menu-icon"
-                    active={location.pathname === "/store-home"}
+                    active={location.pathname === "/store"}
                   />
                   <MenuText>내 가게 홈</MenuText>
-                  {location.pathname === "/store-home" && <ActiveIndicator />}
+                  {location.pathname === "/store" && <ActiveIndicator />}
                 </MenuLink>
               </MenuItem>
               <MenuItem>
                 <MenuLink
-                  to="/product-manage"
-                  active={location.pathname === "/product-manage"}
+                  to="/products/upload"
+                  active={location.pathname === "/products/upload"}
                 >
                   <MenuIcon
-                    className="fas fa-box menu-icon"
-                    active={location.pathname === "/product-manage"}
+                    className="fas fa-plus menu-icon"
+                    active={location.pathname === "/products/upload"}
                   />
-                  <MenuText>상품 관리</MenuText>
-                  {location.pathname === "/product-manage" && (
+                  <MenuText>상품 등록</MenuText>
+                  {location.pathname === "/products/upload" && (
                     <ActiveIndicator />
                   )}
                 </MenuLink>
               </MenuItem>
               <MenuItem>
-                <MenuLink
-                  to="/order-manage"
-                  active={location.pathname === "/order-manage"}
-                >
+                <MenuLink to="/orders" active={location.pathname === "/orders"}>
                   <MenuIcon
                     className="fas fa-shopping-cart menu-icon"
-                    active={location.pathname === "/order-manage"}
+                    active={location.pathname === "/orders"}
                   />
                   <MenuText>주문 관리</MenuText>
-                  {location.pathname === "/order-manage" && <ActiveIndicator />}
+                  {location.pathname === "/orders" && <ActiveIndicator />}
                 </MenuLink>
               </MenuItem>
               <MenuItem>
                 <MenuLink
-                  to="/review-manage"
-                  active={location.pathname === "/review-manage"}
-                >
-                  <MenuIcon
-                    className="fas fa-star menu-icon"
-                    active={location.pathname === "/review-manage"}
-                  />
-                  <MenuText>리뷰 관리</MenuText>
-                  {location.pathname === "/review-manage" && (
-                    <ActiveIndicator />
-                  )}
-                </MenuLink>
-              </MenuItem>
-              <MenuItem>
-                <MenuLink
-                  to="/stats-dashboard"
-                  active={location.pathname === "/stats-dashboard"}
+                  to="/seller-mypage"
+                  active={location.pathname === "/seller-mypage"}
                 >
                   <MenuIcon
                     className="fas fa-chart-bar menu-icon"
-                    active={location.pathname === "/stats-dashboard"}
+                    active={location.pathname === "/seller-mypage"}
                   />
-                  <MenuText>통계 분석</MenuText>
-                  {location.pathname === "/stats-dashboard" && (
+                  <MenuText>판매자 대시보드</MenuText>
+                  {location.pathname === "/seller-mypage" && (
                     <ActiveIndicator />
                   )}
-                </MenuLink>
-              </MenuItem>
-              <MenuItem>
-                <MenuLink
-                  to="/settings"
-                  active={location.pathname === "/settings"}
-                >
-                  <MenuIcon
-                    className="fas fa-cog menu-icon"
-                    active={location.pathname === "/settings"}
-                  />
-                  <MenuText>판매자 설정</MenuText>
-                  {location.pathname === "/settings" && <ActiveIndicator />}
                 </MenuLink>
               </MenuItem>
             </MenuList>
@@ -560,7 +526,146 @@ const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
     );
   }
 
-  // 기존(관리자/일반유저) 사이드바 렌더링
+  // 관리자 메뉴 분기
+  if (user?.userType === "admin") {
+    return (
+      <>
+        <Overlay open={open} onClick={onClose} />
+        <SidebarContainer open={open}>
+          <SidebarHeader>
+            <SidebarLogo>FeedShop</SidebarLogo>
+            <SidebarSubtitle>관리자 센터</SidebarSubtitle>
+          </SidebarHeader>
+
+          <QuickStats>
+            <QuickStatsTitle>시스템 현황</QuickStatsTitle>
+            <QuickStatsGrid>
+              <QuickStatItem>
+                <QuickStatNumber>1,247</QuickStatNumber>
+                <QuickStatLabel>총 사용자</QuickStatLabel>
+              </QuickStatItem>
+              <QuickStatItem>
+                <QuickStatNumber>89</QuickStatNumber>
+                <QuickStatLabel>총 판매자</QuickStatLabel>
+              </QuickStatItem>
+              <QuickStatItem>
+                <QuickStatNumber>2,356</QuickStatNumber>
+                <QuickStatLabel>총 상품</QuickStatLabel>
+              </QuickStatItem>
+              <QuickStatItem>
+                <QuickStatNumber>156</QuickStatNumber>
+                <QuickStatLabel>신고 건수</QuickStatLabel>
+              </QuickStatItem>
+            </QuickStatsGrid>
+          </QuickStats>
+
+          <MenuSection>
+            <MenuTitle>관리자 메뉴</MenuTitle>
+            <MenuList>
+              <MenuItem>
+                <MenuLink
+                  to="/admin/dashboard"
+                  active={location.pathname === "/admin/dashboard"}
+                >
+                  <MenuIcon
+                    className="fas fa-tachometer-alt menu-icon"
+                    active={location.pathname === "/admin/dashboard"}
+                  />
+                  <MenuText>대시보드</MenuText>
+                  {location.pathname === "/admin/dashboard" && (
+                    <ActiveIndicator />
+                  )}
+                </MenuLink>
+              </MenuItem>
+              <MenuItem>
+                <MenuLink
+                  to="/user-manage"
+                  active={location.pathname === "/user-manage"}
+                >
+                  <MenuIcon
+                    className="fas fa-users menu-icon"
+                    active={location.pathname === "/user-manage"}
+                  />
+                  <MenuText>사용자 관리</MenuText>
+                  {location.pathname === "/user-manage" && <ActiveIndicator />}
+                </MenuLink>
+              </MenuItem>
+              <MenuItem>
+                <MenuLink
+                  to="/report-manage"
+                  active={location.pathname === "/report-manage"}
+                >
+                  <MenuIcon
+                    className="fas fa-flag menu-icon"
+                    active={location.pathname === "/report-manage"}
+                  />
+                  <MenuText>신고 관리</MenuText>
+                  {location.pathname === "/report-manage" && (
+                    <ActiveIndicator />
+                  )}
+                </MenuLink>
+              </MenuItem>
+              <MenuItem>
+                <MenuLink
+                  to="/stats-dashboard"
+                  active={location.pathname === "/stats-dashboard"}
+                >
+                  <MenuIcon
+                    className="fas fa-chart-line menu-icon"
+                    active={location.pathname === "/stats-dashboard"}
+                  />
+                  <MenuText>통계 분석</MenuText>
+                  {location.pathname === "/stats-dashboard" && (
+                    <ActiveIndicator />
+                  )}
+                </MenuLink>
+              </MenuItem>
+              <MenuItem>
+                <MenuLink
+                  to="/admin/feed-rewards"
+                  active={location.pathname === "/admin/feed-rewards"}
+                >
+                  <MenuIcon
+                    className="fas fa-gift menu-icon"
+                    active={location.pathname === "/admin/feed-rewards"}
+                  />
+                  <MenuText>피드 보상 관리</MenuText>
+                  {location.pathname === "/admin/feed-rewards" && (
+                    <ActiveIndicator />
+                  )}
+                </MenuLink>
+              </MenuItem>
+              <MenuItem>
+                <MenuLink
+                  to="/admin/settings"
+                  active={location.pathname === "/admin/settings"}
+                >
+                  <MenuIcon
+                    className="fas fa-cog menu-icon"
+                    active={location.pathname === "/admin/settings"}
+                  />
+                  <MenuText>관리자 설정</MenuText>
+                  {location.pathname === "/admin/settings" && (
+                    <ActiveIndicator />
+                  )}
+                </MenuLink>
+              </MenuItem>
+            </MenuList>
+          </MenuSection>
+
+          <SidebarFooter>
+            <SidebarFooterText>
+              &copy; 2025 FeedShop
+              <br />
+              관리자 센터
+            </SidebarFooterText>
+          </SidebarFooter>
+        </SidebarContainer>
+      </>
+    );
+  }
+
+  // 일반 사용자 사이드바 렌더링
   return (
     <>
       <Overlay open={open} onClick={onClose} />
@@ -609,114 +714,190 @@ const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
               </MenuLink>
             </MenuItem>
             <MenuItem>
-              <MenuLink to="/new" active={location.pathname === "/new"}>
+              <MenuLink
+                to="/categories"
+                active={location.pathname === "/categories"}
+              >
                 <MenuIcon
-                  className="fas fa-star menu-icon"
-                  active={location.pathname === "/new"}
+                  className="fas fa-th-large menu-icon"
+                  active={location.pathname === "/categories"}
                 />
-                <MenuText>신상품</MenuText>
-                {location.pathname === "/new" && <ActiveIndicator />}
+                <MenuText>카테고리</MenuText>
+                {location.pathname === "/categories" && <ActiveIndicator />}
               </MenuLink>
             </MenuItem>
             <MenuItem>
-              <MenuLink to="/best" active={location.pathname === "/best"}>
+              <MenuLink to="/search" active={location.pathname === "/search"}>
                 <MenuIcon
-                  className="fas fa-crown menu-icon"
-                  active={location.pathname === "/best"}
+                  className="fas fa-search menu-icon"
+                  active={location.pathname === "/search"}
                 />
-                <MenuText>베스트</MenuText>
-                {location.pathname === "/best" && <ActiveIndicator />}
+                <MenuText>상품 검색</MenuText>
+                {location.pathname === "/search" && <ActiveIndicator />}
               </MenuLink>
             </MenuItem>
           </MenuList>
         </MenuSection>
 
         <MenuSection>
-          <MenuTitle>피드</MenuTitle>
+          <MenuTitle>커뮤니티</MenuTitle>
           <MenuList>
             <MenuItem>
-              <MenuLink to="/my-feed" active={location.pathname === "/my-feed"}>
+              <MenuLink to="/feeds" active={location.pathname === "/feeds"}>
                 <MenuIcon
-                  className="fas fa-user menu-icon"
-                  active={location.pathname === "/my-feed"}
-                />
-                <MenuText>마이 피드</MenuText>
-                {location.pathname === "/my-feed" && <ActiveIndicator />}
-              </MenuLink>
-            </MenuItem>
-            <MenuItem>
-              <MenuLink
-                to="/feeds"
-                active={location.pathname === "/feeds"}
-              >
-                <MenuIcon
-                  className="fas fa-list menu-icon"
+                  className="fas fa-rss menu-icon"
                   active={location.pathname === "/feeds"}
                 />
                 <MenuText>피드 목록</MenuText>
                 {location.pathname === "/feeds" && <ActiveIndicator />}
               </MenuLink>
             </MenuItem>
-          </MenuList>
-        </MenuSection>
-
-        <MenuSection>
-          <MenuTitle>마이페이지</MenuTitle>
-          <MenuList>
             <MenuItem>
-              <MenuLink
-                to="/wishlist"
-                active={location.pathname === "/wishlist"}
-              >
+              <MenuLink to="/events" active={location.pathname === "/events"}>
                 <MenuIcon
-                  className="fas fa-heart menu-icon"
-                  active={location.pathname === "/wishlist"}
+                  className="fas fa-calendar-alt menu-icon"
+                  active={location.pathname === "/events"}
                 />
-                <MenuText>찜한 상품</MenuText>
-                {location.pathname === "/wishlist" && <ActiveIndicator />}
-              </MenuLink>
-            </MenuItem>
-            <MenuItem>
-              <MenuLink
-                to="/recentview"
-                active={location.pathname === "/recentview"}
-              >
-                <MenuIcon
-                  className="fas fa-clock menu-icon"
-                  active={location.pathname === "/recentview"}
-                />
-                <MenuText>최근 본 상품</MenuText>
-                {location.pathname === "/recentview" && <ActiveIndicator />}
-              </MenuLink>
-            </MenuItem>
-            <MenuItem>
-              <MenuLink to="/cart" active={location.pathname === "/cart"}>
-                <MenuIcon
-                  className="fas fa-shopping-cart menu-icon"
-                  active={location.pathname === "/cart"}
-                />
-                <MenuText>장바구니</MenuText>
-                {location.pathname === "/cart" && <ActiveIndicator />}
+                <MenuText>이벤트</MenuText>
+                {location.pathname === "/events" && <ActiveIndicator />}
               </MenuLink>
             </MenuItem>
           </MenuList>
         </MenuSection>
 
-        <MenuSection>
-          <MenuTitle>고객 지원</MenuTitle>
-          <MenuList>
-            <MenuItem>
-              <MenuLink to="/reviews" active={location.pathname === "/reviews"}>
-                <MenuIcon
-                  className="fas fa-star menu-icon"
-                  active={location.pathname === "/reviews"}
-                />
-                <MenuText>리뷰 관리</MenuText>
-                {location.pathname === "/reviews" && <ActiveIndicator />}
-              </MenuLink>
-            </MenuItem>
-          </MenuList>
-        </MenuSection>
+        {user && (
+          <>
+            <MenuSection>
+              <MenuTitle>마이페이지</MenuTitle>
+              <MenuList>
+                <MenuItem>
+                  <MenuLink
+                    to="/mypage"
+                    active={location.pathname === "/mypage"}
+                  >
+                    <MenuIcon
+                      className="fas fa-user menu-icon"
+                      active={location.pathname === "/mypage"}
+                    />
+                    <MenuText>마이페이지</MenuText>
+                    {location.pathname === "/mypage" && <ActiveIndicator />}
+                  </MenuLink>
+                </MenuItem>
+                <MenuItem>
+                  <MenuLink
+                    to="/wishlist"
+                    active={location.pathname === "/wishlist"}
+                  >
+                    <MenuIcon
+                      className="fas fa-heart menu-icon"
+                      active={location.pathname === "/wishlist"}
+                    />
+                    <MenuText>찜한 상품</MenuText>
+                    {location.pathname === "/wishlist" && <ActiveIndicator />}
+                  </MenuLink>
+                </MenuItem>
+                <MenuItem>
+                  <MenuLink
+                    to="/recentview"
+                    active={location.pathname === "/recentview"}
+                  >
+                    <MenuIcon
+                      className="fas fa-clock menu-icon"
+                      active={location.pathname === "/recentview"}
+                    />
+                    <MenuText>최근 본 상품</MenuText>
+                    {location.pathname === "/recentview" && <ActiveIndicator />}
+                  </MenuLink>
+                </MenuItem>
+                <MenuItem>
+                  <MenuLink
+                    to="/my-feeds"
+                    active={location.pathname === "/my-feeds"}
+                  >
+                    <MenuIcon
+                      className="fas fa-list menu-icon"
+                      active={location.pathname === "/my-feeds"}
+                    />
+                    <MenuText>내 피드</MenuText>
+                    {location.pathname === "/my-feeds" && <ActiveIndicator />}
+                  </MenuLink>
+                </MenuItem>
+                <MenuItem>
+                  <MenuLink
+                    to="/liked-feeds"
+                    active={location.pathname === "/liked-feeds"}
+                  >
+                    <MenuIcon
+                      className="fas fa-thumbs-up menu-icon"
+                      active={location.pathname === "/liked-feeds"}
+                    />
+                    <MenuText>좋아요한 피드</MenuText>
+                    {location.pathname === "/liked-feeds" && (
+                      <ActiveIndicator />
+                    )}
+                  </MenuLink>
+                </MenuItem>
+              </MenuList>
+            </MenuSection>
+
+            <MenuSection>
+              <MenuTitle>주문/결제</MenuTitle>
+              <MenuList>
+                <MenuItem>
+                  <MenuLink to="/cart" active={location.pathname === "/cart"}>
+                    <MenuIcon
+                      className="fas fa-shopping-cart menu-icon"
+                      active={location.pathname === "/cart"}
+                    />
+                    <MenuText>장바구니</MenuText>
+                    {location.pathname === "/cart" && <ActiveIndicator />}
+                  </MenuLink>
+                </MenuItem>
+                <MenuItem>
+                  <MenuLink
+                    to="/my-orders"
+                    active={location.pathname === "/my-orders"}
+                  >
+                    <MenuIcon
+                      className="fas fa-box menu-icon"
+                      active={location.pathname === "/my-orders"}
+                    />
+                    <MenuText>주문 내역</MenuText>
+                    {location.pathname === "/my-orders" && <ActiveIndicator />}
+                  </MenuLink>
+                </MenuItem>
+              </MenuList>
+            </MenuSection>
+          </>
+        )}
+
+        {!user && (
+          <MenuSection>
+            <MenuTitle>계정</MenuTitle>
+            <MenuList>
+              <MenuItem>
+                <MenuLink to="/login" active={location.pathname === "/login"}>
+                  <MenuIcon
+                    className="fas fa-sign-in-alt menu-icon"
+                    active={location.pathname === "/login"}
+                  />
+                  <MenuText>로그인</MenuText>
+                  {location.pathname === "/login" && <ActiveIndicator />}
+                </MenuLink>
+              </MenuItem>
+              <MenuItem>
+                <MenuLink to="/signup" active={location.pathname === "/signup"}>
+                  <MenuIcon
+                    className="fas fa-user-plus menu-icon"
+                    active={location.pathname === "/signup"}
+                  />
+                  <MenuText>회원가입</MenuText>
+                  {location.pathname === "/signup" && <ActiveIndicator />}
+                </MenuLink>
+              </MenuItem>
+            </MenuList>
+          </MenuSection>
+        )}
 
         <SidebarFooter>
           <SidebarFooterText>
