@@ -30,7 +30,7 @@ const formatKoreanTime = (dateString: string) => {
   }
 };
 
-// FeedListResponseDto를 FeedPost로 변환하는 함수
+// FeedListResponseDto를 FeedPost로 변환하는 함수 (FeedService의 변환 함수와 동일한 방식 사용)
 const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
   console.log('transformFeedResponse 입력:', feedResponse);
   console.log('사용자 정보 필드들:', {
@@ -40,45 +40,49 @@ const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
     userLevel: feedResponse.userLevel
   });
   
-  const transformed = {
+  // FeedService의 transformBackendFeedToFrontend와 동일한 방식으로 변환
+  const transformed: FeedPost = {
     id: feedResponse.feedId,
     title: feedResponse.title,
     content: feedResponse.content,
-    images: (feedResponse.images || []).map(img => ({
-      id: img.imageId,
-      imageUrl: img.imageUrl,
-      sortOrder: img.sortOrder
-    })),
-    hashtags: (feedResponse.hashtags || []).map(tag => ({
-      id: tag.hashtagId,
-      tag: tag.tag
-    })),
+    instagramId: feedResponse.instagramId,
+    feedType: feedResponse.feedType,
+    likeCount: feedResponse.likeCount || 0,
+    commentCount: feedResponse.commentCount || 0,
+    participantVoteCount: feedResponse.participantVoteCount || 0,
     user: {
       id: feedResponse.userId || 0,
       nickname: feedResponse.userNickname || "알 수 없는 사용자",
-      profileImg: feedResponse.userProfileImg,
       level: feedResponse.userLevel,
+      profileImg: feedResponse.userProfileImg,
       gender: feedResponse.userGender,
-      height: feedResponse.userHeight
+      height: feedResponse.userHeight,
     },
-    createdAt: feedResponse.createdAt,
-    updatedAt: feedResponse.createdAt, // 백엔드에서 updatedAt이 없으므로 createdAt 사용
-    likeCount: feedResponse.likeCount,
-    commentCount: feedResponse.commentCount,
-    isLiked: feedResponse.isLiked,
-    isVoted: feedResponse.isVoted,
-    feedType: feedResponse.feedType,
-    participantVoteCount: feedResponse.participantVoteCount,
     orderItem: {
-      id: feedResponse.orderItemId,
-      productName: feedResponse.productName,
-      size: feedResponse.productSize
+      id: feedResponse.orderItemId || 0,
+      productName: feedResponse.productName || "",
+      size: feedResponse.productSize,
     },
+    images: (feedResponse.images || []).map((img: any, index: number) => ({
+      id: img.imageId || index + 1,
+      imageUrl: img.imageUrl,
+      sortOrder: img.sortOrder || index,
+    })),
+    hashtags: (feedResponse.hashtags || []).map((tag: any) => ({
+      id: tag.hashtagId || tag.id || 0,
+      tag: tag.tag || tag.hashtag || "",
+    })),
+    isLiked: feedResponse.isLiked ?? false,
+    isVoted: feedResponse.isVoted ?? false,
+    createdAt: feedResponse.createdAt,
+    updatedAt: feedResponse.createdAt, // FeedListResponseDto에는 updatedAt이 없으므로 createdAt 사용
+    // 이벤트 참여 관련 필드 추가
     eventId: feedResponse.eventId,
     eventTitle: feedResponse.eventTitle,
     eventDescription: feedResponse.eventDescription,
     eventStartDate: feedResponse.eventStartDate,
-    eventEndDate: feedResponse.eventEndDate
+    eventEndDate: feedResponse.eventEndDate,
+    canVote: feedResponse.canVote ?? false,
   };
   
   console.log('transformFeedResponse 출력:', transformed);
