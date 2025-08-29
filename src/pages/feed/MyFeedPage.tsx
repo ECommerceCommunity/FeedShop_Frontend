@@ -30,7 +30,7 @@ const formatKoreanTime = (dateString: string) => {
   }
 };
 
-// FeedListResponseDto를 FeedPost로 변환하는 함수 (FeedService의 변환 함수와 동일한 방식 사용)
+// FeedListResponseDto를 FeedPost로 변환하는 함수 (FeedService의 transformBackendFeedToFrontend와 완전히 동일)
 const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
   console.log('transformFeedResponse 입력:', feedResponse);
   console.log('사용자 정보 필드들:', {
@@ -40,7 +40,7 @@ const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
     userLevel: feedResponse.userLevel
   });
   
-  // FeedService의 transformBackendFeedToFrontend와 동일한 방식으로 변환
+  // FeedService의 transformBackendFeedToFrontend와 완전히 동일한 방식으로 변환
   const transformed: FeedPost = {
     id: feedResponse.feedId,
     title: feedResponse.title,
@@ -86,6 +86,7 @@ const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
   };
   
   console.log('transformFeedResponse 출력:', transformed);
+  console.log('변환된 user 객체:', transformed.user);
   return transformed;
 };
 
@@ -388,6 +389,9 @@ const MyFeedPage = () => {
   // handleFeedClick: 상세 모달 오픈
   const handleFeedClick = async (post: FeedPost) => {
     console.log('피드 클릭됨:', post);
+    console.log('피드 user 정보:', post.user);
+    console.log('피드 user.nickname:', post.user?.nickname);
+    console.log('피드 user.id:', post.user?.id);
     
     // post.id 또는 post.feedId가 유효한지 확인
     const feedId = post.id || (post as any).feedId;
