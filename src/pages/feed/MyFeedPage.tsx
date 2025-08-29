@@ -1022,6 +1022,7 @@ const MyFeedPage = () => {
           return () => handleDelete(selectedPost.id);
         })()}
         showEditButton={!!(user?.nickname && selectedPost?.user?.nickname && selectedPost.user.nickname === user.nickname && isCurrentUser)}
+        showDeleteButton={!!(user?.nickname && selectedPost?.user?.nickname && selectedPost.user.nickname === user.nickname && isCurrentUser)}
         newComment={newComment}
         onCommentChange={(e) => setNewComment(e.target.value)}
         onCommentSubmit={handleCommentSubmit}

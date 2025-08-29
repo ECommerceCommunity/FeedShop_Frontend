@@ -104,7 +104,8 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
   console.log('FeedDetailModal feed.user:', feed.user);
   console.log('FeedDetailModal feed.orderItem:', feed.orderItem);
 
-  const canShowDelete = (showDeleteButton ?? showEditButton) && !!onDelete;
+  const canShowDelete = showDeleteButton && !!onDelete;
+  const canShowEdit = showEditButton && !!onEdit;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -144,7 +145,7 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                   <>
                     <FeedUserProfile
                       userId={feed.user.id || 0}
-                      nickname={feed.user.nickname}
+                      nickname={feed.user.nickname || "알 수 없는 사용자"}
                       profileImageUrl={feed.user.profileImg || "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iMjQiIGZpbGw9IiNEN0Q5REIiLz4KPHN2ZyB4PSIxMiIgeT0iMTIiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaIiBmaWxsPSIjNjc3NDhCIi8+CjxwYXRoIGQ9Ik0xMiAxNEM5LjMzIDE0IDcgMTYuMzMgNyAxOVYyMEgxN1YxOUMxNyAxNi4zMyAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IiM2Nzc0OEIiLz4KPC9zdmc+Cjwvc3ZnPgo="}
                       showBodyInfo={true}
                       size="large"
@@ -161,7 +162,7 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                       </div>
                     )}
                     {/* 팔로우 버튼 */}
-                    {feed.user && user && feed.user.nickname !== user.nickname && (
+                    {feed.user && user && feed.user.nickname && feed.user.nickname !== user.nickname && (
                       <div className="ml-3">
                         <FollowButton
                           targetUserId={feed.user.id}
@@ -173,13 +174,22 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                     )}
                   </>
                 ) : (
-                  <div className="text-gray-500">사용자 정보를 불러올 수 없습니다</div>
+                  <div className="flex items-center">
+                    <img
+                      src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iMjQiIGZpbGw9IiNEN0Q5REIiLz4KPHN2ZyB4PSIxMiIgeT0iMTIiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaIiBmaWxsPSIjNjc3NDhCIi8+CjxwYXRoIGQ9Ik0xMiAxNEM5LjMzIDE0IDcgMTYuMzMgNyAxOVYyMEgxN1YxOUMxNyAxNi4zMyAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IiM2Nzc0OEIiLz4KPC9zdmc+Cjwvc3ZnPgo="
+                      alt="기본 프로필"
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    <div className="ml-3">
+                      <div className="text-gray-500 text-sm">사용자 정보를 불러올 수 없습니다</div>
+                    </div>
+                  </div>
                 )}
               </div>
               
-              {(showEditButton || canShowDelete) && (
+              {(canShowEdit || canShowDelete) && (
                 <div className="flex space-x-2">
-                  {showEditButton && (
+                  {canShowEdit && (
                     <button
                       className="px-3 py-2 rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition text-sm font-medium"
                       onClick={onEdit}
@@ -309,7 +319,7 @@ const FeedDetailModal: React.FC<FeedDetailModalProps> = ({
                   isVoted={feed.isVoted}
                   eventStatus={feed.eventStatus}
                   canVote={feed.canVote}
-                  isOwnFeed={currentUser?.nickname === feed.user?.nickname}
+                  isOwnFeed={currentUser?.nickname === feed.user?.nickname || !feed.user?.nickname}
                   size="medium"
                   onVoteSuccess={(voteCount) => {
                     console.log("투표 성공:", voteCount);
