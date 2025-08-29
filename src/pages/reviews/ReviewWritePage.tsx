@@ -12,6 +12,8 @@ import { StarRating } from "../../components/review/StarRating";
 import { useReviewActions } from "../../hooks/review/useReviewActions";
 import ReviewService from "../../api/reviewService";
 import { validateReviewTitle, validateReviewContent, validateRating, validateImages, getEvaluationLabel } from "../../utils/review/reviewHelpers";
+import { ReviewSuccessModal } from "../../components/modal/ReviewSuccessModal";
+import { CreateReviewResponse, ELEMENT_OPTIONS } from "../../types/review";
 
 // =============== 타입 정의 ===============
 
@@ -93,6 +95,73 @@ const PageTitle = styled.h1`
 
     @media (max-width: 768px) {
         font-size: 20px;
+    }
+`;
+
+const PointIncentiveBanner = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+    border: 2px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px 0 0 0;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #3b82f6, #1d4ed8, #3b82f6);
+        background-size: 200% 100%;
+        animation: shimmer 2s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+`;
+
+const PointIcon = styled.div`
+    font-size: 24px;
+    color: #f59e0b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 50%;
+    animation: bounce 2s ease-in-out infinite;
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-4px);
+        }
+        60% {
+            transform: translateY(-2px);
+        }
+    }
+`;
+
+const PointText = styled.span`
+    font-size: 14px;
+    color: #1e40af;
+    font-weight: 500;
+    
+    strong {
+        color: #1d4ed8;
+        font-weight: 700;
+        font-size: 16px;
     }
 `;
 
@@ -227,40 +296,59 @@ const CharacterCount = styled.div`
 `;
 
 const EvaluationGrid = styled.div`
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-
-    @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 `;
 
 const EvaluationItem = styled.div`
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+`;
+
+const EvaluationRow = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 16px;
+`;
+
+const EvaluationLabel = styled.div`
+    min-width: 80px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    text-align: left;
 `;
 
 const EvaluationButtons = styled.div`
     display: flex;
     gap: 4px;
-    justify-content: center;
-    margin-top: 8px;
+    flex: 1;
 `;
 
 const EvaluationButton = styled.button<{ $active: boolean }>`
-    padding: 8px 12px;
+    flex: 1;
+    padding: 8px 4px;
     border: 1px solid ${props => props.$active ? '#2563eb' : '#d1d5db'};
     border-radius: 6px;
     background: ${props => props.$active ? '#2563eb' : 'white'};
     color: ${props => props.$active ? 'white' : '#374151'};
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
     transition: all 0.2s ease;
+    min-width: 0;
+    text-align: center;
+    line-height: 1.2;
 
     &:hover {
         border-color: #2563eb;
         background: ${props => props.$active ? '#1d4ed8' : '#eff6ff'};
+    }
+
+    @media (max-width: 768px) {
+        font-size: 10px;
+        padding: 6px 3px;
     }
 `;
 
@@ -419,28 +507,40 @@ export const ReviewWritePage: React.FC = () => {
     });
     const [errors, setErrors] = useState<FormErrors>({});
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [reviewResponse, setReviewResponse] = useState<CreateReviewResponse | null>(null);
 
     // 리뷰 액션 훅
     const { createReview, isSubmitting } = useReviewActions({
-        onSuccess: (message) => {
-            alert(message);
+        onSuccess: (message, response) => {
+            // 성공 모달 표시
+            if (response) {
+                setReviewResponse(response);
+                setShowSuccessModal(true);
+            }
             
             // localStorage에 리뷰 작성 완료 플래그 설정 (추가 안전장치)
             localStorage.setItem('reviewCreated', 'true');
             localStorage.setItem('reviewProductId', productId.toString());
-            
-            // 리뷰 작성 후 상품 상세 페이지로 이동하며 새로고침 플래그 전달
-            navigate(`/products/${productId}`, {
-                state: {
-                    refreshReviews: true, // 새로고침 플래그
-                    scrollToReviews: true // 리뷰 섹션으로 스크롤
-                }
-            });
         },
         onError: (message) => {
             alert(message);
         },
     });
+
+    // 성공 모달 닫기 핸들러
+    const handleCloseSuccessModal = () => {
+        setShowSuccessModal(false);
+        setReviewResponse(null);
+        
+        // 리뷰 작성 후 상품 상세 페이지로 이동하며 새로고침 플래그 전달
+        navigate(`/products/${productId}`, {
+            state: {
+                refreshReviews: true, // 새로고침 플래그
+                scrollToReviews: true // 리뷰 섹션으로 스크롤
+            }
+        });
+    };
 
     // =============== 상품 정보 로딩 ===============
 
@@ -556,7 +656,6 @@ export const ReviewWritePage: React.FC = () => {
         }
 
         // 2. 유효성 검사
-
         const newErrors: FormErrors = {};
 
         // 제목 유효성 검사
@@ -578,7 +677,7 @@ export const ReviewWritePage: React.FC = () => {
             setErrors(newErrors);
             return;
         }
-      
+
         // 3. 리뷰 생성 요청
         try {
             await createReview({
@@ -630,6 +729,14 @@ export const ReviewWritePage: React.FC = () => {
                         <span>←</span> 뒤로
                     </BackButton>
                     <PageTitle>리뷰 작성</PageTitle>
+
+                    {/* 포인트 적립 안내 */}
+                    <PointIncentiveBanner>
+                        <PointIcon>🪙</PointIcon>
+                        <PointText>
+                            리뷰 작성 완료 시 <strong>100포인트</strong> 적립!
+                        </PointText>
+                    </PointIncentiveBanner>
 
                     {/* 상품 정보 */}
                     <ProductSection>
@@ -710,21 +817,21 @@ export const ReviewWritePage: React.FC = () => {
                         <EvaluationGrid>
                             {(['sizeFit', 'cushion', 'stability'] as const).map(type => (
                                 <EvaluationItem key={type}>
-                                    <Label>{getEvaluationLabel(type)}</Label>
-                                    <EvaluationButtons>
-                                        {[1, 2, 3].map(value => (
-                                            <EvaluationButton
-                                                key={value}
-                                                type="button"
-                                                $active={formData[type] === value}
-                                                onClick={() => handleEvaluationChange(type, value)}
-                                            >
-                                                {type === 'sizeFit' && ['작음', '적당', '큼'][value - 1]}
-                                                {type === 'cushion' && ['부드러움', '적당', '딱딱함'][value - 1]}
-                                                {type === 'stability' && ['낮음', '보통', '높음'][value - 1]}
-                                            </EvaluationButton>
-                                        ))}
-                                    </EvaluationButtons>
+                                    <EvaluationRow>
+                                        <EvaluationLabel>{getEvaluationLabel(type)}</EvaluationLabel>
+                                        <EvaluationButtons>
+                                            {ELEMENT_OPTIONS[type].map(option => (
+                                                <EvaluationButton
+                                                    key={option.value}
+                                                    type="button"
+                                                    $active={formData[type] === option.value}
+                                                    onClick={() => handleEvaluationChange(type, option.value)}
+                                                >
+                                                    {option.label}
+                                                </EvaluationButton>
+                                            ))}
+                                        </EvaluationButtons>
+                                    </EvaluationRow>
                                 </EvaluationItem>
                             ))}
                         </EvaluationGrid>
@@ -782,10 +889,18 @@ export const ReviewWritePage: React.FC = () => {
                             $variant="primary"
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? '등록 중...' : '리뷰 등록'}
+                            {isSubmitting ? '등록 중...' : '리뷰 작성하고 100P 받기'}
                         </Button>
                     </ButtonGroup>
                 </FormContainer>
+                
+                {/* 성공 모달 */}
+                {showSuccessModal && reviewResponse && (
+                    <ReviewSuccessModal
+                        response={reviewResponse}
+                        onClose={handleCloseSuccessModal}
+                    />
+                )}
             </Container>
         </PageContainer>
     );

@@ -4,7 +4,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 import FeedService from "../../api/feedService";
 import OrderService from "../../api/orderService";
-import EventService, { FeedEventDto } from "../../api/eventService";
+import EventService from "../../api/eventService";
+import { FeedEventDto } from "../../types/event";
 import { CreateFeedRequest } from "../../types/feed";
 import {
   uploadBase64Images,
@@ -61,6 +62,7 @@ const FeedCreatePage: React.FC = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const editId = searchParams.get("id");
+  const eventIdFromUrl = searchParams.get("eventId"); // URL 파라미터에서 이벤트 ID 가져오기
   const navigate = useNavigate();
 
 
@@ -131,6 +133,7 @@ const FeedCreatePage: React.FC = () => {
         
         // 캐시가 유효한 경우 재사용
         if (eventsCacheTime > 0 && (now - eventsCacheTime) < cacheExpiry && availableEvents.length > 0) {
+          setEventsLoading(false);
           return;
         }
         
@@ -143,8 +146,15 @@ const FeedCreatePage: React.FC = () => {
         setEventsCacheTime(now);
         
         console.log('이벤트 목록 조회 성공:', events);
+        
+        // 이벤트가 없는 경우 로그 출력
+        if (events.length === 0) {
+          console.log('진행중인 이벤트가 없습니다.');
+        }
+        
       } catch (error: any) {
         console.error("이벤트 목록 조회 실패:", error);
+        // 에러가 발생해도 빈 배열로 설정하여 페이지는 정상 표시
         setAvailableEvents([]);
       } finally {
         setEventsLoading(false);
@@ -156,7 +166,24 @@ const FeedCreatePage: React.FC = () => {
 
   // 이벤트 목록에서 전달받은 이벤트 정보 처리
   useEffect(() => {
-    if (incomingEventId && fromEventList) {
+    // URL 파라미터에서 이벤트 ID가 있으면 우선 처리
+    if (eventIdFromUrl) {
+      const eventIdNumber = parseInt(eventIdFromUrl);
+      setSelectedEventId(eventIdNumber.toString());
+      
+      // 이벤트 정보를 가져와서 제목과 내용에 자동 설정
+      const selectedEvent = availableEvents.find(event => event.eventId === eventIdNumber);
+      if (selectedEvent) {
+        setTitle(`${selectedEvent.title} 참여 피드`);
+        setContent(`${selectedEvent.title} 이벤트에 참여합니다!`);
+        
+        // 이벤트 관련 해시태그 자동 추가
+        const eventHashtags = ["이벤트참여", selectedEvent.title.replace(/\s+/g, ""), "피드챌린지"];
+        setHashtags(eventHashtags);
+        
+        console.log('URL 파라미터로 이벤트 자동 선택 완료:', selectedEvent);
+      }
+    } else if (incomingEventId && fromEventList) {
       // 선택된 이벤트 ID를 상태에 설정 (숫자로 변환)
       const eventIdNumber = parseInt(incomingEventId.toString());
       setSelectedEventId(eventIdNumber.toString());
@@ -176,7 +203,7 @@ const FeedCreatePage: React.FC = () => {
         console.warn('선택된 이벤트를 찾을 수 없음:', eventIdNumber, availableEvents);
       }
     }
-  }, [incomingEventId, fromEventList, availableEvents]);
+  }, [incomingEventId, fromEventList, availableEvents, eventIdFromUrl]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -270,14 +297,14 @@ const FeedCreatePage: React.FC = () => {
       // 🔧 백엔드 연동: 이미지 업로드 (선택사항)
       const imageUrls = uploadedImages.length > 0 
         ? await uploadBase64Images(uploadedImages)
-        : [];
+        : undefined; // 빈 배열 대신 undefined로 설정하여 이미지 없음을 명확히 표시
 
       // 🔧 백엔드 API 구조에 맞춰 수정
       const feedData: CreateFeedRequest = {
         title: title.trim(),
         content: content.trim(),
         orderItemId: parseInt(selectedProductId), // 필수 필드
-        imageUrls: imageUrls,
+        imageUrls: imageUrls || [],
         hashtags: hashtags,
         eventId: selectedEventId ? parseInt(selectedEventId) : undefined,
         instagramId: instagramLinked ? instagramId : undefined,
@@ -320,14 +347,14 @@ const FeedCreatePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-3">
             {editId ? "피드 수정" : "새 피드 작성"}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-lg">
             {editId
               ? "피드 내용을 수정해주세요."
               : "새로운 피드를 작성해주세요."}
@@ -336,8 +363,9 @@ const FeedCreatePage: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* 기본 정보 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <i className="fas fa-info-circle text-blue-600 mr-3"></i>
               기본 정보
             </h2>
 
@@ -376,8 +404,9 @@ const FeedCreatePage: React.FC = () => {
           </div>
 
           {/* 구매 상품 선택 - 필수 필드로 변경 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <i className="fas fa-shopping-bag text-green-600 mr-3"></i>
               구매 상품 선택 *
             </h2>
 
@@ -413,8 +442,9 @@ const FeedCreatePage: React.FC = () => {
           </div>
 
           {/* 이미지 업로드 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <i className="fas fa-image text-purple-600 mr-3"></i>
               이미지 업로드 (선택사항)
             </h2>
 
@@ -468,8 +498,9 @@ const FeedCreatePage: React.FC = () => {
           </div>
 
           {/* 이벤트 선택 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <i className="fas fa-calendar-alt text-orange-600 mr-3"></i>
               이벤트 참여 (선택사항)
             </h2>
 
@@ -514,8 +545,9 @@ const FeedCreatePage: React.FC = () => {
           </div>
 
           {/* 해시태그 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <i className="fas fa-hashtag text-pink-600 mr-3"></i>
               해시태그 (선택사항)
             </h2>
 
@@ -584,8 +616,9 @@ const FeedCreatePage: React.FC = () => {
           </div>
 
           {/* 인스타그램 연동 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <i className="fab fa-instagram text-pink-500 mr-3"></i>
               인스타그램 연동 (선택사항)
             </h2>
 
@@ -615,26 +648,31 @@ const FeedCreatePage: React.FC = () => {
           </div>
 
           {/* 제출 버튼 */}
-          <div className="flex justify-end gap-4">
+          <div className="flex justify-end gap-4 pt-6">
             <button
               type="button"
               onClick={() => navigate("/feeds")}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
             >
+              <i className="fas fa-times mr-2"></i>
               취소
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
             >
-              {isLoading
-                ? editId
-                  ? "수정 중..."
-                  : "생성 중..."
-                : editId
-                ? "피드 수정"
-                : "피드 생성"}
+              {isLoading ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  {editId ? "수정 중..." : "생성 중..."}
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <i className="fas fa-paper-plane mr-2"></i>
+                  {editId ? "피드 수정" : "피드 생성"}
+                </div>
+              )}
             </button>
           </div>
         </form>
@@ -643,13 +681,16 @@ const FeedCreatePage: React.FC = () => {
       {/* 토스트 메시지 */}
       {showToast && (
         <div
-          className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg animate-fade-in-out ${
+          className={`fixed top-4 right-4 z-50 p-6 rounded-2xl shadow-2xl animate-fade-in-out backdrop-blur-sm ${
             toastType === "success"
-              ? "bg-green-500 text-white"
-              : "bg-red-500 text-white"
+              ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white border border-green-400"
+              : "bg-gradient-to-r from-red-500 to-pink-500 text-white border border-red-400"
           }`}
         >
-          {toastMessage}
+          <div className="flex items-center">
+            <i className={`fas ${toastType === "success" ? "fa-check-circle" : "fa-exclamation-circle"} mr-3 text-xl`}></i>
+            <span className="font-semibold">{toastMessage}</span>
+          </div>
         </div>
       )}
     </div>

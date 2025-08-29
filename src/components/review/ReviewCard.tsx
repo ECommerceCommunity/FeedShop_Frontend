@@ -5,12 +5,14 @@
  * 리뷰 내용, 이미지, 별점, 3요소 평가 등을 포함합니다.
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { StarRating } from "./StarRating";
+import { ReviewReportModal } from "./ReviewReportModal";
 import { formatDate, getRelativeTime } from "../../utils/review/reviewHelpers";
 import { Review, ReviewImage } from "../../types/review"; // 공통 타입 import
 import { toUrl } from "../../utils/common/images"; // Product에서 사용하는 이미지 URL 변환 함수
+import { UserProfileService, UserProfileData } from "../../api/userProfileService";
 
 // =============== 타입 정의 ===============
 
@@ -20,6 +22,8 @@ interface ReviewCardProps {
     showProductInfo?: boolean;         // 상품 정보 표시 여부 (마이페이지에서 사용)
     onEdit?: (reviewId: number) => void; // 수정 버튼 클릭 콜백
     onDelete?: (reviewId: number) => void; // 삭제 버튼 클릭 콜백
+    isReported?: boolean;              // 이미 신고된 리뷰인지 여부
+    onReportSuccess?: () => void;      // 신고 성공 콜백
 }
 
 // =============== 스타일 컴포넌트 ===============
@@ -81,6 +85,22 @@ const UserDetails = styled.div`
   gap: 4px;
 `;
 
+const UserBodyInfo = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+`;
+
+const BodyInfoItem = styled.span`
+  font-size: 11px;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+`;
+
 const UserName = styled.span`
   font-weight: 600;
   color: #111827;
@@ -113,11 +133,16 @@ const ActionButton = styled.button`
     color: #374151;
   }
   
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
   &.edit {
     color: #2563eb;
     border-color: #bfdbfe;
     
-    &:hover {
+    &:hover:not(:disabled) {
       background: #eff6ff;
       border-color: #2563eb;
     }
@@ -127,9 +152,31 @@ const ActionButton = styled.button`
     color: #dc2626;
     border-color: #fecaca;
     
-    &:hover {
+    &:hover:not(:disabled) {
       background: #fef2f2;
       border-color: #dc2626;
+    }
+  }
+  
+  &.report {
+    color: #ea580c;
+    border-color: #fed7aa;
+    
+    &:hover:not(:disabled) {
+      background: #fff7ed;
+      border-color: #ea580c;
+    }
+    
+    &.reported {
+      color: #9ca3af;
+      border-color: #e5e7eb;
+      cursor: not-allowed;
+      
+      &:hover {
+        background: none;
+        border-color: #e5e7eb;
+        color: #9ca3af;
+      }
     }
   }
 `;
@@ -239,46 +286,62 @@ const EvaluationValue = styled.div<{ $color: string }>`
 // =============== 유틸리티 함수들 ===============
 
 /**
- * 3요소 평가 값을 텍스트로 변환 (백엔드 문자열 형식 지원)
+ * 3요소 평가 값을 텍스트로 변환 (5단계 시스템 지원)
  */
 const getEvaluationText = (type: 'sizeFit' | 'cushion' | 'stability', value?: number | string) => {
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`🏷️ getEvaluationText: type=${type}, value=${value} (${typeof value})`);
+    }
+    
     if (!value) return { text: "미평가", color: "#9ca3af" };
 
-    // 문자열 형식으로 온 데이터를 처리
+    // 5단계 문자열 형식으로 온 데이터를 처리
     const stringEvaluationMap = {
         sizeFit: {
-            'SMALL': { text: "작음", color: "#dc2626" },
+            'VERY_SMALL': { text: "매우 작음", color: "#dc2626" },
+            'SMALL': { text: "작음", color: "#ea580c" },
             'NORMAL': { text: "적당함", color: "#059669" },
-            'BIG': { text: "큼", color: "#dc2626" }
+            'BIG': { text: "큼", color: "#ea580c" },
+            'VERY_BIG': { text: "매우 큼", color: "#dc2626" }
         },
         cushion: {
-            'SOFT': { text: "부드러움", color: "#2563eb" },
-            'NORMAL': { text: "적당함", color: "#059669" },
-            'HARD': { text: "딱딱함", color: "#dc2626" }
+            'VERY_FIRM': { text: "매우 딱딱함", color: "#dc2626" },
+            'FIRM': { text: "딱딱함", color: "#ea580c" },
+            'MEDIUM': { text: "적당함", color: "#059669" },
+            'SOFT': { text: "푹신함", color: "#2563eb" },
+            'VERY_SOFT': { text: "매우 푹신함", color: "#7c3aed" }
         },
         stability: {
-            'LOW': { text: "낮음", color: "#dc2626" },
+            'VERY_UNSTABLE': { text: "매우 불안정", color: "#dc2626" },
+            'UNSTABLE': { text: "불안정", color: "#ea580c" },
             'NORMAL': { text: "보통", color: "#059669" },
-            'STABLE': { text: "높음", color: "#2563eb" }
+            'STABLE': { text: "안정적", color: "#2563eb" },
+            'VERY_STABLE': { text: "매우 안정적", color: "#7c3aed" }
         }
     };
 
-    // 숫자 형식으로 온 데이터를 처리 (기존 호환성)
+    // 5단계 숫자 형식으로 온 데이터를 처리
     const numberEvaluationMap = {
         sizeFit: {
-            1: { text: "작음", color: "#dc2626" },
-            2: { text: "적당함", color: "#059669" },
-            3: { text: "큼", color: "#dc2626" }
+            1: { text: "매우 작음", color: "#dc2626" },
+            2: { text: "작음", color: "#ea580c" },
+            3: { text: "적당함", color: "#059669" },
+            4: { text: "큼", color: "#ea580c" },
+            5: { text: "매우 큼", color: "#dc2626" }
         },
         cushion: {
-            1: { text: "부드러움", color: "#2563eb" },
-            2: { text: "적당함", color: "#059669" },
-            3: { text: "딱딱함", color: "#dc2626" }
+            1: { text: "매우 딱딱함", color: "#dc2626" },
+            2: { text: "딱딱함", color: "#ea580c" },
+            3: { text: "적당함", color: "#059669" },
+            4: { text: "푹신함", color: "#2563eb" },
+            5: { text: "매우 푹신함", color: "#7c3aed" }
         },
         stability: {
-            1: { text: "낮음", color: "#dc2626" },
-            2: { text: "보통", color: "#059669" },
-            3: { text: "높음", color: "#2563eb" }
+            1: { text: "매우 불안정", color: "#dc2626" },
+            2: { text: "불안정", color: "#ea580c" },
+            3: { text: "보통", color: "#059669" },
+            4: { text: "안정적", color: "#2563eb" },
+            5: { text: "매우 안정적", color: "#7c3aed" }
         }
     };
 
@@ -301,11 +364,59 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
                                                           showProductInfo = false,
                                                           onEdit,
                                                           onDelete,
+                                                          isReported = false,
+                                                          onReportSuccess,
                                                       }) => {
     // const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [userBodyInfo, setUserBodyInfo] = useState<UserProfileData | null>(null);
+    const [isLoadingBodyInfo, setIsLoadingBodyInfo] = useState(false);
 
     // 현재 사용자가 이 리뷰의 작성자인지 확인
     const isOwner = currentUserId === review.userId;
+    
+    // 사용자 신체 정보 로드
+    useEffect(() => {
+        const loadUserBodyInfo = async () => {
+            if (!review.userId) return;
+            
+            setIsLoadingBodyInfo(true);
+            try {
+                const profileData = await UserProfileService.getUserProfileById(review.userId);
+                setUserBodyInfo(profileData);
+            } catch (error) {
+                console.error(`사용자 ${review.userId} 신체 정보 로드 실패:`, error);
+                setUserBodyInfo(null);
+            } finally {
+                setIsLoadingBodyInfo(false);
+            }
+        };
+
+        loadUserBodyInfo();
+    }, [review.userId]);
+
+    // 발 너비 텍스트 변환
+    const getFootWidthText = (footWidth?: "NARROW" | "NORMAL" | "WIDE") => {
+        switch (footWidth) {
+            case "NARROW": return "좁음";
+            case "WIDE": return "넓음";
+            case "NORMAL":
+            default: return "보통";
+        }
+    };
+    
+    // 디버깅: 사용자 ID 매칭 정보 출력
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`🔍 리뷰 ${review.reviewId} 권한 체크:`, {
+            currentUserId,
+            reviewUserId: review.userId,
+            isOwner,
+            reviewUserName: review.userName
+        });
+    }
+    
+    // 신고 버튼 표시 여부 (로그인한 상태면 모든 리뷰에 표시)
+    const canReport = !!currentUserId;
     
     // 모의 데이터 필터링 함수 (완화된 버전)
     const filterRealImages = (images: ReviewImage[]): ReviewImage[] => {
@@ -410,6 +521,18 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
         }
     };
 
+    // 신고 버튼 클릭
+    const handleReport = () => {
+        setIsReportModalOpen(true);
+    };
+
+    // 신고 성공 처리
+    const handleReportSuccess = () => {
+        if (onReportSuccess) {
+            onReportSuccess();
+        }
+    };
+
     return (
         <CardContainer>
             {/* 카드 헤더 - 사용자 정보 및 액션 버튼 */}
@@ -431,12 +554,31 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
                         >
                             {getRelativeTime(review.createdAt)}
                         </ReviewDate>
+                        
+                        {/* 사용자 신체 정보 */}
+                        {userBodyInfo && (userBodyInfo.height || userBodyInfo.weight || userBodyInfo.footSize || userBodyInfo.footWidth) && (
+                            <UserBodyInfo>
+                                {userBodyInfo.height && (
+                                    <BodyInfoItem>키 {userBodyInfo.height}cm</BodyInfoItem>
+                                )}
+                                {userBodyInfo.weight && (
+                                    <BodyInfoItem>몸무게 {userBodyInfo.weight}kg</BodyInfoItem>
+                                )}
+                                {userBodyInfo.footSize && (
+                                    <BodyInfoItem>발사이즈 {userBodyInfo.footSize}mm</BodyInfoItem>
+                                )}
+                                {userBodyInfo.footWidth && (
+                                    <BodyInfoItem>발너비 {getFootWidthText(userBodyInfo.footWidth)}</BodyInfoItem>
+                                )}
+                            </UserBodyInfo>
+                        )}
                     </UserDetails>
                 </UserInfo>
 
-                {/* 작성자 본인인 경우에만 수정/삭제 버튼 표시 */}
-                {isOwner && (
+                {/* 액션 버튼들 */}
+                {(onEdit || onDelete || canReport) && (
                     <ActionButtons>
+                        {/* 수정/삭제 버튼 (모든 리뷰에 표시) */}
                         {onEdit && (
                             <ActionButton
                                 className="edit"
@@ -453,6 +595,25 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
                                 type="button"
                             >
                                 삭제
+                            </ActionButton>
+                        )}
+                        
+                        {/* 로그인한 사용자는 모든 리뷰에 신고 버튼 표시 */}
+                        {canReport && (
+                            <ActionButton
+                                className={`report ${isReported ? 'reported' : ''}`}
+                                onClick={handleReport}
+                                type="button"
+                                disabled={isReported}
+                                title={
+                                    isReported 
+                                        ? '이미 신고한 리뷰입니다' 
+                                        : isOwner 
+                                            ? '본인 리뷰 신고하기' 
+                                            : '리뷰 신고하기'
+                                }
+                            >
+                                {isReported ? '신고완료' : '신고'}
                             </ActionButton>
                         )}
                     </ActionButtons>
@@ -559,6 +720,15 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
                     </EvaluationGrid>
                 </EvaluationSection>
             )}
+            
+            {/* 리뷰 신고 모달 */}
+            <ReviewReportModal
+                isOpen={isReportModalOpen}
+                reviewId={review.reviewId}
+                reviewAuthor={review.userName}
+                onClose={() => setIsReportModalOpen(false)}
+                onSuccess={handleReportSuccess}
+            />
         </CardContainer>
     );
 };

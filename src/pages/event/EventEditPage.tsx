@@ -1,8 +1,20 @@
 import { useState, ChangeEvent, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../../api/axios";
-import { EventType } from "../../types/types";
-
+import { EventType, EventRewardGroup, EventRewardItem, EventUpdateRequestDto } from "../../types/event";
+import { EventForm } from "../../types/event";
+import { 
+  getEventTypeText, 
+  toLocalDateString, 
+  toStartDateTime,
+  toEndDateTime,
+  validateEventForm, 
+  getErrorMessage, 
+  createEventFormData, 
+  getDefaultRewards,
+  validateEventDates 
+} from "../../utils/eventUtils";
+import EventService from "../../api/eventService";
 
 // Add global styles for animation
 const style = document.createElement('style');
@@ -19,44 +31,7 @@ animation: fadeInOut 3s ease-in-out forwards;
 `;
 document.head.appendChild(style);
 
-// 백엔드 EventUpdateRequestDto.EventRewardRequestDto와 일치하는 타입
-interface EventRewardRequestDto {
-  conditionValue: string;
-  rewardValue: string;
-}
 
-interface EventForm {
-  title: string;
-  type: EventType;
-  purchaseStartDate: string;
-  purchaseEndDate: string;
-  eventStartDate: string;
-  eventEndDate: string;
-  announcementDate: string;
-  description: string;
-  participationMethod: string;
-  rewards: EventRewardRequestDto[];
-  selectionCriteria: string;
-  precautions: string;
-  maxParticipants: number;
-  image: string;
-  imageFile: File | null;
-  imagePreview: string;
-}
-
-// 날짜 변환 함수들 - 필요시 유틸리티로 분리 권장
-function toDatetimeLocal(str: string | undefined) {
-  if (!str) return '';
-  const date = new Date(str);
-  return date.toISOString().slice(0, 16);
-}
-
-// 날짜를 LocalDate 형식으로 변환 (YYYY-MM-DD)
-function toLocalDateString(dateTimeStr: string): string {
-  if (!dateTimeStr) return '';
-  const date = new Date(dateTimeStr);
-  return date.toISOString().split('T')[0]; // YYYY-MM-DD 형식
-}
 
 const EventEditPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -77,9 +52,27 @@ const EventEditPage = () => {
     description: "",
     participationMethod: "",
     rewards: [
-      { conditionValue: "1", rewardValue: "프리미엄 스니커즈" },
-      { conditionValue: "2", rewardValue: "트렌디한 운동화" },
-      { conditionValue: "3", rewardValue: "스타일리시한 슈즈" }
+      { 
+        conditionValue: "1등", 
+        rewards: [
+          { rewardType: "BADGE_POINTS", rewardValue: 100, rewardDescription: "100 뱃지점수" },
+          { rewardType: "POINTS", rewardValue: 2000, rewardDescription: "2000 포인트" },
+          { rewardType: "DISCOUNT_COUPON", rewardValue: 15, rewardDescription: "15% 할인쿠폰" }
+        ]
+      },
+      { 
+        conditionValue: "2등", 
+        rewards: [
+          { rewardType: "POINTS", rewardValue: 1500, rewardDescription: "1500 포인트" },
+          { rewardType: "BADGE_POINTS", rewardValue: 50, rewardDescription: "50 뱃지점수" }
+        ]
+      },
+      { 
+        conditionValue: "3등", 
+        rewards: [
+          { rewardType: "POINTS", rewardValue: 1000, rewardDescription: "1000 포인트" }
+        ]
+      }
     ],
     selectionCriteria: "",
     precautions: "",
@@ -101,29 +94,16 @@ const EventEditPage = () => {
         const detail = event.eventDetail || event;
         
         // rewards 데이터 매핑 수정
-        let mappedRewards: EventRewardRequestDto[] = [];
-        if (detail.rewards && Array.isArray(detail.rewards)) {
-          mappedRewards = detail.rewards.map((reward: any) => ({
-            conditionValue: reward.rank ? reward.rank.toString() : reward.conditionValue || "1",
-            rewardValue: reward.reward || reward.rewardValue || ''
-          }));
-        } else {
-          // 기본 보상 설정
-          mappedRewards = [
-            { conditionValue: "1", rewardValue: "프리미엄 스니커즈" },
-            { conditionValue: "2", rewardValue: "트렌디한 운동화" },
-            { conditionValue: "3", rewardValue: "스타일리시한 슈즈" }
-          ];
-        }
+        const mappedRewards = processRewardsData(detail.rewards);
         
         setEventForm({
           title: detail.title || event.title || '',
           type: (detail.type || event.type || 'BATTLE').toUpperCase() as EventType,
-          purchaseStartDate: toDatetimeLocal(detail.purchaseStartDate),
-          purchaseEndDate: toDatetimeLocal(detail.purchaseEndDate),
-          eventStartDate: toDatetimeLocal(detail.eventStartDate),
-          eventEndDate: toDatetimeLocal(detail.eventEndDate),
-          announcementDate: toDatetimeLocal(detail.announcement || detail.announcementDate),
+          purchaseStartDate: toLocalDateString(detail.purchaseStartDate),
+          purchaseEndDate: toLocalDateString(detail.purchaseEndDate),
+          eventStartDate: toLocalDateString(detail.eventStartDate),
+          eventEndDate: toLocalDateString(detail.eventEndDate),
+          announcementDate: toLocalDateString(detail.announcement || detail.announcementDate),
           description: detail.description || '',
           participationMethod: detail.participationMethod || '',
           rewards: mappedRewards,
@@ -180,12 +160,70 @@ const EventEditPage = () => {
     setTimeout(() => setShowToast(false), 3000);
   };
 
-  const handleRewardChange = (index: number, field: keyof EventRewardRequestDto, value: string) => {
+  const updateRewardInGroup = (rewards: EventRewardGroup[], groupIndex: number, rewardIndex: number, field: keyof EventRewardItem, value: string): EventRewardGroup[] => {
+    return rewards.map((rewardGroup, i) => 
+      i === groupIndex ? {
+        ...rewardGroup,
+        rewards: rewardGroup.rewards.map((reward, j) => 
+          j === rewardIndex ? { ...reward, [field]: value } : reward
+        )
+      } : rewardGroup
+    );
+  };
+
+  const handleRewardChange = (groupIndex: number, rewardIndex: number, field: keyof EventRewardItem, value: string) => {
     setEventForm(prev => ({
       ...prev,
-      rewards: prev.rewards.map((reward, i) => 
-        i === index ? { ...reward, [field]: value } : reward
-      )
+      rewards: updateRewardInGroup(prev.rewards, groupIndex, rewardIndex, field, value)
+    }));
+  };
+
+  const updateRewardGroup = (rewards: EventRewardGroup[], groupIndex: number, field: keyof EventRewardGroup, value: string): EventRewardGroup[] => {
+    return rewards.map((rewardGroup, i) => 
+      i === groupIndex ? { ...rewardGroup, [field]: value } : rewardGroup
+    );
+  };
+
+  const handleRewardGroupChange = (groupIndex: number, field: keyof EventRewardGroup, value: string) => {
+    setEventForm(prev => ({
+      ...prev,
+      rewards: updateRewardGroup(prev.rewards, groupIndex, field, value)
+    }));
+  };
+
+  const addRewardToGroupInRewards = (rewards: EventRewardGroup[], groupIndex: number): EventRewardGroup[] => {
+    return rewards.map((rewardGroup, i) => 
+      i === groupIndex ? {
+        ...rewardGroup,
+        rewards: [...rewardGroup.rewards, {
+          rewardType: "POINTS" as const,
+          rewardValue: 100,
+          rewardDescription: "100 포인트"
+        }]
+      } : rewardGroup
+    );
+  };
+
+  const addRewardToGroup = (groupIndex: number) => {
+    setEventForm(prev => ({
+      ...prev,
+      rewards: addRewardToGroupInRewards(prev.rewards, groupIndex)
+    }));
+  };
+
+  const removeRewardFromGroupInRewards = (rewards: EventRewardGroup[], groupIndex: number, rewardIndex: number): EventRewardGroup[] => {
+    return rewards.map((rewardGroup, i) => 
+      i === groupIndex ? {
+        ...rewardGroup,
+        rewards: rewardGroup.rewards.filter((_, j) => j !== rewardIndex)
+      } : rewardGroup
+    );
+  };
+
+  const removeRewardFromGroup = (groupIndex: number, rewardIndex: number) => {
+    setEventForm(prev => ({
+      ...prev,
+      rewards: removeRewardFromGroupInRewards(prev.rewards, groupIndex, rewardIndex)
     }));
   };
 
@@ -197,85 +235,116 @@ const EventEditPage = () => {
     setEventForm(prev => ({
       ...prev,
       rewards: [...prev.rewards, { 
-        conditionValue: (prev.rewards.length + 1).toString(), 
-        rewardValue: ""
+        conditionValue: `${prev.rewards.length + 1}등`,
+        rewards: [
+          { rewardType: "POINTS", rewardValue: 100, rewardDescription: "100 포인트" }
+        ]
       }]
     }));
   };
 
+  const removeRewardAndReorder = (rewards: EventRewardGroup[], index: number): EventRewardGroup[] => {
+    const newRewards = rewards.filter((_, i) => i !== index);
+    // 순서 재조정
+    return newRewards.map((reward, i) => ({
+      ...reward,
+      conditionValue: (i + 1).toString()
+    }));
+  };
+
   const removeReward = (index: number) => {
-    setEventForm(prev => {
-      const newRewards = prev.rewards.filter((_, i) => i !== index);
-      // 순서 재조정
-      return {
-        ...prev,
-        rewards: newRewards.map((reward, i) => ({
-          ...reward,
-          conditionValue: (i + 1).toString()
-        }))
-      };
+    setEventForm(prev => ({
+      ...prev,
+      rewards: removeRewardAndReorder(prev.rewards, index)
+    }));
+  };
+
+  // 보상 데이터 처리 함수
+  const processRewardsData = (rewards: any): EventRewardGroup[] => {
+    if (!rewards || !Array.isArray(rewards)) {
+      return getDefaultRewards();
+    }
+
+    if (rewards.length > 0 && rewards[0].conditionValue) {
+      return mapGroupedRewards(rewards);
+    } else {
+      return mapFlattenedRewards(rewards);
+    }
+  };
+
+  // 그룹화된 보상 데이터 매핑
+  const mapGroupedRewards = (rewards: any[]): EventRewardGroup[] => {
+    return rewards.map((rewardGroup: any) => ({
+      conditionValue: rewardGroup.conditionValue || rewardGroup.rank?.toString() || "1",
+      rewards: Array.isArray(rewardGroup.rewards) ? rewardGroup.rewards.map(mapRewardItem) : []
+    }));
+  };
+
+  // 평면화된 보상 데이터 매핑
+  const mapFlattenedRewards = (rewards: any[]): EventRewardGroup[] => {
+    const groupedRewards: { [key: string]: any[] } = {};
+    
+    rewards.forEach((reward: any) => {
+      const conditionValue = reward.conditionValue || reward.rank?.toString() || "1";
+      if (!groupedRewards[conditionValue]) {
+        groupedRewards[conditionValue] = [];
+      }
+      groupedRewards[conditionValue].push(mapRewardItem(reward));
     });
+    
+    return Object.entries(groupedRewards).map(([conditionValue, rewards]) => ({
+      conditionValue,
+      rewards
+    }));
+  };
+
+  // 보상 아이템 매핑
+  const mapRewardItem = (reward: any) => ({
+    rewardType: reward.rewardType || "POINTS",
+    rewardValue: reward.rewardValue || 100,
+    rewardDescription: reward.rewardDescription || `${reward.rewardValue || 100} ${reward.rewardType === 'POINTS' ? '포인트' : reward.rewardType === 'BADGE_POINTS' ? '뱃지점수' : '할인쿠폰'}`
+  });
+
+  // 기본 보상 설정
+  const getDefaultRewards = (): EventRewardGroup[] => {
+    return [
+      { 
+        conditionValue: "1", 
+        rewards: [
+          { rewardType: "BADGE_POINTS", rewardValue: 100, rewardDescription: "100 뱃지점수" },
+          { rewardType: "POINTS", rewardValue: 2000, rewardDescription: "2000 포인트" },
+          { rewardType: "DISCOUNT_COUPON", rewardValue: 15, rewardDescription: "15% 할인쿠폰" }
+        ]
+      },
+      { 
+        conditionValue: "2", 
+        rewards: [
+          { rewardType: "POINTS", rewardValue: 1500, rewardDescription: "1500 포인트" },
+          { rewardType: "BADGE_POINTS", rewardValue: 50, rewardDescription: "50 뱃지점수" }
+        ]
+      },
+      { 
+        conditionValue: "3", 
+        rewards: [
+          { rewardType: "POINTS", rewardValue: 1000, rewardDescription: "1000 포인트" }
+        ]
+      }
+    ];
+  };
+
+  const getBattleRewardTitle = (conditionValue: string) => {
+    switch (conditionValue) {
+      case "1":
+        return "우승자";
+      case "participation":
+        return "참여자";
+      default:
+        return conditionValue;
+    }
   };
 
   const validateForm = () => {
-    const errors: string[] = [];
-
-    if (!eventForm.title.trim()) errors.push("이벤트 제목을 입력해주세요.");
-    if (!eventForm.description.trim()) errors.push("이벤트 설명을 입력해주세요.");
-    if (!eventForm.participationMethod.trim()) errors.push("참여 방법을 입력해주세요.");
-    if (!eventForm.selectionCriteria.trim()) errors.push("선정 기준을 입력해주세요.");
-    if (!eventForm.precautions.trim()) errors.push("주의사항을 입력해주세요.");
-    if (!eventForm.purchaseStartDate) errors.push("구매 시작일을 입력해주세요.");
-    if (!eventForm.purchaseEndDate) errors.push("구매 종료일을 입력해주세요.");
-    if (!eventForm.eventStartDate) errors.push("이벤트 시작일을 입력해주세요.");
-    if (!eventForm.eventEndDate) errors.push("이벤트 종료일을 입력해주세요.");
-    if (!eventForm.announcementDate) errors.push("발표일을 입력해주세요.");
-    if (eventForm.maxParticipants < 1) errors.push("최대 참여자 수는 1명 이상이어야 합니다.");
-    
-    // 보상 검증
-    if (eventForm.rewards.length === 0) {
-      errors.push("최소 1개의 보상을 입력해주세요.");
-    } else {
-      eventForm.rewards.forEach((reward, index) => {
-        if (!reward.rewardValue.trim()) {
-          errors.push(`${index + 1}등 보상 내용을 입력해주세요.`);
-        }
-      });
-    }
-
-    // 날짜 순서 검증
-    if (eventForm.purchaseStartDate && eventForm.purchaseEndDate) {
-      if (new Date(eventForm.purchaseStartDate) >= new Date(eventForm.purchaseEndDate)) {
-        errors.push("구매 시작일은 종료일보다 이전이어야 합니다.");
-      }
-    }
-    
-    if (eventForm.eventStartDate && eventForm.eventEndDate) {
-      if (new Date(eventForm.eventStartDate) >= new Date(eventForm.eventEndDate)) {
-        errors.push("이벤트 시작일은 종료일보다 이전이어야 합니다.");
-      }
-    }
-
-    // 새로운 날짜 규칙 검증
-    if (eventForm.purchaseEndDate && eventForm.eventStartDate) {
-      if (new Date(eventForm.purchaseEndDate) < new Date(eventForm.eventStartDate)) {
-        errors.push("구매 종료일은 이벤트 시작일보다 이전이어야 합니다.");
-      }
-    }
-
-    if (eventForm.purchaseEndDate && eventForm.eventEndDate) {
-      if (new Date(eventForm.eventEndDate) <= new Date(eventForm.purchaseEndDate)) {
-        errors.push("이벤트 종료일은 구매 종료일 이후여야 합니다.");
-      }
-    }
-
-    if (eventForm.eventEndDate && eventForm.announcementDate) {
-      if (new Date(eventForm.eventEndDate) >= new Date(eventForm.announcementDate)) {
-        errors.push("결과 발표일은 이벤트 종료일 이후여야 합니다.");
-      }
-    }
-
-    return errors;
+    return validateEventForm(eventForm);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -290,76 +359,34 @@ const EventEditPage = () => {
     try {
       setLoading(true);
 
-      // FormData로 전송 (백엔드가 multipart/form-data를 지원하므로)
-      const formData = new FormData();
-      formData.append("title", eventForm.title);
-      formData.append("type", eventForm.type);
-      formData.append("purchaseStartDate", toLocalDateString(eventForm.purchaseStartDate));
-      formData.append("purchaseEndDate", toLocalDateString(eventForm.purchaseEndDate));
-      formData.append("eventStartDate", toLocalDateString(eventForm.eventStartDate));
-      formData.append("eventEndDate", toLocalDateString(eventForm.eventEndDate));
-      formData.append("announcement", toLocalDateString(eventForm.announcementDate));
-      formData.append("description", eventForm.description);
-      formData.append("participationMethod", eventForm.participationMethod);
-      formData.append("selectionCriteria", eventForm.selectionCriteria);
-      formData.append("precautions", eventForm.precautions);
-      formData.append("maxParticipants", eventForm.maxParticipants.toString());
-      
-      // rewards를 JSON 문자열로 변환
-      formData.append("rewards", JSON.stringify(eventForm.rewards));
-      
-      if (eventForm.imageFile) {
-        formData.append("image", eventForm.imageFile);
+      // 날짜 유효성 검사
+      const dateErrors = validateEventDates(eventForm);
+      if (dateErrors.length > 0) {
+        alert(dateErrors.join('\n'));
+        return;
       }
+
+      // FormData로 전송
+      const formData = createEventFormData(eventForm, eventForm.imageFile);
 
       await axiosInstance.put(`/api/events/${id}/multipart`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-
-      // console.log('API Response:', response.data);
-      showToastMessage("이벤트가 성공적으로 수정되었습니다! 이벤트 목록 페이지로 이동합니다.", 'success');
       
-      // 성공 후 이벤트 목록 페이지로 이동 (토스트 메시지가 보인 후)
-      setTimeout(() => {
-        navigate("/events");
-      }, 2000);
-    } catch (error: any) {
-      console.error("이벤트 수정 실패:", error);
+      alert("이벤트가 성공적으로 수정되었습니다.");
+      navigate("/events");
       
-      let errorMessage = "이벤트 수정에 실패했습니다.";
-      
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.response?.status === 400) {
-        errorMessage = "입력 데이터가 올바르지 않습니다. 모든 필수 항목을 확인해주세요.";
-      } else if (error.response?.status === 401) {
-        errorMessage = "로그인이 필요하거나 권한이 없습니다.";
-      } else if (error.response?.status === 403) {
-        errorMessage = "관리자 권한이 필요합니다.";
-      } else if (error.response?.status >= 500) {
-        errorMessage = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
-      }
-      
-      showToastMessage(errorMessage, 'error');
+    } catch (err: any) {
+      console.error("이벤트 수정 실패:", err);
+      alert(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
 
-  const getTypeText = (type: EventType) => {
-    switch (type) {
-      case "BATTLE":
-        return "배틀";
-      case "MISSION":
-        return "미션";
-      case "MULTIPLE":
-        return "랭킹";
-      default:
-        return type;
-    }
-  };
+
 
   if (loading) {
     return (
@@ -389,15 +416,20 @@ const EventEditPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-12 text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-orange-500 to-red-500 rounded-full mb-6 shadow-2xl animate-pulse">
+            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </div>
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent mb-4 animate-bounce">
             이벤트 수정
           </h1>
-          <p className="text-gray-600">
-            이벤트 정보를 수정해주세요.
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+            기존 이벤트 정보를 수정하여 더 나은 경험을 제공하세요
           </p>
         </div>
 
@@ -425,21 +457,25 @@ const EventEditPage = () => {
             {/* 이벤트 타입 */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                이벤트 타입 *
+                이벤트 유형 *
               </label>
-              <div className="grid grid-cols-3 gap-4">
-                {(["BATTLE", "MISSION", "MULTIPLE"] as EventType[]).map((type) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(["RANKING", "BATTLE"] as EventType[]).map((type) => (
                   <button
                     key={type}
                     type="button"
                     onClick={() => handleTypeSelect(type)}
-                    className={`p-4 border-2 rounded-lg text-center transition-all ${
+                    className={`p-6 border-2 rounded-xl text-center transition-all duration-300 hover:shadow-lg ${
                       eventForm.type === type
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   >
-                    <div className="font-medium">{getTypeText(type)}</div>
+                    <div className="font-semibold text-lg">{getEventTypeText(type)}</div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {type === "RANKING" && "순위별로 보상을 받는 랭킹 이벤트"}
+                      {type === "BATTLE" && "1:1 스타일 대결로 승부를 가려요"}
+                    </div>
                   </button>
                 ))}
               </div>
@@ -476,7 +512,7 @@ const EventEditPage = () => {
                   구매 시작일 *
                 </label>
                 <input
-                  type="datetime-local"
+                  type="date"
                   name="purchaseStartDate"
                   value={eventForm.purchaseStartDate}
                   onChange={handleChange}
@@ -489,7 +525,7 @@ const EventEditPage = () => {
                   구매 종료일 *
                 </label>
                 <input
-                  type="datetime-local"
+                  type="date"
                   name="purchaseEndDate"
                   value={eventForm.purchaseEndDate}
                   onChange={handleChange}
@@ -503,7 +539,7 @@ const EventEditPage = () => {
                   이벤트 시작일 *
                 </label>
                 <input
-                  type="datetime-local"
+                  type="date"
                   name="eventStartDate"
                   value={eventForm.eventStartDate}
                   onChange={handleChange}
@@ -516,7 +552,7 @@ const EventEditPage = () => {
                   이벤트 종료일 *
                 </label>
                 <input
-                  type="datetime-local"
+                  type="date"
                   name="eventEndDate"
                   value={eventForm.eventEndDate}
                   onChange={handleChange}
@@ -530,7 +566,7 @@ const EventEditPage = () => {
                   발표일 *
                 </label>
                 <input
-                  type="datetime-local"
+                  type="date"
                   name="announcementDate"
                   value={eventForm.announcementDate}
                   onChange={handleChange}
@@ -606,63 +642,173 @@ const EventEditPage = () => {
             </div>
           </div>
 
-          {/* 보상 정보 */}
+                    {/* 보상 정보 */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">보상 정보</h2>
             
-            {eventForm.rewards.map((reward, index) => (
-              <div key={index} className="mb-4 p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
+            {/* 보상 안내 */}
+            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">보상 설정 안내</h3>
+              {eventForm.type === 'RANKING' ? (
+                <>
+                  <p>• <strong>1등:</strong> 투표수가 가장 많은 피드</p>
+                  <p>• <strong>2등:</strong> 투표수가 두 번째로 많은 피드</p>
+                  <p>• <strong>3등:</strong> 투표수가 세 번째로 많은 피드</p>
+                  <p className="text-xs text-blue-600 mt-2">투표수 기준으로 순위가 결정되며, 동점 시 먼저 등록한 피드가 우선순위를 가집니다.</p>
+                  <p className="text-xs text-blue-600">각 순위별로 여러 보상(포인트, 뱃지점수, 할인쿠폰)을 동시에 받을 수 있습니다.</p>
+                </>
+              ) : (
+                <>
+                  <p>• <strong>우승자:</strong> 배틀에서 승리한 참여자</p>
+                  <p>• <strong>참여자:</strong> 배틀에 참여한 모든 사용자</p>
+                  <p className="text-xs text-blue-600 mt-2">랜덤 매칭으로 2명씩 대결하여 투표수가 많은 쪽이 승리하며, 승자는 보상을 받습니다.</p>
+                  <p className="text-xs text-blue-600">각 보상 유형별로 여러 보상(포인트, 뱃지점수, 할인쿠폰)을 동시에 받을 수 있습니다.</p>
+                </>
+              )}
+            </div>
+            
+            {eventForm.rewards.map((rewardGroup, groupIndex) => (
+              <div key={groupIndex} className="mb-6 p-4 border border-gray-200 rounded-lg">
+                <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-900">
-                    {index + 1}등 보상
+                    {eventForm.type === 'RANKING' 
+                      ? `${rewardGroup.conditionValue}등 보상 (${rewardGroup.rewards.length}개 보상)`
+                      : `${getBattleRewardTitle(rewardGroup.conditionValue)} 보상 (${rewardGroup.rewards.length}개 보상)`
+                    }
                   </h3>
                   {eventForm.rewards.length > 1 && (
                     <button
                       type="button"
-                      onClick={() => removeReward(index)}
-                      className="text-red-500 hover:text-red-700"
+                      onClick={() => removeReward(groupIndex)}
+                      className="text-red-500 hover:text-red-700 active:text-red-800 transition-colors duration-200 active:scale-95 transform"
                     >
                       삭제
                     </button>
                   )}
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      선정 조건
-                    </label>
-                    <input
-                      type="text"
-                      value={reward.conditionValue}
-                      onChange={(e) => handleRewardChange(index, 'conditionValue', e.target.value)}
-                      placeholder="예: 1, 2, 3"
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    선정 조건
+                  </label>
+                  {eventForm.type === 'RANKING' ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={rewardGroup.conditionValue}
+                        onChange={(e) => handleRewardGroupChange(groupIndex, 'conditionValue', e.target.value)}
+                        placeholder="1"
+                        className="w-20 px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <span className="text-sm text-gray-600">등 (투표수 기준)</span>
+                    </div>
+                  ) : (
+                    <select
+                      value={rewardGroup.conditionValue}
+                      onChange={(e) => handleRewardGroupChange(groupIndex, 'conditionValue', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      보상 내용
-                    </label>
-                    <input
-                      type="text"
-                      value={reward.rewardValue}
-                      onChange={(e) => handleRewardChange(index, 'rewardValue', e.target.value)}
-                      placeholder="예: 프리미엄 스니커즈"
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
+                    >
+                      <option value="1">우승자</option>
+                      <option value="participation">참여자</option>
+                    </select>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    {eventForm.type === 'RANKING' 
+                      ? '투표수가 많은 순서대로 1등, 2등, 3등... 순위가 결정됩니다.'
+                      : '배틀 결과에 따라 최종 우승자, 준우승자, 3위, 참여자 보상이 지급됩니다.'
+                    }
+                  </p>
                 </div>
+                
+                {rewardGroup.rewards.map((reward, rewardIndex) => (
+                  <div key={rewardIndex} className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-md font-medium text-gray-800">
+                        보상 {rewardIndex + 1}
+                      </h4>
+                      {rewardGroup.rewards.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeRewardFromGroup(groupIndex, rewardIndex)}
+                          className="text-red-500 hover:text-red-700 active:text-red-800 transition-colors duration-200 active:scale-95 transform"
+                        >
+                          삭제
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          보상 유형
+                        </label>
+                        <select
+                          value={reward.rewardType}
+                          onChange={(e) => handleRewardChange(groupIndex, rewardIndex, 'rewardType', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="POINTS">포인트</option>
+                          <option value="BADGE_POINTS">뱃지점수</option>
+                          <option value="DISCOUNT_COUPON">할인쿠폰</option>
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          보상 수량
+                        </label>
+                        <input
+                          type="number"
+                          value={reward.rewardValue}
+                          onChange={(e) => handleRewardChange(groupIndex, rewardIndex, 'rewardValue', e.target.value)}
+                          placeholder="예: 1000"
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          보상 설명 (선택사항)
+                        </label>
+                        <input
+                          type="text"
+                          value={reward.rewardDescription}
+                          onChange={(e) => handleRewardChange(groupIndex, rewardIndex, 'rewardDescription', e.target.value)}
+                          placeholder="예: 1000 포인트 지급"
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          보상 설명은 백엔드에서 자동으로 생성되므로 선택사항입니다.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                <button
+                  type="button"
+                  onClick={() => addRewardToGroup(groupIndex)}
+                  className="w-full py-3 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:border-blue-400 hover:text-blue-700 hover:bg-blue-50 active:bg-blue-100 active:scale-95 transition-all duration-300 font-medium flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  보상 추가
+                </button>
               </div>
             ))}
             
             <button
               type="button"
               onClick={addReward}
-              className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors"
+              className="w-full py-4 border-2 border-dashed border-blue-300 rounded-xl text-blue-600 hover:border-blue-400 hover:text-blue-700 hover:bg-blue-50 active:bg-blue-100 active:scale-95 transition-all duration-300 font-semibold flex items-center justify-center gap-2"
             >
-              + 보상 추가
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              보상 그룹 추가
             </button>
           </div>
 

@@ -320,15 +320,48 @@ const SignUp: FC = () => {
     confirmPassword: "",
     name: "",
     phone: "",
+    nickname: "",
   });
   const [error, setError] = useState("");
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // 비밀번호 유효성 검사
-  const isPasswordValid = formData.password.length >= 8;
+  // 강화된 비밀번호 유효성 검사
+  const passwordValidation = {
+    length: formData.password.length >= 8,
+    hasLetter: /[a-zA-Z]/.test(formData.password),
+    hasNumber: /[0-9]/.test(formData.password),
+    hasSpecial: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(formData.password),
+  };
+
+  const isPasswordValid = Object.values(passwordValidation).every(Boolean);
   const isPasswordMatch = formData.password === formData.confirmPassword;
+  const isNameValid = formData.name.length >= 2 && formData.name.length <= 50;
+  const isEmailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email);
+
+  // 전화번호 입력 처리 - 숫자만 허용하고 11자리로 제한
+  const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (name === "phone") {
+      const numericValue = value.replace(/[^0-9]/g, ""); // 숫자만 허용
+      if (numericValue.length <= 11) {
+        // 11자리로 제한
+        setFormData((prev) => ({
+          ...prev,
+          [name]: numericValue,
+        }));
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  // 전화번호 유효성 검사 - 11자리 숫자
+  const isPhoneValid = /^[0-9]{11}$/.test(formData.phone);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -343,20 +376,41 @@ const SignUp: FC = () => {
     setError("");
     setLoading(true);
 
+    // 유효성 검사
+    if (!isNameValid) {
+      setError("이름은 2자 이상 50자 이하로 입력해주세요.");
+      setLoading(false);
+      return;
+    }
+
+    if (!isEmailValid) {
+      setError("유효한 이메일 주소를 입력해주세요.");
+      setLoading(false);
+      return;
+    }
+
+    if (!isPasswordValid) {
+      setError(
+        "비밀번호는 영문, 숫자, 특수문자를 포함하여 8자 이상이어야 합니다."
+      );
+      setLoading(false);
+      return;
+    }
+
+    if (!isPasswordMatch) {
+      setError("비밀번호가 일치하지 않습니다.");
+      setLoading(false);
+      return;
+    }
+
+    if (!isPhoneValid) {
+      setError("유효한 전화번호를 입력해주세요.");
+      setLoading(false);
+      return;
+    }
+
     if (!privacyAgreed) {
       setError("개인정보처리방침에 동의해주세요.");
-      setLoading(false);
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setError("비밀번호는 8자 이상이어야 합니다.");
-      setLoading(false);
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("비밀번호가 일치하지 않습니다.");
       setLoading(false);
       return;
     }
@@ -375,6 +429,7 @@ const SignUp: FC = () => {
           confirmPassword: formData.confirmPassword,
           name: formData.name,
           phone: formData.phone,
+          nickname: formData.nickname || formData.name, // 닉네임이 없으면 이름 사용
         }),
       });
 
@@ -383,13 +438,43 @@ const SignUp: FC = () => {
         setShowSuccess(true);
       } else {
         const errorData = await response.json();
+        const errorMessage = errorData.message || "회원가입에 실패했습니다.";
+
+        // 에러 메시지에 따른 구분된 처리
         if (
-          errorData.message?.includes("인증이 필요") ||
-          errorData.message?.includes("재인증")
+          errorMessage.includes("인증이 필요") ||
+          errorMessage.includes("재인증")
         ) {
           setError("재인증 메일이 발송되었습니다. 이메일을 확인해주세요.");
+        } else if (
+          errorMessage.includes("이미 존재") ||
+          errorMessage.includes("중복")
+        ) {
+          setError("이미 가입된 이메일입니다. 다른 이메일을 사용해주세요.");
+        } else if (
+          errorMessage.includes("비밀번호") ||
+          errorMessage.includes("password")
+        ) {
+          setError(
+            "비밀번호 형식이 올바르지 않습니다. 영문, 숫자, 특수문자를 포함하여 8자 이상으로 입력해주세요."
+          );
+        } else if (
+          errorMessage.includes("이메일") ||
+          errorMessage.includes("email")
+        ) {
+          setError("유효하지 않은 이메일 형식입니다.");
+        } else if (
+          errorMessage.includes("이름") ||
+          errorMessage.includes("name")
+        ) {
+          setError("이름은 2자 이상 50자 이하로 입력해주세요.");
+        } else if (
+          errorMessage.includes("전화번호") ||
+          errorMessage.includes("phone")
+        ) {
+          setError("유효하지 않은 전화번호 형식입니다.");
         } else {
-          setError(errorData.message || "회원가입에 실패했습니다.");
+          setError(errorMessage);
         }
         setLoading(false);
         return;
@@ -441,9 +526,40 @@ const SignUp: FC = () => {
                 onChange={handleChange}
                 placeholder="이름을 입력하세요"
                 required
+                minLength={2}
+                maxLength={50}
               />
               <InputIcon>
                 <i className="fas fa-user"></i>
+              </InputIcon>
+            </InputWrapper>
+            {formData.name && (
+              <PasswordStrength isValid={isNameValid}>
+                <i
+                  className={`fas fa-${
+                    isNameValid ? "check-circle" : "times-circle"
+                  }`}
+                ></i>
+                {isNameValid
+                  ? "올바른 이름 형식입니다"
+                  : "이름은 2자 이상 50자 이하로 입력해주세요"}
+              </PasswordStrength>
+            )}
+          </FormGroup>
+
+          <FormGroup>
+            <Label htmlFor="nickname">닉네임 (선택사항)</Label>
+            <InputWrapper>
+              <Input
+                type="text"
+                id="nickname"
+                name="nickname"
+                value={formData.nickname}
+                onChange={handleChange}
+                placeholder="닉네임을 입력하세요 (없으면 이름 사용)"
+              />
+              <InputIcon>
+                <i className="fas fa-user-tag"></i>
               </InputIcon>
             </InputWrapper>
           </FormGroup>
@@ -464,6 +580,18 @@ const SignUp: FC = () => {
                 <i className="fas fa-envelope"></i>
               </InputIcon>
             </InputWrapper>
+            {formData.email && (
+              <PasswordStrength isValid={isEmailValid}>
+                <i
+                  className={`fas fa-${
+                    isEmailValid ? "check-circle" : "times-circle"
+                  }`}
+                ></i>
+                {isEmailValid
+                  ? "올바른 이메일 형식입니다"
+                  : "유효한 이메일 주소를 입력해주세요"}
+              </PasswordStrength>
+            )}
           </FormGroup>
 
           <FormGroup>
@@ -485,19 +613,53 @@ const SignUp: FC = () => {
             </InputWrapper>
             <PasswordHint>
               <i className="fas fa-info-circle"></i>
-              비밀번호는 8자 이상이어야 합니다
+              비밀번호는 영문, 숫자, 특수문자를 포함하여 8자 이상이어야 합니다
             </PasswordHint>
             {formData.password && (
-              <PasswordStrength isValid={isPasswordValid}>
-                <i
-                  className={`fas fa-${
-                    isPasswordValid ? "check-circle" : "times-circle"
-                  }`}
-                ></i>
-                {isPasswordValid
-                  ? "비밀번호 조건을 만족합니다"
-                  : "비밀번호가 너무 짧습니다"}
-              </PasswordStrength>
+              <div>
+                <PasswordStrength isValid={passwordValidation.length}>
+                  <i
+                    className={`fas fa-${
+                      passwordValidation.length
+                        ? "check-circle"
+                        : "times-circle"
+                    }`}
+                  ></i>
+                  {passwordValidation.length ? "8자 이상 ✓" : "8자 이상 ✗"}
+                </PasswordStrength>
+                <PasswordStrength isValid={passwordValidation.hasLetter}>
+                  <i
+                    className={`fas fa-${
+                      passwordValidation.hasLetter
+                        ? "check-circle"
+                        : "times-circle"
+                    }`}
+                  ></i>
+                  {passwordValidation.hasLetter ? "영문 포함 ✓" : "영문 포함 ✗"}
+                </PasswordStrength>
+                <PasswordStrength isValid={passwordValidation.hasNumber}>
+                  <i
+                    className={`fas fa-${
+                      passwordValidation.hasNumber
+                        ? "check-circle"
+                        : "times-circle"
+                    }`}
+                  ></i>
+                  {passwordValidation.hasNumber ? "숫자 포함 ✓" : "숫자 포함 ✗"}
+                </PasswordStrength>
+                <PasswordStrength isValid={passwordValidation.hasSpecial}>
+                  <i
+                    className={`fas fa-${
+                      passwordValidation.hasSpecial
+                        ? "check-circle"
+                        : "times-circle"
+                    }`}
+                  ></i>
+                  {passwordValidation.hasSpecial
+                    ? "특수문자 포함 ✓"
+                    : "특수문자 포함 ✗"}
+                </PasswordStrength>
+              </div>
             )}
           </FormGroup>
 
@@ -519,19 +681,15 @@ const SignUp: FC = () => {
               </InputIcon>
             </InputWrapper>
             {formData.confirmPassword && (
-              <PasswordStrength
-                isValid={
-                  isPasswordMatch && formData.confirmPassword.length >= 8
-                }
-              >
+              <PasswordStrength isValid={isPasswordMatch && isPasswordValid}>
                 <i
                   className={`fas fa-${
-                    isPasswordMatch && formData.confirmPassword.length >= 8
+                    isPasswordMatch && isPasswordValid
                       ? "check-circle"
                       : "times-circle"
                   }`}
                 ></i>
-                {isPasswordMatch && formData.confirmPassword.length >= 8
+                {isPasswordMatch && isPasswordValid
                   ? "비밀번호가 일치합니다"
                   : "비밀번호가 일치하지 않습니다"}
               </PasswordStrength>
@@ -546,14 +704,28 @@ const SignUp: FC = () => {
                 id="phone"
                 name="phone"
                 value={formData.phone}
-                onChange={handleChange}
-                placeholder="010-1234-5678"
+                onChange={handlePhoneChange}
+                placeholder="01012345678"
                 required
+                maxLength={11}
+                title="11자리 숫자로 입력해주세요 (예: 01012345678)"
               />
               <InputIcon>
                 <i className="fas fa-phone"></i>
               </InputIcon>
             </InputWrapper>
+            {formData.phone && (
+              <PasswordStrength isValid={isPhoneValid}>
+                <i
+                  className={`fas fa-${
+                    isPhoneValid ? "check-circle" : "times-circle"
+                  }`}
+                ></i>
+                {isPhoneValid
+                  ? "올바른 전화번호 형식입니다"
+                  : "유효한 전화번호를 입력해주세요"}
+              </PasswordStrength>
+            )}
           </FormGroup>
 
           <CheckboxContainer>

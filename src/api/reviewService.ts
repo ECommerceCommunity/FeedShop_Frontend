@@ -13,7 +13,8 @@ import {
     UpdateReviewResponse,
     DeleteReviewResponse,
     ReviewListParams,
-    HelpfulResponse
+    HelpfulResponse,
+    SCORE_TO_ENUM
 } from "../types/review";
 
 // ===== 중복 타입 제거하고 공통 타입 사용 =====
@@ -39,6 +40,21 @@ export class ReviewService {
                 console.log('리뷰 목록 API 호출:', { productId, params });
             }
 
+            // 1-5 점수를 백엔드 enum으로 변환하는 헬퍼 함수
+            const convertScoreToEnum = (type: 'sizeFit' | 'cushion' | 'stability', score: number) => {
+                const enumValue = SCORE_TO_ENUM[type][score as keyof typeof SCORE_TO_ENUM[typeof type]];
+                // 대소문자 문제 방지를 위해 강제로 대문자 변환
+                const finalValue = enumValue?.toUpperCase() || enumValue;
+                if (process.env.NODE_ENV === 'development') {
+                    console.log(`🔄 필터 변환: ${type} ${score} → ${enumValue} → ${finalValue}`);
+                    if (!enumValue) {
+                        console.error(`❌ 변환 실패: ${type}의 ${score} 값에 해당하는 enum을 찾을 수 없습니다.`);
+                        console.log(`🗺️ 사용 가능한 ${type} 매핑:`, SCORE_TO_ENUM[type]);
+                    }
+                }
+                return finalValue;
+            };
+
             const queryParams = {
                 page: params.page || 0,
                 size: params.size || 10,
@@ -47,22 +63,112 @@ export class ReviewService {
                     rating: params.rating,
                     exactRating: params.exactRating || false 
                 }),
-                ...(params.sizeFit && params.sizeFit > 0 && { sizeFit: params.sizeFit }),
-                ...(params.cushion && params.cushion > 0 && { cushion: params.cushion }),
-                ...(params.stability && params.stability > 0 && { stability: params.stability })
+                ...(params.sizeFit && params.sizeFit > 0 && { 
+                    sizeFit: convertScoreToEnum('sizeFit', params.sizeFit)
+                }),
+                ...(params.cushion && params.cushion > 0 && { 
+                    cushion: convertScoreToEnum('cushion', params.cushion)
+                }),
+                ...(params.stability && params.stability > 0 && { 
+                    stability: convertScoreToEnum('stability', params.stability)
+                })
             };
 
             if (process.env.NODE_ENV === 'development') {
                 console.log('🔍 실제 전송될 queryParams:', queryParams);
+                
+                // 3요소 필터 매핑 상세 로그
+                if (params.sizeFit) {
+                    console.log(`📊 sizeFit 필터: ${params.sizeFit} → ${queryParams.sizeFit}`);
+                }
+                if (params.cushion) {
+                    console.log(`📊 cushion 필터: ${params.cushion} → ${queryParams.cushion}`);
+                }
+                if (params.stability) {
+                    console.log(`📊 stability 필터: ${params.stability} → ${queryParams.stability}`);
+                }
+                
+                // URL 파라미터 문자열 확인
+                const urlParams = new URLSearchParams();
+                Object.entries(queryParams).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null) {
+                        urlParams.append(key, String(value));
+                    }
+                });
+                const finalUrl = `/api/reviews/products/${productId}/filter?${urlParams.toString()}`;
+                console.log('🌐 최종 요청 URL:', finalUrl);
+                
+                // SCORE_TO_ENUM 매핑 테이블 확인
+                console.log('🗺️ SCORE_TO_ENUM 매핑 테이블:', SCORE_TO_ENUM);
+            }
+
+            // axios 요청 전에 실제 URL 로깅
+            if (process.env.NODE_ENV === 'development') {
+                // axios interceptor로 실제 요청 URL 캡처
+                const originalRequest = axiosInstance.interceptors.request.use(
+                    (config) => {
+                        console.log('🚀 axios 실제 요청 URL:', config.url);
+                        console.log('🚀 axios 실제 요청 params:', config.params);
+                        axiosInstance.interceptors.request.eject(originalRequest);
+                        return config;
+                    }
+                );
             }
 
             const response = await axiosInstance.get<ApiResponse<ReviewListResponse>>(
-                `/api/reviews/products/${productId}`,
+                `/api/reviews/products/${productId}/filter`,
                 { params: queryParams }
             );
 
             if (process.env.NODE_ENV === 'development') {
-                console.log('리뷰 목록 API 응답:', response.data);
+                console.log('🔍 리뷰 목록 API 응답:', response.data);
+                console.log('🔍 API 응답 데이터 구조 분석:', {
+                    hasData: !!response.data?.data,
+                    dataKeys: response.data?.data ? Object.keys(response.data.data) : null,
+                    dataType: typeof response.data?.data,
+                    fullData: response.data?.data
+                });
+                
+                // 필터링 결과 검증  
+                if (response.data?.data?.reviews && Array.isArray(response.data.data.reviews)) {
+                    const reviews = response.data.data.reviews;
+                    console.log(`📋 응답된 리뷰 ${reviews.length}개:`);
+                    
+                    reviews.forEach((review, idx) => {
+                        console.log(`  리뷰 ${idx + 1} (ID: ${review.reviewId}):`, {
+                            sizeFit: review.sizeFit,
+                            cushion: review.cushion,
+                            stability: review.stability,
+                            userName: review.userName
+                        });
+                    });
+
+                    // 필터 조건 체크
+                    if (queryParams.sizeFit) {
+                        const matchingReviews = reviews.filter(r => r.sizeFit === queryParams.sizeFit);
+                        console.log(`🔍 sizeFit="${queryParams.sizeFit}" 조건에 맞는 리뷰: ${matchingReviews.length}/${reviews.length}개`);
+                        
+                        if (matchingReviews.length !== reviews.length) {
+                            console.warn('⚠️ sizeFit 필터링이 백엔드에서 제대로 되지 않았습니다!');
+                            console.log('조건에 맞지 않는 리뷰들:');
+                            reviews.filter(r => r.sizeFit !== queryParams.sizeFit).forEach(r => {
+                                console.log(`  - 리뷰 ${r.reviewId}: sizeFit=${r.sizeFit} (예상: ${queryParams.sizeFit})`);
+                            });
+                        }
+                    }
+                    
+                    if (queryParams.cushion) {
+                        const matchingReviews = reviews.filter(r => r.cushion === queryParams.cushion);
+                        console.log(`🔍 cushion="${queryParams.cushion}" 조건에 맞는 리뷰: ${matchingReviews.length}/${reviews.length}개`);
+                    }
+                    
+                    if (queryParams.stability) {
+                        const matchingReviews = reviews.filter(r => r.stability === queryParams.stability);
+                        console.log(`🔍 stability="${queryParams.stability}" 조건에 맞는 리뷰: ${matchingReviews.length}/${reviews.length}개`);
+                    }
+                } else {
+                    console.warn('⚠️ API 응답에서 content 배열을 찾을 수 없습니다.');
+                }
             }
             return response.data.data;
 
@@ -77,11 +183,13 @@ export class ReviewService {
                     console.warn('백엔드 연결 실패, 빈 데이터 반환');
                 }
                 return {
-                    content: [],
+                    reviews: [],
                     totalPages: 0,
                     totalElements: 0,
                     size: params.size || 10,
                     number: params.page || 0,
+                    averageRating: 0,
+                    totalReviews: 0,
                     first: true,
                     last: true
                 };
@@ -202,17 +310,37 @@ export class ReviewService {
         try {
             if (process.env.NODE_ENV === 'development') {
                 console.log('리뷰 작성 API 호출:', reviewData);
+                
+                // 인증 토큰 확인
+                const token = localStorage.getItem('token');
+                console.log('🔑 인증 토큰 상태:', {
+                    hasToken: !!token,
+                    tokenLength: token?.length,
+                    tokenPreview: token ? `${token.substring(0, 20)}...` : 'none'
+                });
             }
 
             // FormData를 사용하여 텍스트와 이미지를 함께 전송
             const formData = new FormData();
             
-            // 디버깅: review 데이터 확인
-            const reviewJson = JSON.stringify(reviewData);
-            if (process.env.NODE_ENV === 'development') {
-                console.log('📝 review JSON:', reviewJson);
+            // 각 필드를 개별적으로 FormData에 추가 (백엔드가 JSON 파싱을 지원하지 않는 경우)
+            formData.append('productId', reviewData.productId.toString());
+            formData.append('title', reviewData.title);
+            formData.append('rating', reviewData.rating.toString());
+            formData.append('content', reviewData.content);
+            
+            if (reviewData.sizeFit !== undefined) {
+                const sizeFitEnum = SCORE_TO_ENUM.sizeFit[reviewData.sizeFit as keyof typeof SCORE_TO_ENUM.sizeFit];
+                formData.append('sizeFit', sizeFitEnum);
             }
-            formData.append('review', reviewJson);
+            if (reviewData.cushion !== undefined) {
+                const cushionEnum = SCORE_TO_ENUM.cushion[reviewData.cushion as keyof typeof SCORE_TO_ENUM.cushion];
+                formData.append('cushion', cushionEnum);
+            }
+            if (reviewData.stability !== undefined) {
+                const stabilityEnum = SCORE_TO_ENUM.stability[reviewData.stability as keyof typeof SCORE_TO_ENUM.stability];
+                formData.append('stability', stabilityEnum);
+            }
 
             if (images && images.length > 0) {
                 if (process.env.NODE_ENV === 'development') {
@@ -232,11 +360,25 @@ export class ReviewService {
             
             // FormData 내용 확인
             if (process.env.NODE_ENV === 'development') {
-                console.log('📋 FormData 구성 완료');
-                console.log('  - review 데이터 포함됨');
+                console.log('📋 FormData 구성 완료 (개별 필드 방식)');
                 if (images && images.length > 0) {
                     console.log(`  - ${images.length}개 이미지 포함됨`);
                 }
+                
+                // FormData의 모든 항목 출력
+                console.log('📋 FormData entries:');
+                const entries = Array.from(formData.entries());
+                entries.forEach(([key, value]) => {
+                    if (value instanceof File) {
+                        console.log(`  ${key}: File(${value.name}, ${value.size}bytes, ${value.type})`);
+                    } else {
+                        console.log(`  ${key}:`, value);
+                    }
+                });
+                
+                // 최종 요청 URL과 헤더 확인
+                console.log('🌐 요청 URL:', '/api/user/reviews');
+                console.log('🔑 Authorization 헤더가 자동으로 추가될 예정');
             }
 
             const response = await axiosInstance.post<ApiResponse<CreateReviewResponse>>(
@@ -244,7 +386,8 @@ export class ReviewService {
                 formData,
                 {
                     headers: {
-                        'Content-Type': 'multipart/form-data',
+                        // multipart/form-data는 브라우저가 자동으로 설정하도록 함
+                        // Content-Type을 명시적으로 설정하지 않음
                     },
                 }
             );
@@ -267,6 +410,11 @@ export class ReviewService {
                     reviewData,
                     imageCount: images?.length || 0,
                 });
+                
+                // 서버 에러 메시지 상세 출력
+                if (error.response?.data) {
+                    console.error('🚨 백엔드 에러 응답:', JSON.stringify(error.response.data, null, 2));
+                }
             }
             throw error;
         }
@@ -290,7 +438,22 @@ export class ReviewService {
             }
 
             const formData = new FormData();
-            formData.append('review', JSON.stringify(reviewData));
+            
+            // 3요소 평가 값을 enum으로 변환
+            const convertedReviewData = {
+                ...reviewData,
+                ...(reviewData.sizeFit !== undefined && {
+                    sizeFit: SCORE_TO_ENUM.sizeFit[reviewData.sizeFit as keyof typeof SCORE_TO_ENUM.sizeFit]
+                }),
+                ...(reviewData.cushion !== undefined && {
+                    cushion: SCORE_TO_ENUM.cushion[reviewData.cushion as keyof typeof SCORE_TO_ENUM.cushion]
+                }),
+                ...(reviewData.stability !== undefined && {
+                    stability: SCORE_TO_ENUM.stability[reviewData.stability as keyof typeof SCORE_TO_ENUM.stability]
+                })
+            };
+            
+            formData.append('review', JSON.stringify(convertedReviewData));
 
             if (newImages && newImages.length > 0) {
                 newImages.forEach(image => {
@@ -383,27 +546,72 @@ export class ReviewService {
      * 리뷰 신고
      * @param reviewId 신고할 리뷰 ID
      * @param reason 신고 사유
+     * @param description 상세 설명 (선택)
      * @returns 신고 결과
      */
-    static async reportReview(reviewId: number, reason: string): Promise<{ success: boolean }> {
+    static async reportReview(
+        reviewId: number, 
+        reason: string, 
+        description?: string
+    ): Promise<{ success: boolean; message: string; data: any }> {
         try {
             if (process.env.NODE_ENV === 'development') {
-                console.log('리뷰 신고 API 호출:', { reviewId, reason });
+                const token = localStorage.getItem('token');
+                console.log('🚨 리뷰 신고 API 호출:', { 
+                    reviewId, 
+                    reviewIdType: typeof reviewId,
+                    reason, 
+                    description,
+                    url: `/api/user/reviews/${reviewId}/report`,
+                    hasToken: !!token,
+                    tokenPreview: token ? `${token.substring(0, 20)}...` : 'none'
+                });
+
+                // JWT 토큰 디코딩 (Base64)
+                if (token) {
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        console.log('🔑 JWT 토큰 정보:', {
+                            username: payload.username || payload.sub,
+                            exp: payload.exp,
+                            현재시간: Math.floor(Date.now() / 1000),
+                            만료여부: payload.exp < Math.floor(Date.now() / 1000) ? '만료됨' : '유효함'
+                        });
+                    } catch (e) {
+                        console.error('JWT 토큰 디코딩 실패:', e);
+                    }
+                }
             }
 
-            const response = await axiosInstance.post<ApiResponse<{ success: boolean }>>(
+            // 인증이 필요한 사용자 API 엔드포인트 사용
+            // (axiosInstance에서 자동으로 Authorization 헤더 추가됨)
+            const response = await axiosInstance.post<ApiResponse<any>>(
                 `/api/user/reviews/${reviewId}/report`,
-                { reason }
+                { 
+                    reason,
+                    ...(description && { description })
+                }
             );
 
             if (process.env.NODE_ENV === 'development') {
                 console.log('리뷰 신고 API 응답:', response.data);
             }
-            return response.data.data;
+            return response.data;
 
         } catch (error: any) {
             if (process.env.NODE_ENV === 'development') {
-                console.error('리뷰 신고 실패:', error);
+                console.error('🚨 리뷰 신고 실패:', error);
+                console.error('📋 에러 상세 정보:');
+                console.error('- Status:', error.response?.status);
+                console.error('- Status Text:', error.response?.statusText);
+                console.error('- Response Data:', error.response?.data);
+                console.error('- Request URL:', error.config?.url);
+                console.error('- Request Data:', error.config?.data);
+                
+                // 백엔드 에러 메시지 특별히 강조
+                if (error.response?.data) {
+                    console.error('🔥 백엔드 에러 메시지:', JSON.stringify(error.response.data, null, 2));
+                }
             }
             throw error;
         }
@@ -442,6 +650,87 @@ export class ReviewService {
             if (process.env.NODE_ENV === 'development') {
                 console.error('내 리뷰 목록 조회 실패:', error);
             }
+            throw error;
+        }
+    }
+
+    // ===== 3요소 통계 관련 메서드 =====
+
+    /**
+     * 상품별 3요소 평가 통계 조회
+     * @param productId 상품 ID
+     * @returns 3요소 평가 통계 데이터
+     */
+    static async getProductStatistics(productId: number): Promise<any> {
+        try {
+            if (process.env.NODE_ENV === 'development') {
+                console.log('3요소 통계 API 호출:', productId);
+            }
+
+            const response = await axiosInstance.get<ApiResponse<any>>(
+                `/api/reviews/products/${productId}/statistics`
+            );
+
+            if (process.env.NODE_ENV === 'development') {
+                console.log('3요소 통계 API 응답:', response.data);
+                const stats = response.data.data;
+                
+                console.log('📊 쿠션감 통계 상세:', {
+                    distribution: stats.cushionStatistics?.distribution,
+                    percentage: stats.cushionStatistics?.percentage,
+                    mostSelected: stats.cushionStatistics?.mostSelected,
+                    averageScore: stats.cushionStatistics?.averageScore
+                });
+                
+                console.log('📊 착용감 통계 상세:', {
+                    distribution: stats.sizeFitStatistics?.distribution,
+                    percentage: stats.sizeFitStatistics?.percentage,
+                    mostSelected: stats.sizeFitStatistics?.mostSelected,
+                    averageScore: stats.sizeFitStatistics?.averageScore
+                });
+                
+                console.log('📊 안정성 통계 상세:', {
+                    distribution: stats.stabilityStatistics?.distribution,
+                    percentage: stats.stabilityStatistics?.percentage,
+                    mostSelected: stats.stabilityStatistics?.mostSelected,
+                    averageScore: stats.stabilityStatistics?.averageScore
+                });
+            }
+            return response.data.data;
+
+        } catch (error: any) {
+            if (process.env.NODE_ENV === 'development') {
+                console.error('3요소 통계 조회 실패:', error);
+            }
+
+            // 네트워크 오류나 서버 오류 시 빈 응답 반환
+            if (!error.response || error.code === 'NETWORK_ERROR') {
+                if (process.env.NODE_ENV === 'development') {
+                    console.warn('백엔드 연결 실패, 빈 통계 데이터 반환');
+                }
+                return {
+                    totalReviews: 0,
+                    cushionStatistics: {
+                        distribution: {},
+                        percentage: {},
+                        mostSelected: null,
+                        averageScore: 0.0
+                    },
+                    sizeFitStatistics: {
+                        distribution: {},
+                        percentage: {},
+                        mostSelected: null,
+                        averageScore: 0.0
+                    },
+                    stabilityStatistics: {
+                        distribution: {},
+                        percentage: {},
+                        mostSelected: null,
+                        averageScore: 0.0
+                    }
+                };
+            }
+
             throw error;
         }
     }
