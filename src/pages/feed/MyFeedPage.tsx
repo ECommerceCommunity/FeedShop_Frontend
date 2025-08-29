@@ -9,7 +9,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import FeedService from "../../api/feedService";
 import { UserProfileService, UserProfileData } from "../../api/userProfileService";
 import axiosInstance from "../../api/axios";
-import { FeedPost, FeedComment } from "../../types/feed";
+import { FeedPost, FeedComment, FeedListResponseDto, PaginatedResponse } from "../../types/feed";
 import { useLikedPosts } from "../../hooks/useLikedPosts";
 
 // 한국 시간으로 날짜 포맷팅하는 유틸리티 함수
@@ -28,6 +28,50 @@ const formatKoreanTime = (dateString: string) => {
   } catch (error) {
     return dateString; // 파싱 실패 시 원본 반환
   }
+};
+
+// FeedListResponseDto를 FeedPost로 변환하는 함수
+const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
+  return {
+    id: feedResponse.feedId,
+    title: feedResponse.title,
+    content: feedResponse.content,
+    images: feedResponse.images.map(img => ({
+      id: img.imageId,
+      imageUrl: img.imageUrl,
+      sortOrder: img.sortOrder
+    })),
+    hashtags: feedResponse.hashtags.map(tag => ({
+      id: tag.hashtagId,
+      tag: tag.tag
+    })),
+    user: {
+      id: feedResponse.userId,
+      nickname: feedResponse.userNickname,
+      profileImg: feedResponse.userProfileImg,
+      level: feedResponse.userLevel,
+      gender: feedResponse.userGender,
+      height: feedResponse.userHeight
+    },
+    createdAt: feedResponse.createdAt,
+    updatedAt: feedResponse.createdAt, // 백엔드에서 updatedAt이 없으므로 createdAt 사용
+    likeCount: feedResponse.likeCount,
+    commentCount: feedResponse.commentCount,
+    isLiked: feedResponse.isLiked,
+    isVoted: feedResponse.isVoted,
+    feedType: feedResponse.feedType,
+    participantVoteCount: feedResponse.participantVoteCount,
+    orderItem: {
+      id: feedResponse.orderItemId,
+      productName: feedResponse.productName,
+      size: feedResponse.productSize
+    },
+    eventId: feedResponse.eventId,
+    eventTitle: feedResponse.eventTitle,
+    eventDescription: feedResponse.eventDescription,
+    eventStartDate: feedResponse.eventStartDate,
+    eventEndDate: feedResponse.eventEndDate
+  };
 };
 
 const MyFeedPage = () => {
@@ -118,7 +162,8 @@ const MyFeedPage = () => {
           }
 
           const allFeedsResponse = await FeedService.getFeeds(params);
-          const userFeeds = allFeedsResponse.content.filter(feed => 
+          const transformedFeeds = allFeedsResponse.content.map(transformFeedResponse);
+          const userFeeds = transformedFeeds.filter(feed => 
             feed.user?.nickname === targetUserNickname
           );
           
@@ -141,7 +186,8 @@ const MyFeedPage = () => {
         }
 
         const allFeedsResponse = await FeedService.getFeeds(params);
-        const userFeeds = allFeedsResponse.content.filter(feed => 
+        const transformedFeeds = allFeedsResponse.content.map(transformFeedResponse);
+        const userFeeds = transformedFeeds.filter(feed => 
           feed.user?.nickname === targetUserNickname
         );
         
@@ -162,7 +208,12 @@ const MyFeedPage = () => {
           params.feedType = activeTab;
         }
 
-        response = await FeedService.getMyFeeds(params);
+        const myFeedsResponse = await FeedService.getMyFeeds(params);
+        response = {
+          content: myFeedsResponse.content || [],
+          totalElements: myFeedsResponse.totalElements || 0,
+          totalPages: myFeedsResponse.totalPages || 0
+        };
       }
 
       console.log('최종 응답 설정:', response);

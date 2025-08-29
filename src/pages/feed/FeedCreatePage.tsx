@@ -339,14 +339,14 @@ const FeedCreatePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-3">
             {editId ? "피드 수정" : "새 피드 작성"}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-lg">
             {editId
               ? "피드 내용을 수정해주세요."
               : "새로운 피드를 작성해주세요."}
@@ -355,8 +355,9 @@ const FeedCreatePage: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* 기본 정보 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <i className="fas fa-info-circle text-blue-600 mr-3"></i>
               기본 정보
             </h2>
 
@@ -395,8 +396,9 @@ const FeedCreatePage: React.FC = () => {
           </div>
 
           {/* 구매 상품 선택 - 필수 필드로 변경 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <i className="fas fa-shopping-bag text-green-600 mr-3"></i>
               구매 상품 선택 *
             </h2>
 
@@ -432,8 +434,9 @@ const FeedCreatePage: React.FC = () => {
           </div>
 
           {/* 이미지 업로드 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <i className="fas fa-image text-purple-600 mr-3"></i>
               이미지 업로드 (선택사항)
             </h2>
 
@@ -487,8 +490,9 @@ const FeedCreatePage: React.FC = () => {
           </div>
 
           {/* 이벤트 선택 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <i className="fas fa-calendar-alt text-orange-600 mr-3"></i>
               이벤트 참여 (선택사항)
             </h2>
 
@@ -533,8 +537,9 @@ const FeedCreatePage: React.FC = () => {
           </div>
 
           {/* 해시태그 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <i className="fas fa-hashtag text-pink-600 mr-3"></i>
               해시태그 (선택사항)
             </h2>
 
@@ -603,8 +608,9 @@ const FeedCreatePage: React.FC = () => {
           </div>
 
           {/* 인스타그램 연동 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <i className="fab fa-instagram text-pink-500 mr-3"></i>
               인스타그램 연동 (선택사항)
             </h2>
 
@@ -634,26 +640,31 @@ const FeedCreatePage: React.FC = () => {
           </div>
 
           {/* 제출 버튼 */}
-          <div className="flex justify-end gap-4">
+          <div className="flex justify-end gap-4 pt-6">
             <button
               type="button"
               onClick={() => navigate("/feeds")}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
             >
+              <i className="fas fa-times mr-2"></i>
               취소
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
             >
-              {isLoading
-                ? editId
-                  ? "수정 중..."
-                  : "생성 중..."
-                : editId
-                ? "피드 수정"
-                : "피드 생성"}
+              {isLoading ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  {editId ? "수정 중..." : "생성 중..."}
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <i className="fas fa-paper-plane mr-2"></i>
+                  {editId ? "피드 수정" : "피드 생성"}
+                </div>
+              )}
             </button>
           </div>
         </form>
@@ -662,13 +673,16 @@ const FeedCreatePage: React.FC = () => {
       {/* 토스트 메시지 */}
       {showToast && (
         <div
-          className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg animate-fade-in-out ${
+          className={`fixed top-4 right-4 z-50 p-6 rounded-2xl shadow-2xl animate-fade-in-out backdrop-blur-sm ${
             toastType === "success"
-              ? "bg-green-500 text-white"
-              : "bg-red-500 text-white"
+              ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white border border-green-400"
+              : "bg-gradient-to-r from-red-500 to-pink-500 text-white border border-red-400"
           }`}
         >
-          {toastMessage}
+          <div className="flex items-center">
+            <i className={`fas ${toastType === "success" ? "fa-check-circle" : "fa-exclamation-circle"} mr-3 text-xl`}></i>
+            <span className="font-semibold">{toastMessage}</span>
+          </div>
         </div>
       )}
     </div>

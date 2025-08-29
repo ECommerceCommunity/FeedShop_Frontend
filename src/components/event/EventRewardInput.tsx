@@ -64,8 +64,8 @@ const EventRewardInput: React.FC<EventRewardInputProps> = ({
               </label>
               <input
                 type="text"
-                value={reward.reward}
-                onChange={(e) => onRewardChange(index, 'reward', e.target.value)}
+                value={reward.rewardDescription}
+                onChange={(e) => onRewardChange(index, 'rewardDescription', e.target.value)}
                 placeholder="예: 프리미엄 스니커즈"
                 className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />

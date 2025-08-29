@@ -3,6 +3,9 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import AddressManagementPage from "./AddressManagementPage";
 import CouponsPage from "./CouponsPage";
+import PointsPage from "./PointsPage";
+import BadgesPage from "./BadgesPage";
+import LevelPage from "./LevelPage";
 import MyRecentOrders from "components/order/MyRecentOrders";
 import { OrderService } from "api/orderService";
 import { OrderListItem } from "types/order";
@@ -348,6 +351,12 @@ function MyPage() {
       return <AddressManagementPage />;
     } else if (pathname === "/mypage/coupons") {
       return <CouponsPage />;
+    } else if (pathname === "/mypage/points") {
+      return <PointsPage />;
+    } else if (pathname === "/mypage/badges") {
+      return <BadgesPage />;
+    } else if (pathname === "/mypage/level") {
+      return <LevelPage />;
     }
 
     return <MyPageDashboard />;
@@ -491,7 +500,31 @@ function MyPage() {
                 location.pathname === "/mypage/coupons" ? "active" : ""
               }
             >
-              <i className="fas fa-ticket-alt"></i> 쿠폰/포인트
+              <i className="fas fa-ticket-alt"></i> 쿠폰
+            </NavItem>
+            <NavItem
+              to="/mypage/points"
+              className={
+                location.pathname === "/mypage/points" ? "active" : ""
+              }
+            >
+              <i className="fas fa-coins"></i> 포인트
+            </NavItem>
+            <NavItem
+              to="/mypage/badges"
+              className={
+                location.pathname === "/mypage/badges" ? "active" : ""
+              }
+            >
+              <i className="fas fa-medal"></i> 뱃지
+            </NavItem>
+            <NavItem
+              to="/mypage/level"
+              className={
+                location.pathname === "/mypage/level" ? "active" : ""
+              }
+            >
+              <i className="fas fa-star"></i> 레벨/활동
             </NavItem>
             <NavItem
               to="/mypage/posts"
