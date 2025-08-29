@@ -199,7 +199,7 @@ class EventService {
     try {
       console.log('이벤트 결과 상세 조회 API 호출:', eventId);
       // 백엔드 API 경로 수정: /api/v2/events/{eventId}/results
-      const response = await axiosInstance.get(`/api/v2/events/${eventId}/results`);
+      const response = await axiosInstance.get(`/api/events/${eventId}/results`);
       console.log('이벤트 결과 상세 API 응답:', response.data);
       
       const result = response.data.data || response.data || null;
@@ -279,7 +279,7 @@ class EventService {
   async processEventRewards(eventId: number): Promise<any> {
     try {
       console.log('이벤트 보상 지급 API 호출:', eventId);
-      const response = await axiosInstance.post(`/api/v2/events/migration/${eventId}/rewards`);
+      const response = await axiosInstance.post(`/api/v2/events/${eventId}/rewards/process`);
       console.log('이벤트 보상 지급 성공:', response.data);
       return response.data.data;
     } catch (error) {
@@ -294,7 +294,7 @@ class EventService {
   async reprocessParticipantReward(eventId: number, userId: number): Promise<any> {
     try {
       console.log('참여자 보상 재지급 API 호출:', eventId, userId);
-      const response = await axiosInstance.post(`/api/v2/events/migration/${eventId}/rewards/${userId}`);
+      const response = await axiosInstance.post(`/api/v2/events/${eventId}/rewards/reprocess/${userId}`);
       console.log('참여자 보상 재지급 성공:', response.data);
       return response.data.data;
     } catch (error) {

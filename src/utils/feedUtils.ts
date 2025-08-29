@@ -28,6 +28,7 @@ export const getFeedTypeColor = (feedType: FeedType): string => {
   }
 };
 
+<<<<<<< HEAD
 // 이벤트 상태 텍스트 변환
 export const getEventStatusText = (eventStatus?: string): string => {
   switch (eventStatus) {
@@ -55,7 +56,6 @@ export const getEventStatusColor = (eventStatus?: string): string => {
       return 'bg-gray-400';
   }
 };
-
 // 피드 타입 그라데이션 배경 반환
 export const getFeedTypeGradient = (feedType: FeedType): string => {
   switch (feedType) {

@@ -171,14 +171,14 @@ const CouponsPage = () => {
       const allCoupons = await couponService.getUserCoupons(userProfile.email);
 
       // 백엔드 응답 구조에 따라 데이터 처리
-      const processedCoupons = allCoupons.map(coupon => ({
+      const processedCoupons = allCoupons.map((coupon) => ({
         ...coupon,
         // 백엔드에서 오는 필드명을 프론트엔드에서 사용하는 필드명으로 매핑
         couponCode: coupon.code || coupon.couponCode,
         couponName: coupon.name || coupon.couponName,
         expiresAt: coupon.validTo || coupon.expiresAt,
         issuedAt: coupon.createdAt || coupon.issuedAt,
-        status: coupon.isActive ? "ACTIVE" : "EXPIRED"
+        status: coupon.isActive ? "ACTIVE" : "EXPIRED",
       }));
 
       setCoupons(processedCoupons);
@@ -353,7 +353,8 @@ const CouponsPage = () => {
 
                           // API 명세서 기준으로 할인 타입 추정
                           // discountValue가 100 이하면 비율 할인으로 추정
-                          const isPercentageDiscount = coupon.discountValue <= 100;
+                          const isPercentageDiscount =
+                            coupon.discountValue <= 100;
 
                           return isPercentageDiscount
                             ? "전 상품 적용"
@@ -362,7 +363,12 @@ const CouponsPage = () => {
                       </CouponDescription>
                     </CouponHeader>
                     <CouponFooter>
-                      <ExpiryDate>~ {coupon.expiresAt ? formatDate(coupon.expiresAt) : '날짜 없음'}</ExpiryDate>
+                      <ExpiryDate>
+                        ~{" "}
+                        {coupon.expiresAt
+                          ? formatDate(coupon.expiresAt)
+                          : "날짜 없음"}
+                      </ExpiryDate>
                       <Discount>{getDiscountDisplay(coupon)}</Discount>
                     </CouponFooter>
                   </CouponCard>

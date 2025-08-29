@@ -33,11 +33,13 @@ const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
     id: feedResponse.feedId,
     title: feedResponse.title,
     content: feedResponse.content,
+<<<<<<< HEAD
     images: (feedResponse.images || []).map(img => ({
       id: img.imageId,
       imageUrl: img.imageUrl,
       sortOrder: img.sortOrder
     })),
+<<<<<<< HEAD
     hashtags: (feedResponse.hashtags || []).map(tag => ({
       id: tag.hashtagId,
       tag: tag.tag
@@ -67,6 +69,7 @@ const transformFeedResponse = (feedResponse: FeedListResponseDto): FeedPost => {
     eventTitle: feedResponse.eventTitle,
     eventDescription: feedResponse.eventDescription,
     eventStartDate: feedResponse.eventStartDate,
+<<<<<<< HEAD
     eventEndDate: feedResponse.eventEndDate,
     eventStatus: feedResponse.eventStatus,
     canVote: feedResponse.canVote
@@ -235,6 +238,7 @@ const FeedListPage = () => {
     const loadInitialData = async () => {
       setInitialLoading(true);
       const result = await fetchFeeds(1, activeTab);
+<<<<<<< HEAD
       const transformedFeeds = (result.feeds || []).map(transformFeedResponse);
       setFeedPosts(transformedFeeds);
       
@@ -271,6 +275,7 @@ const FeedListPage = () => {
     setIsLoading(true);
     const nextPage = currentPage + 1;
     const result = await fetchFeeds(nextPage, activeTab);
+<<<<<<< HEAD
           const transformedNewFeeds = (result.feeds || []).map(transformFeedResponse);
     
     setFeedPosts([...feedPosts, ...transformedNewFeeds]);
@@ -661,6 +666,7 @@ const FeedListPage = () => {
                           {event.rewards}
                         </span>
                       ) : (
+<<<<<<< HEAD
                         (event.rewards || []).map((reward, idx) => (
                                                       <span
                               key={idx}

@@ -119,6 +119,7 @@ export interface FeedListResponseDto {
   eventDescription?: string;
   eventStartDate?: string;
   eventEndDate?: string;
+<<<<<<< HEAD
   eventStatus?: string;
   canVote?: boolean;
   hashtags: FeedHashtagDto[];
