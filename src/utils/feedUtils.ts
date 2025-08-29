@@ -28,7 +28,7 @@ export const getFeedTypeColor = (feedType: FeedType): string => {
   }
 };
 
-<<<<<<< HEAD
+
 // 이벤트 상태 텍스트 변환
 export const getEventStatusText = (eventStatus?: string): string => {
   switch (eventStatus) {
