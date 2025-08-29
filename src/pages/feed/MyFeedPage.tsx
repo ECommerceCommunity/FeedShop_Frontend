@@ -160,8 +160,10 @@ const MyFeedPage = () => {
 
           console.log('API 응답:', userFeedsResponse.data);
           const data = userFeedsResponse.data;
+          // FeedListResponseDto 형태의 응답을 FeedPost로 변환
+          const transformedFeeds = (data.data.content || []).map(transformFeedResponse);
           response = {
-            content: data.data.content,
+            content: transformedFeeds,
             totalElements: data.data.totalElements,
             totalPages: data.data.totalPages
           };
@@ -228,6 +230,7 @@ const MyFeedPage = () => {
         }
 
         const myFeedsResponse = await FeedService.getMyFeeds(params);
+        // FeedService.getMyFeeds는 이미 transformBackendFeedToFrontend로 변환된 FeedPost[]를 반환
         response = {
           content: myFeedsResponse.content || [],
           totalElements: myFeedsResponse.totalElements || 0,
