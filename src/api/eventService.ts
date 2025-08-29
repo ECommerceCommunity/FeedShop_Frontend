@@ -22,7 +22,7 @@ class EventService {
   async getFeedAvailableEvents(): Promise<FeedEventDto[]> {
     try {
       // 캐시 헤더 추가로 브라우저 캐싱 활용
-      const response = await axiosInstance.get<ApiResponse<EventSummaryDto[]>>('/api/events/feed-available', {
+      const response = await axiosInstance.get<ApiResponse<EventSummaryDto[]>>('/api/events/search?status=ongoing', {
         headers: {
           'Cache-Control': 'max-age=300', // 5분간 브라우저 캐시
         }
@@ -76,6 +76,29 @@ class EventService {
       return response.data;
     } catch (error) {
       console.error('이벤트 목록 조회 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 이벤트 검색/필터/정렬 (QueryDSL 기반)
+   */
+  async searchEvents(params?: {
+    page?: number;
+    size?: number;
+    status?: string;
+    type?: string;
+    keyword?: string;
+    sort?: string;
+  }): Promise<EventListResponseDto> {
+    try {
+      console.log('이벤트 검색 API 호출 파라미터:', params);
+      const response = await axiosInstance.get<EventListResponseDto>('/api/events/search', { params });
+      console.log('이벤트 검색 API 응답:', response.data);
+      
+      return response.data;
+    } catch (error) {
+      console.error('이벤트 검색 실패:', error);
       throw error;
     }
   }
@@ -176,7 +199,7 @@ class EventService {
     try {
       console.log('이벤트 결과 상세 조회 API 호출:', eventId);
       // 백엔드 API 경로 수정: /api/v2/events/{eventId}/results
-      const response = await axiosInstance.get(`/api/events/${eventId}/results`);
+      const response = await axiosInstance.get(`/api/v2/events/${eventId}/results`);
       console.log('이벤트 결과 상세 API 응답:', response.data);
       
       const result = response.data.data || response.data || null;
@@ -256,7 +279,7 @@ class EventService {
   async processEventRewards(eventId: number): Promise<any> {
     try {
       console.log('이벤트 보상 지급 API 호출:', eventId);
-      const response = await axiosInstance.post(`/api/v2/events/${eventId}/rewards/process`);
+      const response = await axiosInstance.post(`/api/v2/events/migration/${eventId}/rewards`);
       console.log('이벤트 보상 지급 성공:', response.data);
       return response.data.data;
     } catch (error) {
@@ -271,7 +294,7 @@ class EventService {
   async reprocessParticipantReward(eventId: number, userId: number): Promise<any> {
     try {
       console.log('참여자 보상 재지급 API 호출:', eventId, userId);
-      const response = await axiosInstance.post(`/api/v2/events/${eventId}/rewards/reprocess/${userId}`);
+      const response = await axiosInstance.post(`/api/v2/events/migration/${eventId}/rewards/${userId}`);
       console.log('참여자 보상 재지급 성공:', response.data);
       return response.data.data;
     } catch (error) {

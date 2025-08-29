@@ -138,10 +138,10 @@ export class FeedService {
       let url: string;
       if (feedType) {
         // 타입별 조회 API 사용
-        url = `/api/feeds/text-only/type/${feedType}`;
+        url = `/api/feeds/type/${feedType}`;
       } else {
         // 전체 조회 API 사용
-        url = '/api/feeds/text-only';
+        url = '/api/feeds';
       }
       
       const response = await axiosInstance.get<ApiResponse<PaginatedResponse<FeedListResponseDto>>>(
@@ -166,7 +166,7 @@ export class FeedService {
   static async getFeedsByType(feedType: string, params: Omit<FeedListParams, 'feedType'> = {}): Promise<FeedListResponse> {
     try {
       const response = await axiosInstance.get<ApiResponse<any>>(
-        `/api/feeds/text-only/type/${feedType}`,
+        `/api/feeds/type/${feedType}`,
         { params }
       );
       const apiResponse = response.data;
@@ -192,7 +192,7 @@ export class FeedService {
   static async getFeed(feedId: number): Promise<FeedPost> {
     try {
       console.log(`FeedService.getFeed 호출 - feedId: ${feedId}`);
-      const url = `/api/feeds/text-only/${feedId}`;
+      const url = `/api/feeds/${feedId}`;
       console.log(`API 호출 URL: ${url}`);
       
       const response = await axiosInstance.get<ApiResponse<BackendFeedPost>>(url);
@@ -237,7 +237,7 @@ export class FeedService {
       console.log('FeedService.createFeed 호출:', feedData);
       
       const response = await axiosInstance.post<ApiResponse<FeedPost>>(
-        '/api/feeds/text-only',
+        '/api/feeds',
         feedData
       );
       
@@ -262,7 +262,7 @@ export class FeedService {
   static async updateFeed(feedId: number, feedData: UpdateFeedRequest): Promise<FeedPost> {
     try {
       const response = await axiosInstance.put<ApiResponse<FeedPost>>(
-        `/api/feeds/text-only/${feedId}`,
+        `/api/feeds/${feedId}`,
         feedData
       );
       const apiResponse = response.data;
@@ -278,7 +278,7 @@ export class FeedService {
    */
   static async deleteFeed(feedId: number): Promise<void> {
     try {
-      await axiosInstance.delete(`/api/feeds/text-only/${feedId}`);
+      await axiosInstance.delete(`/api/feeds/${feedId}`);
     } catch (error: any) {
       console.error('피드 삭제 실패:', error);
       throw error;
@@ -291,7 +291,7 @@ export class FeedService {
   static async getMyLikedFeeds(page: number, size: number): Promise<MyLikedFeedsResponseDto> {
     try {
       const response = await axiosInstance.get<ApiResponse<MyLikedFeedsResponseDto>>(
-        `/api/feeds/text-only/my-likes?page=${page}&size=${size}`
+        `/api/feeds/my-likes?page=${page}&size=${size}`
       );
       
       const apiResponse = response.data;
@@ -314,7 +314,7 @@ export class FeedService {
   static async likeFeed(feedId: number): Promise<LikeResponse> {
     try {
       const response = await axiosInstance.post<ApiResponse<LikeResponse>>(
-        `/api/feeds/text-only/${feedId}/likes/toggle`
+        `/api/feeds/${feedId}/likes/toggle`
       );
       const apiResponse = response.data;
       return apiResponse.data;
@@ -331,7 +331,7 @@ export class FeedService {
     feedId: number
   ): Promise<Array<{ userId?: number; nickname: string; profileImg?: string }>> {
     try {
-      const url = `/api/feeds/text-only/${feedId}/likes`;
+      const url = `/api/feeds/${feedId}/likes`;
       const response = await axiosInstance.get<ApiResponse<any>>(url);
 
       const raw = response.data?.data;
@@ -370,7 +370,7 @@ export class FeedService {
   static async voteFeed(feedId: number): Promise<VoteResponse> {
     try {
       const response = await axiosInstance.post<ApiResponse<VoteResponse>>(
-        `/api/feeds/text-only/${feedId}/vote`
+        `/api/feeds/${feedId}/vote`
       );
       const apiResponse = response.data;
       return apiResponse.data;
@@ -386,7 +386,7 @@ export class FeedService {
   static async hasVoted(feedId: number): Promise<boolean> {
     try {
       const response = await axiosInstance.get<ApiResponse<boolean>>(
-        `/api/feeds/text-only/${feedId}/vote/check`
+        `/api/feeds/${feedId}/vote/check`
       );
       return response.data.data;
     } catch (error: any) {
@@ -401,7 +401,7 @@ export class FeedService {
   static async getVoteCount(feedId: number): Promise<number> {
     try {
       const response = await axiosInstance.get<ApiResponse<number>>(
-        `/api/feeds/text-only/${feedId}/vote/count`
+        `/api/feeds/${feedId}/vote/count`
       );
       return response.data.data;
     } catch (error: any) {
@@ -416,7 +416,7 @@ export class FeedService {
   static async unvoteFeed(feedId: number): Promise<VoteResponse> {
     try {
       const response = await axiosInstance.delete<ApiResponse<VoteResponse>>(
-        `/api/feeds/text-only/${feedId}/vote`
+        `/api/feeds/${feedId}/vote`
       );
       const apiResponse = response.data;
       return apiResponse.data;
@@ -432,7 +432,7 @@ export class FeedService {
   static async getComments(feedId: number, params: CommentListParams = {}): Promise<CommentListResponse> {
     try {
       const response = await axiosInstance.get<ApiResponse<any>>(
-        `/api/feeds/text-only/${feedId}/comments`,
+        `/api/feeds/${feedId}/comments`,
         { params }
       );
       
@@ -466,7 +466,7 @@ export class FeedService {
   static async createComment(feedId: number, commentData: CreateCommentRequest): Promise<FeedComment> {
     try {
       const response = await axiosInstance.post<ApiResponse<any>>(
-        `/api/feeds/text-only/${feedId}/comments`,
+        `/api/feeds/${feedId}/comments`,
         commentData
       );
       
@@ -499,7 +499,7 @@ export class FeedService {
   static async deleteComment(feedId: number, commentId: number): Promise<void> {
     try {
       const response = await axiosInstance.delete<ApiResponse<void>>(
-        `/api/feeds/text-only/${feedId}/comments/${commentId}`
+        `/api/feeds/${feedId}/comments/${commentId}`
       );
       
       if (!response.data.success) {
@@ -539,10 +539,10 @@ export class FeedService {
       let url: string;
       if (feedType) {
         // 타입별 조회 API 사용
-        url = `/api/feeds/text-only/my/type/${feedType}`;
+        url = `/api/feeds/my/type/${feedType}`;
       } else {
         // 전체 조회 API 사용
-        url = '/api/feeds/text-only/my';
+        url = '/api/feeds/my';
       }
       
       const response = await axiosInstance.get<ApiResponse<any>>(
@@ -572,7 +572,7 @@ export class FeedService {
   static async getMyFeedsByType(feedType: string, params: Omit<FeedListParams, 'feedType'> = {}): Promise<FeedListResponse> {
     try {
       const response = await axiosInstance.get<ApiResponse<any>>(
-        `/api/feeds/text-only/my/type/${feedType}`,
+        `/api/feeds/my/type/${feedType}`,
         { params }
       );
       const apiResponse = response.data;
@@ -602,7 +602,7 @@ export class FeedService {
         dailyCount: number;
         eventCount: number;
         rankingCount: number;
-      }>>('/api/feeds/text-only/my/count');
+      }>>('/api/feeds/my/count');
       
       if (response.data.success) {
         return response.data.data;
@@ -632,7 +632,7 @@ export class FeedService {
   static async getMyComments(page: number = 0, size: number = 20): Promise<ApiResponse<any>> {
     try {
       const response = await axiosInstance.get<ApiResponse<any>>(
-        `/api/feeds/text-only/my-comments`,
+        `/api/feeds/my-comments`,
         { params: { page, size } }
       );
       return response.data;
@@ -685,7 +685,7 @@ export class FeedService {
       if (params.size) queryParams.append('size', params.size.toString());
       if (params.sort) queryParams.append('sort', params.sort);
 
-      const response = await axiosInstance.get<ApiResponse<any>>(`/api/feeds/text-only/search?${queryParams.toString()}`);
+      const response = await axiosInstance.get<ApiResponse<any>>(`/api/feeds/search?${queryParams.toString()}`);
       
       console.log('검색 API 응답:', response.data);
       
