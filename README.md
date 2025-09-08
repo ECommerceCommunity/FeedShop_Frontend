@@ -70,6 +70,20 @@
 - **태블릿 지원**: 중간 화면에서의 최적화
 - **데스크톱 경험**: 큰 화면에서의 풍부한 기능
 
+<img width="620" height="718" alt="화면 캡처 2025-09-08 140225" src="https://github.com/user-attachments/assets/87a13073-2630-4b48-84dc-37d1d847dea9" />
+
+<img width="617" height="812" alt="dd" src="https://github.com/user-attachments/assets/02ca5bf1-3d27-4426-a096-b3598a889c4c" />
+
+<img width="623" height="835" alt="화면 캡처 2025-09-08 140403" src="https://github.com/user-attachments/assets/54f41b84-0eb4-45d2-baec-51fffcf63955" />
+
+<img width="627" height="828" alt="화면 캡처 2025-09-08 140628" src="https://github.com/user-attachments/assets/16800b4f-85f6-473e-b55d-cb46bae178dd" />
+
+<img width="625" height="793" alt="화면 캡처 2025-09-08 140934" src="https://github.com/user-attachments/assets/ad47368e-bb3b-48e4-89f5-53bef2d931d0" />
+
+
+
+
+
 ---
 
 ## 📁 프로젝트 구조
