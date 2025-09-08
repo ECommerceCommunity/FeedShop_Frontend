@@ -1,8 +1,9 @@
 # 🛍️ FeedShop - E-Commerce + 커뮤니티 채팅 서비스
 
 <div align="center">
-  <img src="https://readdy.ai/api/search-image?query=modern%20minimalist%20logo%20design%20for%20an%20e-commerce%20and%20community%20platform%20blue%20color%20theme%20clean%20and%20professional%20simple%20geometric%20shapes%20abstract%20representation%20of%20connection%20and%20shopping&width=200&height=80&seq=3&orientation=landscape" alt="FeedShop Logo" width="200"/>
-  
+
+  <img width="224" height="324" alt="feedShop_logo" src="https://github.com/user-attachments/assets/ab5a785b-c227-41b4-be34-da217dad3adf" />
+
   ### 쇼핑과 소통을 한 곳에서! 🚀
   
   [![React](https://img.shields.io/badge/React-18.0.0-blue.svg)](https://reactjs.org/)
@@ -17,6 +18,8 @@
 
 **FeedShop**은 전자상거래와 커뮤니티 기능을 결합한 혁신적인 웹 플랫폼입니다. 사용자들은 상품을 구매하면서 동시에 다른 사용자들과 실시간 채팅을 통해 소통할 수 있습니다. 또한 관리자 대시보드를 통해 효율적인 플랫폼 관리가 가능합니다.
 
+프론트 배포 주소: https://www.feedshop.store/
+ 
 ### 🎯 주요 특징
 
 - **통합 플랫폼**: 쇼핑몰 + 커뮤니티 + 채팅 서비스
@@ -69,20 +72,6 @@
 - **모바일 최적화**: 터치 친화적 인터페이스
 - **태블릿 지원**: 중간 화면에서의 최적화
 - **데스크톱 경험**: 큰 화면에서의 풍부한 기능
-
-<img width="620" height="718" alt="화면 캡처 2025-09-08 140225" src="https://github.com/user-attachments/assets/87a13073-2630-4b48-84dc-37d1d847dea9" />
-
-<img width="617" height="812" alt="dd" src="https://github.com/user-attachments/assets/02ca5bf1-3d27-4426-a096-b3598a889c4c" />
-
-<img width="623" height="835" alt="화면 캡처 2025-09-08 140403" src="https://github.com/user-attachments/assets/54f41b84-0eb4-45d2-baec-51fffcf63955" />
-
-<img width="627" height="828" alt="화면 캡처 2025-09-08 140628" src="https://github.com/user-attachments/assets/16800b4f-85f6-473e-b55d-cb46bae178dd" />
-
-<img width="625" height="793" alt="화면 캡처 2025-09-08 140934" src="https://github.com/user-attachments/assets/ad47368e-bb3b-48e4-89f5-53bef2d931d0" />
-
-
-
-
 
 ---
 
@@ -153,11 +142,17 @@ npm run preview
 
 ### 메인 페이지
 
-![메인 페이지](https://via.placeholder.com/800x400/3B82F6/FFFFFF?text=FeedShop+Main+Page)
+<img width="620" height="718" alt="화면 캡처 2025-09-08 140225" src="https://github.com/user-attachments/assets/87a13073-2630-4b48-84dc-37d1d847dea9" />
 
-### 관리자 대시보드
+### 기타 페이지
 
-![관리자 대시보드](https://via.placeholder.com/800x400/10B981/FFFFFF?text=Admin+Dashboard)
+<img width="617" height="812" alt="dd" src="https://github.com/user-attachments/assets/02ca5bf1-3d27-4426-a096-b3598a889c4c" />
+
+<img width="623" height="835" alt="화면 캡처 2025-09-08 140403" src="https://github.com/user-attachments/assets/54f41b84-0eb4-45d2-baec-51fffcf63955" />
+
+<img width="627" height="828" alt="화면 캡처 2025-09-08 140628" src="https://github.com/user-attachments/assets/16800b4f-85f6-473e-b55d-cb46bae178dd" />
+
+<img width="625" height="793" alt="화면 캡처 2025-09-08 140934" src="https://github.com/user-attachments/assets/ad47368e-bb3b-48e4-89f5-53bef2d931d0" />
 
 ## 🔧 개발 환경 설정
 
