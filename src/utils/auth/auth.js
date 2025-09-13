@@ -2,7 +2,7 @@
 
 // API 기본 URL
 function getBaseURL() {
-  return process.env.REACT_APP_API_URL || "https://localhost:8443";
+  return process.env.REACT_APP_API_URL || "https://localhost:8080";
 }
 
 // 회원가입

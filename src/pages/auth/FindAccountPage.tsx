@@ -95,7 +95,7 @@ export default function FindAccountPage() {
     }
 
     try {
-      const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8443";
+      const baseURL = process.env.REACT_APP_API_URL || "https://localhost:8080";
       const response = await axios.get(`${baseURL}/api/auth/find-account`, {
         params: {
           username: name,
